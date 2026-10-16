@@ -546,7 +546,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               child: Text(
                                 d.department.isNotEmpty
                                     ? d.department
-                                    : 'RSUD SIMRS Kemenkes RI',
+                                    : 'RSU Darmayu Madiun',
                                 style: const TextStyle(
                                   fontSize: 12.5,
                                   color: AppColors.inkSecondary,

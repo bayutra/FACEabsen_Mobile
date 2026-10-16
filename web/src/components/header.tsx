@@ -28,7 +28,7 @@ export function Header({ user }: { user: SessionUser }) {
       <div className="flex min-w-0 flex-1 items-center gap-space-md">
         <div className="flex shrink-0 items-center gap-2 text-primary">
           <Building2 className="h-5 w-5" aria-hidden />
-          <span className="hidden text-body-md-medium sm:inline">RSUD Sehat Medika Pusat</span>
+          <span className="hidden text-body-md-medium sm:inline">RSU Darmayu Madiun</span>
         </div>
         <form action="/attendance" className="relative hidden min-w-0 max-w-lg flex-1 lg:block">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-outline" aria-hidden />

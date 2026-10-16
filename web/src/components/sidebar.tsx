@@ -21,6 +21,7 @@ import {
   TrendingUp,
 } from 'lucide-react';
 import { navGroups } from '@/lib/nav';
+import { HospitalMark } from '@/components/hospital-mark';
 import { cn } from '@/lib/utils';
 
 const ICONS: Record<string, typeof LayoutDashboard> = {
@@ -89,12 +90,12 @@ export function Sidebar({ roles, onLogout }: { roles: string[]; onLogout?: () =>
     <aside className="sticky top-0 hidden h-screen w-[260px] shrink-0 flex-col justify-between border-r border-outline-variant/30 bg-surface-container-lowest md:flex">
       <div className="flex flex-col">
         <div className="flex items-center gap-space-sm border-b border-outline-variant/30 px-space-md py-4">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-on-primary">
-            <Building2 className="h-5 w-5" aria-hidden />
+          <div className="flex h-10 w-10 items-center justify-center">
+            <HospitalMark size={40} />
           </div>
           <div className="flex flex-col">
             <span className="font-headline-md font-bold text-primary">RS Absen</span>
-            <span className="text-label-sm text-outline">RSUD Sehat Medika Pusat</span>
+            <span className="text-label-sm text-outline">RSU Darmayu Madiun</span>
           </div>
         </div>
 

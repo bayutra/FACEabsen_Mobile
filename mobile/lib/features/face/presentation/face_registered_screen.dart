@@ -142,7 +142,7 @@ class FaceRegisteredScreen extends StatelessWidget {
               padding: EdgeInsets.symmetric(horizontal: 12),
               child: Text(
                 'Data biometrik Anda telah terverifikasi dan terikat dengan ID '
-                'Karyawan & Perangkat resmi RSUD Sehat Sentosa.',
+                'Karyawan & Perangkat resmi RSU Darmayu Madiun.',
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 12, color: AppColors.inkSecondary),
               ),

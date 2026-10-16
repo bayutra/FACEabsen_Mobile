@@ -1273,7 +1273,7 @@ class _DetailSheet extends StatelessWidget {
                             ),
                           ),
                           Text(
-                            'Stempel Digital SIMRS Sehat Sentosa',
+                            'Stempel Digital SIMRS Darmayu Madiun',
                             style: TextStyle(
                               fontSize: 11,
                               color: AppColors.inkSecondary,
@@ -1792,7 +1792,7 @@ class _DetailSheet extends StatelessWidget {
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: Text(
-                            item.shiftName ?? 'Area RSUD',
+                            item.shiftName ?? 'Area RS',
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 9,

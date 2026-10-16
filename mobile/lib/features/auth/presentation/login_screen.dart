@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart' show debugPrint, kDebugMode;
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/hospital_mark.dart';
 import '../../../core/widgets/stitch.dart';
 import '../data/auth_repository.dart';
 import '../../device/data/device_repository.dart';
@@ -419,23 +420,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     // Hospital Branding Header
                     Row(
                       children: [
-                        Container(
-                          width: 48,
-                          height: 48,
-                          decoration: BoxDecoration(
-                            color: AppColors.surfaceLow,
-                            borderRadius: BorderRadius.circular(
-                                AppColors.radiusButton),
-                            border: Border.all(
-                              color: AppColors.border,
-                            ),
-                          ),
-                          child: const Icon(
-                            Icons.local_hospital,
-                            color: AppColors.primary,
-                            size: 26,
-                          ),
-                        ),
+                        const HospitalMark(size: 48),
                         const SizedBox(width: 12),
                         Expanded(
                           child: Column(
@@ -471,7 +456,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ],
                               ),
                               Text(
-                                'Sistem Presensi & Verifikasi Nakes RSUD Sehat Sentosa',
+                                'Sistem Presensi & Verifikasi Nakes RSU Darmayu Madiun',
                                 style: AppText.labelSm.copyWith(
                                   color: AppColors.inkSecondary,
                                 ),
@@ -532,7 +517,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               const SizedBox(width: 4),
                               Expanded(
                                 child: Text(
-                                  'Nomor Induk Pegawai terdaftar di Kepegawaian RSUD',
+                                  'Nomor Induk Pegawai terdaftar di Kepegawaian RS',
                                   style: AppText.labelSm.copyWith(
                                     color: AppColors.inkSecondary,
                                   ),

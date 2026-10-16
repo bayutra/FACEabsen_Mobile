@@ -274,7 +274,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                 Icon(Icons.apartment, size: 14, color: AppColors.primary),
                 SizedBox(width: 4),
                 Text(
-                  'RSUD Sehat Sentosa',
+                  'RSU Darmayu Madiun',
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
@@ -596,7 +596,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                         Icon(Icons.apartment, size: 14, color: AppColors.primary),
                         SizedBox(width: 4),
                         Text(
-                          'RSUD Sehat Sentosa',
+                          'RSU Darmayu Madiun',
                           style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w600,

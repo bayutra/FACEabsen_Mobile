@@ -6,18 +6,16 @@ import { Button } from '@/components/ui/button';
 import { Badge, Field, inputClass } from '@/components/ui/surface';
 
 /**
- * Live geofence diagnostic for SUPER_ADMIN.
- *
- * This is deliberately a *probe*, not a settings form: the backend exposes
- * `POST /geo/check` but no endpoint to persist a radius, so a form that looked
- * editable could never save. Here the admin submits a real coordinate and sees
- * the server's verdict against the hospital's actual fence.
+ * Live geofence diagnostic for SUPER_ADMIN: admin submits a real coordinate
+ * and sees the server's verdict against the hospital's actual fence
+ * (radius hasil edit form di atas).
  */
 export function GeofenceProbe({ defaults }: { defaults: GeofenceDefaults }) {
   const [lat, setLat] = useState(String(defaults.latitude));
   const [lng, setLng] = useState(String(defaults.longitude));
   const [acc, setAcc] = useState('12');
   const [result, setResult] = useState<ProbeResult | null>(null);
+  const [sentAcc, setSentAcc] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -26,6 +24,7 @@ export function GeofenceProbe({ defaults }: { defaults: GeofenceDefaults }) {
     setBusy(true);
     setError(null);
     setResult(null);
+    const accuracyM = Number(acc);
     try {
       const res = await fetch('/api/geo/check', {
         method: 'POST',
@@ -33,12 +32,13 @@ export function GeofenceProbe({ defaults }: { defaults: GeofenceDefaults }) {
         body: JSON.stringify({
           latitude: Number(lat),
           longitude: Number(lng),
-          accuracyM: Number(acc),
+          accuracyM,
           timestamp: new Date().toISOString(),
           isMocked: false,
         }),
       });
       if (!res.ok) throw new Error(`Gagal memprobe (${res.status})`);
+      setSentAcc(accuracyM);
       setResult((await res.json()) as ProbeResult);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Gagal memprobe');
@@ -114,8 +114,15 @@ export function GeofenceProbe({ defaults }: { defaults: GeofenceDefaults }) {
               <dd className="tabular text-body-md text-on-surface">{result.radiusM} m</dd>
             </div>
             <div>
-              <dt className="text-label-sm text-outline">Akurasi</dt>
-              <dd className="tabular text-body-md text-on-surface">{result.accuracyM} m</dd>
+              <dt className="text-label-sm text-outline">Akurasi dikirim</dt>
+              <dd className="tabular text-body-md text-on-surface">
+                {sentAcc !== null ? `±${sentAcc} m` : '—'}
+                {result.checks && 'accuracyOk' in result.checks
+                  ? result.checks.accuracyOk
+                    ? ' (OK)'
+                    : ' (buruk)'
+                  : ''}
+              </dd>
             </div>
             <div>
               <dt className="text-label-sm text-outline">Lokasi palsu</dt>
@@ -138,7 +145,6 @@ export interface ProbeResult {
   inside: boolean;
   distanceM: number;
   radiusM: number;
-  accuracyM: number;
   mockSuspected: boolean;
   checks?: Record<string, boolean>;
 }

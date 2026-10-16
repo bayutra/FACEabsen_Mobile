@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/widgets/hospital_mark.dart';
 import '../domain/attendance_models.dart';
 
 /// Stitch "Presensi - Hasil Verifikasi Presensi" (`design/stitch_rs_absen_mobile_app/presensi_hasil_verifikasi_presensi`)
@@ -73,19 +74,7 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: Row(
                 children: [
-                  Container(
-                    width: 32,
-                    height: 32,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFF0F766E),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.local_hospital,
-                      color: Colors.white,
-                      size: 18,
-                    ),
-                  ),
+                  const HospitalMark(size: 32),
                   const SizedBox(width: 8),
                   const Text(
                     'RS Absen',
@@ -540,7 +529,7 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const Text(
-                            'Di Luar Area Geofence RSUD',
+                            'Di Luar Area Geofence RS',
                             style: TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w700,
@@ -618,7 +607,7 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
                         Icon(Icons.policy, size: 16, color: Color(0xFF005C55)),
                         SizedBox(width: 6),
                         Text(
-                          'Aturan Kepatuhan Presensi RSUD:',
+                          'Aturan Kepatuhan Presensi RS:',
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w700,
@@ -1460,7 +1449,7 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
               ),
               const SizedBox(height: 2),
               const Text(
-                'Stempel Resmi SIMRS RSUD Sehat Sentosa',
+                'Stempel Resmi SIMRS RSU Darmayu Madiun',
                 style: TextStyle(
                   fontSize: 12,
                   color: Color(0xFF3E4947),

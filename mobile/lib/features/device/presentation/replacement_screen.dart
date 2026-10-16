@@ -555,7 +555,7 @@ class _ReplacementScreenState extends State<ReplacementScreen> {
                   SizedBox(width: 10),
                   Expanded(
                     child: Text(
-                      'Saya menyatakan permohonan penggantian perangkat ini dilakukan secara sah dan data yang diberikan benar sesuai ketentuan SIMRS RSUD Sehat Sentosa.',
+                      'Saya menyatakan permohonan penggantian perangkat ini dilakukan secara sah dan data yang diberikan benar sesuai ketentuan SIMRS RSU Darmayu Madiun.',
                       style: TextStyle(
                         fontSize: 11.5,
                         color: Color(0xFF3E4947),

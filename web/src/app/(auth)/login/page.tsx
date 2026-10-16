@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { Fingerprint, Lock, ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { HospitalMark } from '@/components/hospital-mark';
 import { Field, inputClass } from '@/components/ui/surface';
 
 /**
@@ -119,14 +120,12 @@ export default function LoginPage() {
           {/* Identity rail */}
           <aside className="flex flex-col justify-center rounded-xl border border-outline-variant bg-surface-container-lowest p-space-xl shadow-surface-1 lg:col-span-5">
             <div className="flex items-center gap-space-md">
-              <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary-container text-on-primary shadow-surface-1">
-                <Fingerprint size={28} aria-hidden />
-              </span>
+              <HospitalMark size={56} />
               <div className="flex flex-col">
                 <h1 className="text-headline-md font-extrabold tracking-tight text-primary">
                   Admisi &amp; Kehadiran
                 </h1>
-                <span className="text-label-sm text-outline">RSUD Sehat Sentosa</span>
+                <span className="text-label-sm text-outline">RSU Darmayu Madiun</span>
               </div>
             </div>
 

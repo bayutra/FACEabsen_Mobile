@@ -241,7 +241,7 @@ class _HomeDashboardState extends State<HomeDashboard> {
                 const SizedBox(width: 6),
                 Expanded(
                   child: Text(
-                    'Instalasi Rawat Inap Melati - RSUD Sehat Sentosa',
+                    'Instalasi Rawat Inap Melati - RSU Darmayu Madiun',
                     style: AppText.labelSm.copyWith(
                       color: AppColors.inkSecondary,
                       fontWeight: FontWeight.w500,

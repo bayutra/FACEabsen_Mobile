@@ -164,7 +164,7 @@ class _FaceScanIssueScreenState extends State<FaceScanIssueScreen> {
                       Text('ISO 800 • Exp 1/40',
                           style: AppText.labelSm.copyWith(
                               color: AppColors.onInverseSurface)),
-                      Text('420 Lux RSUD OK',
+                      Text('420 Lux OK',
                           style: AppText.labelSm.copyWith(
                               color: AppColors.onInverseSurface)),
                     ],

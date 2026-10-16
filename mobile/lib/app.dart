@@ -152,7 +152,7 @@ class _BootstrapGateState extends State<BootstrapGate> {
                         title: 'Tidak dapat terhubung ke server',
                       ),
                       const SizedBox(height: 12),
-                      const Text('RSUD Sehat Sentosa'),
+                      const Text('RSU Darmayu Madiun'),
                       const SizedBox(height: 16),
                       FilledButton.icon(
                         onPressed: _retry,

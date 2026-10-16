@@ -73,6 +73,18 @@ export function GeofenceMap({ hospitalId, latitude, longitude, radiusMeters, onM
             url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
           />
         </LayersControl.BaseLayer>
+        <LayersControl.Overlay checked name="Nama wilayah">
+          <TileLayer
+            attribution="Esri"
+            url="https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}"
+          />
+        </LayersControl.Overlay>
+        <LayersControl.Overlay name="Jalan">
+          <TileLayer
+            attribution="Esri"
+            url="https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}"
+          />
+        </LayersControl.Overlay>
       </LayersControl>
       <ClickToMove onMove={onMove} />
       <FlyTo target={focus ?? null} />

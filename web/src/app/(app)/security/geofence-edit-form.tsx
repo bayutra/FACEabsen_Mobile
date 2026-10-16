@@ -136,7 +136,7 @@ export function GeofenceEditForm({ fences }: { fences: FenceOption[] }) {
                 void search();
               }
             }}
-            placeholder="Cari RS / alamat — mis. RSUD Sehat Sentosa"
+            placeholder="Cari RS / alamat — mis. RSU Darmayu Madiun"
             className={`${inputClass} w-full`}
           />
           <button
