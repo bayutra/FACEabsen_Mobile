@@ -1,0 +1,6 @@
+# STEP 1 — backend gitignore
+node_modules/
+dist/
+.env
+*.log
+coverage/

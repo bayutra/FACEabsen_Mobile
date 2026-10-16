@@ -1,0 +1,5 @@
+# Production secrets & local dumps — never commit.
+.env.production
+backups/
+*.dump
+*.dump.sha256

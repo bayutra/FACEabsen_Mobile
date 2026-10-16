@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+
+<html lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>RS Absen - Jadwal Dinas Mingguan</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS with plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "secondary-fixed": "#c9e6ff",
+            "on-surface": "#0b1c30",
+            "on-tertiary-fixed": "#00201d",
+            "surface": "#f8f9ff",
+            "on-error": "#ffffff",
+            "surface-container-low": "#eff4ff",
+            "on-primary-fixed": "#00201d",
+            "on-background": "#0b1c30",
+            "secondary-fixed-dim": "#89ceff",
+            "tertiary-fixed-dim": "#6bd8cb",
+            "on-secondary-fixed": "#001e2f",
+            "on-secondary-container": "#004666",
+            "primary": "#005c55",
+            "primary-fixed-dim": "#80d5cb",
+            "secondary-container": "#39b8fd",
+            "on-primary-container": "#a3faef",
+            "on-secondary": "#ffffff",
+            "surface-bright": "#f8f9ff",
+            "background": "#f8f9ff",
+            "on-secondary-fixed-variant": "#004c6e",
+            "error-container": "#ffdad6",
+            "on-tertiary-fixed-variant": "#005049",
+            "outline": "#6e7977",
+            "surface-container-lowest": "#ffffff",
+            "tertiary-fixed": "#89f5e7",
+            "surface-dim": "#cbdbf5",
+            "outline-variant": "#bdc9c6",
+            "primary-fixed": "#9cf2e8",
+            "inverse-on-surface": "#eaf1ff",
+            "surface-container-highest": "#d3e4fe",
+            "surface-container-high": "#dce9ff",
+            "secondary": "#006591",
+            "surface-tint": "#006a63",
+            "tertiary-container": "#00776d",
+            "primary-container": "#0f766e",
+            "tertiary": "#005c54",
+            "on-primary-fixed-variant": "#00504a",
+            "on-surface-variant": "#3e4947",
+            "inverse-surface": "#213145",
+            "surface-container": "#e5eeff",
+            "error": "#ba1a1a",
+            "on-tertiary": "#ffffff",
+            "inverse-primary": "#80d5cb",
+            "on-error-container": "#93000a",
+            "surface-variant": "#d3e4fe",
+            "on-tertiary-container": "#91fdef",
+            "on-primary": "#ffffff"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "space-lg": "1.5rem",
+            "margin": "1rem",
+            "margin-lg": "1.5rem",
+            "gutter": "1rem",
+            "space-xs": "0.25rem",
+            "gutter-sm": "0.75rem",
+            "space-md": "1rem",
+            "space-sm": "0.5rem",
+            "space-xl": "2rem"
+          },
+          "fontFamily": {
+            "body-lg-medium": ["Inter"],
+            "display-lg": ["Inter"],
+            "metric-mono": ["Inter"],
+            "headline-lg": ["Inter"],
+            "headline-md": ["Inter"],
+            "body-md": ["Inter"],
+            "display-lg-mobile": ["Inter"],
+            "body-md-medium": ["Inter"],
+            "label-sm": ["Inter"],
+            "label-md": ["Inter"],
+            "body-lg": ["Inter"],
+            "headline-sm": ["Inter"]
+          },
+          "fontSize": {
+            "body-lg-medium": ["16px", { "lineHeight": "24px", "fontWeight": "500" }],
+            "display-lg": ["36px", { "lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+            "metric-mono": ["32px", { "lineHeight": "36px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+            "headline-lg": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.015em", "fontWeight": "600" }],
+            "headline-md": ["20px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+            "display-lg-mobile": ["28px", { "lineHeight": "36px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+            "body-md-medium": ["14px", { "lineHeight": "20px", "fontWeight": "500" }],
+            "label-sm": ["11px", { "lineHeight": "14px", "letterSpacing": "0.01em", "fontWeight": "500" }],
+            "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600" }],
+            "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+            "headline-sm": ["18px", { "lineHeight": "24px", "fontWeight": "600" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      display: inline-block;
+      vertical-align: middle;
+      line-height: 1;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .custom-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface font-body-md antialiased min-h-screen flex justify-center selection:bg-primary-fixed selection:text-on-primary-fixed">
+<!-- Mobile Viewport Container -->
+<div class="w-full max-w-md bg-surface min-h-screen flex flex-col relative pb-28">
+<!-- TopAppBar (Shared Anchor) -->
+<header class="bg-surface docked full-width top-0 shadow-sm border-b border-outline-variant flex justify-between items-center w-full px-margin py-space-sm max-w-md mx-auto sticky z-40 bg-opacity-95 backdrop-blur-sm">
+<div class="flex items-center gap-2.5">
+<div class="w-9 h-9 rounded-full bg-primary-container text-on-primary flex items-center justify-center font-headline-sm text-headline-sm shadow-sm">
+          SR
+        </div>
+<div class="flex flex-col">
+<span class="text-headline-sm font-headline-sm text-primary leading-tight">RS Absen</span>
+<span class="text-label-sm font-label-sm text-on-surface-variant">Ns. Siti Rahma, S.Kep</span>
+</div>
+</div>
+<div class="flex items-center gap-1">
+<button class="w-9 h-9 flex items-center justify-center rounded-full hover:bg-surface-container active:scale-[0.98] transition-all duration-200 text-on-surface-variant relative" title="Sinkronisasi Kalender">
+<span class="material-symbols-outlined text-[22px]">sync</span>
+</button>
+<button class="w-9 h-9 flex items-center justify-center rounded-full hover:bg-surface-container active:scale-[0.98] transition-all duration-200 text-on-surface-variant relative" title="Notifikasi Jadwal">
+<span class="material-symbols-outlined text-[22px]">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full ring-2 ring-surface"></span>
+</button>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="flex-1 px-margin pt-space-md flex flex-col gap-space-md">
+<!-- Schedule Title & Context Header -->
+<section class="flex flex-col gap-1">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-primary text-[20px]">calendar_month</span>
+<h1 class="text-headline-md font-headline-md text-on-surface">Jadwal Dinas &amp; Shift</h1>
+</div>
+<button class="inline-flex items-center gap-1 text-label-md font-label-md text-primary bg-surface-container-low px-2.5 py-1 rounded-full border border-outline-variant active:scale-[0.98]">
+<span class="material-symbols-outlined text-[16px]">edit_calendar</span>
+<span>Bulan Ini</span>
+</button>
+</div>
+<p class="text-body-md text-on-surface-variant">Roster Kerja Ruang Rawat Inap Melati</p>
+</section>
+<!-- Period Navigator Card -->
+<section class="bg-surface-container-lowest border border-outline-variant rounded-xl p-space-sm shadow-sm flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<button class="w-8 h-8 rounded-lg flex items-center justify-center text-on-surface-variant hover:bg-surface-container active:scale-[0.98] border border-outline-variant transition-all">
+<span class="material-symbols-outlined text-[18px]">chevron_left</span>
+</button>
+<div class="flex flex-col items-center">
+<span class="text-body-lg-medium font-body-lg-medium text-on-surface">21 Okt - 27 Okt 2024</span>
+<div class="inline-flex items-center gap-1 text-label-sm font-label-sm text-primary bg-primary-fixed/40 px-2 py-0.5 rounded-full mt-0.5">
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+<span>Minggu Berjalan (Aktif)</span>
+</div>
+</div>
+<button class="w-8 h-8 rounded-lg flex items-center justify-center text-on-surface-variant hover:bg-surface-container active:scale-[0.98] border border-outline-variant transition-all">
+<span class="material-symbols-outlined text-[18px]">chevron_right</span>
+</button>
+</div>
+<!-- Metric Bento Strip -->
+<div class="grid grid-cols-3 gap-2 pt-space-xs border-t border-surface-container">
+<div class="bg-surface-container-low rounded-lg p-2 flex flex-col items-center justify-center text-center">
+<span class="text-label-sm font-label-sm text-on-surface-variant">Total Beban</span>
+<span class="text-headline-sm font-headline-sm text-primary mt-0.5">40 Jam</span>
+</div>
+<div class="bg-surface-container-low rounded-lg p-2 flex flex-col items-center justify-center text-center">
+<span class="text-label-sm font-label-sm text-on-surface-variant">Rasio Shift</span>
+<span class="text-headline-sm font-headline-sm text-on-surface mt-0.5">5D : 2L</span>
+</div>
+<div class="bg-surface-container-low rounded-lg p-2 flex flex-col items-center justify-center text-center">
+<span class="text-label-sm font-label-sm text-on-surface-variant">Shift Malam</span>
+<span class="text-headline-sm font-headline-sm text-secondary mt-0.5">1 Shift</span>
+</div>
+</div>
+</section>
+<!-- Weekly Calendar Days View (7 Days) -->
+<section class="flex flex-col gap-2.5">
+<div class="flex items-center justify-between px-0.5">
+<span class="text-label-md font-label-md text-on-surface-variant tracking-wider">HARI &amp; PENUGASAN KLINIK</span>
+<span class="text-label-sm font-label-sm text-outline">7 Hari Kerja Roster</span>
+</div>
+<!-- 1. Senin, 21 Okt (Shift Malam - Lintas Hari) -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-space-sm shadow-sm relative overflow-hidden">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-2">
+<div class="w-10 h-10 rounded-lg bg-surface-container flex flex-col items-center justify-center border border-outline-variant/60">
+<span class="text-label-sm font-label-sm text-on-surface-variant">SEN</span>
+<span class="text-body-lg-medium font-body-lg-medium text-on-surface leading-none">21</span>
+</div>
+<div>
+<div class="flex items-center gap-1.5 flex-wrap">
+<span class="text-body-md-medium font-body-md-medium text-on-surface">Shift Malam</span>
+<span class="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-label-sm font-label-sm bg-surface-container-highest text-on-surface-variant border border-outline-variant">
+<span class="material-symbols-outlined text-[13px] text-secondary">bedtime</span>
+                    21:00 - 07:00 WIB
+                  </span>
+</div>
+<div class="flex items-center gap-1 text-label-sm font-label-sm text-on-surface-variant mt-1">
+<span class="material-symbols-outlined text-[14px] text-outline">domain</span>
+<span>ICU Sentral (BKO Ruang Kritis)</span>
+</div>
+</div>
+</div>
+<span class="inline-flex items-center text-label-sm font-label-sm px-2 py-0.5 rounded-full bg-surface-container text-on-surface-variant border border-outline-variant">
+              Selesai
+            </span>
+</div>
+<!-- Lintas Hari Indicator Badge -->
+<div class="mt-2.5 pt-2 border-t border-surface-container-high flex items-center justify-between text-label-sm font-label-sm">
+<div class="flex items-center gap-1 text-secondary">
+<span class="material-symbols-outlined text-[15px]" style="font-variation-settings: 'FILL' 1;">nightlight</span>
+<span class="font-body-md-medium text-secondary">Melewati Tengah Malam +1 Hari</span>
+</div>
+<span class="text-outline text-label-sm">Tercatat 10 Jam</span>
+</div>
+</div>
+<!-- 2. Selasa, 22 Okt (Lepas Malam / Istirahat) -->
+<div class="bg-surface-container-lowest/80 border border-dashed border-outline-variant rounded-xl p-space-sm shadow-sm">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-2">
+<div class="w-10 h-10 rounded-lg bg-surface-container flex flex-col items-center justify-center border border-outline-variant/60">
+<span class="text-label-sm font-label-sm text-on-surface-variant">SEL</span>
+<span class="text-body-lg-medium font-body-lg-medium text-on-surface leading-none">22</span>
+</div>
+<div>
+<span class="text-body-md-medium font-body-md-medium text-on-surface">Lepas Malam / Libur Dinas</span>
+<p class="text-label-sm font-label-sm text-on-surface-variant mt-0.5">Istirahat Pasca Jaga Malam Mandatori RS</p>
+</div>
+</div>
+<span class="inline-flex items-center text-label-sm font-label-sm px-2 py-0.5 rounded-full bg-surface-container text-on-surface-variant border border-outline-variant">
+              Libur Resmi
+            </span>
+</div>
+</div>
+<!-- 3. Rabu, 23 Okt (Shift Siang) -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-space-sm shadow-sm">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-2">
+<div class="w-10 h-10 rounded-lg bg-surface-container flex flex-col items-center justify-center border border-outline-variant/60">
+<span class="text-label-sm font-label-sm text-on-surface-variant">RAB</span>
+<span class="text-body-lg-medium font-body-lg-medium text-on-surface leading-none">23</span>
+</div>
+<div>
+<div class="flex items-center gap-1.5 flex-wrap">
+<span class="text-body-md-medium font-body-md-medium text-on-surface">Shift Siang</span>
+<span class="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-label-sm font-label-sm bg-secondary-fixed/50 text-on-secondary-fixed border border-secondary-fixed-dim">
+<span class="material-symbols-outlined text-[13px]">wb_sunny</span>
+                    14:00 - 21:00 WIB
+                  </span>
+</div>
+<div class="flex items-center gap-1 text-label-sm font-label-sm text-on-surface-variant mt-1">
+<span class="material-symbols-outlined text-[14px] text-outline">domain</span>
+<span>Radiologi Sentral</span>
+</div>
+</div>
+</div>
+<span class="inline-flex items-center text-label-sm font-label-sm px-2 py-0.5 rounded-full bg-surface-container text-on-surface-variant border border-outline-variant">
+              Selesai
+            </span>
+</div>
+</div>
+<!-- 4. Kamis, 24 Okt (HARI INI - Sedang Berlangsung) -->
+<div class="bg-surface-container-lowest border-2 border-primary rounded-xl p-space-sm shadow-md relative overflow-hidden">
+<div class="absolute top-0 right-0">
+<span class="bg-primary text-on-primary text-[10px] font-bold px-2.5 py-0.5 rounded-bl-lg tracking-wider flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-on-primary animate-ping"></span>
+              HARI INI
+            </span>
+</div>
+<div class="flex items-start gap-2">
+<div class="w-10 h-10 rounded-lg bg-primary-container text-on-primary flex flex-col items-center justify-center font-bold">
+<span class="text-[10px] uppercase tracking-tight">KAM</span>
+<span class="text-body-lg-medium leading-none">24</span>
+</div>
+<div class="pr-12">
+<div class="flex items-center gap-1.5 flex-wrap">
+<span class="text-body-lg-medium font-body-lg-medium text-primary">Shift Pagi</span>
+<span class="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-label-sm font-label-sm bg-primary-fixed/40 text-on-primary-fixed border border-primary-fixed-dim">
+<span class="material-symbols-outlined text-[13px] text-primary">schedule</span>
+                  07:00 - 15:00 WIB
+                </span>
+</div>
+<div class="flex items-center gap-1 text-label-sm font-label-sm text-on-surface-variant mt-1">
+<span class="material-symbols-outlined text-[15px] text-primary">apartment</span>
+<span class="font-body-md-medium text-on-surface">Rawat Inap Melati Lt. 3</span>
+</div>
+</div>
+</div>
+<div class="mt-3 pt-2.5 border-t border-surface-container flex items-center justify-between bg-surface-container-low -mx-space-sm -mb-space-sm px-space-sm py-2 rounded-b-[10px]">
+<div class="flex items-center gap-1.5">
+<div class="flex -space-x-1.5 overflow-hidden">
+<div class="inline-block h-6 w-6 rounded-full bg-secondary text-on-secondary text-[10px] flex items-center justify-center font-bold ring-2 ring-surface-container-lowest">NR</div>
+<div class="inline-block h-6 w-6 rounded-full bg-primary text-on-primary text-[10px] flex items-center justify-center font-bold ring-2 ring-surface-container-lowest">AD</div>
+<div class="inline-block h-6 w-6 rounded-full bg-tertiary-container text-on-tertiary text-[10px] flex items-center justify-center font-bold ring-2 ring-surface-container-lowest">BS</div>
+</div>
+<span class="text-label-sm font-label-sm text-on-surface-variant">Tim Jaga: 3 Perawat</span>
+</div>
+<span class="inline-flex items-center gap-1 text-label-sm font-label-sm px-2 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed font-bold">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+              Sedang Dinas
+            </span>
+</div>
+</div>
+<!-- 5. Jumat, 25 Okt (Shift Pagi) -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-space-sm shadow-sm">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-2">
+<div class="w-10 h-10 rounded-lg bg-surface-container flex flex-col items-center justify-center border border-outline-variant/60">
+<span class="text-label-sm font-label-sm text-on-surface-variant">JUM</span>
+<span class="text-body-lg-medium font-body-lg-medium text-on-surface leading-none">25</span>
+</div>
+<div>
+<div class="flex items-center gap-1.5 flex-wrap">
+<span class="text-body-md-medium font-body-md-medium text-on-surface">Shift Pagi</span>
+<span class="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-label-sm font-label-sm bg-primary-fixed/30 text-on-primary-fixed border border-primary-fixed-dim">
+<span class="material-symbols-outlined text-[13px]">schedule</span>
+                    07:00 - 15:00 WIB
+                  </span>
+</div>
+<div class="flex items-center gap-1 text-label-sm font-label-sm text-on-surface-variant mt-1">
+<span class="material-symbols-outlined text-[14px] text-outline">apartment</span>
+<span>Rawat Inap Melati Lt. 3</span>
+</div>
+</div>
+</div>
+<span class="inline-flex items-center text-label-sm font-label-sm px-2 py-0.5 rounded-full bg-surface-container-low text-outline border border-outline-variant">
+              Mendatang
+            </span>
+</div>
+</div>
+<!-- 6. Sabtu, 26 Okt (Shift Siang) -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-space-sm shadow-sm">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-2">
+<div class="w-10 h-10 rounded-lg bg-surface-container flex flex-col items-center justify-center border border-outline-variant/60">
+<span class="text-label-sm font-label-sm text-on-surface-variant">SAB</span>
+<span class="text-body-lg-medium font-body-lg-medium text-on-surface leading-none">26</span>
+</div>
+<div>
+<div class="flex items-center gap-1.5 flex-wrap">
+<span class="text-body-md-medium font-body-md-medium text-on-surface">Shift Siang</span>
+<span class="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-label-sm font-label-sm bg-secondary-fixed/50 text-on-secondary-fixed border border-secondary-fixed-dim">
+<span class="material-symbols-outlined text-[13px]">wb_sunny</span>
+                    14:00 - 21:00 WIB
+                  </span>
+</div>
+<div class="flex items-center gap-1 text-label-sm font-label-sm text-on-surface-variant mt-1">
+<span class="material-symbols-outlined text-[14px] text-outline">apartment</span>
+<span>Rawat Inap Melati Lt. 3</span>
+</div>
+</div>
+</div>
+<span class="inline-flex items-center text-label-sm font-label-sm px-2 py-0.5 rounded-full bg-surface-container-low text-outline border border-outline-variant">
+              Mendatang
+            </span>
+</div>
+</div>
+<!-- 7. Minggu, 27 Okt (Libur Rutin) -->
+<div class="bg-surface-container-lowest/80 border border-dashed border-outline-variant rounded-xl p-space-sm shadow-sm">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-2">
+<div class="w-10 h-10 rounded-lg bg-surface-container flex flex-col items-center justify-center border border-outline-variant/60">
+<span class="text-label-sm font-label-sm text-error">MIN</span>
+<span class="text-body-lg-medium font-body-lg-medium text-error leading-none">27</span>
+</div>
+<div>
+<span class="text-body-md-medium font-body-md-medium text-on-surface">Libur Rutin / Off Day</span>
+<p class="text-label-sm font-label-sm text-on-surface-variant mt-0.5">Jatah Hak Libur Mingguan Keperawatan</p>
+</div>
+</div>
+<span class="inline-flex items-center text-label-sm font-label-sm px-2 py-0.5 rounded-full bg-surface-container text-on-surface-variant border border-outline-variant">
+              Libur Rutin
+            </span>
+</div>
+</div>
+</section>
+<!-- Shift Legend & Codes Module -->
+<section class="bg-surface-container-lowest border border-outline-variant rounded-xl p-space-sm shadow-sm flex flex-col gap-2">
+<div class="flex items-center justify-between">
+<span class="text-label-md font-label-md text-on-surface">Pedoman Kode Dinas RS</span>
+<span class="material-symbols-outlined text-outline text-[18px]">info</span>
+</div>
+<div class="grid grid-cols-2 gap-2 pt-1">
+<div class="flex items-center gap-2 p-2 rounded-lg bg-surface-container-low border border-outline-variant/50">
+<span class="w-3 h-3 rounded-full bg-primary shrink-0"></span>
+<div class="flex flex-col">
+<span class="text-label-md font-label-md text-on-surface">Pagi (P)</span>
+<span class="text-label-sm font-label-sm text-on-surface-variant">07:00 - 15:00 WIB</span>
+</div>
+</div>
+<div class="flex items-center gap-2 p-2 rounded-lg bg-surface-container-low border border-outline-variant/50">
+<span class="w-3 h-3 rounded-full bg-secondary shrink-0"></span>
+<div class="flex flex-col">
+<span class="text-label-md font-label-md text-on-surface">Siang (S)</span>
+<span class="text-label-sm font-label-sm text-on-surface-variant">14:00 - 21:00 WIB</span>
+</div>
+</div>
+<div class="flex items-center gap-2 p-2 rounded-lg bg-surface-container-low border border-outline-variant/50 col-span-2">
+<span class="w-3 h-3 rounded-full bg-on-secondary-fixed-variant shrink-0"></span>
+<div class="flex items-center justify-between w-full">
+<div class="flex flex-col">
+<span class="text-label-md font-label-md text-on-surface">Malam (M)</span>
+<span class="text-label-sm font-label-sm text-on-surface-variant">21:00 - 07:00 WIB</span>
+</div>
+<span class="text-[11px] font-medium bg-surface-container px-2 py-0.5 rounded text-secondary border border-outline-variant">Lintas Hari (+1)</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Quick Action: Shift Swap (Tukar Jaga) Banner -->
+<section class="bg-surface-container-lowest border border-outline-variant rounded-xl p-space-sm shadow-sm flex flex-col gap-2.5">
+<div class="flex items-start gap-2.5">
+<div class="w-9 h-9 rounded-lg bg-secondary-fixed/50 text-on-secondary-fixed flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[20px]">swap_horiz</span>
+</div>
+<div class="flex flex-col">
+<h3 class="text-body-md-medium font-body-md-medium text-on-surface">Ajukan Tukar Shift / Penggantian Dinas</h3>
+<p class="text-label-sm font-label-sm text-on-surface-variant mt-0.5 leading-relaxed">
+              Sesuai SOP Keperawatan, permohonan wajib diajukan maksimal 1x24 jam sebelum shift dimulai dan diverifikasi Kepala Ruangan.
+            </p>
+</div>
+</div>
+<button class="w-full h-11 bg-primary text-on-primary rounded-xl font-body-md-medium text-body-md-medium flex items-center justify-center gap-1.5 shadow-sm active:scale-[0.98] transition-all hover:bg-primary-container">
+<span class="material-symbols-outlined text-[18px]">published_with_changes</span>
+<span>Formulir Tukar Jaga Online</span>
+</button>
+</section>
+</main>
+<!-- BottomNavBar (Shared Anchor - Active tab: Jadwal) -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-gutter py-space-xs max-w-md mx-auto bg-surface-container-lowest shadow-md border-t border-outline-variant">
+<!-- 1. Beranda -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-3 py-1.5 hover:bg-surface-container active:scale-[0.98] transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[22px]">home</span>
+<span class="text-label-sm font-label-sm mt-0.5">Beranda</span>
+</a>
+<!-- 2. Riwayat -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-3 py-1.5 hover:bg-surface-container active:scale-[0.98] transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[22px]">history</span>
+<span class="text-label-sm font-label-sm mt-0.5">Riwayat</span>
+</a>
+<!-- 3. Jadwal (ACTIVE) -->
+<a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-xl px-3.5 py-1.5 active:scale-[0.98] transition-all duration-200 shadow-sm" href="#">
+<span class="material-symbols-outlined text-[22px]" style="font-variation-settings: 'FILL' 1;">calendar_month</span>
+<span class="text-label-sm font-label-sm font-bold mt-0.5 text-on-primary-container">Jadwal</span>
+</a>
+<!-- 4. Perangkat -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-3 py-1.5 hover:bg-surface-container active:scale-[0.98] transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[22px]">devices</span>
+<span class="text-label-sm font-label-sm mt-0.5">Perangkat</span>
+</a>
+<!-- 5. Profil -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-3 py-1.5 hover:bg-surface-container active:scale-[0.98] transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[22px]">account_circle</span>
+<span class="text-label-sm font-label-sm mt-0.5">Profil</span>
+</a>
+</nav>
+</div>
+</body></html>

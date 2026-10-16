@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+
+<html lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>RS Absen - Profil Karyawan &amp; Pengaturan Akun</title>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Inter Font -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS v3 -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "secondary-fixed": "#c9e6ff",
+            "on-surface": "#0b1c30",
+            "on-tertiary-fixed": "#00201d",
+            "surface": "#f8f9ff",
+            "on-error": "#ffffff",
+            "surface-container-low": "#eff4ff",
+            "on-primary-fixed": "#00201d",
+            "on-background": "#0b1c30",
+            "secondary-fixed-dim": "#89ceff",
+            "tertiary-fixed-dim": "#6bd8cb",
+            "on-secondary-fixed": "#001e2f",
+            "on-secondary-container": "#004666",
+            "primary": "#005c55",
+            "primary-fixed-dim": "#80d5cb",
+            "secondary-container": "#39b8fd",
+            "on-primary-container": "#a3faef",
+            "on-secondary": "#ffffff",
+            "surface-bright": "#f8f9ff",
+            "background": "#f8f9ff",
+            "on-secondary-fixed-variant": "#004c6e",
+            "error-container": "#ffdad6",
+            "on-tertiary-fixed-variant": "#005049",
+            "outline": "#6e7977",
+            "surface-container-lowest": "#ffffff",
+            "tertiary-fixed": "#89f5e7",
+            "surface-dim": "#cbdbf5",
+            "outline-variant": "#bdc9c6",
+            "primary-fixed": "#9cf2e8",
+            "inverse-on-surface": "#eaf1ff",
+            "surface-container-highest": "#d3e4fe",
+            "surface-container-high": "#dce9ff",
+            "secondary": "#006591",
+            "surface-tint": "#006a63",
+            "tertiary-container": "#00776d",
+            "primary-container": "#0f766e",
+            "tertiary": "#005c54",
+            "on-primary-fixed-variant": "#00504a",
+            "on-surface-variant": "#3e4947",
+            "inverse-surface": "#213145",
+            "surface-container": "#e5eeff",
+            "error": "#ba1a1a",
+            "on-tertiary": "#ffffff",
+            "inverse-primary": "#80d5cb",
+            "on-error-container": "#93000a",
+            "surface-variant": "#d3e4fe",
+            "on-tertiary-container": "#91fdef",
+            "on-primary": "#ffffff"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "space-lg": "1.5rem",
+            "margin": "1rem",
+            "margin-lg": "1.5rem",
+            "gutter": "1rem",
+            "space-xs": "0.25rem",
+            "gutter-sm": "0.75rem",
+            "space-md": "1rem",
+            "space-sm": "0.5rem",
+            "space-xl": "2rem"
+          },
+          "fontFamily": {
+            "body-lg-medium": ["Inter"],
+            "display-lg": ["Inter"],
+            "metric-mono": ["Inter"],
+            "headline-lg": ["Inter"],
+            "headline-md": ["Inter"],
+            "body-md": ["Inter"],
+            "display-lg-mobile": ["Inter"],
+            "body-md-medium": ["Inter"],
+            "label-sm": ["Inter"],
+            "label-md": ["Inter"],
+            "body-lg": ["Inter"],
+            "headline-sm": ["Inter"]
+          },
+          "fontSize": {
+            "body-lg-medium": ["16px", { "lineHeight": "24px", "fontWeight": "500" }],
+            "display-lg": ["36px", { "lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+            "metric-mono": ["32px", { "lineHeight": "36px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+            "headline-lg": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.015em", "fontWeight": "600" }],
+            "headline-md": ["20px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+            "display-lg-mobile": ["28px", { "lineHeight": "36px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+            "body-md-medium": ["14px", { "lineHeight": "20px", "fontWeight": "500" }],
+            "label-sm": ["11px", { "lineHeight": "14px", "letterSpacing": "0.01em", "fontWeight": "500" }],
+            "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600" }],
+            "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+            "headline-sm": ["18px", { "lineHeight": "24px", "fontWeight": "600" }]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface antialiased min-h-screen pb-24 selection:bg-primary-fixed selection:text-on-primary-fixed">
+<!-- Mobile Wrapper Viewport -->
+<div class="max-w-md mx-auto min-h-screen bg-surface flex flex-col relative shadow-sm">
+<!-- Top App Bar (Shared Components standard) -->
+<header class="sticky top-0 z-40 bg-surface/95 backdrop-blur-md px-margin py-space-sm flex justify-between items-center w-full max-w-md mx-auto shadow-sm">
+<div class="flex items-center gap-3">
+<div class="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[20px]" data-icon="badge">badge</span>
+</div>
+<div>
+<h1 class="text-headline-sm font-headline-sm text-primary tracking-tight">RS Absen</h1>
+<p class="text-label-sm font-label-sm text-on-surface-variant">Profil Karyawan SIMRS</p>
+</div>
+</div>
+<div class="flex items-center gap-1.5">
+<button aria-label="ID Barcode / QR" class="w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container active:scale-[0.98] transition-all" type="button">
+<span class="material-symbols-outlined text-[22px]" data-icon="qr_code_2">qr_code_2</span>
+</button>
+<button aria-label="Notifikasi" class="w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container active:scale-[0.98] transition-all relative" type="button">
+<span class="material-symbols-outlined text-[22px]" data-icon="notifications">notifications</span>
+<span class="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-error"></span>
+</button>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-1 px-margin pt-space-md pb-space-xl flex flex-col gap-5">
+<!-- Section 1: Hero Profile Card (Clinical Bento Style) -->
+<section class="bg-surface-container-lowest rounded-xl p-5 border border-outline-variant/40 shadow-sm relative overflow-hidden">
+<!-- Top hospital perimeter accent line -->
+<div class="absolute top-0 left-0 right-0 h-1.5 bg-primary-container"></div>
+<div class="flex items-start gap-4 pt-1">
+<!-- Nurse Avatar Frame with Verified Badge -->
+<div class="relative flex-shrink-0">
+<img class="w-20 h-20 rounded-full object-cover ring-2 ring-primary-fixed-dim" data-alt="A clinical headshot portrait of an Indonesian female hospital nurse named Ns. Siti Rahma wearing modern teal medical scrubs and a white modest hijab. The photo is cleanly lit with bright soft clinical lighting against a sterile hospital ward interior background. The atmosphere is professional, calm, reassuring, and trustworthy, with high-end documentary healthcare aesthetics matching a crisp medical UI." src="https://lh3.googleusercontent.com/aida-public/AB6AXuABlYx3yw3U2QsGdsltb4BOMfZvpShs1T9llTEvetEn5WcpO808QJ9sr9XBZsUIRKnO7VX4kbzGAytns_X7u8Fg0dpENDVIGvS9vMCbFMyVdMiKNumgZ4M1nOZG75OxmFCxs0x9Uu2K6w0wknn3ZKrpFICks_F-1f6s073vX7Qn-jFcPI6Swqy0JHVV90koC3BJ8sa5oTvBofSZlNdBLuOPGcRYmQ8-uAZcB_BnXkLjsd8gyzJghYum"/>
+<div class="absolute -bottom-1 -right-1 bg-surface-container-lowest p-0.5 rounded-full shadow-sm">
+<span class="material-symbols-outlined text-primary text-[20px]" data-icon="verified" data-weight="fill" style="font-variation-settings: 'FILL' 1;">verified</span>
+</div>
+</div>
+<!-- Name & Role -->
+<div class="flex-1 min-w-0">
+<div class="flex items-center gap-1.5 flex-wrap mb-1">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-label-sm font-label-sm bg-primary-fixed/50 text-on-primary-fixed border border-primary-fixed-dim">
+                PNS / ASN Aktif
+              </span>
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-label-sm font-label-sm bg-surface-container-high text-on-surface-variant">
+                Grade 3B
+              </span>
+</div>
+<h2 class="text-headline-sm font-headline-sm text-on-surface tracking-tight truncate">Ns. Siti Rahma, S.Kep</h2>
+<p class="text-body-md-medium font-body-md-medium text-primary">Perawat Ahli Pertama</p>
+<p class="text-label-sm font-label-sm text-on-surface-variant font-mono mt-0.5">NIP: 19940812 202004 2 004</p>
+</div>
+</div>
+<!-- Meta Hospital & Unit Tags -->
+<div class="mt-4 pt-3.5 border-t border-surface-container flex flex-col gap-2">
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-[18px] text-primary" data-icon="local_hospital">local_hospital</span>
+<span class="text-body-md font-body-md truncate">RSUD Sehat Sentosa Kemenkes RI</span>
+</div>
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-[18px] text-primary" data-icon="meeting_room">meeting_room</span>
+<span class="text-body-md font-body-md truncate">Instalasi Rawat Inap Melati (Lantai 3)</span>
+</div>
+</div>
+<!-- Quick Attendance Metric Pill -->
+<div class="mt-4 bg-surface-container-low rounded-xl p-3 flex justify-between items-center">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded-lg bg-surface-container-lowest flex items-center justify-center text-primary shadow-xs">
+<span class="material-symbols-outlined text-[18px]" data-icon="fact_check">fact_check</span>
+</div>
+<div>
+<p class="text-label-sm font-label-sm text-on-surface-variant">Kehadiran Bulan Ini</p>
+<p class="text-body-md-medium font-body-md-medium text-on-surface">100% Tepat Waktu</p>
+</div>
+</div>
+<span class="text-label-md font-label-md px-2.5 py-1 bg-surface-container-lowest text-primary rounded-full border border-primary-fixed-dim shadow-xs">
+            21/21 Hari
+          </span>
+</div>
+</section>
+<!-- Section 2: Supervisor & Work Unit Info Card -->
+<section class="bg-surface-container-lowest rounded-xl p-4 border border-outline-variant/40 shadow-sm flex flex-col gap-3.5">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[20px]" data-icon="supervisor_account">supervisor_account</span>
+<h3 class="text-headline-sm font-headline-sm text-on-surface text-[15px]">Unit Kerja &amp; Pengawas Shift</h3>
+</div>
+<span class="text-label-sm font-label-sm text-on-surface-variant bg-surface-container px-2 py-0.5 rounded-md">Roster Aktif</span>
+</div>
+<!-- Karu Detail -->
+<div class="bg-surface-container-low/70 rounded-xl p-3 flex items-center justify-between gap-3">
+<div class="flex items-center gap-3 min-w-0">
+<div class="w-10 h-10 rounded-full bg-secondary-fixed/50 flex-shrink-0 flex items-center justify-center text-secondary font-headline-sm text-label-md">
+              HP
+            </div>
+<div class="min-w-0">
+<span class="text-label-sm font-label-sm text-primary uppercase font-bold tracking-wider">Atasan Langsung / Karu</span>
+<p class="text-body-md-medium font-body-md-medium text-on-surface truncate">dr. Hendra Prasetya, Sp.PD</p>
+<p class="text-label-sm font-label-sm text-on-surface-variant">Kepala Ruangan Rawat Inap</p>
+</div>
+</div>
+<a class="flex-shrink-0 px-2.5 py-1.5 rounded-lg bg-surface-container-lowest border border-outline-variant/60 flex items-center gap-1.5 text-on-surface text-label-md hover:bg-surface-container transition-colors" href="#">
+<span class="material-symbols-outlined text-[16px] text-primary" data-icon="phone_in_talk">phone_in_talk</span>
+<span>Ext. 302</span>
+</a>
+</div>
+<!-- Supervisor Keperawatan & Roster Grid -->
+<div class="grid grid-cols-2 gap-2.5 text-body-md font-body-md">
+<div class="p-2.5 rounded-xl bg-surface-container-low/50 border border-surface-container">
+<p class="text-label-sm font-label-sm text-on-surface-variant">Supervisor Kep.</p>
+<p class="text-body-md-medium font-body-md-medium text-on-surface text-[13px] mt-0.5 truncate">Ns. Bambang S., M.Kep</p>
+</div>
+<div class="p-2.5 rounded-xl bg-surface-container-low/50 border border-surface-container">
+<p class="text-label-sm font-label-sm text-on-surface-variant">Grup Roster</p>
+<p class="text-body-md-medium font-body-md-medium text-primary text-[13px] mt-0.5 truncate">Tim C (Pagi-Siang-Malam)</p>
+</div>
+</div>
+</section>
+<!-- Section 3: Keamanan, Perangkat & Privasi -->
+<section class="flex flex-col gap-2">
+<h3 class="text-label-md font-label-md text-on-surface-variant px-1 tracking-wider uppercase">
+          KEAMANAN &amp; PERANGKAT TERIKAT
+        </h3>
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant/40 divide-y divide-surface-container shadow-sm overflow-hidden">
+<!-- Item 1: Perangkat Saya -->
+<a class="flex items-center justify-between p-3.5 hover:bg-surface-container/60 active:scale-[0.99] transition-all" href="#">
+<div class="flex items-center gap-3 min-w-0">
+<div class="w-9 h-9 rounded-lg bg-primary-fixed/40 text-primary flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-[20px]" data-icon="devices_other">devices_other</span>
+</div>
+<div class="min-w-0">
+<p class="text-body-md-medium font-body-md-medium text-on-surface">Perangkat Saya</p>
+<div class="flex items-center gap-1.5 mt-0.5">
+<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+<p class="text-label-sm font-label-sm text-on-surface-variant truncate">Samsung Galaxy A54 5G • Aktif</p>
+</div>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline-variant text-[20px]" data-icon="chevron_right">chevron_right</span>
+</a>
+<!-- Item 2: Verifikasi Biometrik Wajah -->
+<a class="flex items-center justify-between p-3.5 hover:bg-surface-container/60 active:scale-[0.99] transition-all" href="#">
+<div class="flex items-center gap-3 min-w-0">
+<div class="w-9 h-9 rounded-lg bg-primary-fixed/40 text-primary flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-[20px]" data-icon="face">face</span>
+</div>
+<div class="min-w-0">
+<p class="text-body-md-medium font-body-md-medium text-on-surface">Verifikasi Biometrik Wajah</p>
+<p class="text-label-sm font-label-sm text-on-surface-variant truncate">Data wajah tersimpan • Validitas 98.4%</p>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-label-sm font-label-sm bg-primary/10 text-primary font-medium">
+                Terdaftar
+              </span>
+<span class="material-symbols-outlined text-outline-variant text-[20px]" data-icon="chevron_right">chevron_right</span>
+</div>
+</a>
+<!-- Item 3: Ubah Password SIMRS -->
+<a class="flex items-center justify-between p-3.5 hover:bg-surface-container/60 active:scale-[0.99] transition-all" href="#">
+<div class="flex items-center gap-3 min-w-0">
+<div class="w-9 h-9 rounded-lg bg-surface-container text-on-surface-variant flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-[20px]" data-icon="lock_reset">lock_reset</span>
+</div>
+<div class="min-w-0">
+<p class="text-body-md-medium font-body-md-medium text-on-surface">Ubah Password SIMRS</p>
+<p class="text-label-sm font-label-sm text-on-surface-variant truncate">Terakhir diperbarui 45 hari lalu</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline-variant text-[20px]" data-icon="chevron_right">chevron_right</span>
+</a>
+<!-- Item 4: Informasi Privasi & Kebijakan Data -->
+<a class="flex items-center justify-between p-3.5 hover:bg-surface-container/60 active:scale-[0.99] transition-all" href="#">
+<div class="flex items-center gap-3 min-w-0">
+<div class="w-9 h-9 rounded-lg bg-surface-container text-on-surface-variant flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-[20px]" data-icon="privacy_tip">privacy_tip</span>
+</div>
+<div class="min-w-0">
+<p class="text-body-md-medium font-body-md-medium text-on-surface">Informasi Privasi &amp; Kebijakan Data</p>
+<p class="text-label-sm font-label-sm text-on-surface-variant truncate">Kerahasiaan rekam medis &amp; log geolokasi</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline-variant text-[20px]" data-icon="chevron_right">chevron_right</span>
+</a>
+</div>
+</section>
+<!-- Section 4: Pengaturan Umum -->
+<section class="flex flex-col gap-2">
+<h3 class="text-label-md font-label-md text-on-surface-variant px-1 tracking-wider uppercase">
+          PENGATURAN UMUM
+        </h3>
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant/40 divide-y divide-surface-container shadow-sm overflow-hidden">
+<!-- Shift Notification Switch -->
+<div class="p-3.5 flex items-center justify-between gap-3">
+<div class="flex items-center gap-3 min-w-0">
+<div class="w-9 h-9 rounded-lg bg-surface-container text-on-surface-variant flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-[20px]" data-icon="schedule">schedule</span>
+</div>
+<div class="min-w-0">
+<p class="text-body-md-medium font-body-md-medium text-on-surface">Notifikasi Shift &amp; Presensi</p>
+<p class="text-label-sm font-label-sm text-on-surface-variant truncate">Pengingat dinas 30 menit sebelum shift</p>
+</div>
+</div>
+<!-- Custom Accessible Toggle -->
+<label class="relative inline-flex items-center cursor-pointer flex-shrink-0">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-container"></div>
+</label>
+</div>
+<!-- Bahasa -->
+<a class="flex items-center justify-between p-3.5 hover:bg-surface-container/60 active:scale-[0.99] transition-all" href="#">
+<div class="flex items-center gap-3 min-w-0">
+<div class="w-9 h-9 rounded-lg bg-surface-container text-on-surface-variant flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-[20px]" data-icon="translate">translate</span>
+</div>
+<div class="min-w-0">
+<p class="text-body-md-medium font-body-md-medium text-on-surface">Bahasa Aplikasi</p>
+<p class="text-label-sm font-label-sm text-on-surface-variant truncate">Bahasa Indonesia (Default SIMRS)</p>
+</div>
+</div>
+<div class="flex items-center gap-1.5 text-on-surface-variant">
+<span class="text-label-md font-label-md">ID</span>
+<span class="material-symbols-outlined text-outline-variant text-[20px]" data-icon="chevron_right">chevron_right</span>
+</div>
+</a>
+<!-- Helpdesk SIMRS -->
+<a class="flex items-center justify-between p-3.5 hover:bg-surface-container/60 active:scale-[0.99] transition-all" href="#">
+<div class="flex items-center gap-3 min-w-0">
+<div class="w-9 h-9 rounded-lg bg-surface-container text-on-surface-variant flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-[20px]" data-icon="help_outline">help_outline</span>
+</div>
+<div class="min-w-0">
+<p class="text-body-md-medium font-body-md-medium text-on-surface">Bantuan &amp; Kontak Helpdesk SIMRS</p>
+<p class="text-label-sm font-label-sm text-on-surface-variant truncate">Hubungi IT Support Rumah Sakit (24 Jam)</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline-variant text-[20px]" data-icon="chevron_right">chevron_right</span>
+</a>
+</div>
+</section>
+<!-- Section 5: Logout Action & Footer -->
+<section class="pt-2 flex flex-col gap-3">
+<!-- Danger Logout Button -->
+<button class="w-full h-[50px] rounded-xl border border-error/40 bg-surface-container-lowest text-error font-body-lg-medium flex items-center justify-center gap-2 hover:bg-error-container/30 active:scale-[0.98] transition-all shadow-xs" onclick="document.getElementById('logoutModal').classList.remove('hidden')" type="button">
+<span class="material-symbols-outlined text-[20px]" data-icon="logout">logout</span>
+<span>Keluar Akun</span>
+</button>
+<!-- Version & Build Info -->
+<div class="text-center pt-2 pb-4">
+<p class="text-label-sm font-label-sm text-on-surface-variant/70">
+            RS Absen SIMRS Mobile v3.4.2 • Build 202410-Prod
+          </p>
+<p class="text-label-sm font-label-sm text-on-surface-variant/50 mt-0.5">
+            Terhubung ke Server Kemenkes RI Cloud Gateway
+          </p>
+</div>
+</section>
+</main>
+<!-- Modal Safeguard Confirmation for Logout -->
+<div class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-on-surface/40 backdrop-blur-sm transition-opacity" id="logoutModal">
+<div class="bg-surface-container-lowest rounded-xl max-w-xs w-full p-5 border border-outline-variant shadow-lg flex flex-col gap-4 text-center">
+<div class="w-12 h-12 rounded-full bg-error-container text-error flex items-center justify-center mx-auto">
+<span class="material-symbols-outlined text-[24px]" data-icon="logout">logout</span>
+</div>
+<div>
+<h4 class="text-headline-sm font-headline-sm text-on-surface text-[16px]">Konfirmasi Keluar Akun</h4>
+<p class="text-body-md font-body-md text-on-surface-variant mt-1.5 text-[13px]">
+            Sesi aktif Anda di perangkat ini akan diakhiri. Pastikan presensi dinas hari ini telah terverifikasi.
+          </p>
+</div>
+<div class="flex gap-2 pt-1">
+<button class="flex-1 py-2.5 rounded-lg border border-outline-variant bg-surface text-on-surface text-body-md-medium font-body-md-medium hover:bg-surface-container transition-all" onclick="document.getElementById('logoutModal').classList.add('hidden')" type="button">
+            Batal
+          </button>
+<button class="flex-1 py-2.5 rounded-lg bg-error text-on-error text-body-md-medium font-body-md-medium hover:opacity-90 active:scale-[0.98] transition-all" onclick="document.getElementById('logoutModal').classList.add('hidden')" type="button">
+            Ya, Keluar
+          </button>
+</div>
+</div>
+</div>
+<!-- Bottom Navigation Bar (Shared Components standard: 5 Destinations with Profil Active) -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-gutter py-space-xs max-w-md mx-auto bg-surface-container-lowest shadow-md">
+<!-- Beranda (Inactive) -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-3 py-1.5 active:scale-[0.98] transition-all hover:bg-surface-container rounded-xl" href="#">
+<span class="material-symbols-outlined text-[22px]" data-icon="home">home</span>
+<span class="text-label-sm font-label-sm mt-0.5">Beranda</span>
+</a>
+<!-- Riwayat (Inactive) -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-3 py-1.5 active:scale-[0.98] transition-all hover:bg-surface-container rounded-xl" href="#">
+<span class="material-symbols-outlined text-[22px]" data-icon="history">history</span>
+<span class="text-label-sm font-label-sm mt-0.5">Riwayat</span>
+</a>
+<!-- Jadwal (Inactive) -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-3 py-1.5 active:scale-[0.98] transition-all hover:bg-surface-container rounded-xl" href="#">
+<span class="material-symbols-outlined text-[22px]" data-icon="calendar_month">calendar_month</span>
+<span class="text-label-sm font-label-sm mt-0.5">Jadwal</span>
+</a>
+<!-- Perangkat (Inactive) -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-3 py-1.5 active:scale-[0.98] transition-all hover:bg-surface-container rounded-xl" href="#">
+<span class="material-symbols-outlined text-[22px]" data-icon="devices">devices</span>
+<span class="text-label-sm font-label-sm mt-0.5">Perangkat</span>
+</a>
+<!-- Profil (ACTIVE - Exact Match mapped to Profile page) -->
+<a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-xl px-3 py-1.5 active:scale-[0.98] transition-all" href="#">
+<span class="material-symbols-outlined text-[22px]" data-icon="account_circle" data-weight="fill" style="font-variation-settings: 'FILL' 1;">account_circle</span>
+<span class="text-label-sm font-label-sm font-bold mt-0.5">Profil</span>
+</a>
+</nav>
+</div>
+</body></html>

@@ -1,0 +1,6 @@
+# Copy to android/key.properties and fill from CI secrets. NEVER commit key.properties.
+# storeFile can be absolute or relative to android/app/.
+storePassword=CHANGE_ME
+keyAlias=face_absen
+keyPassword=CHANGE_ME
+storeFile=../release-keystore.jks

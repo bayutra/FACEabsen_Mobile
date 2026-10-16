@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+
+<html lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Formulir Pengajuan Izin &amp; Cuti - RS Absen</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "on-secondary-fixed-variant": "#004c6e",
+            "surface-container-highest": "#d3e4fe",
+            "on-secondary-container": "#004666",
+            "inverse-surface": "#213145",
+            "inverse-on-surface": "#eaf1ff",
+            "tertiary-fixed": "#89f5e7",
+            "on-secondary-fixed": "#001e2f",
+            "on-primary": "#ffffff",
+            "outline": "#6e7977",
+            "tertiary": "#005c54",
+            "on-tertiary": "#ffffff",
+            "surface-dim": "#cbdbf5",
+            "on-error": "#ffffff",
+            "on-tertiary-container": "#91fdef",
+            "secondary-fixed-dim": "#89ceff",
+            "surface": "#f8f9ff",
+            "primary-fixed": "#9cf2e8",
+            "secondary-fixed": "#c9e6ff",
+            "on-secondary": "#ffffff",
+            "surface-container": "#e5eeff",
+            "inverse-primary": "#80d5cb",
+            "surface-container-low": "#eff4ff",
+            "surface-tint": "#006a63",
+            "on-surface-variant": "#3e4947",
+            "on-primary-container": "#a3faef",
+            "secondary": "#006591",
+            "surface-variant": "#d3e4fe",
+            "surface-container-lowest": "#ffffff",
+            "on-tertiary-fixed": "#00201d",
+            "primary-container": "#0f766e",
+            "secondary-container": "#39b8fd",
+            "on-background": "#0b1c30",
+            "background": "#f8f9ff",
+            "error-container": "#ffdad6",
+            "on-surface": "#0b1c30",
+            "primary-fixed-dim": "#80d5cb",
+            "on-primary-fixed-variant": "#00504a",
+            "on-error-container": "#93000a",
+            "primary": "#005c55",
+            "error": "#ba1a1a",
+            "tertiary-fixed-dim": "#6bd8cb",
+            "tertiary-container": "#00776d",
+            "on-primary-fixed": "#00201d",
+            "outline-variant": "#bdc9c6",
+            "surface-container-high": "#dce9ff",
+            "surface-bright": "#f8f9ff",
+            "on-tertiary-fixed-variant": "#005049"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "space-md": "1rem",
+            "space-xs": "0.25rem",
+            "gutter-sm": "0.75rem",
+            "gutter": "1rem",
+            "margin-lg": "1.5rem",
+            "space-xl": "2rem",
+            "space-sm": "0.5rem",
+            "margin": "1rem",
+            "space-lg": "1.5rem"
+          },
+          "fontFamily": {
+            "headline-sm": ["Inter"],
+            "headline-lg": ["Inter"],
+            "metric-mono": ["Inter"],
+            "display-lg": ["Inter"],
+            "label-md": ["Inter"],
+            "display-lg-mobile": ["Inter"],
+            "body-lg-medium": ["Inter"],
+            "body-md-medium": ["Inter"],
+            "headline-md": ["Inter"],
+            "label-sm": ["Inter"],
+            "body-md": ["Inter"],
+            "body-lg": ["Inter"]
+          },
+          "fontSize": {
+            "headline-sm": ["18px", { "lineHeight": "24px", "fontWeight": "600" }],
+            "headline-lg": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.015em", "fontWeight": "600" }],
+            "metric-mono": ["32px", { "lineHeight": "36px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+            "display-lg": ["36px", { "lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+            "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600" }],
+            "display-lg-mobile": ["28px", { "lineHeight": "36px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+            "body-lg-medium": ["16px", { "lineHeight": "24px", "fontWeight": "500" }],
+            "body-md-medium": ["14px", { "lineHeight": "20px", "fontWeight": "500" }],
+            "headline-md": ["20px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "label-sm": ["11px", { "lineHeight": "14px", "letterSpacing": "0.01em", "fontWeight": "500" }],
+            "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+            "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface font-body-md text-on-surface antialiased selection:bg-primary-fixed selection:text-on-primary-fixed">
+<!-- Mobile Viewport Container (Hospital Staff Handheld Layout) -->
+<div class="max-w-md mx-auto min-h-screen bg-surface flex flex-col shadow-sm pb-10">
+<!-- Top App Bar (Task-Focused Header with Back Action; Bottom Navigation Suppressed by Destination Rule) -->
+<header class="sticky top-0 z-40 bg-surface-container-lowest/95 backdrop-blur shadow-sm px-margin py-space-sm flex items-center justify-between">
+<div class="flex items-center gap-space-sm">
+<button aria-label="Kembali ke Beranda" class="w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container active:scale-[0.98] transition-all" type="button">
+<span class="material-symbols-outlined text-[24px]">arrow_back</span>
+</button>
+<div>
+<h1 class="font-headline-sm text-headline-sm text-on-surface tracking-tight">Pengajuan Izin &amp; Cuti</h1>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Formulir Dispensasi &amp; Cuti SIMRS</p>
+</div>
+</div>
+<button aria-label="Bantuan Panduan Cuti" class="w-9 h-9 rounded-full flex items-center justify-center text-secondary hover:bg-surface-container active:scale-[0.98] transition-all" type="button">
+<span class="material-symbols-outlined text-[22px]">help</span>
+</button>
+</header>
+<main class="flex-1 px-margin pt-space-md space-y-space-md">
+<!-- Employee Identity Summary Card (Bento Style with Clinical Badge) -->
+<section class="bg-surface-container-lowest border border-outline-variant/60 rounded-xl p-space-md shadow-sm relative overflow-hidden">
+<div class="absolute top-0 left-0 right-0 h-1 bg-primary"></div>
+<div class="flex items-start gap-space-sm">
+<div class="w-12 h-12 rounded-xl bg-surface-container flex items-center justify-center text-primary font-headline-sm flex-shrink-0 shadow-inner">
+<span class="material-symbols-outlined text-[28px]" data-weight="fill" style="font-variation-settings: 'FILL' 1;">badge</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between gap-1">
+<h2 class="font-headline-sm text-headline-sm text-on-surface truncate">Ns. Siti Rahma, S.Kep</h2>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant truncate">Perawat Ahli Pertama - Ruang Rawat Inap Melati</p>
+<p class="font-label-sm text-label-sm text-outline mt-0.5">NIP: 19940812-2020-04</p>
+</div>
+</div>
+<!-- Quota Chip Banner -->
+<div class="mt-3 pt-3 border-t border-outline-variant/40 flex items-center justify-between">
+<span class="font-label-md text-label-md text-on-surface-variant flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-primary">event_available</span>
+            Hak Cuti Tahunan 2024
+          </span>
+<span class="inline-flex items-center gap-1 bg-primary-fixed/40 text-primary font-label-md text-label-md px-2.5 py-1 rounded-full border border-primary/20">
+<span class="material-symbols-outlined text-[14px]" data-weight="fill" style="font-variation-settings: 'FILL' 1;">verified</span>
+            Sisa Cuti: 8 Hari
+          </span>
+</div>
+</section>
+<!-- Section 1: Jenis Pengajuan (Radio Bento Grid) -->
+<section class="space-y-space-xs">
+<div class="flex items-center justify-between">
+<label class="font-body-lg-medium text-body-lg-medium text-on-surface flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-primary inline-block"></span>
+            1. Jenis Dispensasi / Cuti
+          </label>
+<span class="font-label-sm text-label-sm text-primary font-medium">Wajib Diisi</span>
+</div>
+<div class="grid grid-cols-2 gap-space-xs pt-1">
+<!-- Active Option: Cuti Tahunan -->
+<label class="relative flex flex-col p-3 rounded-xl border-2 border-primary bg-primary-container/10 cursor-pointer shadow-sm transition-all active:scale-[0.98]">
+<input checked="" class="sr-only" name="leave_type" type="radio" value="cuti_tahunan"/>
+<div class="flex items-center justify-between w-full">
+<span class="material-symbols-outlined text-primary text-[24px]" data-weight="fill" style="font-variation-settings: 'FILL' 1;">beach_access</span>
+<span class="material-symbols-outlined text-primary text-[18px]" data-weight="fill" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<span class="mt-2 font-body-md-medium text-body-md-medium text-primary">Cuti Tahunan</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Potong Kuota (Sisa 8)</span>
+</label>
+<!-- Option 2: Sakit / Rawat Medis -->
+<label class="relative flex flex-col p-3 rounded-xl border border-outline-variant bg-surface-container-lowest hover:bg-surface-container-low cursor-pointer shadow-sm transition-all active:scale-[0.98]">
+<input class="sr-only" name="leave_type" type="radio" value="sakit"/>
+<div class="flex items-center justify-between w-full">
+<span class="material-symbols-outlined text-secondary text-[24px]">medical_services</span>
+<span class="w-4 h-4 rounded-full border border-outline inline-block"></span>
+</div>
+<span class="mt-2 font-body-md-medium text-body-md-medium text-on-surface">Sakit / Rawat Medis</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Lampirkan Ket. Dokter</span>
+</label>
+<!-- Option 3: Izin Keperluan Pribadi -->
+<label class="relative flex flex-col p-3 rounded-xl border border-outline-variant bg-surface-container-lowest hover:bg-surface-container-low cursor-pointer shadow-sm transition-all active:scale-[0.98]">
+<input class="sr-only" name="leave_type" type="radio" value="pribadi"/>
+<div class="flex items-center justify-between w-full">
+<span class="material-symbols-outlined text-on-surface-variant text-[24px]">person</span>
+<span class="w-4 h-4 rounded-full border border-outline inline-block"></span>
+</div>
+<span class="mt-2 font-body-md-medium text-body-md-medium text-on-surface">Izin Pribadi</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Maksimal 2 Hari</span>
+</label>
+<!-- Option 4: Dinas Luar / Diklat -->
+<label class="relative flex flex-col p-3 rounded-xl border border-outline-variant bg-surface-container-lowest hover:bg-surface-container-low cursor-pointer shadow-sm transition-all active:scale-[0.98]">
+<input class="sr-only" name="leave_type" type="radio" value="dinas"/>
+<div class="flex items-center justify-between w-full">
+<span class="material-symbols-outlined text-on-surface-variant text-[24px]">school</span>
+<span class="w-4 h-4 rounded-full border border-outline inline-block"></span>
+</div>
+<span class="mt-2 font-body-md-medium text-body-md-medium text-on-surface">Dinas / Diklat</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Disposisi Direksi</span>
+</label>
+</div>
+<!-- Option 5: Lainnya (Full Width Compact) -->
+<label class="flex items-center justify-between px-3 py-2.5 rounded-xl border border-outline-variant bg-surface-container-lowest hover:bg-surface-container-low cursor-pointer transition-all active:scale-[0.98]">
+<div class="flex items-center gap-2">
+<input class="text-primary focus:ring-primary h-4 w-4" name="leave_type" type="radio" value="lainnya"/>
+<span class="font-body-md text-body-md text-on-surface">Alasan Lainnya (Melahirkan, Kedukaan, Khusus)</span>
+</div>
+<span class="material-symbols-outlined text-[18px] text-outline">more_horiz</span>
+</label>
+</section>
+<!-- Section 2: Rentang Tanggal (Date Range Selector) -->
+<section class="bg-surface-container-lowest border border-outline-variant/60 rounded-xl p-space-md shadow-sm space-y-space-sm">
+<div class="flex items-center justify-between">
+<label class="font-body-lg-medium text-body-lg-medium text-on-surface flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-primary inline-block"></span>
+            2. Rentang Waktu Dispensasi
+          </label>
+<span class="font-label-md text-label-md text-secondary font-medium flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">calendar_today</span> Kalender Shift
+          </span>
+</div>
+<div class="grid grid-cols-2 gap-space-sm">
+<div class="border border-outline-variant rounded-xl p-2.5 bg-surface hover:border-secondary transition-all">
+<label class="block font-label-sm text-label-sm text-on-surface-variant">Tanggal Mulai</label>
+<div class="flex items-center justify-between mt-1">
+<span class="font-body-lg-medium text-body-lg-medium text-on-surface font-semibold">28 Okt 2024</span>
+<span class="material-symbols-outlined text-primary text-[20px]">event</span>
+</div>
+<span class="font-label-sm text-label-sm text-outline">Senin (Dinas Pagi)</span>
+</div>
+<div class="border border-outline-variant rounded-xl p-2.5 bg-surface hover:border-secondary transition-all">
+<label class="block font-label-sm text-label-sm text-on-surface-variant">Tanggal Selesai</label>
+<div class="flex items-center justify-between mt-1">
+<span class="font-body-lg-medium text-body-lg-medium text-on-surface font-semibold">30 Okt 2024</span>
+<span class="material-symbols-outlined text-primary text-[20px]">event</span>
+</div>
+<span class="font-label-sm text-label-sm text-outline">Rabu (Dinas Sore)</span>
+</div>
+</div>
+<!-- Calculated Summary Chip -->
+<div class="bg-surface-container-high/40 rounded-lg p-2.5 flex items-center justify-between border border-outline-variant/30">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[20px]">timelapse</span>
+<span class="font-body-md-medium text-body-md-medium text-on-surface">Total: 3 Hari Kerja</span>
+</div>
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-label-sm font-label-sm bg-primary text-on-primary">
+            Mengganti 3 Shift Dinas
+          </span>
+</div>
+</section>
+<!-- Section 3: Delegasi / Pengganti Jaga Handover -->
+<section class="bg-surface-container-lowest border border-outline-variant/60 rounded-xl p-space-md shadow-sm space-y-space-xs">
+<label class="font-body-lg-medium text-body-lg-medium text-on-surface flex items-center justify-between">
+<span class="flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-primary inline-block"></span>
+            3. Delegasi / Pengganti Jaga Shift
+          </span>
+<span class="text-label-sm font-label-sm text-primary font-medium">SOP Bangsal</span>
+</label>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Wajib menunjuk rekan perawat yang tidak berdinas pada tanggal yang sama.</p>
+<!-- Handover Card -->
+<div class="mt-2 flex items-center justify-between p-3 rounded-xl border border-secondary/40 bg-surface-container-low/60">
+<div class="flex items-center gap-3 min-w-0">
+<div class="w-10 h-10 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-headline-sm text-headline-sm flex-shrink-0">
+              HT
+            </div>
+<div class="truncate">
+<p class="font-body-md-medium text-body-md-medium text-on-surface truncate">Ns. Hendra Triyono, S.Kep</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant truncate">Perawat Pelaksana - Ruang Melati</p>
+<div class="inline-flex items-center gap-1 mt-0.5 text-primary text-label-sm font-label-sm">
+<span class="material-symbols-outlined text-[14px]" data-weight="fill" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                Telah Konfirmasi Kesediaan
+              </div>
+</div>
+</div>
+<button aria-label="Ganti rekan jaga" class="p-2 rounded-lg text-secondary hover:bg-surface-container active:scale-[0.98]" type="button">
+<span class="material-symbols-outlined text-[20px]">swap_horiz</span>
+</button>
+</div>
+</section>
+<!-- Section 4: Alasan / Keterangan Keperluan -->
+<section class="bg-surface-container-lowest border border-outline-variant/60 rounded-xl p-space-md shadow-sm space-y-space-xs">
+<div class="flex items-center justify-between">
+<label class="font-body-lg-medium text-body-lg-medium text-on-surface flex items-center gap-1.5" for="leave_reason">
+<span class="w-2 h-2 rounded-full bg-primary inline-block"></span>
+            4. Alasan / Keterangan Keperluan
+          </label>
+<span class="font-label-sm text-label-sm text-outline">78/300 Karakter</span>
+</div>
+<textarea class="w-full rounded-xl border border-outline-variant bg-surface px-3 py-2 text-body-md font-body-md text-on-surface focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all placeholder:text-outline" id="leave_reason" placeholder="Tuliskan keterangan detail keperluan izin Anda..." rows="3">Keperluan keluarga mendesak di luar kota dan telah koordinasi tukar jaga dengan Karu.</textarea>
+</section>
+<!-- Section 5: Lampiran Dokumen Bukti -->
+<section class="bg-surface-container-lowest border border-outline-variant/60 rounded-xl p-space-md shadow-sm space-y-space-sm">
+<div class="flex items-center justify-between">
+<label class="font-body-lg-medium text-body-lg-medium text-on-surface flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-primary inline-block"></span>
+            5. Lampiran Dokumen Bukti
+          </label>
+<span class="font-label-sm text-label-sm text-outline">Maks. 5 MB (PDF/JPG)</span>
+</div>
+<!-- Uploaded Item View -->
+<div class="flex items-center justify-between p-2.5 rounded-xl border border-outline-variant/80 bg-surface">
+<div class="flex items-center gap-2.5 min-w-0">
+<div class="w-9 h-9 rounded-lg bg-error-container text-on-error-container flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-[20px]">picture_as_pdf</span>
+</div>
+<div class="truncate">
+<p class="font-body-md-medium text-body-md-medium text-on-surface truncate">surat_keterangan_izin.pdf</p>
+<div class="flex items-center gap-2 text-label-sm font-label-sm text-outline">
+<span>1.4 MB</span>
+<span>•</span>
+<span class="text-primary flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[13px]" data-weight="fill" style="font-variation-settings: 'FILL' 1;">check_circle</span> Terverifikasi
+                </span>
+</div>
+</div>
+</div>
+<button aria-label="Hapus file lampiran" class="p-1.5 rounded-lg text-outline hover:text-error hover:bg-error-container/30 active:scale-[0.98] transition-all" type="button">
+<span class="material-symbols-outlined text-[20px]">delete</span>
+</button>
+</div>
+<!-- Secondary Upload Button -->
+<button class="w-full py-2.5 px-3 border border-dashed border-secondary rounded-xl text-secondary font-body-md-medium text-body-md-medium flex items-center justify-center gap-2 hover:bg-surface-container active:scale-[0.98] transition-all" type="button">
+<span class="material-symbols-outlined text-[18px]">add_circle</span>
+          + Tambah Dokumen Pendukung
+        </button>
+</section>
+<!-- Section 6: Checkbox Persetujuan SOP -->
+<section class="bg-surface-container-low/80 border border-outline-variant/60 rounded-xl p-3.5 flex items-start gap-3">
+<input checked="" class="mt-0.5 rounded text-primary focus:ring-primary h-5 w-5 border-outline cursor-pointer" id="agreement_check" type="checkbox"/>
+<label class="font-body-md text-body-md text-on-surface cursor-pointer select-none" for="agreement_check">
+          Saya menyatakan bahwa data permohonan ini benar dan telah dikoordinasikan secara lisan/tertulis dengan <span class="font-semibold text-primary">Kepala Ruangan (Karu)</span> atau Supervisor bangsal.
+        </label>
+</section>
+<!-- Action Buttons Container (Thumb-Zone Optimized) -->
+<div class="pt-2 space-y-space-xs pb-4">
+<!-- Primary Attendance Action (Ajukan) -->
+<button class="w-full h-[52px] bg-primary-container text-on-primary hover:bg-primary rounded-xl font-body-lg-medium text-body-lg-medium flex items-center justify-center gap-2 shadow-md active:scale-[0.98] transition-all" type="button">
+<span class="material-symbols-outlined text-[22px]">send</span>
+          Ajukan Permohonan Izin
+        </button>
+<!-- Secondary Ghost Action -->
+<button class="w-full h-11 bg-transparent border border-outline-variant text-on-surface hover:bg-surface-container active:scale-[0.98] rounded-xl font-body-md-medium text-body-md-medium flex items-center justify-center gap-1.5 transition-all" type="button">
+<span class="material-symbols-outlined text-[18px]">close</span>
+          Batal &amp; Kembali
+        </button>
+</div>
+</main>
+</div>
+</body></html>

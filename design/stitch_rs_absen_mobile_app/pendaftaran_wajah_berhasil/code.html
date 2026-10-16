@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+
+<html lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>RS Absen - Registrasi Wajah Berhasil</title>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Inter Font Family -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS v3 CDN -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "on-tertiary-fixed": "#00201d",
+            "surface-container-high": "#dce9ff",
+            "surface": "#f8f9ff",
+            "on-error-container": "#93000a",
+            "inverse-surface": "#213145",
+            "outline-variant": "#bdc9c6",
+            "surface-dim": "#cbdbf5",
+            "on-primary-fixed": "#00201d",
+            "on-surface-variant": "#3e4947",
+            "secondary-container": "#39b8fd",
+            "surface-container-lowest": "#ffffff",
+            "on-primary-fixed-variant": "#00504a",
+            "on-secondary-fixed-variant": "#004c6e",
+            "on-tertiary-container": "#91fdef",
+            "primary-fixed-dim": "#80d5cb",
+            "surface-tint": "#006a63",
+            "background": "#f8f9ff",
+            "on-tertiary-fixed-variant": "#005049",
+            "outline": "#6e7977",
+            "on-background": "#0b1c30",
+            "surface-container-low": "#eff4ff",
+            "on-error": "#ffffff",
+            "surface-container-highest": "#d3e4fe",
+            "tertiary-container": "#00776d",
+            "error": "#ba1a1a",
+            "primary": "#005c55",
+            "primary-container": "#0f766e",
+            "surface-container": "#e5eeff",
+            "on-secondary": "#ffffff",
+            "on-surface": "#0b1c30",
+            "on-secondary-fixed": "#001e2f",
+            "surface-bright": "#f8f9ff",
+            "tertiary": "#005c54",
+            "inverse-primary": "#80d5cb",
+            "on-tertiary": "#ffffff",
+            "error-container": "#ffdad6",
+            "secondary-fixed": "#c9e6ff",
+            "secondary": "#006591",
+            "secondary-fixed-dim": "#89ceff",
+            "on-primary": "#ffffff",
+            "on-primary-container": "#a3faef",
+            "tertiary-fixed": "#89f5e7",
+            "inverse-on-surface": "#eaf1ff",
+            "tertiary-fixed-dim": "#6bd8cb",
+            "on-secondary-container": "#004666",
+            "surface-variant": "#d3e4fe",
+            "primary-fixed": "#9cf2e8"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "gutter-sm": "0.75rem",
+            "space-xs": "0.25rem",
+            "margin": "1rem",
+            "gutter": "1rem",
+            "margin-lg": "1.5rem",
+            "space-lg": "1.5rem",
+            "space-md": "1rem",
+            "space-xl": "2rem",
+            "space-sm": "0.5rem"
+          },
+          "fontFamily": {
+            "headline-sm": ["Inter"],
+            "metric-mono": ["Inter"],
+            "headline-md": ["Inter"],
+            "body-md": ["Inter"],
+            "body-lg-medium": ["Inter"],
+            "body-md-medium": ["Inter"],
+            "label-sm": ["Inter"],
+            "display-lg": ["Inter"],
+            "body-lg": ["Inter"],
+            "label-md": ["Inter"],
+            "display-lg-mobile": ["Inter"],
+            "headline-lg": ["Inter"]
+          },
+          "fontSize": {
+            "headline-sm": ["18px", { "lineHeight": "24px", "fontWeight": "600" }],
+            "metric-mono": ["32px", { "lineHeight": "36px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+            "headline-md": ["20px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+            "body-lg-medium": ["16px", { "lineHeight": "24px", "fontWeight": "500" }],
+            "body-md-medium": ["14px", { "lineHeight": "20px", "fontWeight": "500" }],
+            "label-sm": ["11px", { "lineHeight": "14px", "letterSpacing": "0.01em", "fontWeight": "500" }],
+            "display-lg": ["36px", { "lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+            "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+            "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600" }],
+            "display-lg-mobile": ["28px", { "lineHeight": "36px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+            "headline-lg": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.015em", "fontWeight": "600" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      display: inline-block;
+      vertical-align: middle;
+      line-height: 1;
+    }
+    @keyframes pulseRing {
+      0% { transform: scale(0.97); opacity: 0.8; }
+      50% { transform: scale(1.03); opacity: 1; }
+      100% { transform: scale(0.97); opacity: 0.8; }
+    }
+    .ring-pulse-subtle {
+      animation: pulseRing 3.5s ease-in-out infinite;
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface font-body-md antialiased min-h-screen flex justify-center selection:bg-primary selection:text-on-primary">
+<!-- Mobile Viewport Canvas Container (Max 440px handheld frame) -->
+<!-- Note on Shell Visibility: This screen is a linear onboarding / modal task-completion screen (Step 3 of 3 Success State) with a focused confirmation journey, hence the persistent BottomNavBar shell is suppressed as per guidelines to prioritize the canvas. -->
+<main class="w-full max-w-md bg-surface min-h-screen flex flex-col justify-between shadow-[0px_4px_24px_rgba(15,23,42,0.06)] relative overflow-x-hidden">
+<!-- Top Navigation Anchor (Task Header) -->
+<header class="w-full px-margin pt-space-lg pb-space-sm flex items-center justify-between z-10">
+<button aria-label="Tutup" class="w-10 h-10 rounded-full flex items-center justify-center bg-surface-container-lowest text-on-surface hover:bg-surface-container transition-all duration-200 active:scale-[0.98] shadow-sm" type="button">
+<span class="material-symbols-outlined text-[20px]" data-icon="close">close</span>
+</button>
+<div class="flex flex-col items-center">
+<h1 class="font-headline-sm text-headline-sm text-on-surface font-semibold tracking-tight">
+          Registrasi Wajah
+        </h1>
+<span class="font-label-sm text-label-sm text-on-surface-variant font-medium">Layanan SIMRS Mobile</span>
+</div>
+<!-- Badge Langkah 3/3 Selesai (Emerald vibrant theme-compatible badge) -->
+<div class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary-fixed text-on-primary-fixed border border-primary-fixed-dim/40 shadow-sm">
+<span class="material-symbols-outlined text-[14px]" data-icon="check_circle" data-weight="fill" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="font-label-sm text-label-sm font-semibold">3/3 Selesai</span>
+</div>
+</header>
+<!-- Main Content Area: Biometric Success Presentation -->
+<section class="flex-1 px-margin py-space-sm flex flex-col items-center text-center justify-center">
+<!-- Success Visual Ring & Face Sample Container -->
+<div class="relative my-space-md flex items-center justify-center">
+<!-- Ambient Radial Glow -->
+<div class="absolute w-56 h-56 rounded-full bg-primary-fixed/30 blur-2xl pointer-events-none"></div>
+<!-- Outer Progress Circle Ring (100% Complete) -->
+<div class="relative w-44 h-44 rounded-full p-1.5 ring-pulse-subtle bg-gradient-to-tr from-primary via-primary-fixed to-secondary-container shadow-[0_8px_20px_rgba(0,92,85,0.18)] flex items-center justify-center">
+<!-- Inner Circular Viewport Frame -->
+<div class="w-full h-full rounded-full bg-surface-container-lowest p-1 overflow-hidden relative flex items-center justify-center">
+<!-- Captured Nurse Face Sample -->
+<img class="w-full h-full object-cover rounded-full" data-alt="Close up photographic portrait of an Indonesian hospital nurse in modern clean healthcare scrub uniform and medical head covering, smiling gently with reassuring and calm clinical expression. Bright natural hospital ward ambient lighting with clean subtle teal accents in the background, sharp focus, medical identity badge format." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD4__j7v_FXT_m3_-pknK72VaqB1twfjnHNn5O_YSvPftCcCZ_efXlPF092_uM6br8Is7TmVZn7hG1vxgW7yjHwtx-XpRlY20YOGB0hsuGAfSCdZ3s-PDyZzn8s8Wzu2_Y6y3qK9_4Lyoj33m4-SCYU1ALJOXJqR4nWzJie7z8uNm2xx6k8DVnTDdIgdmMSEkl-JJa9Zjm1GXL3h4NAwan87VguKykRgPXWC9sWLnCoPiANm04sXI6M"/>
+<!-- Holographic Medical Grid & Scan Success Overlay -->
+<div class="absolute inset-0 bg-primary/10 rounded-full flex items-center justify-center pointer-events-none border border-primary-fixed/50"></div>
+<!-- Verification Badge Anchored Over Face Viewport Base -->
+<div class="absolute bottom-1 px-2.5 py-0.5 rounded-full bg-inverse-surface/90 backdrop-blur-sm border border-outline-variant/30 flex items-center gap-1 shadow-sm">
+<span class="material-symbols-outlined text-[12px] text-tertiary-fixed" data-icon="verified_user" data-weight="fill" style="font-variation-settings: 'FILL' 1;">verified_user</span>
+<span class="font-label-sm text-[10px] text-inverse-on-surface font-medium whitespace-nowrap">Template Terdaftar</span>
+</div>
+</div>
+<!-- Celebratory Checkmark Stamp Pill (Upper-Right Offset) -->
+<div class="absolute -top-1 -right-1 w-11 h-11 rounded-full bg-primary text-on-primary flex items-center justify-center shadow-lg border-[3px] border-surface">
+<span class="material-symbols-outlined text-[24px]" data-icon="check" data-weight="fill" style="font-variation-settings: 'FILL' 1;">check</span>
+</div>
+<!-- Liveness Sensor Stamp Pill (Bottom-Left Offset) -->
+<div class="absolute -bottom-1 -left-1 w-9 h-9 rounded-full bg-surface-container-lowest text-primary flex items-center justify-center shadow-md border border-outline-variant/40">
+<span class="material-symbols-outlined text-[18px]" data-icon="face" data-weight="fill" style="font-variation-settings: 'FILL' 1;">face</span>
+</div>
+</div>
+</div>
+<!-- Celebration & Confirmation Headlines -->
+<div class="space-y-1.5 max-w-xs mt-1">
+<div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary-fixed/40 text-on-primary-fixed-variant">
+<span class="material-symbols-outlined text-[14px]" data-icon="task_alt">task_alt</span>
+<span class="font-label-md text-label-md font-semibold tracking-wide">Validasi SIMRS Berhasil</span>
+</div>
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile font-bold text-on-surface pt-1">
+          Pendaftaran Wajah Berhasil!
+        </h2>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed px-1">
+          Data biometrik Anda telah terverifikasi dan terikat dengan ID Karyawan &amp; Perangkat resmi RSUD Sehat Sentosa.
+        </p>
+</div>
+<!-- Summary Details Card (Bento Style Information Architecture) -->
+<div class="w-full mt-space-md text-left bg-surface-container-lowest rounded-xl border border-outline-variant/50 shadow-sm p-4 divide-y divide-surface-container">
+<!-- Hospital Staff ID & Name -->
+<div class="pb-3 flex items-start justify-between gap-2">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-surface-container-high/60 flex items-center justify-center text-primary flex-shrink-0">
+<span class="material-symbols-outlined text-[20px]" data-icon="badge">badge</span>
+</div>
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant font-medium">NIP / ID Karyawan</p>
+<p class="font-body-md-medium text-body-md-medium text-on-surface font-semibold tracking-tight">19940812-2020-04</p>
+<p class="font-label-sm text-label-sm text-primary font-medium">Ns. Siti Rahma, S.Kep</p>
+</div>
+</div>
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-label-sm font-label-sm bg-surface-container text-on-surface-variant">
+            Perawat Rawat Inap
+          </span>
+</div>
+<!-- Biometric Match Metric -->
+<div class="py-2.5 flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-primary" data-icon="fingerprint">fingerprint</span>
+<span class="font-body-md text-body-md text-on-surface-variant">Kualitas Biometrik</span>
+</div>
+<div class="text-right">
+<span class="font-body-md-medium text-body-md-medium text-primary font-bold">Skor Akurasi 98.4%</span>
+<span class="font-label-sm text-[11px] text-on-surface-variant block font-medium">(Optimal)</span>
+</div>
+</div>
+<!-- Security & Encryption Standard -->
+<div class="py-2.5 flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-tertiary" data-icon="lock">lock</span>
+<span class="font-body-md text-body-md text-on-surface-variant">Status Enkripsi</span>
+</div>
+<div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-surface-container-low text-on-surface text-label-sm font-medium border border-outline-variant/30">
+<span class="w-1.5 h-1.5 rounded-full bg-primary inline-block"></span>
+<span>SIMRS (AES-256)</span>
+</div>
+</div>
+<!-- Registration Timestamp -->
+<div class="pt-2.5 flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant" data-icon="schedule">schedule</span>
+<span class="font-body-md text-body-md text-on-surface-variant">Tanggal Registrasi</span>
+</div>
+<div class="font-body-md text-body-md text-on-surface font-medium tabular-nums">
+            24 Okt 2024, 08:15 WIB
+          </div>
+</div>
+</div>
+<!-- Quick Trust Guarantee Pill -->
+<div class="w-full flex items-center justify-center gap-2 mt-3 px-2">
+<span class="material-symbols-outlined text-[16px] text-primary" data-icon="shield_with_heart" data-weight="fill" style="font-variation-settings: 'FILL' 1;">shield_with_heart</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant text-center">
+          Sesuai standar privasi data rekam medis &amp; Permenkes RI
+        </span>
+</div>
+</section>
+<!-- Bottom Action Anchor (Lower Ergonomic Thumb Zone) -->
+<footer class="w-full px-margin pt-space-sm pb-space-lg bg-surface/90 backdrop-blur-md flex flex-col gap-2.5 border-t border-outline-variant/30">
+<!-- Primary Attendance Entry Button -->
+<a class="w-full min-h-[52px] h-[52px] rounded-xl bg-primary-container text-on-primary flex items-center justify-center gap-2 shadow-sm font-body-lg-medium text-body-lg-medium active:scale-[0.98] hover:bg-primary transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2" href="#">
+<span>Masuk ke Beranda Presensi</span>
+<span class="material-symbols-outlined text-[20px]" data-icon="arrow_forward">arrow_forward</span>
+</a>
+<!-- Secondary Dual Action Links -->
+<div class="w-full flex items-center justify-between pt-1 px-1">
+<button class="font-label-md text-label-md text-primary font-semibold hover:underline inline-flex items-center gap-1 active:scale-[0.98] transition-all py-1.5" type="button">
+<span class="material-symbols-outlined text-[16px]" data-icon="frame_person">frame_person</span>
+<span>Uji Coba Presensi Wajah</span>
+</button>
+<button class="font-label-md text-label-md text-on-surface-variant hover:text-on-surface inline-flex items-center gap-1 active:scale-[0.98] transition-all py-1.5" type="button">
+<span class="material-symbols-outlined text-[16px]" data-icon="info">info</span>
+<span>Informasi Privasi &amp; SPO</span>
+</button>
+</div>
+<!-- iOS/Android Ergonomic Home Bar Indicator -->
+<div class="w-32 h-1 bg-outline-variant/60 rounded-full mx-auto mt-2"></div>
+</footer>
+</main>
+<script>
+    // Lightweight tactile micro-interaction
+    document.addEventListener('DOMContentLoaded', () => {
+      const primaryBtn = document.querySelector('a');
+      if (primaryBtn) {
+        primaryBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          primaryBtn.classList.add('opacity-90');
+          setTimeout(() => {
+            primaryBtn.classList.remove('opacity-90');
+          }, 200);
+        });
+      }
+    });
+  </script>
+</body></html>

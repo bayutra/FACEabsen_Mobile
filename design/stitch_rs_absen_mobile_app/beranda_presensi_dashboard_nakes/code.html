@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+
+<html lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>RS Absen - Presensi Rumah Sakit</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "on-primary-container": "#a3faef",
+            "on-tertiary-fixed-variant": "#005049",
+            "surface-variant": "#d3e4fe",
+            "secondary": "#006591",
+            "primary": "#005c55",
+            "on-background": "#0b1c30",
+            "tertiary": "#005c54",
+            "secondary-fixed": "#c9e6ff",
+            "outline": "#6e7977",
+            "on-tertiary-container": "#91fdef",
+            "inverse-on-surface": "#eaf1ff",
+            "inverse-primary": "#80d5cb",
+            "on-secondary-container": "#004666",
+            "tertiary-container": "#00776d",
+            "on-primary-fixed-variant": "#00504a",
+            "on-surface": "#0b1c30",
+            "inverse-surface": "#213145",
+            "outline-variant": "#bdc9c6",
+            "tertiary-fixed": "#89f5e7",
+            "surface-tint": "#006a63",
+            "tertiary-fixed-dim": "#6bd8cb",
+            "on-secondary-fixed-variant": "#004c6e",
+            "surface-container-low": "#eff4ff",
+            "surface-bright": "#f8f9ff",
+            "surface-container": "#e5eeff",
+            "primary-fixed": "#9cf2e8",
+            "on-primary-fixed": "#00201d",
+            "on-secondary-fixed": "#001e2f",
+            "primary-fixed-dim": "#80d5cb",
+            "surface-container-high": "#dce9ff",
+            "secondary-fixed-dim": "#89ceff",
+            "surface": "#f8f9ff",
+            "on-secondary": "#ffffff",
+            "surface-dim": "#cbdbf5",
+            "error-container": "#ffdad6",
+            "on-tertiary": "#ffffff",
+            "background": "#f8f9ff",
+            "on-error": "#ffffff",
+            "on-primary": "#ffffff",
+            "on-tertiary-fixed": "#00201d",
+            "on-error-container": "#93000a",
+            "on-surface-variant": "#3e4947",
+            "surface-container-lowest": "#ffffff",
+            "secondary-container": "#39b8fd",
+            "error": "#ba1a1a",
+            "primary-container": "#0f766e",
+            "surface-container-highest": "#d3e4fe"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "space-sm": "0.5rem",
+            "gutter-sm": "0.75rem",
+            "gutter": "1rem",
+            "space-md": "1rem",
+            "margin-lg": "1.5rem",
+            "margin": "1rem",
+            "space-xs": "0.25rem",
+            "space-lg": "1.5rem",
+            "space-xl": "2rem"
+          },
+          "fontFamily": {
+            "label-md": ["Inter"],
+            "label-sm": ["Inter"],
+            "display-lg-mobile": ["Inter"],
+            "body-md": ["Inter"],
+            "metric-mono": ["Inter"],
+            "body-lg": ["Inter"],
+            "body-md-medium": ["Inter"],
+            "headline-md": ["Inter"],
+            "headline-sm": ["Inter"],
+            "display-lg": ["Inter"],
+            "body-lg-medium": ["Inter"],
+            "headline-lg": ["Inter"]
+          },
+          "fontSize": {
+            "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600"}],
+            "label-sm": ["11px", {"lineHeight": "14px", "letterSpacing": "0.01em", "fontWeight": "500"}],
+            "display-lg-mobile": ["28px", {"lineHeight": "36px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+            "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+            "metric-mono": ["32px", {"lineHeight": "36px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+            "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+            "body-md-medium": ["14px", {"lineHeight": "20px", "fontWeight": "500"}],
+            "headline-md": ["20px", {"lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+            "headline-sm": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
+            "display-lg": ["36px", {"lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+            "body-lg-medium": ["16px", {"lineHeight": "24px", "fontWeight": "500"}],
+            "headline-lg": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.015em", "fontWeight": "600"}]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      display: inline-block;
+      vertical-align: middle;
+      line-height: 1;
+    }
+    .material-symbols-outlined.fill {
+      font-variation-settings: 'FILL' 1;
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface antialiased min-h-screen pb-24 selection:bg-primary selection:text-on-primary">
+<!-- Mobile Wrapper Container max-w-md -->
+<div class="max-w-md mx-auto min-h-screen flex flex-col bg-background relative shadow-sm">
+<!-- Top Navigation Bar (Shared Component Execution) -->
+<header class="bg-surface dark:bg-inverse-surface border-b border-outline-variant dark:border-outline shadow-sm dark:shadow-none flex justify-between items-center w-full px-margin py-space-sm max-w-md mx-auto sticky top-0 z-40">
+<div class="flex items-center space-x-3">
+<div class="relative w-10 h-10 rounded-full overflow-hidden border border-outline-variant">
+<img class="w-full h-full object-cover" data-alt="Close up portrait photograph of an Indonesian professional female nurse wearing clean teal hospital scrubs and a neat medical headscarf with an ID badge lanyard, soft diffuse hospital lighting, modern clinical healthcare setting, professional confident expression." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBAfVFapcqDGqwf_R6VGbRT58Ekej6FyrgoTZsp7brEVe06LTYd4rMsjh6xWImU6rI5tQtNqXhTyG8NC-Ikz0Yg6V6-q2JxkYMjS698ncShNsYDriFVmZayIW1PzPU7zOSu_RcHVxZC-yhJTCuE_lzBuTnaBejyBj3OU4-fAwlWz4TYd-7jeLVB9dWTIOZrHff5Jg46cozbrDiZ-pqCzAg0xQQW9OYdMVKstRVDZRU_mYixYmgy6nGh"/>
+</div>
+<div class="flex flex-col">
+<span class="text-label-sm font-label-sm text-on-surface-variant">Selamat Pagi,</span>
+<span class="text-headline-sm font-headline-sm text-primary dark:text-primary-fixed tracking-tight">Ns. Siti Rahma, S.Kep</span>
+</div>
+</div>
+<div class="flex items-center space-x-1">
+<button aria-label="Notifikasi" class="relative p-2 rounded-full hover:bg-surface-container active:scale-[0.98] transition-all duration-200 text-on-surface-variant focus:outline-none">
+<span class="material-symbols-outlined text-primary">notifications</span>
+<span class="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-error rounded-full border-2 border-surface"></span>
+</button>
+</div>
+</header>
+<!-- Sub-header Department Context Bar -->
+<div class="px-margin pt-space-sm pb-space-xs flex items-center justify-between">
+<div class="flex items-center space-x-1.5 text-on-surface-variant">
+<span class="material-symbols-outlined text-primary text-[18px]">local_hospital</span>
+<p class="text-label-sm font-label-sm truncate">Instalasi Rawat Inap Melati - RSUD Sehat Sentosa</p>
+</div>
+<span class="inline-flex items-center px-2 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-container text-label-sm font-label-sm">
+        PNS / Tetap
+      </span>
+</div>
+<!-- Main Content Canvas -->
+<main class="flex-1 px-margin space-y-space-md mt-space-xs">
+<!-- Shift Card: Shift Hari Ini -->
+<section class="bg-surface-container-lowest rounded-xl border border-outline-variant p-4 shadow-sm relative overflow-hidden">
+<!-- Top border accent for active status -->
+<div class="absolute top-0 left-0 right-0 h-1 bg-primary"></div>
+<div class="flex justify-between items-start mb-3 pt-1">
+<div>
+<div class="flex items-center space-x-2">
+<span class="text-label-md font-label-md text-on-surface-variant">Penugasan Hari Ini</span>
+</div>
+<h2 class="text-headline-md font-headline-md text-on-surface mt-0.5">Shift Pagi (Aktif)</h2>
+</div>
+<span class="inline-flex items-center px-2.5 py-1 rounded-full bg-surface-container-high text-primary border border-primary-fixed text-label-md font-label-md">
+<span class="w-1.5 h-1.5 rounded-full bg-primary mr-1.5 animate-pulse"></span>
+            07:00 - 15:00 WIB
+          </span>
+</div>
+<!-- Location & Geofence Details -->
+<div class="space-y-2.5 bg-surface-container-low rounded-lg p-3 border border-surface-variant">
+<div class="flex items-start space-x-2.5">
+<span class="material-symbols-outlined text-primary text-[20px] mt-0.5">meeting_room</span>
+<div class="flex-1">
+<p class="text-body-md-medium font-body-md-medium text-on-surface leading-tight">Ruang Rawat Inap Melati Lt. 3</p>
+<p class="text-label-sm font-label-sm text-on-surface-variant mt-0.5">Kamar Rawat: Bed 301 - 308 (Isolasi &amp; Perawatan)</p>
+</div>
+</div>
+<div class="h-px bg-surface-container w-full"></div>
+<div class="flex items-center justify-between">
+<div class="flex items-center space-x-2 text-primary font-body-md-medium text-body-md-medium">
+<span class="material-symbols-outlined text-[18px]">verified_user</span>
+<span class="text-label-md font-label-md">Radius RS Valid</span>
+</div>
+<div class="flex items-center space-x-1 text-on-surface-variant text-label-sm font-label-sm">
+<span class="material-symbols-outlined text-[16px] text-tertiary">near_me</span>
+<span>15m dari titik presensi</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Status Presensi & Biometric Attendance Card -->
+<section class="bg-surface-container-lowest rounded-xl border border-outline-variant p-4 shadow-sm space-y-4">
+<div class="flex items-center justify-between border-b border-surface-container pb-3">
+<div class="flex items-center space-x-2">
+<span class="material-symbols-outlined text-primary">timer</span>
+<h3 class="text-headline-sm font-headline-sm text-on-surface">Status Presensi</h3>
+</div>
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full bg-surface-bright text-primary border border-primary-fixed text-label-md font-label-md">
+<span class="material-symbols-outlined text-[14px] mr-1 text-primary">check_circle</span>
+            Tepat Waktu
+          </span>
+</div>
+<!-- Check-in & Check-out metric times -->
+<div class="grid grid-cols-2 gap-3">
+<div class="bg-surface rounded-lg p-3 border border-outline-variant">
+<div class="flex items-center justify-between mb-1">
+<span class="text-label-sm font-label-sm text-on-surface-variant">Absen Masuk</span>
+<span class="material-symbols-outlined text-primary text-[18px]">login</span>
+</div>
+<div class="text-headline-md font-headline-md text-primary font-metric-mono tracking-tight">06:48 <span class="text-label-md font-label-md text-on-surface-variant font-normal">WIB</span></div>
+<div class="flex items-center mt-1.5 text-label-sm font-label-sm text-primary">
+<span class="material-symbols-outlined text-[14px] mr-1">task_alt</span>
+              Terverifikasi Wajah
+            </div>
+</div>
+<div class="bg-surface rounded-lg p-3 border border-outline-variant">
+<div class="flex items-center justify-between mb-1">
+<span class="text-label-sm font-label-sm text-on-surface-variant">Absen Pulang</span>
+<span class="material-symbols-outlined text-outline text-[18px]">logout</span>
+</div>
+<div class="text-headline-md font-headline-md text-outline font-metric-mono tracking-tight">--:-- <span class="text-label-md font-label-md text-on-surface-variant font-normal">WIB</span></div>
+<div class="flex items-center mt-1.5 text-label-sm font-label-sm text-on-surface-variant">
+<span class="material-symbols-outlined text-[14px] mr-1">schedule</span>
+              Belum Absen Pulang
+            </div>
+</div>
+</div>
+<!-- Clinical protocol / Health badge checklist -->
+<div class="flex items-center justify-between px-3 py-2 bg-surface-container rounded-lg text-label-sm font-label-sm text-on-surface-variant">
+<div class="flex items-center space-x-1.5">
+<span class="material-symbols-outlined text-primary text-[18px]">masks</span>
+<span>APD &amp; Protokol Masker</span>
+</div>
+<span class="font-body-md-medium text-primary flex items-center">
+            Lolos Pengecekan
+            <span class="material-symbols-outlined text-[16px] ml-1">check</span>
+</span>
+</div>
+<!-- Primary CTA Attendance Button -->
+<div class="pt-1">
+<button class="w-full h-[52px] bg-primary-container text-on-primary-container rounded-xl font-body-lg-medium text-body-lg-medium flex items-center justify-center space-x-2.5 shadow-sm active:scale-[0.98] transition-all duration-200 hover:bg-tertiary-container focus:outline-none" id="cta-presence">
+<span class="material-symbols-outlined text-[24px]">face</span>
+<span>Absen Masuk (Verifikasi Wajah)</span>
+</button>
+<p class="text-center text-label-sm font-label-sm text-on-surface-variant mt-2 flex items-center justify-center">
+<span class="material-symbols-outlined text-[14px] text-tertiary mr-1">sync_alt</span>
+            Tekan untuk beralih atau validasi pembaruan Absen Pulang
+          </p>
+</div>
+</section>
+<!-- Quick Action Grid (4 Columns) -->
+<section class="space-y-2">
+<h3 class="text-label-md font-label-md text-on-surface-variant px-1">Menu Utama Karyawan</h3>
+<div class="grid grid-cols-4 gap-2.5">
+<!-- Item 1: Riwayat -->
+<a class="flex flex-col items-center bg-surface-container-lowest p-3 rounded-xl border border-outline-variant active:scale-[0.98] hover:bg-surface-container transition-all" href="#">
+<div class="w-12 h-12 rounded-xl bg-surface-container flex items-center justify-center text-primary mb-1.5">
+<span class="material-symbols-outlined text-[24px]">history</span>
+</div>
+<span class="text-label-md font-label-md text-on-surface text-center">Riwayat</span>
+</a>
+<!-- Item 2: Koreksi -->
+<a class="flex flex-col items-center bg-surface-container-lowest p-3 rounded-xl border border-outline-variant active:scale-[0.98] hover:bg-surface-container transition-all" href="#">
+<div class="w-12 h-12 rounded-xl bg-secondary-fixed flex items-center justify-center text-secondary mb-1.5">
+<span class="material-symbols-outlined text-[24px]">edit_document</span>
+</div>
+<span class="text-label-md font-label-md text-on-surface text-center">Koreksi</span>
+</a>
+<!-- Item 3: Izin/Cuti -->
+<a class="flex flex-col items-center bg-surface-container-lowest p-3 rounded-xl border border-outline-variant active:scale-[0.98] hover:bg-surface-container transition-all" href="#">
+<div class="w-12 h-12 rounded-xl bg-surface-container-high flex items-center justify-center text-tertiary mb-1.5">
+<span class="material-symbols-outlined text-[24px]">event_available</span>
+</div>
+<span class="text-label-md font-label-md text-on-surface text-center">Izin/Cuti</span>
+</a>
+<!-- Item 4: Jadwal -->
+<a class="flex flex-col items-center bg-surface-container-lowest p-3 rounded-xl border border-outline-variant active:scale-[0.98] hover:bg-surface-container transition-all" href="#">
+<div class="w-12 h-12 rounded-xl bg-surface-container flex items-center justify-center text-primary mb-1.5">
+<span class="material-symbols-outlined text-[24px]">calendar_month</span>
+</div>
+<span class="text-label-md font-label-md text-on-surface text-center">Jadwal</span>
+</a>
+</div>
+</section>
+<!-- Hospital Shift Ward Handover Announcement Widget -->
+<section class="bg-surface-container-lowest rounded-xl border border-outline-variant p-4 shadow-sm space-y-2.5">
+<div class="flex items-center justify-between">
+<div class="flex items-center space-x-2">
+<div class="p-1 rounded bg-surface-container-high text-primary">
+<span class="material-symbols-outlined text-[20px]">assignment_turned_in</span>
+</div>
+<span class="text-body-md-medium font-body-md-medium text-on-surface">Operan Jaga Bangsal Melati</span>
+</div>
+<span class="text-label-sm font-label-sm text-on-surface-variant">14:45 WIB</span>
+</div>
+<p class="text-body-md font-body-md text-on-surface-variant bg-surface rounded-lg p-2.5 border border-surface-variant">
+          Pukul 14:45 WIB mohon berkumpul di Nurse Station 3 untuk serah terima laporan SBAR pasien bed 304 (Post-Op Apendiktomi) dan ronde dokter spesialis anak.
+        </p>
+<div class="flex items-center justify-between text-label-sm font-label-sm pt-1">
+<span class="text-on-surface-variant flex items-center">
+<span class="material-symbols-outlined text-[16px] mr-1 text-primary">group</span>
+            Penanggung Jawab: Ns. Hendra, S.Kep
+          </span>
+<button class="text-primary font-label-md hover:underline focus:outline-none">
+            Lihat Rekam Medis
+          </button>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation Bar (Shared Component Execution) -->
+<!-- Destination count: 5, Active: Beranda -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-gutter py-space-xs max-w-md mx-auto bg-surface-container-lowest dark:bg-inverse-surface border-t border-outline-variant dark:border-outline shadow-md dark:shadow-none">
+<!-- Beranda (Active) -->
+<a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container dark:bg-primary-fixed dark:text-on-primary-fixed rounded-xl px-3 py-1.5 active:scale-[0.98] transition-all duration-200" href="#">
+<span class="material-symbols-outlined fill text-[22px]">home</span>
+<span class="text-label-sm font-label-sm mt-0.5">Beranda</span>
+</a>
+<!-- Riwayat (Inactive) -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-3 py-1.5 hover:bg-surface-container dark:hover:bg-surface-variant active:scale-[0.98] transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[22px]">history</span>
+<span class="text-label-sm font-label-sm mt-0.5">Riwayat</span>
+</a>
+<!-- Jadwal (Inactive) -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-3 py-1.5 hover:bg-surface-container dark:hover:bg-surface-variant active:scale-[0.98] transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[22px]">calendar_month</span>
+<span class="text-label-sm font-label-sm mt-0.5">Jadwal</span>
+</a>
+<!-- Perangkat (Inactive) -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-3 py-1.5 hover:bg-surface-container dark:hover:bg-surface-variant active:scale-[0.98] transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[22px]">devices</span>
+<span class="text-label-sm font-label-sm mt-0.5">Perangkat</span>
+</a>
+<!-- Profil (Inactive) -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-3 py-1.5 hover:bg-surface-container dark:hover:bg-surface-variant active:scale-[0.98] transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[22px]">account_circle</span>
+<span class="text-label-sm font-label-sm mt-0.5">Profil</span>
+</a>
+</nav>
+</div>
+<!-- Interactive State Micro-Script -->
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const ctaBtn = document.getElementById('cta-presence');
+      let isCheckedIn = true;
+
+      ctaBtn.addEventListener('click', () => {
+        isCheckedIn = !isCheckedIn;
+        if (!isCheckedIn) {
+          ctaBtn.classList.remove('bg-primary-container', 'text-on-primary-container');
+          ctaBtn.classList.add('bg-secondary', 'text-on-secondary');
+          ctaBtn.innerHTML = `
+            <span class="material-symbols-outlined text-[24px]">logout</span>
+            <span>Absen Pulang (Verifikasi Wajah)</span>
+          `;
+        } else {
+          ctaBtn.classList.remove('bg-secondary', 'text-on-secondary');
+          ctaBtn.classList.add('bg-primary-container', 'text-on-primary-container');
+          ctaBtn.innerHTML = `
+            <span class="material-symbols-outlined text-[24px]">face</span>
+            <span>Absen Masuk (Verifikasi Wajah)</span>
+          `;
+        }
+      });
+    });
+  </script>
+</body></html>

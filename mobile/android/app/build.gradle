@@ -1,0 +1,112 @@
+plugins {
+    id "com.android.application"
+    id "kotlin-android"
+    // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
+    id "dev.flutter.flutter-gradle-plugin"
+}
+
+def localProperties = new Properties()
+def localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.withReader("UTF-8") { reader ->
+        localProperties.load(reader)
+    }
+}
+
+def flutterVersionCode = localProperties.getProperty("flutter.versionCode")
+if (flutterVersionCode == null) {
+    flutterVersionCode = "1"
+}
+
+def flutterVersionName = localProperties.getProperty("flutter.versionName")
+if (flutterVersionName == null) {
+    flutterVersionName = "1.0"
+}
+
+def keystoreProperties = new Properties()
+def keystorePropertiesFile = rootProject.file("key.properties")
+if (keystorePropertiesFile.exists()) {
+    keystorePropertiesFile.withReader("UTF-8") { reader ->
+        keystoreProperties.load(reader)
+    }
+}
+
+android {
+    namespace = "com.hospital.faceid.face_absen_mobile"
+    compileSdk = flutter.compileSdkVersion
+    ndkVersion = flutter.ndkVersion
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
+    }
+
+    // tflite_flutter 0.9.5 comes with prebuilt libtensorflowlite_c.so in its
+    // pub cache but never wires them into jniLibs (dlopen failed on device).
+    // Fix: ship the copied ABIs from src/main/jniLibs ourselves.
+    sourceSets {
+        main {
+            jniLibs.srcDirs += 'src/main/jniLibs'
+        }
+    }
+
+    defaultConfig {
+        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
+        applicationId = "com.hospital.faceid.face_absen_mobile"
+        // You can update the following values to match your application needs.
+        // For more information, see: https://docs.flutter.dev/deployment/android#reviewing-the-gradle-build-configuration.
+        // Floor Android 5.0 (API 21): batas bawah maksimum semua plugin native
+        // (ML Kit + camera butuh 21). JANGAN naikkan tanpa cek docs/ANDROID_COMPAT.md.
+        // 32-bit lawas (armeabi-v7a) tetap didukung via ABI default Flutter.
+        minSdk = 21
+        targetSdk = flutter.targetSdkVersion
+        versionCode = flutterVersionCode.toInteger()
+        versionName = flutterVersionName
+    }
+
+    signingConfigs {
+        // Created only when android/key.properties exists (hospital keystore).
+        // Local dev without the file keeps using the debug keystore with a warning.
+        if (keystorePropertiesFile.exists()) {
+            release {
+                keyAlias = keystoreProperties.getProperty("keyAlias")
+                keyPassword = keystoreProperties.getProperty("keyPassword")
+                storeFile = file(keystoreProperties.getProperty("storeFile"))
+                storePassword = keystoreProperties.getProperty("storePassword")
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            // Release MUST be signed with the hospital keystore.
+            // CI/release builds fail fast when android/key.properties is absent
+            // (see gradle check below). Local `flutter run --release` without
+            // key.properties falls back to debug keys with an explicit warning.
+            if (keystorePropertiesFile.exists()) {
+                signingConfig = signingConfigs.release
+            } else {
+                println("WARNING: android/key.properties missing — release is debug-signed. DO NOT ship to Play.")
+                signingConfig = signingConfigs.debug
+            }
+        }
+    }
+}
+
+// Fail fast for real release artifacts when the signing key is absent.
+gradle.projectsEvaluated {
+    def releaseTasks = gradle.startParameter.taskNames.findAll { t ->
+        t.contains("assembleRelease") || t.contains("bundleRelease") || t.contains("appBundleRelease")
+    }
+    if (!releaseTasks.isEmpty() && !keystorePropertiesFile.exists()
+            && System.getenv("ALLOW_DEBUG_SIGNED_RELEASE") != "1") {
+        throw new GradleException(
+            "Release build requires android/key.properties (storeFile/storePassword/keyAlias/keyPassword). " +
+            "Copy android/key.properties.example and fill it from CI secrets, " +
+            "or set ALLOW_DEBUG_SIGNED_RELEASE=1 for local testing only.")
+    }
+}
+
+flutter {
+    source = "../.."
+}

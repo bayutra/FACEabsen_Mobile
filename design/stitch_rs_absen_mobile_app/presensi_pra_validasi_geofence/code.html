@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+
+<html lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Pra-Validasi Presensi - RS Absen</title>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Inter Google Font -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS v3 -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Configuration with Theme Tokens -->
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "surface-container-high": "#dce9ff",
+            "surface-container-low": "#eff4ff",
+            "outline-variant": "#bdc9c6",
+            "on-primary-fixed": "#00201d",
+            "on-primary": "#ffffff",
+            "inverse-on-surface": "#eaf1ff",
+            "on-secondary-fixed": "#001e2f",
+            "surface-container-lowest": "#ffffff",
+            "on-tertiary-fixed-variant": "#005049",
+            "primary": "#005c55",
+            "on-secondary-fixed-variant": "#004c6e",
+            "on-background": "#0b1c30",
+            "on-primary-fixed-variant": "#00504a",
+            "surface-variant": "#d3e4fe",
+            "secondary-fixed-dim": "#89ceff",
+            "surface-bright": "#f8f9ff",
+            "error-container": "#ffdad6",
+            "inverse-primary": "#80d5cb",
+            "on-surface": "#0b1c30",
+            "background": "#f8f9ff",
+            "surface": "#f8f9ff",
+            "on-tertiary": "#ffffff",
+            "secondary-fixed": "#c9e6ff",
+            "error": "#ba1a1a",
+            "primary-fixed": "#9cf2e8",
+            "on-surface-variant": "#3e4947",
+            "tertiary-fixed": "#89f5e7",
+            "secondary-container": "#39b8fd",
+            "on-error": "#ffffff",
+            "primary-fixed-dim": "#80d5cb",
+            "surface-container-highest": "#d3e4fe",
+            "tertiary": "#005c54",
+            "surface-tint": "#006a63",
+            "on-secondary": "#ffffff",
+            "outline": "#6e7977",
+            "primary-container": "#0f766e",
+            "on-tertiary-fixed": "#00201d",
+            "on-tertiary-container": "#91fdef",
+            "secondary": "#006591",
+            "on-error-container": "#93000a",
+            "surface-dim": "#cbdbf5",
+            "inverse-surface": "#213145",
+            "tertiary-fixed-dim": "#6bd8cb",
+            "tertiary-container": "#00776d",
+            "surface-container": "#e5eeff",
+            "on-primary-container": "#a3faef",
+            "on-secondary-container": "#004666"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "gutter-sm": "0.75rem",
+            "space-xl": "2rem",
+            "space-sm": "0.5rem",
+            "margin": "1rem",
+            "space-lg": "1.5rem",
+            "space-md": "1rem",
+            "space-xs": "0.25rem",
+            "margin-lg": "1.5rem",
+            "gutter": "1rem"
+          },
+          "fontFamily": {
+            "headline-md": ["Inter"],
+            "body-lg-medium": ["Inter"],
+            "body-md-medium": ["Inter"],
+            "body-lg": ["Inter"],
+            "body-md": ["Inter"],
+            "display-lg-mobile": ["Inter"],
+            "display-lg": ["Inter"],
+            "headline-lg": ["Inter"],
+            "label-sm": ["Inter"],
+            "metric-mono": ["Inter"],
+            "headline-sm": ["Inter"],
+            "label-md": ["Inter"]
+          },
+          "fontSize": {
+            "headline-md": ["20px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "body-lg-medium": ["16px", { "lineHeight": "24px", "fontWeight": "500" }],
+            "body-md-medium": ["14px", { "lineHeight": "20px", "fontWeight": "500" }],
+            "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+            "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+            "display-lg-mobile": ["28px", { "lineHeight": "36px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+            "display-lg": ["36px", { "lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+            "headline-lg": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.015em", "fontWeight": "600" }],
+            "label-sm": ["11px", { "lineHeight": "14px", "letterSpacing": "0.01em", "fontWeight": "500" }],
+            "metric-mono": ["32px", { "lineHeight": "36px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+            "headline-sm": ["18px", { "lineHeight": "24px", "fontWeight": "600" }],
+            "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600" }]
+          }
+        }
+      }
+    };
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      display: inline-block;
+      vertical-align: middle;
+      line-height: 1;
+    }
+    .material-symbols-fill {
+      font-variation-settings: 'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 24;
+    }
+    
+    @keyframes pulse-ring {
+      0% {
+        transform: scale(0.92);
+        opacity: 0.8;
+      }
+      50% {
+        transform: scale(1.08);
+        opacity: 0.35;
+      }
+      100% {
+        transform: scale(0.92);
+        opacity: 0.8;
+      }
+    }
+    .geofence-pulse {
+      animation: pulse-ring 3.5s infinite ease-in-out;
+    }
+
+    @keyframes radar-sweep {
+      0% {
+        transform: rotate(0deg);
+      }
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+    .radar-beam {
+      transform-origin: center center;
+      animation: radar-sweep 5s infinite linear;
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface antialiased min-h-screen flex justify-center selection:bg-primary-fixed selection:text-on-primary-fixed">
+<!-- Main Mobile Container (Strict max-w-md 412px standard) -->
+<main class="w-full max-w-md bg-surface min-h-screen flex flex-col relative pb-10 shadow-xl border-x border-outline-variant/30">
+<!-- Top Navigation Header (Focused Linear Flow: Back Button present, Shell Nav Suppressed) -->
+<header class="sticky top-0 z-40 bg-surface/95 backdrop-blur-md px-margin py-space-sm flex items-center gap-space-sm border-b border-outline-variant/30">
+<button aria-label="Kembali ke Beranda" class="w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container active:scale-[0.96] transition-all" onclick="window.history.back()">
+<span class="material-symbols-outlined text-[24px]">arrow_back</span>
+</button>
+<div class="flex-1">
+<h1 class="text-headline-sm font-headline-sm text-on-surface tracking-tight leading-tight">Pra-Validasi Presensi</h1>
+<p class="text-label-sm font-label-sm text-on-surface-variant">Pemeriksaan Sistem Sebelum Absen</p>
+</div>
+<div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary" title="Protokol Medis v2.4">
+<span class="material-symbols-outlined text-[18px]">verified_user</span>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<div class="px-margin flex-1 flex flex-col gap-space-md pt-space-sm">
+<!-- Header Status Card: Employee & Shift Metadata -->
+<section class="bg-surface-container-lowest rounded-xl p-space-md border border-outline-variant/50 shadow-sm relative overflow-hidden">
+<!-- Medical Green Top Accent Line -->
+<div class="absolute top-0 left-0 right-0 h-1 bg-primary"></div>
+<div class="flex items-start gap-space-sm">
+<!-- Profile Badge Avatar -->
+<div class="relative w-12 h-12 rounded-xl bg-surface-container-high flex items-center justify-center text-primary font-bold text-headline-sm shrink-0 border border-outline-variant/40">
+<span>SR</span>
+<span class="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-600 rounded-full border-2 border-surface-container-lowest flex items-center justify-center text-white">
+<span class="material-symbols-outlined text-[10px] material-symbols-fill">check</span>
+</span>
+</div>
+<!-- Employee Credentials -->
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between gap-1">
+<h2 class="text-body-lg-medium font-body-lg-medium text-on-surface truncate">Ns. Siti Rahma, S.Kep</h2>
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-label-sm font-label-sm bg-primary/10 text-primary border border-primary/20 shrink-0">
+                Aktif
+              </span>
+</div>
+<p class="text-label-md font-label-md text-on-surface-variant mt-0.5">NIP: 19940812-2020-04</p>
+<div class="mt-space-xs pt-space-xs border-t border-slate-100 flex flex-wrap items-center gap-x-space-md gap-y-1 text-label-md font-label-md">
+<div class="flex items-center gap-1 text-primary">
+<span class="material-symbols-outlined text-[16px]">schedule</span>
+<span class="font-semibold">Shift Pagi</span> (07:00 - 15:00 WIB)
+              </div>
+<div class="flex items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px]">local_hospital</span>
+<span>Ruang Rawat Inap Melati</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Checklist Section: Parameter Kelayakan Presensi -->
+<section class="flex flex-col gap-space-sm">
+<div class="flex items-center justify-between px-0.5">
+<h3 class="text-body-lg-medium font-body-lg-medium text-on-surface">Parameter Kelayakan Presensi</h3>
+<span class="text-label-sm font-label-sm px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 font-semibold flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-ping"></span>
+            4/4 Terpenuhi
+          </span>
+</div>
+<!-- Bento Grid / Cards Collection -->
+<div class="flex flex-col gap-space-sm">
+<!-- Card 1: Perangkat Terdaftar -->
+<div class="bg-surface-container-lowest rounded-xl p-3.5 border border-outline-variant/50 shadow-sm flex items-start gap-3 transition-all hover:border-primary/40">
+<div class="w-9 h-9 rounded-lg bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-700 shrink-0">
+<span class="material-symbols-outlined text-[20px] material-symbols-fill">check_circle</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between">
+<h4 class="text-body-md-medium font-body-md-medium text-on-surface">Perangkat Terdaftar</h4>
+<span class="text-[10px] font-semibold tracking-wider uppercase text-emerald-700 bg-emerald-100/70 px-1.5 py-0.5 rounded">Sah</span>
+</div>
+<p class="text-body-md font-body-md text-on-surface-variant mt-0.5 text-xs leading-relaxed">
+                Samsung Galaxy A54 5G <span class="text-slate-400">•</span> (DSN Hospital Gate - Terverifikasi)
+              </p>
+<div class="flex items-center gap-2 mt-1.5 text-[11px] text-slate-500 font-mono">
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px] text-slate-400">fingerprint</span>
+                  IMEI Matched
+                </span>
+<span>•</span>
+<span class="text-emerald-700 font-medium">Kemanan Knox Aktif</span>
+</div>
+</div>
+</div>
+<!-- Card 2: Akurasi Sinyal GPS -->
+<div class="bg-surface-container-lowest rounded-xl p-3.5 border border-outline-variant/50 shadow-sm flex items-start gap-3 transition-all hover:border-primary/40">
+<div class="w-9 h-9 rounded-lg bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-700 shrink-0">
+<span class="material-symbols-outlined text-[20px] material-symbols-fill">check_circle</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between">
+<h4 class="text-body-md-medium font-body-md-medium text-on-surface">Akurasi Sinyal GPS</h4>
+<span class="flex items-center gap-1 text-[11px] font-medium text-emerald-700">
+<span class="material-symbols-outlined text-[14px]">signal_cellular_alt</span>
+                  Optimal
+                </span>
+</div>
+<p class="text-body-md font-body-md text-on-surface-variant mt-0.5 text-xs">
+                Sinyal Kuat <span class="text-slate-400">•</span> Akurasi <strong class="text-on-surface font-semibold font-mono">3 meter</strong> (Toleransi maks. 15m)
+              </p>
+<div class="w-full bg-slate-100 h-1.5 rounded-full mt-2 overflow-hidden">
+<div class="bg-emerald-600 h-full rounded-full w-[94%]"></div>
+</div>
+</div>
+</div>
+<!-- Card 3: Geofencing Area RS + Interactive Map Canvas (Key Bento Asset) -->
+<div class="bg-surface-container-lowest rounded-xl p-3.5 border border-outline-variant/60 shadow-sm transition-all">
+<div class="flex items-start gap-3">
+<div class="w-9 h-9 rounded-lg bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-700 shrink-0">
+<span class="material-symbols-outlined text-[20px] material-symbols-fill">check_circle</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between">
+<h4 class="text-body-md-medium font-body-md-medium text-on-surface">Geofencing Area RS</h4>
+<span class="text-label-sm font-label-sm font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
+                    Dalam Radius Sah
+                  </span>
+</div>
+<p class="text-body-md font-body-md text-on-surface-variant mt-0.5 text-xs">
+                  Terdeteksi <strong>18 meter</strong> dari titik tengah lobi rawat inap.
+                </p>
+</div>
+</div>
+<!-- Stylized Medical Geofence Interactive Mini-Map Preview -->
+<div class="mt-3 relative w-full h-44 rounded-xl bg-slate-900 overflow-hidden border border-slate-200 shadow-inner group">
+<!-- Map Ground & Architectural Blueprint SVG -->
+<svg class="absolute inset-0 w-full h-full object-cover opacity-90" preserveaspectratio="xMidYMid slice" viewbox="0 0 400 200" xmlns="http://www.w3.org/2000/svg">
+<!-- Ground Grid Lines -->
+<defs>
+<pattern height="20" id="grid-pattern" patternunits="userSpaceOnUse" width="20">
+<path d="M 20 0 L 0 0 0 20" fill="none" stroke="#334155" stroke-opacity="0.4" stroke-width="0.5"></path>
+</pattern>
+<radialgradient cx="50%" cy="50%" id="geofence-grad" r="50%">
+<stop offset="0%" stop-color="#10B981" stop-opacity="0.35"></stop>
+<stop offset="70%" stop-color="#059669" stop-opacity="0.15"></stop>
+<stop offset="100%" stop-color="#047857" stop-opacity="0.0"></stop>
+</radialgradient>
+</defs>
+<!-- Canvas background -->
+<rect fill="#0f172a" height="100%" width="100%"></rect>
+<rect fill="url(#grid-pattern)" height="100%" width="100%"></rect>
+<!-- Roadways / Walkways inside Hospital Complex -->
+<path d="M-20 110 Q 150 100 420 130" fill="none" stroke="#1e293b" stroke-width="26"></path>
+<path d="M180 -20 L 220 220" fill="none" stroke="#1e293b" stroke-width="22"></path>
+<path d="M-20 110 Q 150 100 420 130" fill="none" stroke="#475569" stroke-dasharray="6,4" stroke-width="1.5"></path>
+<!-- Hospital Building Footprints -->
+<!-- Gedung Utama / Poliklinik -->
+<rect fill="#1e293b" height="60" rx="4" stroke="#38bdf8" stroke-width="1.2" width="85" x="35" y="25"></rect>
+<text fill="#94a3b8" font-family="Inter" font-size="8" font-weight="600" text-anchor="middle" x="77" y="58">GEDUNG UTAMA</text>
+<!-- Ruang Rawat Inap Melati (Zone of Interest) -->
+<rect fill="#134e4a" height="75" rx="5" stroke="#2dd4bf" stroke-width="1.5" width="115" x="180" y="30"></rect>
+<text fill="#a7f3d0" font-family="Inter" font-size="8.5" font-weight="700" text-anchor="middle" x="237" y="65">RAWAT INAP MELATI</text>
+<text fill="#5eead4" font-family="Inter" font-size="7" text-anchor="middle" x="237" y="78">Lt. 1-4 • Nurse Hub</text>
+<!-- IGD / Trauma Center -->
+<rect fill="#1e293b" height="50" rx="4" stroke="#f43f5e" stroke-width="1" width="90" x="40" y="130"></rect>
+<text fill="#fda4af" font-family="Inter" font-size="8" font-weight="600" text-anchor="middle" x="85" y="160">IGD 24 JAM</text>
+<!-- Farmasi & Lab Paviliun -->
+<rect fill="#1e293b" height="55" rx="4" stroke="#64748b" stroke-width="1" width="85" x="290" y="125"></rect>
+<text fill="#94a3b8" font-family="Inter" font-size="7.5" text-anchor="middle" x="332" y="156">LAB &amp; FARMASI</text>
+<!-- 100m Official Geofence Perimeter Circle (Centered around Melati & Center) -->
+<circle class="geofence-pulse" cx="215" cy="95" fill="url(#geofence-grad)" r="75" stroke="#10b981" stroke-dasharray="4 3" stroke-width="1.8"></circle>
+<!-- Hospital Anchor Beacon Pin -->
+<circle cx="215" cy="95" fill="#10b981" r="4"></circle>
+<circle cx="215" cy="95" fill="none" opacity="0.6" r="8" stroke="#10b981" stroke-width="1"></circle>
+<!-- Radar scanning cone simulation -->
+<path class="radar-beam" d="M 215 95 L 285 45 A 75 75 0 0 1 290 95 Z" fill="rgba(16, 185, 129, 0.08)"></path>
+</svg>
+<!-- Live Staff Pin Location: Inside Zone (18m offset) -->
+<div class="absolute top-[52%] left-[58%] -translate-x-1/2 -translate-y-full flex flex-col items-center pointer-events-none">
+<!-- Tooltip: Anda di sini -->
+<div class="bg-surface-container-lowest text-on-surface px-2 py-0.5 rounded shadow-md border border-primary/30 flex items-center gap-1 mb-1 whitespace-nowrap animate-bounce">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+<span class="text-[10px] font-bold text-primary font-headline-sm">Anda di sini</span>
+<span class="text-[9px] text-slate-400 font-mono">18m</span>
+</div>
+<!-- Pin marker with pulse wave -->
+<div class="relative flex items-center justify-center">
+<span class="absolute w-6 h-6 rounded-full bg-primary/30 animate-ping"></span>
+<div class="w-5 h-5 rounded-full bg-primary text-white flex items-center justify-center shadow-lg border-2 border-white z-10">
+<span class="material-symbols-outlined text-[12px] material-symbols-fill">person_pin_circle</span>
+</div>
+</div>
+</div>
+<!-- Map Legend Floating HUD Overlay -->
+<div class="absolute bottom-2 left-2 right-2 bg-slate-900/85 backdrop-blur-sm border border-slate-700/60 rounded-lg px-2.5 py-1.5 flex items-center justify-between text-[11px] text-slate-300">
+<div class="flex items-center gap-2">
+<span class="w-2.5 h-2.5 rounded-full border border-emerald-400 bg-emerald-500/30"></span>
+<span>Radius Geofence: <strong>100m</strong></span>
+</div>
+<div class="flex items-center gap-1 text-emerald-400 font-mono">
+<span class="material-symbols-outlined text-[13px]">my_location</span>
+<span>-6.1754, 106.8271</span>
+</div>
+</div>
+<!-- Interactive Badge -->
+<button class="absolute top-2 right-2 bg-slate-900/80 hover:bg-slate-800 text-slate-200 text-[10px] px-2 py-1 rounded border border-slate-700 flex items-center gap-1 transition-all active:scale-95" onclick="alert('GPS Tersinkronisasi dengan satelit GLONASS &amp; NavIC. Akurasi 3m.')" type="button">
+<span class="material-symbols-outlined text-[12px]">refresh</span>
+                Kalibrasi Ulang
+              </button>
+</div>
+</div>
+<!-- Card 4: Jadwal Shift Dinas -->
+<div class="bg-surface-container-lowest rounded-xl p-3.5 border border-outline-variant/50 shadow-sm flex items-start gap-3 transition-all hover:border-primary/40">
+<div class="w-9 h-9 rounded-lg bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-700 shrink-0">
+<span class="material-symbols-outlined text-[20px] material-symbols-fill">check_circle</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between">
+<h4 class="text-body-md-medium font-body-md-medium text-on-surface">Jadwal Shift Dinas</h4>
+<span class="text-label-sm font-label-sm font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
+                  Tepat Waktu
+                </span>
+</div>
+<p class="text-body-md font-body-md text-on-surface-variant mt-0.5 text-xs">
+                Shift Pagi Sesuai Roster <strong class="text-on-surface">(07:00 - 15:00 WIB)</strong>
+</p>
+<div class="flex items-center gap-1.5 mt-1 text-[11px] text-slate-600 bg-slate-50 px-2 py-1 rounded border border-slate-200/60">
+<span class="material-symbols-outlined text-[13px] text-primary">pin_drop</span>
+<span class="font-medium text-on-surface">Nurse Station Melati Lantai 3</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- System Notice Banner: Reassuring Health Compliance Tone -->
+<section class="bg-emerald-50/90 border border-emerald-200 rounded-xl p-3.5 flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-sm">
+<span class="material-symbols-outlined text-[18px]">sentiment_satisfied</span>
+</div>
+<div class="flex-1 min-w-0">
+<p class="text-body-md font-body-md text-emerald-950 font-medium text-xs leading-snug">
+            Semua parameter valid. Anda siap melakukan pemindaian wajah biometrik.
+          </p>
+</div>
+</section>
+</div>
+<!-- Bottom Action Zone (Ergonomic Thumb Area) -->
+<div class="sticky bottom-0 z-40 bg-surface/95 backdrop-blur-md px-margin py-3.5 mt-4 border-t border-outline-variant/30 flex flex-col gap-2.5">
+<!-- Primary Action CTA (>52px touch baseline target: h-[54px]) -->
+<a class="h-[54px] w-full rounded-2xl bg-primary-container text-white flex items-center justify-between px-5 shadow-lg shadow-teal-900/15 active:scale-[0.98] transition-all hover:bg-primary group focus:outline-none focus:ring-4 focus:ring-primary/20" href="#camera-scan" onclick="triggerScanFlow(event)">
+<div class="flex items-center gap-3">
+<div class="w-9 h-9 rounded-xl bg-white/15 flex items-center justify-center">
+<span class="material-symbols-outlined text-[22px]">face_unlock</span>
+</div>
+<div class="text-left">
+<span class="text-body-lg-medium font-body-lg-medium block leading-none">Mulai Pindai Wajah</span>
+<span class="text-[11px] text-teal-100 font-normal">Verifikasi Biometrik AI v3.0</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-[22px] transition-transform group-hover:translate-x-1">arrow_forward</span>
+</a>
+<!-- Secondary Utility Link -->
+<div class="flex items-center justify-center">
+<button class="inline-flex items-center gap-1.5 text-label-md font-label-md text-on-surface-variant hover:text-primary py-1 px-3 rounded-lg hover:bg-surface-container transition-colors" onclick="showHelpModal()" type="button">
+<span class="material-symbols-outlined text-[16px]">help_center</span>
+<span>Bantuan Lokasi &amp; Sensor</span>
+</button>
+</div>
+</div>
+<!-- Biometric Transition Modal Sheet (Hidden by default, triggered on CTA) -->
+<div class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden flex-col justify-end" id="scan-modal">
+<div class="bg-surface-container-lowest rounded-t-3xl p-6 border-t border-outline-variant flex flex-col items-center text-center animate-in slide-in-from-bottom duration-300 max-w-md mx-auto w-full">
+<div class="w-12 h-1.5 bg-slate-300 rounded-full mb-5"></div>
+<div class="relative w-28 h-28 rounded-full border-4 border-dashed border-teal-500 flex items-center justify-center mb-4 bg-teal-50/50">
+<span class="material-symbols-outlined text-[48px] text-primary animate-pulse">drafts</span>
+<div class="absolute inset-0 rounded-full border-2 border-emerald-400 animate-ping opacity-40"></div>
+</div>
+<h3 class="text-headline-sm font-headline-sm text-on-surface">Mempersiapkan Kamera Wajah</h3>
+<p class="text-body-md font-body-md text-on-surface-variant text-xs mt-1 max-w-xs">
+          Pastikan pencahayaan cukup dan lepas masker sementara untuk pencocokan biometrik rumah sakit.
+        </p>
+<div class="w-full mt-6 flex gap-3">
+<button class="flex-1 py-3 rounded-xl border border-outline-variant font-body-md-medium text-on-surface hover:bg-surface-container" onclick="closeModal()">
+            Batal
+          </button>
+<button class="flex-1 py-3 rounded-xl bg-primary-container text-white font-body-md-medium shadow-md hover:bg-primary" onclick="simulateSuccess()">
+            Buka Kamera
+          </button>
+</div>
+</div>
+</div>
+</main>
+<script>
+    function triggerScanFlow(e) {
+      e.preventDefault();
+      document.getElementById('scan-modal').classList.remove('hidden');
+      document.getElementById('scan-modal').classList.add('flex');
+    }
+
+    function closeModal() {
+      document.getElementById('scan-modal').classList.add('hidden');
+      document.getElementById('scan-modal').classList.remove('flex');
+    }
+
+    function simulateSuccess() {
+      alert('Kamera Biometrik Aktif. Memindai kontur wajah Ns. Siti Rahma...');
+      closeModal();
+    }
+
+    function showHelpModal() {
+      alert('Panduan Sensor:\n1. Pastikan GPS dalam mode akurasi tinggi.\n2. Sambungkan Wi-Fi ke "RS-Staff-Internal" jika di dalam basement.\n3. Izin kamera harus diizinkan untuk verifikasi biometrik.');
+    }
+  </script>
+</body></html>
