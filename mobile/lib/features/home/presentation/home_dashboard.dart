@@ -696,13 +696,16 @@ class _HomeDashboardState extends State<HomeDashboard> {
                 children: [
                   const Icon(Icons.face, size: 22),
                   const SizedBox(width: 8),
-                  Text(
-                    hasIn
-                        ? 'Absen Pulang (Verifikasi Wajah)'
-                        : 'Absen Masuk (Verifikasi Wajah)',
-                    style: AppText.bodyLgMedium.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600,
+                  Flexible(
+                    child: Text(
+                      hasIn
+                          ? 'Absen Pulang (Verifikasi Wajah)'
+                          : 'Absen Masuk (Verifikasi Wajah)',
+                      style: AppText.bodyLgMedium.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      textAlign: TextAlign.center,
                     ),
                   ),
                 ],
@@ -716,9 +719,12 @@ class _HomeDashboardState extends State<HomeDashboard> {
               children: [
                 const Icon(Icons.sync_alt, size: 14, color: AppColors.tertiary),
                 const SizedBox(width: 4),
-                Text(
-                  'Tekan untuk beralih atau validasi pembaruan Absen Pulang',
-                  style: AppText.labelSm.copyWith(color: AppColors.inkSecondary),
+                Flexible(
+                  child: Text(
+                    'Tekan untuk beralih atau validasi pembaruan Absen Pulang',
+                    style: AppText.labelSm.copyWith(color: AppColors.inkSecondary),
+                    textAlign: TextAlign.center,
+                  ),
                 ),
               ],
             ),

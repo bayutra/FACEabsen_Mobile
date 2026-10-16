@@ -33,6 +33,10 @@ export function GeofenceEditForm({ fences }: { fences: FenceOption[] }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [ok, setOk] = useState<string | null>(null);
+  const [query, setQuery] = useState('');
+  const [searching, setSearching] = useState(false);
+  const [hits, setHits] = useState<Array<{ name: string; lat: number; lon: number }>>([]);
+  const [focus, setFocus] = useState<{ lat: number; lon: number; key: number } | null>(null);
 
   // Ganti fasilitas = muat ulang nilai live-nya, bukan menimpa ketikan
   // yang sedang berjalan (pola adjust-during-render).
@@ -45,6 +49,30 @@ export function GeofenceEditForm({ fences }: { fences: FenceOption[] }) {
     setRadius(String(current?.radiusMeters ?? ''));
     setError(null);
     setOk(null);
+  }
+
+  async function search() {
+    const q = query.trim();
+    if (!q || searching) return;
+    setSearching(true);
+    try {
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=5&countrycodes=id&q=${encodeURIComponent(q)}`,
+        { headers: { Accept: 'application/json' } },
+      );
+      if (!res.ok) throw new Error(`Pencarian gagal (${res.status})`);
+      const body = (await res.json()) as Array<{ display_name?: string; lat?: string; lon?: string }>;
+      setHits(
+        (Array.isArray(body) ? body : [])
+          .filter((h) => h.lat !== undefined && h.lon !== undefined)
+          .map((h) => ({ name: h.display_name ?? q, lat: Number(h.lat), lon: Number(h.lon) })),
+      );
+      if (!Array.isArray(body) || body.length === 0) setHits([]);
+    } catch {
+      setHits([]);
+    } finally {
+      setSearching(false);
+    }
   }
 
   async function submit(e: React.FormEvent) {
@@ -98,12 +126,55 @@ export function GeofenceEditForm({ fences }: { fences: FenceOption[] }) {
       </label>
       <div className="md:col-span-2">
         <p className="text-label-md text-on-surface">Titik di peta (klik / geser pin)</p>
-        <div className="mt-1">
+        <div className="mt-1 flex gap-2">
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                void search();
+              }
+            }}
+            placeholder="Cari RS / alamat — mis. RSUD Sehat Sentosa"
+            className={`${inputClass} w-full`}
+          />
+          <button
+            type="button"
+            onClick={() => void search()}
+            disabled={searching}
+            className="h-10 shrink-0 rounded-lg border border-outline-variant bg-surface-container-lowest px-4 text-body-md-medium text-on-surface transition-colors hover:bg-surface-container-low disabled:opacity-50"
+          >
+            {searching ? '…' : 'Cari'}
+          </button>
+        </div>
+        {hits.length > 0 && (
+          <ul className="mt-2 divide-y divide-outline-variant/40 rounded-lg border border-outline-variant bg-surface-container-lowest">
+            {hits.map((h) => (
+              <li key={`${h.lat},${h.lon}`}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setLatitude(h.lat.toFixed(6));
+                    setLongitude(h.lon.toFixed(6));
+                    setFocus({ lat: h.lat, lon: h.lon, key: Date.now() });
+                    setHits([]);
+                  }}
+                  className="block w-full px-3 py-2 text-left text-body-sm text-on-surface hover:bg-surface-container-low"
+                >
+                  {h.name}
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+        <div className="mt-2">
           <GeofenceMap
             hospitalId={hospitalId}
             latitude={Number(latitude)}
             longitude={Number(longitude)}
             radiusMeters={Number(radius)}
+            focus={focus}
             onMove={(lat, lon) => {
               setLatitude(lat.toFixed(6));
               setLongitude(lon.toFixed(6));

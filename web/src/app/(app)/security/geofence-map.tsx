@@ -1,6 +1,7 @@
 'use client';
 
-import { Circle, MapContainer, Marker, TileLayer, useMapEvents } from 'react-leaflet';
+import { useEffect } from 'react';
+import { Circle, LayersControl, MapContainer, Marker, TileLayer, useMap, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
@@ -21,12 +22,21 @@ function ClickToMove({ onMove }: { onMove: (lat: number, lon: number) => void })
   return null;
 }
 
+function FlyTo({ target }: { target: { lat: number; lon: number; key: number } | null }) {
+  const map = useMap();
+  useEffect(() => {
+    if (target) map.flyTo([target.lat, target.lon], 17, { duration: 1.2 });
+  }, [map, target]);
+  return null;
+}
+
 interface Props {
   hospitalId: string;
   latitude: number;
   longitude: number;
   radiusMeters: number;
   onMove: (latitude: number, longitude: number) => void;
+  focus?: { lat: number; lon: number; key: number } | null;
 }
 
 /**
@@ -34,7 +44,7 @@ interface Props {
  * untuk presisi, lingkaran mengikuti radius meter secara live.
  * Tile OpenStreetMap (perlu internet di browser admin).
  */
-export function GeofenceMap({ hospitalId, latitude, longitude, radiusMeters, onMove }: Props) {
+export function GeofenceMap({ hospitalId, latitude, longitude, radiusMeters, onMove, focus }: Props) {
   if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
     return (
       <p className="rounded-lg border border-outline-variant bg-surface-container-low p-4 text-body-md text-outline">
@@ -50,11 +60,22 @@ export function GeofenceMap({ hospitalId, latitude, longitude, radiusMeters, onM
       scrollWheelZoom
       className="z-0 h-80 w-full rounded-xl border border-outline-variant"
     >
-      <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-        url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
-      />
+      <LayersControl position="topright">
+        <LayersControl.BaseLayer checked name="Satelit">
+          <TileLayer
+            attribution="Esri World Imagery"
+            url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+          />
+        </LayersControl.BaseLayer>
+        <LayersControl.BaseLayer name="Peta jalan">
+          <TileLayer
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>'
+            url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+          />
+        </LayersControl.BaseLayer>
+      </LayersControl>
       <ClickToMove onMove={onMove} />
+      <FlyTo target={focus ?? null} />
       <Circle
         center={[latitude, longitude]}
         radius={Number.isFinite(radiusMeters) && radiusMeters > 0 ? radiusMeters : 0}
