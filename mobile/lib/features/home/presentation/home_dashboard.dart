@@ -569,11 +569,13 @@ class _HomeDashboardState extends State<HomeDashboard> {
                             color: hasIn ? AppColors.primary : AppColors.outline,
                           ),
                           const SizedBox(width: 3),
-                          Text(
-                            hasIn ? 'Terverifikasi Wajah' : 'Belum ada presensi',
-                            style: AppText.labelSm.copyWith(
-                              color: hasIn ? AppColors.primary : AppColors.inkSecondary,
-                              fontWeight: FontWeight.w600,
+                          Expanded(
+                            child: Text(
+                              hasIn ? 'Terverifikasi Wajah' : 'Belum ada presensi',
+                              style: AppText.labelSm.copyWith(
+                                color: hasIn ? AppColors.primary : AppColors.inkSecondary,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                           ),
                         ],
@@ -629,9 +631,11 @@ class _HomeDashboardState extends State<HomeDashboard> {
                         children: [
                           const Icon(Icons.schedule, size: 13, color: AppColors.outline),
                           const SizedBox(width: 3),
-                          Text(
-                            hasOut ? 'Terverifikasi Pulang' : 'Belum Absen Pulang',
-                            style: AppText.labelSm.copyWith(color: AppColors.inkSecondary),
+                          Expanded(
+                            child: Text(
+                              hasOut ? 'Terverifikasi Pulang' : 'Belum Absen Pulang',
+                              style: AppText.labelSm.copyWith(color: AppColors.inkSecondary),
+                            ),
                           ),
                         ],
                       ),

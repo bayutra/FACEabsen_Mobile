@@ -1,7 +1,17 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+
+const GeofenceMap = dynamic(() => import('./geofence-map').then((m) => m.GeofenceMap), {
+  ssr: false,
+  loading: () => (
+    <p className="rounded-xl border border-outline-variant bg-surface-container-low p-4 text-body-md text-outline md:col-span-2">
+      Memuat peta…
+    </p>
+  ),
+});
 
 interface FenceOption {
   id: string;
@@ -86,6 +96,21 @@ export function GeofenceEditForm({ fences }: { fences: FenceOption[] }) {
           ))}
         </select>
       </label>
+      <div className="md:col-span-2">
+        <p className="text-label-md text-on-surface">Titik di peta (klik / geser pin)</p>
+        <div className="mt-1">
+          <GeofenceMap
+            hospitalId={hospitalId}
+            latitude={Number(latitude)}
+            longitude={Number(longitude)}
+            radiusMeters={Number(radius)}
+            onMove={(lat, lon) => {
+              setLatitude(lat.toFixed(6));
+              setLongitude(lon.toFixed(6));
+            }}
+          />
+        </div>
+      </div>
       <label className="block text-label-md text-on-surface">
         Latitude (-90…90)
         <input
@@ -106,6 +131,21 @@ export function GeofenceEditForm({ fences }: { fences: FenceOption[] }) {
           className={`${inputClass} mt-1 w-full tabular`}
         />
       </label>
+      <div className="md:col-span-2">
+        <label className="block text-label-md text-on-surface" htmlFor="geofence-radius">
+          Radius: <span className="tabular">{radius || '—'} meter</span> (10…1000)
+        </label>
+        <input
+          id="geofence-radius"
+          type="range"
+          min={10}
+          max={1000}
+          step={5}
+          value={Number(radius) || 0}
+          onChange={(e) => setRadius(e.target.value)}
+          className="mt-2 w-full accent-primary"
+        />
+      </div>
       <label className="block text-label-md text-on-surface">
         Radius meter (10…1000)
         <input

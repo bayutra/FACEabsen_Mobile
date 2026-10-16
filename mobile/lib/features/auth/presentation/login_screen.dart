@@ -530,10 +530,12 @@ class _LoginScreenState extends State<LoginScreen> {
                                 color: AppColors.inkSecondary,
                               ),
                               const SizedBox(width: 4),
-                              Text(
-                                'Nomor Induk Pegawai terdaftar di Kepegawaian RSUD',
-                                style: AppText.labelSm.copyWith(
-                                  color: AppColors.inkSecondary,
+                              Expanded(
+                                child: Text(
+                                  'Nomor Induk Pegawai terdaftar di Kepegawaian RSUD',
+                                  style: AppText.labelSm.copyWith(
+                                    color: AppColors.inkSecondary,
+                                  ),
                                 ),
                               ),
                             ],
