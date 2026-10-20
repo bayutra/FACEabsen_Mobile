@@ -36,6 +36,11 @@ workflows:
         - pattern: master
           include: true
       cancel_previous_builds: true
+    cache:
+      # Mempercepat rebuild saat iterasi konfigurasi iOS.
+      cache_paths:
+        - $HOME/.pub-cache
+        - $HOME/Library/Caches/CocoaPods
     scripts:
       - name: Flutter pub get
         script: |
