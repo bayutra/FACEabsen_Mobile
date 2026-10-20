@@ -110,13 +110,15 @@ yang dikirim klien tanpa verifikasi.
 | Peran | Kebutuhan | Status di repo |
 |---|---|---|
 | **Karyawan** | Semua fitur presensi mandiri | Mobile app lengkap |
-| **Atasan / Supervisor** | Approve koreksi/izin, lihat tim | API tersedia, **belum ada UI** |
-| **Admin** | Kelola karyawan, shift, device, laporan | API tersedia, **belum ada UI** |
-| **Super Admin** | Kelola role, audit, retensi | API tersedia, **belum ada UI** |
+| **Atasan / Supervisor** | Approve koreksi/izin, lihat tim | UI mobile tersedia (menu Kelola) + API |
+| **Admin** | Kelola karyawan, shift, device, laporan | UI mobile tersedia (menu Kelola) + API |
+| **Super Admin** | Kelola role, audit, retensi | UI mobile tersedia (menu Kelola) + API |
 
-Keputusan produk: fase 1 fokus pada pengalaman karyawan. Fungsi
-supervisor/admin tetap tersedia lewat API untuk integrasi, dan akan mendapat
-UI mobile pada fase 2 (lihat §15).
+Keputusan produk: fase 1 fokus pada pengalaman karyawan. Sejak v2.1 area
+**Kelola** ada di aplikasi mobile — dibuka dari kartu "Mode Admin" di halaman
+Profil, tampil hanya untuk peran Supervisor/Admin/Super Admin. Setiap modul
+memanggil endpoint yang sama dengan API, jadi tidak ada logika yang
+diduplikasi (lihat `docs/guides/ADMIN_MOBILE.md`).
 
 ---
 
