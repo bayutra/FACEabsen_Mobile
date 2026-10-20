@@ -3,3 +3,6 @@
 backups/
 *.dump
 *.dump.sha256
+
+# Hasil build iOS yang diunduh dari CI (30 MB, jangan masuk repo).
+*.ipa

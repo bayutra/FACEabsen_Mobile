@@ -18,6 +18,7 @@ class ProfileScreen extends StatefulWidget {
     required this.onRegisterFace,
     required this.onLogout,
     required this.onChangePassword,
+    this.onOpenAdmin,
   });
 
   final ProfileRepository profiles;
@@ -25,6 +26,10 @@ class ProfileScreen extends StatefulWidget {
   final VoidCallback onRegisterFace;
   final VoidCallback onLogout;
   final VoidCallback onChangePassword;
+
+  /// Diisi hanya untuk SUPERVISOR/ADMIN/SUPER_ADMIN; menampilkan pintu masuk
+  /// area "Kelola" (fitur admin di dalam aplikasi mobile).
+  final VoidCallback? onOpenAdmin;
 
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
@@ -294,6 +299,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
               _identityCard(_data!),
               const SizedBox(height: 14),
               _securityCard(_data!),
+              if (widget.onOpenAdmin != null) ...[
+                const SizedBox(height: 14),
+                _adminEntry(),
+              ],
               const SizedBox(height: 14),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -893,6 +902,70 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
     );
   }
+
+  /// Kartu pintu masuk area Kelola (hanya untuk peran yang berhak).
+  Widget _adminEntry() => Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppColors.primary.withOpacity(0.35)),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x0A000000),
+              blurRadius: 8,
+              offset: Offset(0, 2),
+            ),
+          ],
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: widget.onOpenAdmin,
+          child: Padding(
+            padding: const EdgeInsets.all(14),
+            child: Row(
+              children: [
+                Container(
+                  width: 42,
+                  height: 42,
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryContainer,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(
+                    Icons.admin_panel_settings_outlined,
+                    color: AppColors.primary,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                const Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Mode Admin',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.ink,
+                        ),
+                      ),
+                      SizedBox(height: 2),
+                      Text(
+                        'Kelola karyawan, perangkat, koreksi, dan laporan',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: AppColors.inkSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Icon(Icons.chevron_right, color: AppColors.inkSecondary),
+              ],
+            ),
+          ),
+        ),
+      );
 
   Widget _generalSettings() => Column(
         crossAxisAlignment: CrossAxisAlignment.start,

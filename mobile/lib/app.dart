@@ -123,6 +123,7 @@ class _BootstrapGateState extends State<BootstrapGate> {
           profiles: _profiles,
           preflight: _preflight,
           onLogout: _goLogin,
+          dio: _dio,
         ),
       ),
     );

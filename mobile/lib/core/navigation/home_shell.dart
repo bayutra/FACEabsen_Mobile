@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
 import '../validation/password_policy.dart';
+import '../../features/admin/domain/admin_access.dart';
+import '../../features/admin/presentation/admin_home_screen.dart';
 import '../../features/attendance/data/attendance_repository.dart';
 import '../../features/attendance/presentation/attendance_screen.dart';
 import '../../features/attendance/presentation/history_screen.dart';
@@ -40,7 +42,11 @@ class HomeShell extends StatefulWidget {
     required this.profiles,
     required this.preflight,
     required this.onLogout,
+    required this.dio,
   });
+
+  /// Klien API yang sama dengan repositori; dipakai layar admin "Kelola".
+  final Dio dio;
 
   final AuthRepository auth;
   final DeviceRepository devices;
@@ -62,6 +68,7 @@ class _HomeShellState extends State<HomeShell> {
   bool _biometricConsent = true;
   String _displayName = 'Karyawan';
   String _employeeNo = '—';
+  List<String> _roles = const <String>[];
 
   void _go(int i) => setState(() => _index = i);
 
@@ -205,6 +212,7 @@ class _HomeShellState extends State<HomeShell> {
           _displayName = snap.name == '—' ? 'Karyawan' : snap.name;
           _employeeNo = snap.employeeNo;
           _biometricConsent = snap.biometricConsent;
+          _roles = snap.roles;
         });
       }
     } catch (_) {
@@ -254,6 +262,11 @@ class _HomeShellState extends State<HomeShell> {
       onRegisterFace: () => _push(FaceRegistrationScreen(faces: widget.faces)),
       onLogout: _logout,
       onChangePassword: _showChangePassword,
+      onOpenAdmin: canOpenAdminArea(_roles)
+          ? () => _push(
+                AdminHomeScreen(dio: widget.dio, roles: _roles),
+              )
+          : null,
     );
 
     final List<Widget> pages = [
