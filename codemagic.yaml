@@ -30,10 +30,11 @@ workflows:
       xcode: 16.4
       cocoapods: default
       vars:
-        # Alamat API yang dibakar ke dalam aplikasi saat build.
-        # ngrok dev domain (gratis, permanen) -> backend lokal port 3000.
-        # Jalankan: ngrok http --url=https://intentional-paly-andra.ngrok-free.dev 3000
-        API_BASE_URL: "https://intentional-paly-andra.ngrok-free.dev/api/v1"
+        # Alamat default yang dibakar saat build. Bisa diganti dari dalam
+        # aplikasi (Login -> "Server: ...") tanpa build ulang, jadi nilai ini
+        # hanya titik awal. IP LAN dipakai agar uji di Wi-Fi rumah langsung
+        # jalan; untuk jaringan lain isi URL ngrok/Tailscale di aplikasi.
+        API_BASE_URL: "http://192.168.120.111:3000/api/v1"
     triggering:
       events:
         - push

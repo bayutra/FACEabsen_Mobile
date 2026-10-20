@@ -23,6 +23,7 @@ class SecureStore {
   static const _installKey = 'device_installation_id';
   static const _seedKey = 'device_private_seed';
   static const _deviceIdKey = 'device_id';
+  static const _baseUrlKey = 'api_base_url';
 
   Future<void> writeTokens(String access, String refresh) async {
     await _storage.write(key: _accessKey, value: access);
@@ -54,6 +55,13 @@ class SecureStore {
 
   Future<String?> readDeviceId() => _storage.read(key: _deviceIdKey);
   Future<void> writeDeviceId(String v) => _storage.write(key: _deviceIdKey, value: v);
+
+  /// Override alamat backend, diisi dari layar "Server API". `null` berarti
+  /// memakai default compile-time (`Env.apiBaseUrl`). Dipakai untuk pengujian
+  /// di jaringan berbeda (ngrok/Tailscale) tanpa build ulang.
+  Future<String?> readApiBaseUrl() => _storage.read(key: _baseUrlKey);
+  Future<void> writeApiBaseUrl(String v) => _storage.write(key: _baseUrlKey, value: v);
+  Future<void> clearApiBaseUrl() => _storage.delete(key: _baseUrlKey);
 
   /// Punch-outbox backlog (JSON list, see `OutboxRepository`). Lives in secure
   /// storage so queued embeddings are encrypted at rest — no new plugin.

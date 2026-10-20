@@ -58,6 +58,21 @@ Lalu uji manual:
 5. Ganti IP di `--dart-define=API_BASE_URL` (iPhone tidak bisa `10.0.2.2`;
    pakai IP LAN laptop, sama seperti Android).
 
+## Ganti alamat backend tanpa build ulang
+
+Alamat API bisa diubah dari dalam aplikasi, berguna saat memakai ngrok atau
+Tailscale yang URL-nya tidak tetap:
+
+1. Login → tombol kecil **"Server: …"** di bawah pill verifikasi wajah.
+2. Isi alamat, contoh `contoh.ngrok-free.app` (skema `https://` dan path
+   `/api/v1` ditambahkan otomatis).
+3. **Simpan**, lalu login. Tombol **Default** mengembalikan ke nilai
+   `--dart-define=API_BASE_URL`.
+
+Nilai disimpan di secure storage (`api_base_url`), jadi bertahan setelah
+aplikasi ditutup. Bila aplikasi gagal terhubung saat start, layar error juga
+menampilkan tombol server yang sama.
+
 ## Sebelum rilis (wajib)
 
 - [ ] **Hapus blok `NSAppTransportSecurity`** dari `Info.plist` — produksi

@@ -2,6 +2,8 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart' show debugPrint, kDebugMode;
 import 'package:flutter/material.dart';
 
+import '../../../core/config/server_settings.dart';
+import '../../../core/config/server_settings_dialog.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/hospital_mark.dart';
 import '../../../core/widgets/stitch.dart';
@@ -20,11 +22,16 @@ class LoginScreen extends StatefulWidget {
     required this.auth,
     required this.devices,
     required this.onDone,
+    this.servers,
   });
 
   final AuthRepository auth;
   final DeviceRepository devices;
   final VoidCallback onDone;
+
+  /// Bila diisi, layar menampilkan tombol kecil untuk mengganti alamat API
+  /// (dipakai saat pengujian di jaringan berbeda). `null` menyembunyikannya.
+  final ServerSettings? servers;
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -715,6 +722,37 @@ class _LoginScreenState extends State<LoginScreen> {
                         border: AppColors.tealBadgeBorder,
                       ),
                     ),
+                    // Alamat backend aktif — bisa diubah tanpa build ulang
+                    // saat pengujian di jaringan berbeda (ngrok/Tailscale).
+                    if (widget.servers != null) ...[
+                      const SizedBox(height: 8),
+                      Center(
+                        child: ListenableBuilder(
+                          listenable: widget.servers!,
+                          builder: (BuildContext context, Widget? _) {
+                            return TextButton.icon(
+                              onPressed: _busy
+                                  ? null
+                                  : () => showServerSettingsDialog(
+                                        context,
+                                        widget.servers!,
+                                      ),
+                              icon: const Icon(
+                                Icons.dns_outlined,
+                                size: 16,
+                                color: AppColors.inkSecondary,
+                              ),
+                              label: Text(
+                                'Server: ${widget.servers!.hostLabel}',
+                                style: AppText.labelSm.copyWith(
+                                  color: AppColors.inkSecondary,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),

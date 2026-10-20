@@ -2,6 +2,8 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 
 import 'core/config/env.dart';
+import 'core/config/server_settings.dart';
+import 'core/config/server_settings_dialog.dart';
 import 'core/navigation/startup_state.dart';
 import 'core/network/api_client.dart';
 import 'core/storage/secure_store.dart';
@@ -46,6 +48,7 @@ class BootstrapGate extends StatefulWidget {
 class _BootstrapGateState extends State<BootstrapGate> {
   late final SecureStore _store;
   late final Dio _dio;
+  late final ServerSettings _servers;
   late final AuthRepository _auth;
   late final DeviceRepository _devices;
   late final FaceRepository _faces;
@@ -62,6 +65,7 @@ class _BootstrapGateState extends State<BootstrapGate> {
     super.initState();
     _store = SecureStore();
     _dio = createApiClient(store: _store);
+    _servers = ServerSettings(store: _store, dio: _dio);
     _auth = AuthRepository(dio: _dio, store: _store);
     _devices = DeviceRepository(dio: _dio, store: _store);
     _faces = FaceRepository(
@@ -78,7 +82,14 @@ class _BootstrapGateState extends State<BootstrapGate> {
       profiles: _profiles,
       schedules: _schedules,
     );
-    _session = _hasSession();
+    _session = _bootstrap();
+  }
+
+  /// Pulihkan alamat server yang pernah diubah pengguna sebelum request
+  /// pertama, lalu periksa sesi.
+  Future<bool> _bootstrap() async {
+    await _servers.restore();
+    return _hasSession();
   }
 
   Future<bool> _hasSession() async {
@@ -89,8 +100,13 @@ class _BootstrapGateState extends State<BootstrapGate> {
   /// Re-runs the session probe after a startup failure (offline at launch).
   void _retry() {
     setState(() {
-      _session = _hasSession();
+      _session = _bootstrap();
     });
+  }
+
+  Future<void> _openServerSettings() async {
+    final bool changed = await showServerSettingsDialog(context, _servers);
+    if (changed && mounted) _retry();
   }
 
   void _goHome() {
@@ -115,7 +131,12 @@ class _BootstrapGateState extends State<BootstrapGate> {
   void _goLogin() {
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
-        builder: (_) => LoginScreen(auth: _auth, devices: _devices, onDone: _goHome),
+        builder: (_) => LoginScreen(
+          auth: _auth,
+          devices: _devices,
+          servers: _servers,
+          onDone: _goHome,
+        ),
       ),
     );
   }
@@ -153,6 +174,12 @@ class _BootstrapGateState extends State<BootstrapGate> {
                         onPressed: _retry,
                         icon: const Icon(Icons.refresh),
                         label: const Text('Coba Lagi'),
+                      ),
+                      const SizedBox(height: 4),
+                      TextButton.icon(
+                        onPressed: _openServerSettings,
+                        icon: const Icon(Icons.dns_outlined, size: 18),
+                        label: Text('Server: ${_servers.hostLabel}'),
                       ),
                     ],
                   ),

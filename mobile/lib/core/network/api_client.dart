@@ -42,10 +42,10 @@ Duration _rateJitter() => Duration(milliseconds: 100 + Random().nextInt(400));
 /// presents → the whole session family is revoked → random silent logouts.
 /// On refresh failure local tokens are cleared so BootstrapGate does not
 /// treat a dead refresh token as a live session.
-Dio createApiClient({required SecureStore store}) {
+Dio createApiClient({required SecureStore store, String baseUrl = Env.apiBaseUrl}) {
   final Dio dio = Dio(
     BaseOptions(
-      baseUrl: Env.apiBaseUrl,
+      baseUrl: baseUrl,
       connectTimeout: const Duration(seconds: 10),
       receiveTimeout: const Duration(seconds: 15),
       headers: {'Content-Type': 'application/json'},
@@ -64,7 +64,9 @@ Dio createApiClient({required SecureStore store}) {
       try {
         final Dio plain = Dio(
           BaseOptions(
-            baseUrl: Env.apiBaseUrl,
+            // Ikuti base URL aktif (bisa diubah runtime lewat ServerSettings),
+            // bukan nilai compile-time.
+            baseUrl: dio.options.baseUrl,
             connectTimeout: const Duration(seconds: 10),
             receiveTimeout: const Duration(seconds: 15),
             headers: {'Content-Type': 'application/json'},
