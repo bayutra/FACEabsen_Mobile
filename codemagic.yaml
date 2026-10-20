@@ -6,9 +6,13 @@
 # dengan Apple ID biasa (sertifikat gratis, berlaku 7 hari).
 #
 # Cara pakai:
-#   1. Push repo ini ke GitHub / Bitbucket / GitLab.
-#   2. Codemagic > Add application > pilih repo > pilih "codemagic.yaml".
-#   3. Jalankan workflow `ios-unsigned`, unduh artifact FaceAbsen-unsigned.ipa.
+#   1. Push repo ini ke GitHub.
+#   2. Codemagic > Add application > pilih repo.
+#      - Project type : Flutter   (BUKAN iOS/Android native)
+#      - Project path : mobile    (folder yang berisi pubspec.yaml)
+#      - Branch       : master
+#   3. Pilih konfigurasi "codemagic.yaml", lalu Start new build.
+#   4. Unduh artifact FaceAbsen-unsigned.ipa dari tab Artifacts.
 #
 # Catatan: `flutter build ios` HANYA bisa jalan di macOS. Workflow inilah
 # pengganti Mac lokal — jangan dijalankan di Windows.
@@ -16,10 +20,14 @@
 workflows:
   ios-unsigned:
     name: iOS unsigned IPA (for Sideloadly)
+    instance_type: mac_mini_m2
     max_build_duration: 60
+    # Semua script berjalan di <clone>/mobile. Path selalu relatif terhadap
+    # root repo, bukan terhadap CWD, jadi aman walau Project path di UI diisi.
+    working_directory: mobile
     environment:
       flutter: 3.22.2
-      xcode: 15.4
+      xcode: 16.4
       cocoapods: default
     triggering:
       events:
@@ -31,27 +39,25 @@ workflows:
     scripts:
       - name: Flutter pub get
         script: |
-          cd mobile
           flutter --version
           flutter pub get
       - name: Analyze & unit test
         script: |
-          cd mobile
           flutter analyze
           flutter test
       - name: Build iOS (unsigned, arm64 device)
         script: |
-          cd mobile
           flutter build ios --release --no-codesign
       - name: Package IPA
         script: |
           # `ditto` menjaga symlink di dalam framework — wajib agar IPA valid.
-          cd mobile/build/ios/iphoneos
+          cd build/ios/iphoneos
           rm -rf Payload
           mkdir Payload
           cp -R Runner.app Payload/
           ditto -c -k --sequesterRsrc --keepParent Payload FaceAbsen-unsigned.ipa
           ls -lh FaceAbsen-unsigned.ipa
     artifacts:
+      # Path artifact relatif terhadap root repo (bukan working_directory).
       - mobile/build/ios/iphoneos/FaceAbsen-unsigned.ipa
       - mobile/build/ios/iphoneos/Runner.app
