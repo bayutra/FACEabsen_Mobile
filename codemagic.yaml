@@ -31,9 +31,9 @@ workflows:
       cocoapods: default
       vars:
         # Alamat API yang dibakar ke dalam aplikasi saat build.
-        # WAJIB IP LAN laptop (bukan localhost) karena iPhone mengaksesnya
-        # lewat Wi-Fi. Samakan dengan hasil `ipconfig` di laptop.
-        API_BASE_URL: "http://192.168.120.111:3000/api/v1"
+        # ngrok dev domain (gratis, permanen) -> backend lokal port 3000.
+        # Jalankan: ngrok http --url=https://intentional-paly-andra.ngrok-free.dev 3000
+        API_BASE_URL: "https://intentional-paly-andra.ngrok-free.dev/api/v1"
     triggering:
       events:
         - push
