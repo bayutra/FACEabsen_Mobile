@@ -22,8 +22,7 @@ workflows:
     name: iOS unsigned IPA (for Sideloadly)
     instance_type: mac_mini_m2
     max_build_duration: 60
-    # Semua script berjalan di <clone>/mobile. Path selalu relatif terhadap
-    # root repo, bukan terhadap CWD, jadi aman walau Project path di UI diisi.
+    # Semua script berjalan dengan CWD = <clone>/mobile.
     working_directory: mobile
     environment:
       flutter: 3.22.2
@@ -70,6 +69,10 @@ workflows:
           ditto -c -k --sequesterRsrc --keepParent Payload FaceAbsen-unsigned.ipa
           ls -lh FaceAbsen-unsigned.ipa
     artifacts:
-      # Path artifact relatif terhadap root repo (bukan working_directory).
+      # Path artifact dievaluasi relatif terhadap working_directory (mobile/).
+      # Dua varian dicantumkan agar tetap cocok bila Codemagic berubah dan
+      # mengevaluasinya relatif terhadap root repo; yang tidak ada diabaikan.
+      - build/ios/iphoneos/FaceAbsen-unsigned.ipa
+      - build/ios/iphoneos/Runner.app
       - mobile/build/ios/iphoneos/FaceAbsen-unsigned.ipa
       - mobile/build/ios/iphoneos/Runner.app
