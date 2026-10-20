@@ -1,5 +1,5 @@
 // STEP 1 — Environment config (Mobile)
-// Run with: flutter run --dart-define=API_BASE_URL=http://localhost:3000/api/v1 --dart-define=APP_NAME="Face ID Attendance"
+// Run with: flutter run --dart-define=API_BASE_URL=http://localhost:3000/api/v1 --dart-define=APP_NAME="Face Absen"
 class Env {
   static const apiBaseUrl = String.fromEnvironment(
     'API_BASE_URL',
@@ -7,6 +7,6 @@ class Env {
   );
   static const appName = String.fromEnvironment(
     'APP_NAME',
-    defaultValue: 'Face ID Attendance',
+    defaultValue: 'Face Absen',
   );
 }

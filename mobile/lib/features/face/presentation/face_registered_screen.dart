@@ -6,7 +6,6 @@ import '../../attendance/data/attendance_repository.dart';
 import '../../attendance/presentation/attendance_screen.dart';
 import '../../device/domain/device_models.dart' show formatIdDateTime;
 import '../../face/data/face_repository.dart';
-import '../../location/data/location_repository.dart';
 import '../../device/data/device_repository.dart';
 
 /// Stitch "Pendaftaran Wajah - Berhasil": confirmation hero, the biometric
@@ -24,7 +23,6 @@ class FaceRegisteredScreen extends StatelessWidget {
     required this.employeeNo,
     required this.displayName,
     required this.attendance,
-    required this.locations,
     required this.faces,
     required this.devices,
     this.registeredAt,
@@ -35,7 +33,6 @@ class FaceRegisteredScreen extends StatelessWidget {
   final String employeeNo;
   final String displayName;
   final AttendanceRepository attendance;
-  final LocationRepository locations;
   final FaceRepository faces;
   final DeviceRepository devices;
 
@@ -49,7 +46,6 @@ class FaceRegisteredScreen extends StatelessWidget {
       MaterialPageRoute(
         builder: (_) => AttendanceScreen(
           attendance: attendance,
-          locations: locations,
           faces: faces,
           devices: devices,
           displayName: displayName,

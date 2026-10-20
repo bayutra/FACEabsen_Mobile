@@ -27,7 +27,7 @@ class PrivacyNotice {
     version: '2026-10-01',
     title: 'Pemberitahuan Privasi — Presensi Wajah',
     lines: [
-      'Data wajah (template biometrik), lokasi, dan perangkat Anda diproses semata untuk presensi karyawan rumah sakit.',
+      'Data wajah (template biometrik) dan perangkat Anda diproses semata untuk presensi karyawan rumah sakit.',
       'Foto mentah tidak pernah dikirim ke server. Template tersimpan terenkripsi.',
       'Persetujuan dapat dicabut kapan saja; pencabutan menghentikan presensi wajah berikutnya.',
     ],

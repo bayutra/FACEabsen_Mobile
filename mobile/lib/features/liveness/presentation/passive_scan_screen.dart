@@ -23,7 +23,7 @@ import 'liveness_screen.dart' show contourOf;
 /// open eyes, measurable micro-motion, AND a change in face distance across
 /// a short run of frames. A photo taped to a wall fails on motion; a photo
 /// wobbled by hand fails on distance. The verdict stays a pre-filter — the
-/// server scores it alongside face match, geofence, and device integrity.
+/// server scores it alongside face match and device integrity.
 class PassiveScanScreen extends StatefulWidget {
   const PassiveScanScreen({
     super.key,

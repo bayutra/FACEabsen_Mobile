@@ -26,7 +26,6 @@ export const SECURITY_ACTIONS = [
   'PASSWORD_CHANGED',
   'FACE_UPDATED',
   'EMPLOYEE_DEACTIVATED',
-  'GEOFENCE_UPDATED',
 ] as const;
 
 /** Anything that can create an AuditLog row (client or an interactive tx). */

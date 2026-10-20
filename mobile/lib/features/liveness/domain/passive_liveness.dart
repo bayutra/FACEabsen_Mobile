@@ -21,7 +21,7 @@ import 'dart:math' as math;
 /// hand tremor (2–20 px) sits comfortably inside the acceptance band. The
 /// depth gate is what rejects it. Neither signal is a certified PAD; the
 /// on-device verdict remains a pre-filter and the server treats `padScore`
-/// as one input among face match, geofence, and device integrity.
+/// as one input among face match and device integrity.
 ///
 /// Pure Dart: every rule is unit-testable without a device.
 class PassiveFrame {

@@ -99,7 +99,7 @@ class DeviceRegisterScreen extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             const InfoBanner(
-              '1 Akun = 1 Perangkat. IMEI, kamera biometrik, dan GPS dicek otomatis.',
+              '1 Akun = 1 Perangkat. IMEI dan kamera biometrik dicek otomatis.',
               title: 'Kebijakan 1 Akun 1 Perangkat',
             ),
             const SizedBox(height: 8),
@@ -108,7 +108,6 @@ class DeviceRegisterScreen extends StatelessWidget {
                 children: [
                   DetailRow('IMEI', 'Terverifikasi operator'),
                   DetailRow('Kamera', 'Biometrik tersedia'),
-                  DetailRow('GPS', 'Akurasi ±3 m'),
                 ],
               ),
             ),

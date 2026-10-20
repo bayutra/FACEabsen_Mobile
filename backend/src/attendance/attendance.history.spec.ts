@@ -30,7 +30,7 @@ function makePrisma(over: Record<string, Record<string, unknown>> = {}) {
 }
 
 const svcOf = (prisma: PrismaService) =>
-  new AttendanceService(prisma, depsStub, depsStub, depsStub, depsStub, depsStub, auditStub, configStub);
+  new AttendanceService(prisma, depsStub, depsStub, depsStub, depsStub, auditStub, configStub);
 
 describe('AttendanceService.listMine', () => {
   it('scopes to caller + envelope + no profile 404', async () => {

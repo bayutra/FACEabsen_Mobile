@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:face_absen_mobile/features/attendance/data/outbox_repository.dart';
-import 'package:face_absen_mobile/features/location/domain/geo_models.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'fakes.dart';
@@ -9,13 +8,6 @@ import 'fakes.dart';
 OutboxEntry _entry({String deviceId = 'd1', PunchKind kind = PunchKind.checkIn}) =>
     OutboxEntry(
       kind: kind,
-      fix: GeoFix(
-        latitude: -7.95,
-        longitude: 112.61,
-        accuracyM: 8,
-        timestamp: DateTime.parse('2026-10-07T07:00:00.000Z'),
-        isMocked: false,
-      ),
       embedding: List<double>.filled(192, 0.1),
       liveness: <String, Object>{
         'passed': true,
@@ -41,10 +33,6 @@ void main() {
       expect(loaded, hasLength(1));
       final OutboxEntry e = loaded.single;
       expect(e.kind, PunchKind.checkIn);
-      expect(e.fix.latitude, -7.95);
-      expect(e.fix.longitude, 112.61);
-      expect(e.fix.accuracyM, 8);
-      expect(e.fix.isMocked, isFalse);
       expect(e.embedding, hasLength(192));
       expect(e.embedding.first, 0.1);
       expect(e.liveness['passed'], isTrue);
@@ -61,13 +49,6 @@ void main() {
 
       final OutboxEntry src = OutboxEntry(
         kind: PunchKind.checkOut,
-        fix: GeoFix(
-          latitude: -7.9,
-          longitude: 112.6,
-          accuracyM: 12,
-          timestamp: DateTime.parse('2026-10-07T17:00:00.000Z'),
-          isMocked: false,
-        ),
         embedding: List<double>.filled(192, 0.2),
         liveness: <String, Object>{
           'passed': true,

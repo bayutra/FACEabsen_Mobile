@@ -255,9 +255,87 @@ export class DevicesService {
     return updated;
   }
 
-  /** Owner (from another session) or admin marks a device LOST. */
-  async markLost(id: string, userId: string, roles: string[], meta: { ip?: string } = {}) {
+  /**
+   * Admin direct activation (STEP 18): a PENDING device — typically the one a
+   * nurse registered while waiting at the counter — can be trusted without the
+   * full replacement request, but never blindly:
+   * - only PENDING devices are activatable (revoked/lost/active → 409);
+   * - facility gate identical to revoke (ADMIN stays inside its hospital);
+   * - "1 employee = 1 ACTIVE device" is preserved atomically: the currently
+   *   ACTIVE device (sessions included) is revoked in the same transaction,
+   *   exactly like the replacement approval path does.
+   */
+  async activate(
+    id: string,
+    adminId: string,
+    roles: string[],
+    note?: string,
+    meta: { ip?: string } = {},
+  ) {
     const device = await this.prisma.device.findUnique({
+      where: { id },
+      include: { employee: { select: { department: { select: { hospitalId: true } } } } },
+    });
+    if (!device) throw new NotFoundException('Device not found');
+    if (!satisfiesRole(roles, 'SUPER_ADMIN')) {
+      const scope = await resolveHospitalScope(this.prisma, adminId, roles);
+      if (scope.kind !== 'hospital' || device.employee?.department?.hospitalId !== scope.hospitalId) {
+        throw new NotFoundException('Device not found');
+      }
+    }
+    if (device.status !== 'PENDING') {
+      throw new ConflictException('Only PENDING devices can be activated');
+    }
+
+    const previouslyActive = await this.prisma.device.findFirst({
+      where: { employeeId: device.employeeId, status: 'ACTIVE' },
+    });
+
+    const updated = await this.prisma.$transaction(async (tx) => {
+      if (previouslyActive) {
+        await tx.device.update({
+          where: { id: previouslyActive.id },
+          data: {
+            status: 'REVOKED',
+            revokedAt: new Date(),
+            revokedBy: adminId,
+            revokeReason: `activated-replace-${id}`,
+          },
+        });
+        await tx.session.updateMany({
+          where: { deviceId: previouslyActive.id, revokedAt: null },
+          data: { revokedAt: new Date() },
+        });
+      }
+      return tx.device.update({ where: { id }, data: { status: 'ACTIVE' } });
+    });
+
+    await this.audit.log({
+      actorId: adminId,
+      action: 'DEVICE_ACTIVATED',
+      targetType: 'device',
+      targetId: id,
+      ipAddress: meta.ip,
+      metadata: {
+        note: note ?? null,
+        replacedActiveDeviceId: previouslyActive?.id ?? null,
+      },
+    });
+    if (previouslyActive) {
+      await this.audit.log({
+        actorId: adminId,
+        action: 'DEVICE_REVOKED',
+        targetType: 'device',
+        targetId: previouslyActive.id,
+        ipAddress: meta.ip,
+        metadata: { reason: `activated-replace-${id}` },
+      });
+    }
+    return updated;
+  }
+
+  /** Owner (from another session) or admin marks a device LOST. */
+  async markLost(id: string, userId: string, roles: string[], meta: { ip?: string } = {}) {    const device = await this.prisma.device.findUnique({
       where: { id },
       include: { employee: { select: { userId: true, department: { select: { hospitalId: true } } } } },
     });

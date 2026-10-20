@@ -15,16 +15,6 @@ export function validateEnv(env: Record<string, unknown>): void {
     throw new Error('FACE_MATCH_THRESHOLD must be in (0, 1]');
   }
 
-  const geoAcc = num('GEO_MAX_ACCURACY_M', 50);
-  if (!(geoAcc > 0)) {
-    throw new Error('GEO_MAX_ACCURACY_M must be > 0');
-  }
-
-  const geoSkew = num('GEO_MAX_SKEW_MIN', 5);
-  if (!(geoSkew > 0)) {
-    throw new Error('GEO_MAX_SKEW_MIN must be > 0');
-  }
-
   const liveAge = num('LIVENESS_MAX_AGE_MIN', 10);
   if (!(liveAge > 0)) {
     throw new Error('LIVENESS_MAX_AGE_MIN must be > 0');
@@ -36,12 +26,10 @@ export function validateEnv(env: Record<string, unknown>): void {
   }
 
   const weights = [
-    num('RISK_W_FACE', 30),
+    num('RISK_W_FACE', 45),
     num('RISK_W_LIVENESS', 20),
     num('RISK_W_DEVICE', 15),
-    num('RISK_W_INTEGRITY', 10),
-    num('RISK_W_GPS', 10),
-    num('RISK_W_GEOFENCE', 10),
+    num('RISK_W_INTEGRITY', 15),
     num('RISK_W_SIGNATURE', 5),
   ];
   const sum = weights.reduce((a, b) => a + b, 0);

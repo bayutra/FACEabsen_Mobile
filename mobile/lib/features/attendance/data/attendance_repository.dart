@@ -6,7 +6,6 @@ import 'package:uuid/uuid.dart';
 
 import '../../../core/crypto/device_keys.dart';
 import '../../../core/storage/secure_store.dart';
-import '../../location/domain/geo_models.dart';
 import '../domain/attendance_models.dart';
 import 'outbox_repository.dart';
 
@@ -76,7 +75,6 @@ class AttendanceRepository {
   }
 
   Future<Map<String, dynamic>> _signals({
-    required GeoFix fix,
     required List<double> embedding,
     required Map<String, Object> liveness,
     required String deviceId,
@@ -96,11 +94,6 @@ class AttendanceRepository {
     );
     return {
       'deviceId': deviceId,
-      'latitude': fix.latitude,
-      'longitude': fix.longitude,
-      'accuracyM': fix.accuracyM,
-      'fixTimestamp': fix.timestamp.toUtc().toIso8601String(),
-      'isMocked': fix.isMocked,
       'faceEmbedding': embedding,
       'liveness': livenessPayload(liveness),
       'requestId': requestId,
@@ -117,7 +110,6 @@ class AttendanceRepository {
   /// [AttendanceRejected] with server reason otherwise. Pass [cancelToken]
   /// to genuinely abort the socket when the user cancels.
   Future<AttendanceResult> checkIn({
-    required GeoFix fix,
     required List<double> embedding,
     required Map<String, Object> liveness,
     required String deviceId,
@@ -128,7 +120,7 @@ class AttendanceRepository {
     try {
       final Response res = await _dio.post(
         '/attendance/check-in',
-        data: await _signals(fix: fix, embedding: embedding, liveness: liveness, deviceId: deviceId, compromised: compromised, integrityToken: integrityToken),
+        data: await _signals(embedding: embedding, liveness: liveness, deviceId: deviceId, compromised: compromised, integrityToken: integrityToken),
         cancelToken: cancelToken,
       );
       return AttendanceResult.fromCheckIn(Map<String, dynamic>.from(res.data as Map));
@@ -141,7 +133,6 @@ class AttendanceRepository {
   /// Same contract as [checkIn]: [AttendanceOffline] for transport failures,
   /// [AttendanceRejected] for server rejections.
   Future<AttendanceResult> checkOut({
-    required GeoFix fix,
     required List<double> embedding,
     required Map<String, Object> liveness,
     required String deviceId,
@@ -152,7 +143,7 @@ class AttendanceRepository {
     try {
       final Response res = await _dio.post(
         '/attendance/check-out',
-        data: await _signals(fix: fix, embedding: embedding, liveness: liveness, deviceId: deviceId, compromised: compromised, integrityToken: integrityToken),
+        data: await _signals(embedding: embedding, liveness: liveness, deviceId: deviceId, compromised: compromised, integrityToken: integrityToken),
         cancelToken: cancelToken,
       );
       return AttendanceResult.fromCheckOut(Map<String, dynamic>.from(res.data as Map));
@@ -174,7 +165,7 @@ class AttendanceRepository {
   /// failures keep the entry queued.
   ///
   /// Honest scope: entries older than the server freshness windows (request
-  /// skew, liveness `completedAt`, GPS `fixTimestamp`) will be rejected as
+  /// skew, liveness `completedAt`) will be rejected as
   /// stale on flush. The outbox covers transient blips (basement Wi-Fi,
   /// tunnel dead spots, rush-hour 429s) — not hours-long offline. Stale
   /// rejections surface as drops, never as silent retries.
@@ -195,7 +186,6 @@ class AttendanceRepository {
         await _dio.post(
           path,
           data: await _signals(
-            fix: entry.fix,
             embedding: entry.embedding,
             liveness: entry.liveness,
             deviceId: entry.deviceId,

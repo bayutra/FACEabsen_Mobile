@@ -1,5 +1,6 @@
-# STEP 25 — production stack (PRD §70).
-# Usage: cp .env.production.example .env.production  # fill secrets first!
+# Production stack: API backend untuk aplikasi mobile Face Absen.
+# Tidak ada web dashboard — satu-satunya klien adalah app Android/iOS.
+# Usage: cp .env.production.example .env.production  # isi secrets dulu
 #        docker compose --env-file .env.production up -d --build
 #        docker compose exec backend sh -c 'node -e "console.log(1)"'  # sanity
 
@@ -80,27 +81,11 @@ services:
     networks:
       - internal
 
-  web:
-    build: ./web
-    restart: unless-stopped
-    depends_on:
-      - backend
-    env_file:
-      - .env.production
-    logging:
-      driver: json-file
-      options:
-        max-size: "10m"
-        max-file: "5"
-    networks:
-      - internal
-
   nginx:
     image: nginx:1.27-alpine
     restart: unless-stopped
     depends_on:
       - backend
-      - web
     ports:
       - "80:80"
       - "443:443"

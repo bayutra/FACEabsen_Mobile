@@ -151,7 +151,7 @@ describe('EmployeesService.deleteDepartment', () => {
 describe('EmployeesService.listHospitals', () => {
   it('returns the reference list used by the master-data forms', async () => {
     const findMany = vi.fn(async () => [
-      { id: 'h1', code: 'RS-A', name: 'RS Contoh', latitude: -7.65, longitude: 112.23, radiusMeters: 100 },
+      { id: 'h1', code: 'RS-A', name: 'RS Contoh' },
     ]);
     const svc = new EmployeesService(makePrisma({ hospital: { findMany } }), auditStub);
 

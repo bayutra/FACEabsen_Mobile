@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Face Absen Mobile</string>
+	<string>Face Absen</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -24,11 +24,6 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
-	<!-- STEP 11: GPS + geofence. Wajib ada atau app crash saat akses lokasi. -->
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Lokasi dipakai untuk memastikan presensi dilakukan di area rumah sakit.</string>
-	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>Lokasi dipakai untuk memastikan presensi dilakukan di area rumah sakit.</string>
 	<!-- STEP 9: kamera depan untuk pendaftaran dan verifikasi wajah. Foto tidak pernah dikirim. -->
 	<key>NSCameraUsageDescription</key>
 	<string>Kamera dipakai untuk pendaftaran dan verifikasi wajah. Foto tidak pernah dikirim ke server.</string>

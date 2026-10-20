@@ -17,7 +17,6 @@ void main() {
       'checkInAt': '2026-10-05T07:05:00.000Z',
       'checkInStatus': 'LATE',
       'shift': {'name': 'PAGI', 'window': '07:00 → 15:00'},
-      'geofence': {'inside': true, 'distanceM': 12.3},
       'faceMatch': {'score': 0.87, 'matched': true},
       'risk': {'score': 96, 'category': 'LOW', 'needsReview': false},
     });
@@ -31,8 +30,8 @@ void main() {
   });
 
   test('rejection reasons map to Indonesian', () {
-    expect(AttendanceRejected.fromResponse({'reason': 'OUTSIDE_GEOFENCE'}).message,
-        contains('radius'));
+    expect(AttendanceRejected.fromResponse({'reason': 'DEVICE_NOT_ACTIVE'}).message,
+        contains('tidak aktif'));
     expect(AttendanceRejected.fromResponse({'reason': 'FACE_MISMATCH'}).message,
         contains('tidak cocok'));
     expect(AttendanceRejected.fromResponse(null).message, 'Presensi ditolak.');

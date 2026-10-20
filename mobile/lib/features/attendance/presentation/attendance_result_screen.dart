@@ -253,7 +253,7 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
               child: OutlinedButton.icon(
                 onPressed: () => _showEvidenceSheet(context),
                 icon: const Icon(Icons.support_agent, size: 18),
-                label: const Text('Laporkan Kendala Lokasi / CS IT'),
+                label: const Text('Laporkan Kendala / CS IT'),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: const Color(0xFFBA1A1A),
                   side: const BorderSide(color: Color(0xFFFECACA), width: 1.2),
@@ -366,8 +366,6 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
   }
 
   Widget _rejectedHeroCard(String? timeIso) {
-    final double dist = widget.result.distanceM ?? 540;
-    final double radius = widget.result.radiusM ?? 50;
     final double score = (widget.result.faceScore ?? 0.971) * 100;
 
     return Column(
@@ -429,7 +427,7 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
               ),
               const SizedBox(height: 4),
               const Text(
-                'Perangkat Anda berada di luar batas geofence yang diizinkan',
+                'Verifikasi presensi tidak lolos. Silakan ulangi proses presensi.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 13,
@@ -498,7 +496,7 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
                       border: Border.all(color: const Color(0xFFFECACA)),
                     ),
                     child: const Text(
-                      'ERR-GEO-04',
+                      'ERR-ATT-01',
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
@@ -519,27 +517,27 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: const Color(0xFFFECACA)),
                 ),
-                child: Row(
+                child: const Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Icon(Icons.location_off, size: 20, color: Color(0xFFBA1A1A)),
-                    const SizedBox(width: 10),
+                    Icon(Icons.report_problem, size: 20, color: Color(0xFFBA1A1A)),
+                    SizedBox(width: 10),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Di Luar Area Geofence RS',
+                          Text(
+                            'Presensi Tidak Dapat Diproses',
                             style: TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w700,
                               color: Color(0xFF991B1B),
                             ),
                           ),
-                          const SizedBox(height: 3),
+                          SizedBox(height: 3),
                           Text(
-                            'Posisi Anda terdeteksi berjarak ${dist.round()} meter dari Titik Presensi Sentral RS (Batas maksimum radius adalah ${radius.round()} meter).',
-                            style: const TextStyle(
+                            'Sistem tidak dapat memverifikasi presensi Anda. Pastikan wajah terlihat jelas dan perangkat dalam kondisi sah, lalu coba lagi.',
+                            style: TextStyle(
                               fontSize: 12,
                               color: Color(0xFFB91C1C),
                               height: 1.35,
@@ -618,7 +616,7 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
                     ),
                     SizedBox(height: 6),
                     Text(
-                      '1. Presensi wajib dilakukan di dalam area perimeter rumah sakit yang telah ditetapkan.\n2. Pastikan GPS/Location Service pada ponsel Anda memiliki izin presisi tinggi (High Accuracy).',
+                      '1. Presensi wajib dilakukan menggunakan akun dan perangkat Anda sendiri.\n2. Pastikan wajah terlihat jelas dan pencahayaan cukup saat pengambilan biometrik.',
                       style: TextStyle(
                         fontSize: 11,
                         color: Color(0xFF3E4947),
@@ -776,7 +774,7 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
                       ),
                     ),
                     child: Text(
-                      acc != null ? 'GPS ±$acc m' : 'DISP-2981',
+                      acc != null ? 'Skor Risiko $acc' : 'DISP-2981',
                       style: const TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
@@ -807,7 +805,7 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const Text(
-                            'Sinyal GPS Lemah di Basement / Area Isolasi',
+                            'Verifikasi Wajah Perlu Tinjauan Manual',
                             style: TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w700,
@@ -816,7 +814,7 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
                           ),
                           const SizedBox(height: 3),
                           Text(
-                            'Akurasi koordinat satelit turun di bawah batas aman sistem SIMRS (Akurasi: ±${acc ?? 145}m).',
+                            'Skor risiko presensi di bawah ambang otomatis sehingga diteruskan ke verifikasi kepegawaian${acc != null ? ' (Skor: $acc)' : ''}.',
                             style: const TextStyle(
                               fontSize: 12,
                               color: Color(0xFFB45309),
@@ -904,7 +902,7 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
                     SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        'Foto selfie presensi dan catatan lokasi otomatis diteruskan ke Kepala Tim & SDM Kepegawaian untuk validasi manual dalam kurun waktu 1x24 jam.',
+                        'Hasil verifikasi biometrik presensi otomatis diteruskan ke Kepala Tim & SDM Kepegawaian untuk validasi manual dalam kurun waktu 1x24 jam.',
                         style: TextStyle(
                           fontSize: 11,
                           color: Color(0xFF3E4947),
@@ -1212,12 +1210,10 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
             children: [
               Expanded(
                 child: _parameterTile(
-                  icon: Icons.near_me,
-                  title: 'Geolokasi RS',
-                  value: widget.result.distanceM != null
-                      ? '${widget.result.distanceM!.round()} meter'
-                      : '18 meter',
-                  subtitle: 'Dalam Radius (< 50m)',
+                  icon: Icons.verified_user,
+                  title: 'Status Perangkat',
+                  value: 'Terverifikasi',
+                  subtitle: 'Perangkat sah & aktif',
                   isSuccess: true,
                 ),
               ),
@@ -1484,10 +1480,6 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
                       widget.result.checkOutAt == null
                           ? '—'
                           : _hhmmSeconds(widget.result.checkOutAt),
-                    ),
-                    _detailRow(
-                      'Geolokasi',
-                      '${widget.result.distanceM?.round() ?? 18}m dari titik sentral RS',
                     ),
                     _detailRow(
                       'Validitas Wajah',

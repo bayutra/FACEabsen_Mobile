@@ -8,8 +8,6 @@ class AttendanceResult {
     this.checkOutAt,
     this.checkOutStatus,
     this.shiftLabel,
-    this.distanceM,
-    this.radiusM,
     this.faceScore,
     this.riskScore,
     this.riskCategory,
@@ -23,8 +21,6 @@ class AttendanceResult {
   final String? checkOutAt;
   final String? checkOutStatus;
   final String? shiftLabel;
-  final double? distanceM;
-  final double? radiusM;
   final double? faceScore;
   final int? riskScore;
   final String? riskCategory;
@@ -36,7 +32,6 @@ class AttendanceResult {
   }
 
   factory AttendanceResult.fromCheckIn(Map<String, dynamic> json) {
-    final Map? geo = json['geofence'] as Map?;
     final Map? face = json['faceMatch'] as Map?;
     final Map? shift = json['shift'] as Map?;
     final Map<String, dynamic>? risk = _riskOf(json);
@@ -46,8 +41,6 @@ class AttendanceResult {
       checkInAt: json['checkInAt'] as String?,
       checkInStatus: json['checkInStatus'] as String?,
       shiftLabel: shift == null ? null : '${shift['name']} · ${shift['window']}',
-      distanceM: (geo?['distanceM'] as num?)?.toDouble(),
-      radiusM: (geo?['radiusM'] as num?)?.toDouble(),
       faceScore: (face?['score'] as num?)?.toDouble(),
       riskScore: (risk?['score'] as num?)?.toInt(),
       riskCategory: risk?['category'] as String?,
@@ -100,10 +93,6 @@ class AttendanceHistoryItem {
     this.riskScore,
     this.riskCategory,
     this.needsReview = false,
-    this.latitude,
-    this.longitude,
-    this.accuracyM,
-    this.geofencePass,
   });
 
   final String id;
@@ -117,12 +106,6 @@ class AttendanceHistoryItem {
   final int? riskScore;
   final String? riskCategory;
   final bool needsReview;
-
-  /// GPS evidence captured at punch time (mobile detail sheet).
-  final double? latitude;
-  final double? longitude;
-  final double? accuracyM;
-  final bool? geofencePass;
 
   factory AttendanceHistoryItem.fromJson(Map<String, dynamic> json) {
     final Map? shift = json['shift'] as Map?;
@@ -142,10 +125,6 @@ class AttendanceHistoryItem {
       riskCategory:
           (json['riskCategory'] as String?) ?? (risk?['category'] as String?),
       needsReview: (json['needsReview'] as bool?) ?? false,
-      latitude: (json['checkInLat'] as num?)?.toDouble(),
-      longitude: (json['checkInLon'] as num?)?.toDouble(),
-      accuracyM: (json['checkInAccuracy'] as num?)?.toDouble(),
-      geofencePass: json['geofencePass'] as bool?,
     );
   }
 }
@@ -208,8 +187,6 @@ String checkOutStatusLabel(String? status) {
 /// Server rejection reasons → Indonesian messages.
 String attendanceRejectMessage(String? reason) {
   switch (reason) {
-    case 'OUTSIDE_GEOFENCE':
-      return 'Di luar radius / GPS tidak valid.';
     case 'FACE_MISMATCH':
       return 'Wajah tidak cocok. Coba lagi di cahaya cukup.';
     case 'NO_FACE_TEMPLATE':

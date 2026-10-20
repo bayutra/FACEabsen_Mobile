@@ -1,4 +1,5 @@
 import 'package:face_absen_mobile/features/schedule/data/schedule_repository.dart';
+import 'package:face_absen_mobile/features/schedule/domain/shift_status.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 ScheduleEntry entry(String start, String end, {bool overnight = false, String name = 'SHIFT'}) =>
@@ -33,6 +34,48 @@ void main() {
     test('dateKey zero-pads single digits', () {
       expect(ScheduleRepository.dateKey(DateTime(2026, 1, 5)), '2026-01-05');
       expect(ScheduleRepository.dateKey(DateTime(2026, 12, 31)), '2026-12-31');
+    });
+
+    test('reads shift tolerances, defaulting when the backend omits them', () {
+      final withThresholds = ScheduleEntry.fromJson({
+        'id': 'sch1',
+        'workDate': '2026-10-06T00:00:00.000Z',
+        'shift': {
+          'name': 'PAGI',
+          'startTime': '07:00',
+          'endTime': '15:00',
+          'overnight': false,
+          'gracePeriodMin': 10,
+          'lateThresholdMin': 45,
+          'earlyCheckoutThresholdMin': 20,
+        },
+      });
+      expect(withThresholds.gracePeriodMin, 10);
+      expect(withThresholds.lateThresholdMin, 45);
+      expect(withThresholds.earlyCheckoutThresholdMin, 20);
+
+      final defaults = entry('07:00', '15:00');
+      expect(defaults.gracePeriodMin, 15);
+      expect(defaults.lateThresholdMin, 30);
+      expect(defaults.earlyCheckoutThresholdMin, 15);
+    });
+
+    test('checkInStatusAt/checkOutStatusAt use the parsed tolerances', () {
+      final e = ScheduleEntry.fromJson({
+        'id': 'sch1',
+        'workDate': '2026-10-06T00:00:00.000Z',
+        'shift': {
+          'name': 'PAGI',
+          'startTime': '07:00',
+          'endTime': '15:00',
+          'overnight': false,
+          'gracePeriodMin': 15,
+          'lateThresholdMin': 30,
+          'earlyCheckoutThresholdMin': 15,
+        },
+      });
+      expect(e.checkInStatusAt(DateTime(2026, 10, 6, 7, 20)).status, PunchStatus.late);
+      expect(e.checkOutStatusAt(DateTime(2026, 10, 6, 14, 30)).status, PunchStatus.earlyCheckout);
     });
   });
 

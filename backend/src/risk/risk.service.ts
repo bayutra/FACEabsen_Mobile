@@ -9,8 +9,6 @@ export interface RiskInput {
   livenessOk: boolean;
   deviceOk: boolean;
   integrityOk: boolean;
-  gpsOk: boolean;
-  geofenceOk: boolean;
   signatureOk: boolean;
 }
 
@@ -19,8 +17,6 @@ export interface RiskWeights {
   liveness: number;
   device: number;
   integrity: number;
-  gps: number;
-  geofence: number;
   signature: number;
 }
 
@@ -39,12 +35,10 @@ export class RiskService {
   constructor(config: ConfigService) {
     const num = (key: string, dflt: number) => Number(config.get(key, dflt));
     this.weights = {
-      face: num('RISK_W_FACE', 30),
+      face: num('RISK_W_FACE', 45),
       liveness: num('RISK_W_LIVENESS', 20),
       device: num('RISK_W_DEVICE', 15),
-      integrity: num('RISK_W_INTEGRITY', 10),
-      gps: num('RISK_W_GPS', 10),
-      geofence: num('RISK_W_GEOFENCE', 10),
+      integrity: num('RISK_W_INTEGRITY', 15),
       signature: num('RISK_W_SIGNATURE', 5),
     };
     this.lowMin = num('RISK_LOW_MIN', 90);
@@ -63,8 +57,6 @@ export class RiskService {
       (input.livenessOk ? w.liveness : 0) +
       (input.deviceOk ? w.device : 0) +
       (input.integrityOk ? w.integrity : 0) +
-      (input.gpsOk ? w.gps : 0) +
-      (input.geofenceOk ? w.geofence : 0) +
       (input.signatureOk ? w.signature : 0);
     const score = Math.round(total);
     const category: RiskCategory =

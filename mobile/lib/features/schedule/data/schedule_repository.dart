@@ -1,5 +1,7 @@
 import 'package:dio/dio.dart';
 
+import '../domain/shift_status.dart';
+
 /// Own roster (Stitch "Jadwal Dinas Mingguan & Shift Nakes").
 /// Backend: GET /schedules/me?from&to — employee-scoped, no admin permission.
 class ScheduleRepository {
@@ -33,6 +35,9 @@ class ScheduleEntry {
     required this.startTime,
     required this.endTime,
     required this.overnight,
+    this.gracePeriodMin = 15,
+    this.lateThresholdMin = 30,
+    this.earlyCheckoutThresholdMin = 15,
   });
 
   final String id;
@@ -41,6 +46,12 @@ class ScheduleEntry {
   final String startTime;
   final String endTime;
   final bool overnight;
+
+  /// Shift-master tolerances (PRD §20). Defaults mirror the DB, so an older
+  /// backend payload still yields sane verdicts.
+  final int gracePeriodMin;
+  final int lateThresholdMin;
+  final int earlyCheckoutThresholdMin;
 
   factory ScheduleEntry.fromJson(Map<String, dynamic> json) {
     final Map<String, dynamic>? shift =
@@ -52,10 +63,35 @@ class ScheduleEntry {
       startTime: shift?['startTime'] as String? ?? '--:--',
       endTime: shift?['endTime'] as String? ?? '--:--',
       overnight: shift?['overnight'] == true,
+      gracePeriodMin: _intOr(shift?['gracePeriodMin'], 15),
+      lateThresholdMin: _intOr(shift?['lateThresholdMin'], 30),
+      earlyCheckoutThresholdMin: _intOr(shift?['earlyCheckoutThresholdMin'], 15),
     );
   }
 
+  static int _intOr(Object? value, int fallback) =>
+      value is num ? value.toInt() : fallback;
+
   String get window => '$startTime → $endTime';
+
+  /// Check-in verdict for [now] using this shift's grace/late thresholds.
+  ShiftVerdict checkInStatusAt(DateTime now) => evaluateCheckInStatus(
+        now: now,
+        workDate: workDate,
+        startTime: startTime,
+        gracePeriodMin: gracePeriodMin,
+        lateThresholdMin: lateThresholdMin,
+      );
+
+  /// Check-out verdict for [now] using this shift's early-checkout threshold.
+  ShiftVerdict checkOutStatusAt(DateTime now) => evaluateCheckOutStatus(
+        now: now,
+        workDate: workDate,
+        startTime: startTime,
+        endTime: endTime,
+        earlyCheckoutThresholdMin: earlyCheckoutThresholdMin,
+        overnight: overnight,
+      );
 
   /// Whole-hour shift length derived from the real start/end window, or null
   /// when either side is unparseable (never guessed from the shift name).

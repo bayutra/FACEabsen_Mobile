@@ -22,7 +22,6 @@ import { DeviceChangeService } from '../src/devices/device-change.service.js';
 import { DevicesService } from '../src/devices/devices.service.js';
 import { TemplateCryptoService } from '../src/face/crypto.service.js';
 import { FaceService } from '../src/face/face.service.js';
-import { GeoService } from '../src/geo/geo.service.js';
 import { PrismaService } from '../src/prisma/prisma.service.js';
 import { PrivacyService } from '../src/privacy/privacy.service.js';
 import { RiskService } from '../src/risk/risk.service.js';
@@ -33,8 +32,6 @@ const CONFIG: Record<string, unknown> = {
   FACE_MATCH_THRESHOLD: 0.5,
   LIVENESS_MAX_AGE_MIN: 10,
   REQUEST_MAX_SKEW_MIN: 5,
-  GEO_MAX_ACCURACY_M: 50,
-  GEO_MAX_SKEW_MIN: 5,
   JWT_ACCESS_SECRET: 'e2e-att',
   JWT_ACCESS_TTL_SEC: 900,
 };
@@ -60,7 +57,7 @@ function makeFake(crypto: TemplateCryptoService) {
     ADMIN: ['attendance:read', 'employee:read'],
   };
   const sessions = new Map<string, any>();
-  const hospital = { id: 'h1', code: 'RS-A', name: 'RS Contoh', latitude: -7.65, longitude: 112.23, radiusMeters: 100 };
+  const hospital = { id: 'h1', code: 'RS-A', name: 'RS Contoh' };
   const employees = new Map<string, any>([
     ['e1', { id: 'e1', userId: 'u1', employeeNo: 'EMP-001', name: 'Siti', departmentId: 'd1', department: { id: 'd1', name: 'IGD', hospitalId: 'h1', hospital } }],
     ['e2', { id: 'e2', userId: 'u2', employeeNo: 'EMP-002', name: 'Budi', departmentId: 'd1', department: { id: 'd1', name: 'IGD', hospitalId: 'h1', hospital } }],
@@ -291,11 +288,6 @@ function signals(over: Record<string, unknown> = {}) {
   const sig = sign(null, Buffer.from(`${requestId}.${requestTimestamp}`, 'utf8'), privateKey).toString('base64');
   return {
     deviceId: 'd1',
-    latitude: -7.65,
-    longitude: 112.23,
-    accuracyM: 10,
-    fixTimestamp: new Date().toISOString(),
-    isMocked: false,
     faceEmbedding: [...FACE_VEC],
     liveness: { passed: true, challenges: ['blink'], completedAt: new Date().toISOString(), score: 1 },
     requestId,
@@ -320,7 +312,6 @@ beforeAll(async () => {
       AttendanceService,
       DevicesService,
       DeviceChangeService,
-      GeoService,
       FaceService,
       TemplateCryptoService,
       PrivacyService,
@@ -357,7 +348,6 @@ describe('attendance lifecycle over HTTP (PRD §57)', () => {
     const in1 = await request(server).post('/attendance/check-in').set(auth).send(signals());
     expect(in1.status).toBe(200);
     expect(in1.body.faceMatch).toMatchObject({ matched: true });
-    expect(in1.body.geofence.inside).toBe(true);
     expect(in1.body.risk).toMatchObject({ score: 100, category: 'LOW', needsReview: false });
 
     // same requestId twice:
@@ -385,7 +375,7 @@ describe('attendance lifecycle over HTTP (PRD §57)', () => {
     expect(actions).toContain('ATTENDANCE_REJECTED');
   });
 
-  it('rejects: bad signature, outside, wrong face, no schedule/template', async () => {
+  it('rejects: bad signature, wrong face, no schedule/template', async () => {
     const server = app.getHttpServer();
     const t1 = await tokenFor('u1');
     const auth = { Authorization: `Bearer ${t1}` };
@@ -394,16 +384,14 @@ describe('attendance lifecycle over HTTP (PRD §57)', () => {
     expect(badSig.status).toBe(422);
     expect(badSig.body.reason).toBe('INVALID_SIGNATURE');
 
-    const out = await request(server).post('/attendance/check-in').set(auth).send(signals({ latitude: -7.0 }));
-    expect(out.body.reason).toBe('OUTSIDE_GEOFENCE');
-
     const wrongFace = await request(server)
       .post('/attendance/check-in')
       .set(auth)
       .send(signals({ faceEmbedding: FACE_VEC.map((v) => -v) }));
     expect(wrongFace.body.reason).toBe('FACE_MISMATCH');
-    // cos(v,-v) = -1 → face 0 + 70 = 70 MEDIUM, scored even in rejection
-    expect(wrongFace.body).toMatchObject({ riskScore: 70, riskCategory: 'MEDIUM' });
+    // cos(v,-v) = -1 → face 0 + 55 = 55 HIGH (non-face weights sum to 55),
+    // still scored even though the punch is rejected.
+    expect(wrongFace.body).toMatchObject({ riskScore: 55, riskCategory: 'HIGH' });
 
     // u2 owns d2 (signed by PAIR2), has schedule, but never registered a face
     const t2 = await tokenFor('u2');
@@ -466,17 +454,12 @@ describe('history endpoints over HTTP (PRD §59)', () => {
 });
 
 describe('attack simulations (PRD §69)', () => {
-  it('fake GPS + stale/fake liveness + stolen devices all rejected + audited', async () => {
+  it('stale/fake liveness + stolen devices all rejected + audited', async () => {
     const server = app.getHttpServer();
     const t1 = await tokenFor('u1');
     const auth = { Authorization: `Bearer ${t1}` };
 
-    // 1. Fake GPS (mock flag)
-    const mock = await request(server).post('/attendance/check-in').set(auth).send(signals({ isMocked: true }));
-    expect(mock.status).toBe(422);
-    expect(mock.body.reason).toBe('OUTSIDE_GEOFENCE');
-
-    // 2. Photo face: liveness never passed
+    // 1. Photo face: liveness never passed
     const photo = await request(server).post('/attendance/check-in').set(auth).send(
       signals({ liveness: { passed: false, challenges: [], completedAt: new Date().toISOString(), score: 0 } }),
     );
@@ -512,7 +495,7 @@ describe('attack simulations (PRD §69)', () => {
     const denied = (fake.audits as Array<{ action: string; metadata?: { reason?: string } }>)
       .filter((a) => a.action === 'ATTENDANCE_REJECTED')
       .map((a) => a.metadata?.reason);
-    for (const r of ['OUTSIDE_GEOFENCE', 'LIVENESS_FAILED', 'LIVENESS_STALE', 'DEVICE_NOT_ACTIVE']) {
+    for (const r of ['LIVENESS_FAILED', 'LIVENESS_STALE', 'DEVICE_NOT_ACTIVE']) {
       expect(denied).toContain(r);
     }
   });

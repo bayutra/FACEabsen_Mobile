@@ -1,5 +1,5 @@
 name: face_absen_mobile
-description: "A new Flutter project."
+description: "Face Absen Mobile — presensi karyawan RSU Darmayu Madiun berbasis pengenalan wajah on-device."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -49,7 +49,6 @@ dependencies:
   google_mlkit_face_detection: ^0.9.0
   tflite_flutter: 0.9.5
   image: ^4.1.7
-  geolocator: 12.0.0
 
 dev_dependencies:
   flutter_test:

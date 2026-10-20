@@ -12,7 +12,6 @@ import { satisfiesRole } from '../auth/rbac.js';
 import { resolveHospitalScope } from '../auth/tenant-scope.js';
 import { DevicesService } from '../devices/devices.service.js';
 import { FaceService } from '../face/face.service.js';
-import { GeoService } from '../geo/geo.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { PrivacyService } from '../privacy/privacy.service.js';
 import { IntegrityService } from '../integrity/integrity.service.js';
@@ -44,7 +43,6 @@ export class AttendanceService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly devices: DevicesService,
-    private readonly geo: GeoService,
     private readonly face: FaceService,
     private readonly risk: RiskService,
     private readonly privacy: PrivacyService,
@@ -91,26 +89,6 @@ export class AttendanceService {
       return this.reject(userId, 'ALREADY_CHECKED_IN', 'Sudah check-in, selesaikan check-out dulu', meta, risk, { openId: open.id });
     }
 
-    const geo = await this.geo.check(
-      {
-        latitude: dto.latitude,
-        longitude: dto.longitude,
-        accuracyM: dto.accuracyM,
-        timestamp: dto.fixTimestamp,
-        isMocked: dto.isMocked,
-      },
-      userId,
-    );
-    risk.gpsOk = geo.checks.coordsValid && geo.checks.accuracyOk && geo.checks.timestampFresh;
-    risk.geofenceOk = geo.inside;
-    if (!geo.inside) {
-      return this.reject(userId, 'OUTSIDE_GEOFENCE', 'Di luar radius / GPS tidak valid', meta, risk, {
-        distanceM: geo.distanceM,
-        checks: geo.checks,
-        mockSuspected: geo.mockSuspected,
-      });
-    }
-
     const live = validateLiveness(dto.liveness, now, this.livenessMaxAgeMin);
     if (!live.ok) {
       return this.reject(userId, live.reason, 'Bukti liveness tidak valid', meta, risk);
@@ -135,10 +113,6 @@ export class AttendanceService {
         checkInAt: now,
         checkInStatus: evalIn.status,
         deviceId: device.id,
-        checkInLat: dto.latitude,
-        checkInLon: dto.longitude,
-        checkInAccuracy: dto.accuracyM,
-        geofencePass: true,
         riskScore: verdict.score,
         riskCategory: verdict.category,
         needsReview: flagged,
@@ -151,7 +125,7 @@ export class AttendanceService {
       targetId: row.id,
       ipAddress: meta.ip,
       deviceId: device.id,
-      metadata: { status: evalIn.status, lateMinutes: evalIn.lateMinutes, matchScore: match.score, distanceM: geo.distanceM, riskScore: verdict.score, riskCategory: verdict.category },
+      metadata: { status: evalIn.status, lateMinutes: evalIn.lateMinutes, matchScore: match.score, riskScore: verdict.score, riskCategory: verdict.category },
     });
     return {
       id: row.id,
@@ -159,7 +133,6 @@ export class AttendanceService {
       checkInAt: row.checkInAt,
       checkInStatus: row.checkInStatus,
       shift: { name: schedule.shift.name, window: `${schedule.shift.startTime} → ${schedule.shift.endTime}` },
-      geofence: { inside: true, distanceM: geo.distanceM, radiusM: geo.radiusM },
       faceMatch: { score: match.score, matched: true },
       risk: { score: verdict.score, category: verdict.category, needsReview: flagged },
     };
@@ -186,25 +159,6 @@ export class AttendanceService {
     });
     if (!open) {
       return this.reject(userId, 'NO_OPEN_ATTENDANCE', 'Belum check-in', meta, risk);
-    }
-
-    const geo = await this.geo.check(
-      {
-        latitude: dto.latitude,
-        longitude: dto.longitude,
-        accuracyM: dto.accuracyM,
-        timestamp: dto.fixTimestamp,
-        isMocked: dto.isMocked,
-      },
-      userId,
-    );
-    risk.gpsOk = geo.checks.coordsValid && geo.checks.accuracyOk && geo.checks.timestampFresh;
-    risk.geofenceOk = geo.inside;
-    if (!geo.inside) {
-      return this.reject(userId, 'OUTSIDE_GEOFENCE', 'Di luar radius / GPS tidak valid', meta, risk, {
-        distanceM: geo.distanceM,
-        checks: geo.checks,
-      });
     }
 
     const live = validateLiveness(dto.liveness, now, this.livenessMaxAgeMin);
@@ -234,8 +188,6 @@ export class AttendanceService {
       data: {
         checkOutAt: now,
         checkOutStatus: evalOut.status,
-        checkOutLat: dto.latitude,
-        checkOutLon: dto.longitude,
         riskScore: score,
         riskCategory: category,
         needsReview: flagged,
@@ -273,14 +225,6 @@ export class AttendanceService {
     if (query.to) AND.push({ workDate: { lte: new Date(query.to) } });
     if (query.checkInStatus) AND.push({ checkInStatus: query.checkInStatus });
     const where = { AND };
-    // GPS evidence for the mobile detail sheet (PRD §16: prove where the punch
-    // happened). Latitude/longitude/accuracy are already stored per row.
-    const evidenceSelect = {
-      checkInLat: true,
-      checkInLon: true,
-      checkInAccuracy: true,
-      geofencePass: true,
-    } as const;
     const [total, rows] = await Promise.all([
       this.prisma.attendance.count({ where }),
       this.prisma.attendance.findMany({
@@ -298,7 +242,6 @@ export class AttendanceService {
           riskScore: true,
           riskCategory: true,
           needsReview: true,
-          ...evidenceSelect,
           shift: { select: { id: true, name: true, startTime: true, endTime: true, overnight: true } },
         },
       }),
@@ -592,8 +535,6 @@ function blankRisk(integrityOk: boolean): RiskInput {
     livenessOk: false,
     deviceOk: false,
     integrityOk,
-    gpsOk: false,
-    geofenceOk: false,
     signatureOk: false,
   };
 }

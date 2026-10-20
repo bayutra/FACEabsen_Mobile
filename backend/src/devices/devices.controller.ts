@@ -6,7 +6,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
 import { PermissionsGuard } from '../auth/guards/permissions.guard.js';
 import { RolesGuard } from '../auth/guards/roles.guard.js';
 import { DevicesService } from './devices.service.js';
-import { ListDevicesQuery, RegisterDeviceDto, RevokeDeviceDto } from './dto.js';
+import { ActivateDeviceDto, ListDevicesQuery, RegisterDeviceDto, RevokeDeviceDto } from './dto.js';
 
 const registerThrottle = {
   default: { limit: 10, ttl: 60_000 },
@@ -70,6 +70,26 @@ export class DevicesController {
     @Req() req: Request,
   ) {
     return this.devices.revoke(id, user.userId, user.roles, dto.reason, { ip: req.ip });
+  }
+
+  /**
+   * Activasi langsung perangkat yang minta aktifasi (status PENDING).
+   * SUPER_ADMIN: bebas scope. ADMIN: hanya perangkat RS-nya sendiri.
+   * Token permission: device:approve-replacement (satu ranah sama dengan
+   * persetujuan penggantian — aktifasi memercayakan perangkat baru).
+   */
+  @UseGuards(RolesGuard, PermissionsGuard)
+  @Roles('SUPER_ADMIN', 'ADMIN')
+  @RequirePermissions('device:approve-replacement')
+  @HttpCode(HttpStatus.OK)
+  @Post(':id/activate')
+  activate(
+    @Param('id') id: string,
+    @Body() dto: ActivateDeviceDto,
+    @CurrentUser() user: AuthContext,
+    @Req() req: Request,
+  ) {
+    return this.devices.activate(id, user.userId, user.roles, dto.note, { ip: req.ip });
   }
 
   @HttpCode(HttpStatus.OK)

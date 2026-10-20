@@ -209,7 +209,20 @@ export class ShiftsService {
         skip: (page - 1) * pageSize,
         take: pageSize,
         include: {
-          shift: { select: { id: true, name: true, startTime: true, endTime: true, overnight: true } },
+          // Thresholds travel with the roster so the mobile app can show the
+          // on-time/late/early verdict the server will record (PRD §20).
+          shift: {
+            select: {
+              id: true,
+              name: true,
+              startTime: true,
+              endTime: true,
+              overnight: true,
+              gracePeriodMin: true,
+              lateThresholdMin: true,
+              earlyCheckoutThresholdMin: true,
+            },
+          },
         },
       }),
     ]);
@@ -290,7 +303,18 @@ export class ShiftsService {
         skip: (page - 1) * pageSize,
         take: pageSize,
         include: {
-          shift: { select: { id: true, name: true, startTime: true, endTime: true, overnight: true } },
+          shift: {
+            select: {
+              id: true,
+              name: true,
+              startTime: true,
+              endTime: true,
+              overnight: true,
+              gracePeriodMin: true,
+              lateThresholdMin: true,
+              earlyCheckoutThresholdMin: true,
+            },
+          },
           employee: { select: { id: true, name: true, employeeNo: true } },
         },
       }),

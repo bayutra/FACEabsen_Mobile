@@ -1,6 +1,7 @@
-# STEP 1 — backend gitignore
+# Backend
 node_modules/
 dist/
 .env
 *.log
 coverage/
+*.tsbuildinfo

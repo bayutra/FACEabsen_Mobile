@@ -355,6 +355,11 @@ describe('schedules as ADMIN', () => {
     expect(listed.status).toBe(200);
     expect(listed.body.pagination.totalItems).toBe(1);
     expect(listed.body.data[0].shift.name).toBe('MALAM');
+    // Thresholds travel with the roster so the mobile app can preview the
+    // on-time/late verdict the server records.
+    expect(listed.body.data[0].shift.gracePeriodMin).toBe(15);
+    expect(listed.body.data[0].shift.lateThresholdMin).toBe(30);
+    expect(listed.body.data[0].shift.earlyCheckoutThresholdMin).toBe(15);
 
     const gone = await request(server).delete(`/schedules/${schId}`).set('Authorization', `Bearer ${admin}`);
     expect(gone.status).toBe(200);
@@ -371,5 +376,44 @@ describe('schedules as ADMIN', () => {
     fake.attendances.push({ id: 'a1', scheduleId: schId });
     const blocked = await request(server).delete(`/schedules/${schId}`).set('Authorization', `Bearer ${admin}`);
     expect(blocked.status).toBe(409);
+  });
+});
+
+describe('own roster (/schedules/me)', () => {
+  it('returns the caller shift with its tolerances (no schedule:manage needed)', async () => {
+    const server = app.getHttpServer();
+    const admin = await tokenFor('u-adm', ['ADMIN'], 'admin@rs.test');
+    const shift = await request(server)
+      .post('/shifts')
+      .set('Authorization', `Bearer ${admin}`)
+      .send({
+        hospitalId: 'h1',
+        name: 'SORE',
+        startTime: '13:00',
+        endTime: '21:00',
+        gracePeriodMin: 12,
+        lateThresholdMin: 44,
+        earlyCheckoutThresholdMin: 18,
+      });
+    expect(shift.status).toBe(201);
+
+    const assigned = await request(server)
+      .post('/schedules')
+      .set('Authorization', `Bearer ${admin}`)
+      .send({ employeeId: 'e1', shiftId: shift.body.id, workDate: '2026-09-26' });
+    expect(assigned.status).toBe(201);
+
+    const emp = await tokenFor('u-emp', ['EMPLOYEE'], 'employee@rs.test');
+    const res = await request(server)
+      .get('/schedules/me?from=2026-09-01&to=2026-09-30&pageSize=100')
+      .set('Authorization', `Bearer ${emp}`);
+    expect(res.status).toBe(200);
+    const row = (res.body.data as any[]).find((r) => r.shift?.name === 'SORE');
+    expect(row).toBeTruthy();
+    expect(row.shift).toMatchObject({
+      gracePeriodMin: 12,
+      lateThresholdMin: 44,
+      earlyCheckoutThresholdMin: 18,
+    });
   });
 });

@@ -58,7 +58,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
     if (credential.isEmpty || password.isEmpty) {
       setState(() {
-        _error = 'ID Karyawan / Email dan Kata Sandi wajib diisi.';
+        _error = 'Email dan Kata Sandi wajib diisi.';
       });
       return;
     }
@@ -494,7 +494,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'ID Karyawan / Email / NIP *',
+                            'Email *',
                             style: AppText.labelMd.copyWith(color: AppColors.ink),
                           ),
                           const SizedBox(height: 6),
@@ -502,8 +502,8 @@ class _LoginScreenState extends State<LoginScreen> {
                             controller: _email,
                             keyboardType: TextInputType.emailAddress,
                             decoration: const InputDecoration(
-                              hintText: 'Contoh: 19940812-2020-04 atau email',
-                              prefixIcon: Icon(Icons.badge_outlined),
+                              hintText: 'nama@rumahsakit.example',
+                              prefixIcon: Icon(Icons.mail_outline),
                             ),
                           ),
                           const SizedBox(height: 4),
@@ -692,7 +692,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ),
                                 const SizedBox(height: 2),
                                 Text(
-                                  'Perangkat ini akan didaftarkan sebagai perangkat absensi utama Anda untuk mencegah duplikasi presensi & pemalsuan koordinat GPS.',
+                                  'Perangkat ini akan didaftarkan sebagai perangkat absensi utama Anda untuk mencegah duplikasi presensi.',
                                   style: AppText.labelSm.copyWith(
                                     color: AppColors.inkSecondary,
                                   ),

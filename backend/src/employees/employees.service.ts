@@ -241,8 +241,7 @@ export class EmployeesService {
 
   /**
    * Reference list for the master-data pickers (department/shift forms).
-   * Coordinates are deliberately excluded: exact fence points are
-   * SUPER_ADMIN-only via GET /geo/fence (M4), and pickers only need id/code/name.
+   * Pickers only need id/code/name.
    */
   async listHospitals() {
     return this.prisma.hospital.findMany({

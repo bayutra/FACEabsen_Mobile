@@ -39,8 +39,12 @@ async function bootstrap() {
   const apiPrefix = process.env.API_PREFIX ?? 'api/v1';
   app.setGlobalPrefix(apiPrefix);
 
-  const corsOrigin = process.env.CORS_ORIGIN ?? 'http://localhost:3001';
-  app.enableCors({ origin: corsOrigin.split(',') });
+  // Mobile apps are not browsers, so CORS is off by default. Set CORS_ORIGIN
+  // only for an optional browser/SIMRS integration (comma-separated origins).
+  const corsOrigin = process.env.CORS_ORIGIN?.trim();
+  if (corsOrigin) {
+    app.enableCors({ origin: corsOrigin.split(',').map((o) => o.trim()) });
+  }
 
   // OpenAPI docs for SIMRS integrators. Explicit DOCS_ENABLED wins; otherwise
   // on everywhere except production (off in production by default).

@@ -76,17 +76,14 @@ enum LeaveType {
 // ---------------- Master: hospital & department ----------------
 
 model Hospital {
-  id           String       @id @default(cuid())
-  code         String       @unique
-  name         String
-  address      String?
-  latitude     Float
-  longitude    Float
-  radiusMeters Int          @default(100) @map("radius_meters")
-  createdAt    DateTime     @default(now()) @map("created_at")
-  updatedAt    DateTime     @updatedAt @map("updated_at")
-  departments  Department[]
-  shifts       Shift[]
+  id                   String       @id @default(cuid())
+  code                 String       @unique
+  name                 String
+  address              String?
+  createdAt            DateTime     @default(now()) @map("created_at")
+  updatedAt            DateTime     @updatedAt @map("updated_at")
+  departments          Department[]
+  shifts               Shift[]
 
   @@map("hospitals")
 }
@@ -348,12 +345,6 @@ model Attendance {
   needsReview      Boolean         @default(false) @map("needs_review") // MEDIUM risk supervisor queue (STEP 13/17)
   deviceId        String?             @map("device_id")
   device          Device?             @relation(fields: [deviceId], references: [id], onDelete: SetNull)
-  checkInLat      Float?              @map("check_in_lat")
-  checkInLon      Float?              @map("check_in_lon")
-  checkInAccuracy Float?              @map("check_in_accuracy")
-  checkOutLat     Float?              @map("check_out_lat")
-  checkOutLon     Float?              @map("check_out_lon")
-  geofencePass    Boolean?            @map("geofence_pass")
   notes           String?
   createdAt       DateTime            @default(now()) @map("created_at")
   updatedAt       DateTime            @updatedAt @map("updated_at")

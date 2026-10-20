@@ -38,10 +38,10 @@ for (let t = 0.3; t <= 0.8001; t += 0.05) {
   const th = Math.round(t * 100) / 100;
   const far = data.filter((d) => !d.genuine && d.score >= th).length / Math.max(1, imp);
   const frr = data.filter((d) => d.genuine && d.score < th).length / Math.max(1, gen);
-  // Risk impact: face contributes score*30 of 100. Show resulting total for a
-  // canonical "all other signals pass" attendance (70 pts non-face).
-  const typicalGenuine = 0.9 * 30 + 70; // 97 LOW
-  const atThreshold = th * 30 + 70; // boundary case
+  // Risk impact: face contributes score*45 of 100. Show resulting total for a
+  // canonical "all other signals pass" attendance (55 pts non-face).
+  const typicalGenuine = 0.9 * 45 + 55; // 96 LOW
+  const atThreshold = th * 45 + 55; // boundary case (0.5 → 78 MEDIUM)
   table.push({ threshold: th, far: r3(far), frr: r3(frr), riskAtThreshold: Math.round(atThreshold), riskTypical: Math.round(typicalGenuine) });
 }
 // EER = threshold with min |FAR-FRR|.

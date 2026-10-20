@@ -1,5 +1,3 @@
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 
 import '../../attendance/data/attendance_repository.dart';
@@ -923,9 +921,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                             Text(
                               item.checkInAt == null
                                   ? 'Belum presensi'
-                                  : (item.geofencePass == true
-                                      ? 'Valid Face & Geo'
-                                      : checkInStatusLabel(item.checkInStatus)),
+                                  : checkInStatusLabel(item.checkInStatus),
                               style: TextStyle(
                                 fontSize: 10,
                                 fontWeight: FontWeight.w500,
@@ -1050,16 +1046,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
                       ),
                     ),
                     const SizedBox(width: 6),
-                    Expanded(
+                    const Expanded(
                       child: Text(
-                        item.accuracyM != null
-                            ? 'Akurasi ±${item.accuracyM!.round()}m ${item.geofencePass == true ? '• Di Area RS' : ''}'
-                            : (item.geofencePass != null
-                                ? (item.geofencePass == true
-                                    ? 'Area RS Valid'
-                                    : 'Di Luar Area')
-                                : 'SIMRS Verified'),
-                        style: const TextStyle(
+                        'Terverifikasi Sistem',
+                        style: TextStyle(
                           fontSize: 11,
                           color: AppColors.inkSecondary,
                         ),
@@ -1191,7 +1181,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
 }
 
 /// Stitch "Detail Bukti Presensi": digital verification stamp, punch timestamps,
-/// GPS proof & geofence blueprint, biometric integrity score, and ledger ID.
+/// Verifikasi biometrik & integritas perangkat, skor risiko, dan ledger ID.
 class _DetailSheet extends StatelessWidget {
   const _DetailSheet({
     required this.item,
@@ -1318,9 +1308,6 @@ class _DetailSheet extends StatelessWidget {
                       const SizedBox(height: 14),
                       // Section 1: Detail Waktu & Server Stamp
                       _buildTimeSection(duration),
-                      const SizedBox(height: 14),
-                      // Section 2: Lokasi & Geofence Verification
-                      _buildLocationSection(),
                       const SizedBox(height: 14),
                       // Section 3: Biometrik & Hardware Device Integrity
                       _buildBiometricSection(lowRisk),
@@ -1667,212 +1654,6 @@ class _DetailSheet extends StatelessWidget {
     );
   }
 
-  Widget _buildLocationSection() {
-    final bool hasGeo = item.latitude != null && item.longitude != null;
-    // Tiga keadaan jujur: di dalam, di luar, atau belum terverifikasi (null).
-    // Null bukan "di luar" — jangan tuduh user di luar radius tanpa bukti.
-    final bool? fencePass = item.geofencePass;
-
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: AppColors.canvas,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: AppColors.border.withOpacity(0.4),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Row(
-                children: [
-                  Icon(Icons.near_me, size: 16, color: AppColors.primary),
-                  SizedBox(width: 6),
-                  Text(
-                    'Verifikasi Radius & Geofence',
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.primary,
-                    ),
-                  ),
-                ],
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                decoration: BoxDecoration(
-                  color: fencePass == true
-                      ? AppColors.successTint
-                      : fencePass == false
-                          ? AppColors.warningTint
-                          : AppColors.surfaceLow,
-                  borderRadius: BorderRadius.circular(AppColors.radiusInput),
-                  border: Border.all(
-                    color: fencePass == true
-                        ? AppColors.successBorder
-                        : fencePass == false
-                            ? AppColors.warningBorder
-                            : AppColors.border,
-                  ),
-                ),
-                child: Text(
-                  fencePass == true
-                      ? 'Di Dalam Poligon RS'
-                      : fencePass == false
-                          ? 'Review Posisi'
-                          : 'Belum Terverifikasi',
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w700,
-                    color: fencePass == true
-                        ? AppColors.successText
-                        : fencePass == false
-                            ? AppColors.warningText
-                            : AppColors.inkSecondary,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          // Mini Geofence Preview Map Box
-          Container(
-            height: 110,
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: AppColors.divider,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(
-                color: AppColors.border.withOpacity(0.6),
-              ),
-            ),
-            clipBehavior: Clip.antiAlias,
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                CustomPaint(
-                  painter: _GeofencePainter(pass: item.geofencePass),
-                ),
-                Positioned(
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-                    decoration: const BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.bottomCenter,
-                        end: Alignment.topCenter,
-                        colors: [Color(0xB30B1C30), Colors.transparent],
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          hasGeo
-                              ? 'Lat: ${item.latitude!.toStringAsFixed(6)}, Long: ${item.longitude!.toStringAsFixed(6)}'
-                              : 'Koordinat tidak tersimpan',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 10,
-                            fontFeatures: [FontFeature.tabularFigures()],
-                          ),
-                        ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 6, vertical: 1.5),
-                          decoration: BoxDecoration(
-                            color: AppColors.primaryContainer,
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Text(
-                            item.shiftName ?? 'Area RS',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 9,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 10),
-          // Coordinate readouts
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(
-                color: AppColors.border.withOpacity(0.3),
-              ),
-            ),
-            child: Column(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'Akurasi Perangkat GPS:',
-                      style: TextStyle(fontSize: 11, color: AppColors.inkSecondary),
-                    ),
-                    Text(
-                      item.accuracyM != null
-                          ? '±${item.accuracyM!.round()} meter (Sinyal Baik)'
-                          : 'Tidak tersimpan',
-                      style: const TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.ink,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'Status Geofence:',
-                      style: TextStyle(fontSize: 11, color: AppColors.inkSecondary),
-                    ),
-                    Text(
-                      fencePass == true
-                          ? 'Radius Valid (Tepat di Area)'
-                          : fencePass == false
-                              ? 'Di Luar Radius Area'
-                              : 'Belum Terverifikasi',
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        color: fencePass == true
-                            ? AppColors.successText
-                            : fencePass == false
-                                ? AppColors.warningText
-                                : AppColors.inkSecondary,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildBiometricSection(bool lowRisk) {
     return Container(
       padding: const EdgeInsets.all(12),
@@ -2041,79 +1822,4 @@ class _DetailSheet extends StatelessWidget {
       ),
     );
   }
-}
-
-/// Schematic geofence ring — clinical blueprint layout with grid background
-/// and radius indication without requiring external map SDKs.
-class _GeofencePainter extends CustomPainter {
-  const _GeofencePainter({required this.pass});
-  final bool? pass;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final bool ok = pass != false;
-    final Offset centre = Offset(size.width / 2, size.height / 2);
-    final double r = math.min(size.width, size.height) * 0.38;
-
-    // Background clinical grid
-    final Paint gridPaint = Paint()
-      ..color = AppColors.primary.withOpacity(0.06)
-      ..strokeWidth = 1;
-    const double step = 20;
-    for (double x = 0; x < size.width; x += step) {
-      canvas.drawLine(Offset(x, 0), Offset(x, size.height), gridPaint);
-    }
-    for (double y = 0; y < size.height; y += step) {
-      canvas.drawLine(Offset(0, y), Offset(size.width, y), gridPaint);
-    }
-
-    // Outer Geofence Zone
-    final Color mainColor =
-        ok ? AppColors.primary : AppColors.error;
-    final Color fillColor =
-        ok ? AppColors.successTint : AppColors.roseTint;
-
-    final Paint fill = Paint()
-      ..style = PaintingStyle.fill
-      ..color = fillColor.withOpacity(0.65);
-    canvas.drawCircle(centre, r, fill);
-
-    final Paint ring = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2
-      ..color = mainColor;
-    canvas.drawCircle(centre, r, ring);
-
-    // Inner reference ring
-    final Paint innerRing = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1
-      ..color = mainColor.withOpacity(0.3);
-    canvas.drawCircle(centre, r * 0.55, innerRing);
-
-    // Center Crosshairs
-    final Paint crossPaint = Paint()
-      ..color = mainColor.withOpacity(0.35)
-      ..strokeWidth = 1;
-    canvas.drawLine(Offset(centre.dx - 12, centre.dy),
-        Offset(centre.dx + 12, centre.dy), crossPaint);
-    canvas.drawLine(Offset(centre.dx, centre.dy - 12),
-        Offset(centre.dx, centre.dy + 12), crossPaint);
-
-    // Position dot (GPS Pin)
-    final Paint pulsePaint = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2
-      ..color = mainColor.withOpacity(0.4);
-    canvas.drawCircle(centre, 14, pulsePaint);
-
-    final Paint dot = Paint()..color = mainColor;
-    canvas.drawCircle(centre, 6, dot);
-
-    final Paint centerWhite = Paint()..color = Colors.white;
-    canvas.drawCircle(centre, 2.5, centerWhite);
-  }
-
-  @override
-  bool shouldRepaint(covariant _GeofencePainter old) => old.pass != pass;
 }

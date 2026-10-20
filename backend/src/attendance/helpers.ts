@@ -63,7 +63,7 @@ const SUPPORTED_MODES = new Set(['active', 'passive']);
  *
  * NOTE on trust: this value is client-asserted, so it is NOT a security
  * boundary by itself — a modified client can post `passed: true` directly.
- * The real anchors are the face-template match, the geofence, and the device
+ * The real anchors are the face-template match and the device
  * integrity token. Passive mode removes the *commands* the user must perform;
  * it does not add a new server-verifiable fact.
  */

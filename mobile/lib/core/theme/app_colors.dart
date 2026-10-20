@@ -81,7 +81,7 @@ class AppColors {
   static const Color infoBorder = Color(0xFFBAE6FD);
 
   // Rose tier — Stitch cards use #FEF2F2 / #B91C1C / #FECACA for
-  // Ditolak / Di Luar Radius, while error-container tokens stay
+  // Ditolak (mis. wajah tidak cocok), while error-container tokens stay
   // #FFDAD6 / #93000A for form errors.
   static const Color roseTint = Color(0xFFFEF2F2);
   static const Color roseText = Color(0xFFB91C1C);

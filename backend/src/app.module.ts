@@ -16,7 +16,6 @@ import { SupervisorModule } from './supervisor/supervisor.module.js';
 import { DevicesModule } from './devices/devices.module.js';
 import { EmployeesModule } from './employees/employees.module.js';
 import { FaceModule } from './face/face.module.js';
-import { GeoModule } from './geo/geo.module.js';
 import { PrismaModule } from './prisma/prisma.module.js';
 import { RedisThrottlerStorage } from './rate-limit/redis-storage.js';
 import { UserThrottlerGuard } from './rate-limit/user-throttler.guard.js';
@@ -67,7 +66,6 @@ import { UsersModule } from './users/users.module.js';
     DevicesModule,
     EmployeesModule,
     FaceModule,
-    GeoModule,
     ShiftsModule,
     UsersModule,
   ],

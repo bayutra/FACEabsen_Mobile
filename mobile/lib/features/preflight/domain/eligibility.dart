@@ -1,9 +1,14 @@
-/// Pure eligibility evaluation for the Stitch "Pra-Validasi & Geofence" screen.
+/// Pure eligibility evaluation for the Stitch "Pra-Validasi" screen.
 ///
-/// Four gates must pass before a punch is meaningful (PRD §16-§21):
-/// account active, GPS accuracy usable, inside the perimeter, and a roster row
-/// for today. Pure Dart so every rule is unit-testable without a device.
-enum GateId { account, accuracy, geofence, schedule }
+/// Two gates must pass before a punch is meaningful (PRD §16-§21):
+/// account active and a roster row for today.
+/// Pure Dart so every rule is unit-testable without a device.
+library;
+
+import '../../schedule/data/schedule_repository.dart';
+import '../../schedule/domain/shift_status.dart';
+
+enum GateId { account, schedule }
 
 enum GateState { pass, warn, fail }
 
@@ -24,9 +29,6 @@ class GateResult {
   final String detail;
   final List<String> chips;
 }
-
-/// Server tolerance for a trustworthy fix (PRD §16, `GEO_MAX_ACCURACY_M`).
-const int kMaxAccuracyMeters = 50;
 
 GateResult evaluateAccount({required bool isActive, required bool hasProfile}) {
   if (!hasProfile) {
@@ -50,62 +52,13 @@ GateResult evaluateAccount({required bool isActive, required bool hasProfile}) {
   );
 }
 
-GateResult evaluateAccuracy(double? accuracyMeters) {
-  if (accuracyMeters == null) {
-    return const GateResult(
-      id: GateId.accuracy,
-      title: 'Akurasi Sinyal GPS',
-      badge: 'Tidak Ada',
-      state: GateState.warn,
-      detail: 'Belum ada titik GPS. Presensi tetap bisa dicoba, server yang menilai.',
-    );
-  }
-  // Within half the tolerance is comfortable; the rest still warns.
-  final bool good = accuracyMeters <= kMaxAccuracyMeters / 2;
-  final bool usable = accuracyMeters <= kMaxAccuracyMeters;
-  return GateResult(
-    id: GateId.accuracy,
-    title: 'Akurasi Sinyal GPS',
-    badge: good ? 'Optimal' : (usable ? 'Cukup' : 'Lemah'),
-    // Never FAIL: the server re-validates accuracy on the punch itself.
-    state: good ? GateState.pass : GateState.warn,
-    detail: usable
-        ? 'Akurasi ±${accuracyMeters.round()} m (maks $kMaxAccuracyMeters m).'
-        : 'Akurasi ±${accuracyMeters.round()} m — server mungkin menolak, pindahkan ke dekat jendela.',
-  );
-}
-
-GateResult evaluateGeofence({required bool? inside, required double? distanceM, required bool? mockSuspected}) {
-  if (mockSuspected == true) {
-    return const GateResult(
-      id: GateId.geofence,
-      title: 'Geofencing Area RS',
-      badge: 'Lokasi Palsu',
-      state: GateState.fail,
-      detail: 'Server mencurigai lokasi dimock (fake GPS). Matikan mock location.',
-    );
-  }
-  if (inside == null) {
-    return const GateResult(
-      id: GateId.geofence,
-      title: 'Geofencing Area RS',
-      badge: 'Menunggu',
-      state: GateState.warn,
-      detail: 'Lokasi belum diverifikasi server.',
-    );
-  }
-  return GateResult(
-    id: GateId.geofence,
-    title: 'Geofencing Area RS',
-    badge: inside ? 'Dalam Radius Sah' : 'Di Luar Radius',
-    state: inside ? GateState.pass : GateState.fail,
-    detail: inside
-        ? '${distanceM?.round() ?? 0} meter dari titik presensi.'
-        : '${distanceM?.round() ?? 0} meter dari titik presensi (di luar radius).',
-  );
-}
-
-GateResult evaluateSchedule({required bool hasShift, String? window, String? name}) {
+GateResult evaluateSchedule({
+  required bool hasShift,
+  String? window,
+  String? name,
+  ScheduleEntry? shift,
+  DateTime? now,
+}) {
   if (!hasShift) {
     return const GateResult(
       id: GateId.schedule,
@@ -115,13 +68,46 @@ GateResult evaluateSchedule({required bool hasShift, String? window, String? nam
       detail: 'Belum ada roster hari ini, presensi tidak dapat dicatat.',
     );
   }
-  return GateResult(
-    id: GateId.schedule,
-    title: 'Jadwal Shift Dinas',
-    badge: 'Tepat Waktu',
-    state: GateState.pass,
-    detail: '${name ?? 'Shift'} · ${window ?? '—'}',
-  );
+  final String roster = '${name ?? 'Shift'} · ${window ?? '—'}';
+  if (shift == null || now == null) {
+    return GateResult(
+      id: GateId.schedule,
+      title: 'Jadwal Shift Dinas',
+      badge: 'Tepat Waktu',
+      state: GateState.pass,
+      detail: roster,
+    );
+  }
+  // Preview the same verdict the server records (PRD §20): grace minutes keep
+  // the punch ON_TIME, up to the late threshold is LATE, beyond it VERY_LATE.
+  // Lateness never blocks the punch — the server still records it.
+  final ShiftVerdict punch = shift.checkInStatusAt(now);
+  switch (punch.status) {
+    case PunchStatus.late:
+      return GateResult(
+        id: GateId.schedule,
+        title: 'Jadwal Shift Dinas',
+        badge: 'Terlambat',
+        state: GateState.warn,
+        detail: 'Terlambat ${punch.minutes} mnt (toleransi ${shift.gracePeriodMin} mnt).',
+      );
+    case PunchStatus.veryLate:
+      return GateResult(
+        id: GateId.schedule,
+        title: 'Jadwal Shift Dinas',
+        badge: 'Sangat Terlambat',
+        state: GateState.warn,
+        detail: 'Terlambat ${punch.minutes} mnt, ambang telat ${shift.lateThresholdMin} mnt terlampaui.',
+      );
+    default:
+      return GateResult(
+        id: GateId.schedule,
+        title: 'Jadwal Shift Dinas',
+        badge: 'Tepat Waktu',
+        state: GateState.pass,
+        detail: '$roster · Toleransi ${shift.gracePeriodMin} mnt · Ambang telat ${shift.lateThresholdMin} mnt',
+      );
+  }
 }
 
 /// True when nothing blocks the punch: no FAIL gate. Warnings still allow it.
@@ -132,13 +118,9 @@ int passedCount(List<GateResult> gates) =>
     gates.where((GateResult g) => g.state == GateState.pass).length;
 
 /// Gates the punch must satisfy, mirroring what the server will actually
-/// reject. GPS accuracy is deliberately NOT here: the server re-validates
-/// `GEO_MAX_ACCURACY_M` on every punch, so failing the user here would block
-/// a punch that would otherwise be accepted (and indoors a fix is often 40-60 m
-/// on an old handset). Blocking early just adds friction with no safety gain.
+/// reject. Both remaining gates are real server-side requirements.
 bool isBlocking(GateResult g) => switch (g.id) {
-      GateId.geofence || GateId.schedule || GateId.account => true,
-      GateId.accuracy => false,
+      GateId.schedule || GateId.account => true,
     };
 
 /// Gates that stopped the punch, for the "perbaiki yang gagal" hint.

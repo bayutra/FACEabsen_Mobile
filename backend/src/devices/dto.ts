@@ -49,7 +49,6 @@ export class ListDevicesQuery {
   @IsOptional()
   @IsIn(['PENDING', 'ACTIVE', 'REVOKED', 'LOST', 'REPLACED'])
   status?: 'PENDING' | 'ACTIVE' | 'REVOKED' | 'LOST' | 'REPLACED';
-
   @IsOptional()
   @IsString()
   employeeId?: string;
@@ -78,4 +77,13 @@ export class RevokeDeviceDto {
   @IsString()
   @MaxLength(500)
   reason?: string;
+}
+
+/** STEP 18 — admin direct activation of a PENDING device. */
+export class ActivateDeviceDto {
+  /** Why this device is being trusted without a replacement request. */
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  note?: string;
 }

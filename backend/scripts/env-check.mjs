@@ -31,7 +31,7 @@ const problems = [];
 const need = (k) => {
   if (!env[k] || env[k].includes('CHANGE-ME') || env[k].includes('change-me')) problems.push(`${k} belum diisi (masih placeholder/kosong)`);
 };
-['POSTGRES_USER', 'POSTGRES_PASSWORD', 'REDIS_PASSWORD', 'JWT_ACCESS_SECRET', 'DATA_ENCRYPTION_KEY', 'CORS_ORIGIN'].forEach(need);
+['POSTGRES_USER', 'POSTGRES_PASSWORD', 'REDIS_PASSWORD', 'JWT_ACCESS_SECRET', 'DATA_ENCRYPTION_KEY'].forEach(need);
 // DATABASE_URL/REDIS_URL dirakit docker-compose dari bagian-bagiannya —
 // kalau diisi manual di file env, compose mengabaikannya. Tolak placeholder
 // yang tertinggal agar tidak dikira dipakai.
@@ -53,15 +53,12 @@ try {
 } catch {
   problems.push('DATA_ENCRYPTION_KEY bukan base64 valid');
 }
-if (env.CORS_ORIGIN && !env.CORS_ORIGIN.startsWith('https://')) {
-  problems.push('CORS_ORIGIN produksi harus https://domain-asli (bukan localhost/http)');
-}
 const num = (k, dflt) => {
   const v = Number(env[k] ?? dflt);
   if (!Number.isFinite(v)) problems.push(`${k} harus angka`);
   return v;
 };
-const w = ['RISK_W_FACE', 'RISK_W_LIVENESS', 'RISK_W_DEVICE', 'RISK_W_INTEGRITY', 'RISK_W_GPS', 'RISK_W_GEOFENCE', 'RISK_W_SIGNATURE'].map((k) => num(k, NaN));
+const w = ['RISK_W_FACE', 'RISK_W_LIVENESS', 'RISK_W_DEVICE', 'RISK_W_INTEGRITY', 'RISK_W_SIGNATURE'].map((k) => num(k, NaN));
 if (w.every(Number.isFinite)) {
   const sum = w.reduce((a, b) => a + b, 0);
   if (sum !== 100) problems.push(`Jumlah bobot RISK_W_* harus 100 (sekarang ${sum})`);
@@ -73,7 +70,7 @@ if (Number.isFinite(low) && Number.isFinite(med) && !(low > med)) {
 }
 const face = num('FACE_MATCH_THRESHOLD', 0.5);
 if (Number.isFinite(face) && (face < 0.3 || face > 0.8)) {
-  problems.push(`FACE_MATCH_THRESHOLD di luar rentang kalibrasi wajar 0.30–0.80 (sekarang ${face}) — isi dari docs/CALIBRATION.md`);
+  problems.push(`FACE_MATCH_THRESHOLD di luar rentang kalibrasi wajar 0.30–0.80 (sekarang ${face}) — isi dari docs/guides/CALIBRATION.md`);
 }
 // Bootstrap admin (prod seed) — never demo/demo passwords.
 if (env.BOOTSTRAP_ADMIN_EMAIL && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(env.BOOTSTRAP_ADMIN_EMAIL)) {

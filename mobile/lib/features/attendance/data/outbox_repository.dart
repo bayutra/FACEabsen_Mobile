@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import '../../../core/storage/secure_store.dart';
-import '../../location/domain/geo_models.dart';
 
 /// Punch-outbox for transient outages (basement Wi-Fi, dead spots).
 ///
@@ -15,7 +14,6 @@ enum PunchKind { checkIn, checkOut }
 class OutboxEntry {
   OutboxEntry({
     required this.kind,
-    required this.fix,
     required this.embedding,
     required this.liveness,
     required this.deviceId,
@@ -25,7 +23,6 @@ class OutboxEntry {
   });
 
   final PunchKind kind;
-  final GeoFix fix;
   final List<double> embedding;
   final Map<String, Object> liveness;
   final String deviceId;
@@ -35,7 +32,6 @@ class OutboxEntry {
 
   Map<String, dynamic> toJson() => <String, dynamic>{
         'kind': kind.name,
-        'fix': fix.toJson(),
         'embedding': embedding,
         'liveness': _jsonSafe(liveness),
         'deviceId': deviceId,
@@ -51,24 +47,6 @@ class OutboxEntry {
       final Object? kindRaw = json['kind'];
       if (kindRaw is! String) return null;
       final PunchKind kind = PunchKind.values.byName(kindRaw);
-
-      final Object? fixRaw = json['fix'];
-      if (fixRaw is! Map) return null;
-      final Map<String, dynamic> fixJson = Map<String, dynamic>.from(fixRaw);
-      final double? lat = (fixJson['latitude'] as num?)?.toDouble();
-      final double? lon = (fixJson['longitude'] as num?)?.toDouble();
-      final double? acc = (fixJson['accuracyM'] as num?)?.toDouble();
-      final DateTime? fixTs = DateTime.tryParse('${fixJson['timestamp']}');
-      final Object? mockedRaw = fixJson['isMocked'];
-      if (lat == null ||
-          lon == null ||
-          acc == null ||
-          fixTs == null ||
-          mockedRaw is! bool ||
-          !lat.isFinite ||
-          !lon.isFinite) {
-        return null;
-      }
 
       final Object? embRaw = json['embedding'];
       if (embRaw is! List || embRaw.isEmpty) return null;
@@ -95,13 +73,6 @@ class OutboxEntry {
 
       return OutboxEntry(
         kind: kind,
-        fix: GeoFix(
-          latitude: lat,
-          longitude: lon,
-          accuracyM: acc,
-          timestamp: fixTs,
-          isMocked: mockedRaw,
-        ),
         embedding: embedding,
         liveness: liveness,
         deviceId: deviceRaw,

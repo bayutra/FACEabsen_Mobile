@@ -13,7 +13,6 @@ import 'features/face/data/face_repository.dart';
 import 'features/attendance/data/attendance_repository.dart';
 import 'features/correction/data/correction_repository.dart';
 import 'features/leave/data/leave_repository.dart';
-import 'features/location/data/location_repository.dart';
 import 'features/auth/data/auth_repository.dart';
 import 'features/auth/presentation/login_screen.dart';
 import 'features/device/data/device_repository.dart';
@@ -50,7 +49,6 @@ class _BootstrapGateState extends State<BootstrapGate> {
   late final AuthRepository _auth;
   late final DeviceRepository _devices;
   late final FaceRepository _faces;
-  late final LocationRepository _locations;
   late final AttendanceRepository _attendance;
   late final CorrectionRepository _corrections;
   late final LeaveRepository _leaves;
@@ -71,14 +69,12 @@ class _BootstrapGateState extends State<BootstrapGate> {
       detector: FaceDetectorService(),
       embedder: FaceEmbedder(),
     );
-    _locations = LocationRepository(dio: _dio);
     _attendance = AttendanceRepository(dio: _dio, store: _store);
     _corrections = CorrectionRepository(dio: _dio);
     _leaves = LeaveRepository(dio: _dio);
     _schedules = ScheduleRepository(dio: _dio);
     _profiles = ProfileRepository(dio: _dio);
     _preflight = PreflightRepository(
-      locations: _locations,
       profiles: _profiles,
       schedules: _schedules,
     );
@@ -104,7 +100,6 @@ class _BootstrapGateState extends State<BootstrapGate> {
           auth: _auth,
           devices: _devices,
           faces: _faces,
-          locations: _locations,
           attendance: _attendance,
           corrections: _corrections,
           leaves: _leaves,

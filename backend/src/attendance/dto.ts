@@ -53,27 +53,6 @@ class AttendanceSignalsDto {
   @IsString()
   deviceId!: string;
 
-  @IsNumber()
-  @Min(-90)
-  @Max(90)
-  latitude!: number;
-
-  @IsNumber()
-  @Min(-180)
-  @Max(180)
-  longitude!: number;
-
-  @IsNumber()
-  @Min(0)
-  @Max(10000)
-  accuracyM!: number;
-
-  @IsISO8601()
-  fixTimestamp!: string;
-
-  @IsBoolean()
-  isMocked!: boolean;
-
   /** Live 192-d embedding (never stored). */
   @IsArray()
   @ArrayMinSize(192)

@@ -6,7 +6,6 @@ import 'package:dio/dio.dart';
 import 'package:face_absen_mobile/core/crypto/device_keys.dart';
 import 'package:face_absen_mobile/features/attendance/data/attendance_repository.dart';
 import 'package:face_absen_mobile/features/attendance/domain/attendance_models.dart';
-import 'package:face_absen_mobile/features/location/domain/geo_models.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'fakes.dart';
@@ -66,14 +65,6 @@ Future<AttendanceRepository> _repoWithSeed(Dio dio) async {
   return AttendanceRepository(dio: dio, store: store);
 }
 
-GeoFix _fix() => GeoFix(
-      latitude: -7.95,
-      longitude: 112.61,
-      accuracyM: 8,
-      timestamp: DateTime.parse('2026-10-07T07:00:00.000Z'),
-      isMocked: false,
-    );
-
 Map<String, Object> _passiveLiveness() => <String, Object>{
       'passed': true,
       'mode': 'passive',
@@ -91,7 +82,6 @@ void main() {
 
       final CancelToken token = CancelToken();
       final Future<AttendanceResult> flight = repo.checkIn(
-        fix: _fix(),
         embedding: List<double>.filled(192, 0.1),
         liveness: _passiveLiveness(),
         deviceId: 'd1',
@@ -122,7 +112,6 @@ void main() {
       final AttendanceRepository repo = await _repoWithSeed(dio);
 
       await repo.checkIn(
-        fix: _fix(),
         embedding: List<double>.filled(192, 0.1),
         liveness: _passiveLiveness(),
         deviceId: 'd1',
@@ -133,11 +122,6 @@ void main() {
       expect(body, isNotNull);
       for (final String k in <String>[
         'deviceId',
-        'latitude',
-        'longitude',
-        'accuracyM',
-        'fixTimestamp',
-        'isMocked',
         'faceEmbedding',
         'liveness',
         'requestId',

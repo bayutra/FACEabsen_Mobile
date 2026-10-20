@@ -9,8 +9,6 @@ const full: RiskInput = {
   livenessOk: true,
   deviceOk: true,
   integrityOk: true,
-  gpsOk: true,
-  geofenceOk: true,
   signatureOk: true,
 };
 
@@ -21,27 +19,16 @@ describe('RiskService PRD §23 table', () => {
   });
 
   it('typical good face (0.9) stays LOW', () => {
-    expect(new RiskService(cfg()).score({ ...full, faceScore: 0.9 })).toEqual({ score: 97, category: 'LOW' });
+    expect(new RiskService(cfg()).score({ ...full, faceScore: 0.9 })).toEqual({ score: 96, category: 'LOW' });
   });
 
   it('borderline face (0.5) drops to MEDIUM and flags review', () => {
     const svc = new RiskService(cfg());
     const r = svc.score({ ...full, faceScore: 0.5 });
-    expect(r).toEqual({ score: 85, category: 'MEDIUM' });
+    expect(r).toEqual({ score: 78, category: 'MEDIUM' });
     expect(svc.needsReview(r.category)).toBe(true);
     expect(svc.needsReview('LOW')).toBe(false);
     expect(svc.needsReview('HIGH')).toBe(false);
-  });
-
-  it('outside geofence with mock scores HIGH', () => {
-    const r = new RiskService(cfg()).score({
-      ...full,
-      faceScore: null, // never evaluated
-      gpsOk: true, // fix itself valid…
-      geofenceOk: false, // …but outside
-    });
-    // 0 + 20 + 15 + 10 + 10 + 0 + 5 = 60
-    expect(r).toEqual({ score: 60, category: 'HIGH' });
   });
 
   it('total failure scores 0 HIGH', () => {
@@ -50,8 +37,6 @@ describe('RiskService PRD §23 table', () => {
       livenessOk: false,
       deviceOk: false,
       integrityOk: false,
-      gpsOk: false,
-      geofenceOk: false,
       signatureOk: false,
     });
     expect(r).toEqual({ score: 0, category: 'HIGH' });
@@ -59,7 +44,7 @@ describe('RiskService PRD §23 table', () => {
 
   it('weights and thresholds are configurable; bad thresholds fail fast', () => {
     const svc = new RiskService(cfg({ RISK_W_FACE: 50, RISK_LOW_MIN: 95, RISK_MEDIUM_MIN: 80 }));
-    expect(svc.score({ ...full, faceScore: 1 })).toEqual({ score: 120, category: 'LOW' });
+    expect(svc.score({ ...full, faceScore: 1 })).toEqual({ score: 105, category: 'LOW' });
     expect(() => new RiskService(cfg({ RISK_LOW_MIN: 70, RISK_MEDIUM_MIN: 70 }))).toThrow(
       'RISK_LOW_MIN',
     );

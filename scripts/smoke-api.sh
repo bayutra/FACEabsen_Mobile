@@ -1,5 +1,6 @@
 #!/bin/sh
-# Smoke API pasca-deploy: health + login + me + geo. Tanpa data biometrik.
+# Smoke API pasca-deploy: health + login + me + privacy notice.
+# Tanpa data biometrik dan tanpa web dashboard.
 # Usage: sh scripts/smoke-api.sh https://absen.rumahsakit.example
 # Butuh: BOOTSTRAP_ADMIN_EMAIL + BOOTSTRAP_ADMIN_PASSWORD (env shell, bukan file).
 set -eu
@@ -25,11 +26,10 @@ echo "-- me --"
 ME=$(curl -sk -m 10 "$BASE/api/v1/auth/me" -H "Authorization: Bearer $TOKEN") || ME=""
 case "$ME" in *"$EMAIL"*) ok "auth/me";; *) bad "auth/me" "$ME";; esac
 
-echo "-- geo (tanpa GPS nyata, expect 4xx terstruktur bukan 500) --"
-GEO_CODE=$(curl -sk -m 10 -o /dev/null -w '%{http_code}' -X POST "$BASE/api/v1/geo/check" \
-  -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' \
-  -d '{"latitude":-7.65,"longitude":112.23,"accuracyM":10,"timestamp":"'"$(date -u +%Y-%m-%dT%H:%M:%SZ)"'","isMocked":false}')
-case "$GEO_CODE" in 200|201|400|401|403|404|422) ok "geo/check terstruktur ($GEO_CODE)";; *) bad "geo/check terstruktur" "http=$GEO_CODE";; esac
+echo "-- privacy notice --"
+NOTICE_CODE=$(curl -sk -m 10 -o /dev/null -w '%{http_code}' \
+  "$BASE/api/v1/privacy/notice" -H "Authorization: Bearer $TOKEN")
+case "$NOTICE_CODE" in 200) ok "privacy/notice";; *) bad "privacy/notice" "http=$NOTICE_CODE";; esac
 
 echo ""
 echo "$PASS_N/4 smoke checks passed"

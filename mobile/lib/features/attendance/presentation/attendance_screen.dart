@@ -8,33 +8,36 @@ import '../../attendance/data/attendance_repository.dart';
 import '../../attendance/data/outbox_repository.dart';
 import '../../attendance/domain/attendance_models.dart';
 import '../../face/data/face_repository.dart';
-import '../../location/data/location_repository.dart';
-import '../../location/domain/geo_models.dart';
 import '../../liveness/presentation/passive_scan_screen.dart';
 import '../../device/data/device_repository.dart';
+import '../../schedule/data/schedule_repository.dart';
+import '../../schedule/domain/shift_status.dart';
 import '../../../core/theme/app_colors.dart';
 
-/// STEP 12 presensi flow (Stitch "Presensi"): GPS → geofence → liveness →
+/// STEP 12 presensi flow (Stitch "Presensi"): liveness →
 /// wajah → tanda tangan → kirim. Check-in dan check-out satu alur.
 class AttendanceScreen extends StatefulWidget {
   const AttendanceScreen({
     super.key,
     required this.attendance,
-    required this.locations,
     required this.faces,
     required this.devices,
     this.displayName = 'Karyawan',
     this.employeeNo = '—',
+    this.shift,
   });
 
   final AttendanceRepository attendance;
-  final LocationRepository locations;
   final FaceRepository faces;
   final DeviceRepository devices;
 
   /// Identity shown on the result screen's evidence block.
   final String displayName;
   final String employeeNo;
+
+  /// Today's roster row (from the pre-flight gate), used to preview the
+  /// shift-master tolerances. Null when the caller has no roster context.
+  final ScheduleEntry? shift;
 
   @override
   State<AttendanceScreen> createState() => _AttendanceScreenState();
@@ -56,9 +59,8 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   CancelToken? _cancelToken;
   bool _cancelled = false;
 
-  /// Honest pipeline position: 0 locating/geofence, 1 face scan done,
-  /// 2 payload sent, 3 result received. Drives the step widget — never
-  /// hardcoded to done.
+  /// Honest pipeline position: 0 face scan, 1 payload sent, 2 result received.
+  /// Drives the step widget — never hardcoded to done.
   int _step = 0;
 
   static String _initials(String name) {
@@ -88,32 +90,16 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       _queued = null;
       _result = null;
       _step = 0;
-      _phase = 'Mengambil lokasi…';
+      _phase = 'Verifikasi wajah…';
     });
     // Punch inputs hoisted so a transport failure can queue them in the
     // outbox from the `on AttendanceOffline` handler below.
-    GeoFix? fix;
     List<double>? embedding;
     Map<String, Object>? live;
     String? deviceId;
     bool compromised = false;
     try {
-      fix = await widget.locations.getFix();
       if (!mounted || _cancelled) return;
-      setState(() => _phase = 'Memeriksa radius…');
-      final GeofenceResult geo = await widget.locations.checkGeofence(fix);
-      if (!mounted || _cancelled) return;
-      if (!geo.inside) {
-        setState(() {
-          _error = geo.explanation();
-          _busy = false;
-          _phase = null;
-        });
-        return;
-      }
-
-      if (!mounted || _cancelled) return;
-      setState(() => _phase = 'Verifikasi wajah…');
       // Face ID-style: hold the phone and look at the camera. No commands, and
       // the passing frame carries the embedding, so there is no second capture.
       final Map<String, Object>? att = await Navigator.of(context).push<Map<String, Object>>(
@@ -150,9 +136,9 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       });
       final AttendanceResult result = checkIn
           ? await widget.attendance.checkIn(
-              fix: fix, embedding: embedding, liveness: live, deviceId: deviceId, compromised: compromised, cancelToken: _cancelToken)
+              embedding: embedding, liveness: live, deviceId: deviceId, compromised: compromised, cancelToken: _cancelToken)
           : await widget.attendance.checkOut(
-              fix: fix, embedding: embedding, liveness: live, deviceId: deviceId, compromised: compromised, cancelToken: _cancelToken);
+              embedding: embedding, liveness: live, deviceId: deviceId, compromised: compromised, cancelToken: _cancelToken);
       if (!mounted || _cancelled) return;
       // A successful punch also drains any backlog queued during an earlier
       // outage — but only when there is one, so the happy path stays cheap.
@@ -195,12 +181,11 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       // Validation rejections (AttendanceRejected below) keep their current
       // behavior and are never queued.
       if (!mounted || _cancelled) return;
-      if (fix != null && embedding != null && live != null && deviceId != null) {
+      if (embedding != null && live != null && deviceId != null) {
         try {
           await widget.attendance.outbox().save(
                 OutboxEntry(
                   kind: checkIn ? PunchKind.checkIn : PunchKind.checkOut,
-                  fix: fix,
                   embedding: embedding,
                   liveness: live,
                   deviceId: deviceId,
@@ -220,13 +205,6 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     } on AttendanceRejected catch (e) {
       // A late rejection after cancel stays silent: the user already saw
       // "dibatalkan" and must never get a conflicting receipt or error.
-      if (!mounted || _cancelled) return;
-      setState(() {
-        _error = e.message;
-        _busy = false;
-        _phase = null;
-      });
-    } on LocationFailure catch (e) {
       if (!mounted || _cancelled) return;
       setState(() {
         _error = e.message;
@@ -394,7 +372,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                   ),
                   const SizedBox(height: 4),
                   const Text(
-                    'Validasi Lokasi GPS, Liveness Biometrik AI, & Hardware UUID',
+                    'Validasi Wajah, Liveness Biometrik AI, & Hardware UUID',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 12,
@@ -466,6 +444,11 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                   ],
                 ),
               ),
+
+            if (widget.shift != null) ...[
+              _shiftStatusCard(widget.shift!),
+              const SizedBox(height: 14),
+            ],
 
             if (r != null) ...[
               _ResultCard(result: r),
@@ -728,7 +711,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                     const SizedBox(height: 4),
 
                     Text(
-                      _phase ?? 'Sistem sedang memproses data biometrik dan geolokasi ke server SIMRS Kepegawaian.',
+                      _phase ?? 'Sistem sedang memproses data biometrik ke server SIMRS Kepegawaian.',
                       textAlign: TextAlign.center,
                       style: const TextStyle(
                         fontSize: 12.5,
@@ -791,9 +774,9 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                     const SizedBox(height: 12),
 
                     // 3-Step Verification Pipeline, driven by the real [_step]:
-                    // GPS/geofence run before the camera opens, so while the
-                    // processing screen is visible step 1 is already done only
-                    // after the face scan returns — never before.
+                    // the face scan runs before the payload is sent, so while
+                    // the processing screen is visible step 1 is already done
+                    // only after the scan returns — never before.
                     Container(
                       decoration: BoxDecoration(
                         color: Colors.white,
@@ -822,10 +805,10 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                           const Divider(height: 1),
                           _pipelineStep(
                             stepNumber: '3',
-                            title: 'Validasi Geofence & Jadwal Shift',
+                            title: 'Validasi Jadwal Shift',
                             subtitle: _step >= 3
                                 ? 'Selesai'
-                                : 'Memeriksa radius zona & shift aktif',
+                                : 'Memeriksa jadwal shift & status waktu',
                             isDone: _step >= 3,
                             isInProgress: _step == 2,
                           ),
@@ -908,6 +891,75 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  /// Live preview of the shift-master tolerances (PRD §20): the same verdict
+  /// the server will record, so "Toleransi" and "Ambang telat"/"Ambang pulang
+  /// cepat" are visible before the punch. Purely informational — never blocks.
+  Widget _shiftStatusCard(ScheduleEntry shift) {
+    final DateTime now = DateTime.now();
+    final DateTime end =
+        shiftEnd(shift.workDate, shift.endTime, shift.startTime, shift.overnight);
+    final bool arriving = now.isBefore(end);
+    final ShiftVerdict verdict =
+        arriving ? shift.checkInStatusAt(now) : shift.checkOutStatusAt(now);
+    final bool warn = verdict.status == PunchStatus.late ||
+        verdict.status == PunchStatus.veryLate ||
+        verdict.status == PunchStatus.earlyCheckout;
+    final Color fg = warn ? const Color(0xFFB45309) : AppColors.successText;
+    final Color bg = warn ? const Color(0xFFFFFBEB) : AppColors.successTint;
+    final Color border = warn ? const Color(0xFFFDE68A) : AppColors.success;
+    final String base = arriving
+        ? checkInStatusLabel(verdict.status)
+        : checkOutStatusLabel(verdict.status);
+    final String label =
+        verdict.minutes > 0 ? '$base · ${verdict.minutes} mnt' : base;
+    final String thresholds = arriving
+        ? 'Toleransi ${shift.gracePeriodMin} mnt · Ambang telat ${shift.lateThresholdMin} mnt'
+        : 'Ambang pulang cepat ${shift.earlyCheckoutThresholdMin} mnt';
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: border),
+      ),
+      child: Row(
+        children: [
+          Icon(warn ? Icons.schedule : Icons.check_circle, size: 18, color: fg),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '${shift.shiftName} · ${shift.window}',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.ink,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  '${arriving ? 'Status masuk' : 'Status pulang'}: $label',
+                  style: TextStyle(
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w700,
+                    color: fg,
+                  ),
+                ),
+                Text(
+                  thresholds,
+                  style: const TextStyle(fontSize: 10.5, color: AppColors.inkSecondary),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -1051,12 +1103,6 @@ class _ResultCard extends StatelessWidget {  const _ResultCard({required this.re
             Padding(
               padding: const EdgeInsets.only(top: 2),
               child: Text(result.shiftLabel!, style: const TextStyle(fontSize: 13, color: AppColors.ink)),
-            ),
-          if (result.distanceM != null)
-            Padding(
-              padding: const EdgeInsets.only(top: 2),
-              child: Text('Jarak: ${result.distanceM!.round()} m dari centroid presensi',
-                  style: const TextStyle(fontSize: 12, color: AppColors.inkSecondary)),
             ),
           if (result.faceScore != null)
             Padding(

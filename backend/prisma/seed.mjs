@@ -48,7 +48,7 @@ const hospital = await prisma.hospital.upsert({
   where: { code: 'RS-A' },
   update: {},
   create: {
-    code: 'RS-A', name: 'RSU Darmayu Madiun', latitude: -7.65, longitude: 112.23, radiusMeters: 100,
+    code: 'RS-A', name: 'RSU Darmayu Madiun',
   },
 });
 const dept = await prisma.department.upsert({

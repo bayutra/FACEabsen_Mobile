@@ -15,7 +15,6 @@ import '../../features/face/data/face_repository.dart';
 import '../../features/face/presentation/face_registration_screen.dart';
 import '../../features/leave/data/leave_repository.dart';
 import '../../features/leave/presentation/leave_list_screen.dart';
-import '../../features/location/data/location_repository.dart';
 import '../../features/profile/data/profile_repository.dart';
 import '../../features/profile/presentation/profile_screen.dart';
 import '../../features/home/presentation/home_dashboard.dart';
@@ -34,7 +33,6 @@ class HomeShell extends StatefulWidget {
     required this.auth,
     required this.devices,
     required this.faces,
-    required this.locations,
     required this.attendance,
     required this.corrections,
     required this.leaves,
@@ -47,7 +45,6 @@ class HomeShell extends StatefulWidget {
   final AuthRepository auth;
   final DeviceRepository devices;
   final FaceRepository faces;
-  final LocationRepository locations;
   final AttendanceRepository attendance;
   final CorrectionRepository corrections;
   final LeaveRepository leaves;
@@ -349,14 +346,14 @@ class _HomeShellState extends State<HomeShell> {
 
   Widget _preflight() => PreflightScreen(
         preflight: widget.preflight,
-        onProceed: () => _push(
+        onProceed: (PreflightSnapshot snap) => _push(
           AttendanceScreen(
             attendance: widget.attendance,
-            locations: widget.locations,
             faces: widget.faces,
             devices: widget.devices,
             displayName: _displayName,
             employeeNo: _employeeNo,
+            shift: snap.shift,
           ),
         ),
       );

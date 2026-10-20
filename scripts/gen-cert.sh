@@ -1,6 +1,6 @@
 #!/bin/sh
 # Generate a SELF-SIGNED cert for staging/tests only.
-# Production domains: use certbot (see docs/DEPLOY.md), never this.
+# Production domains: use certbot (see docs/guides/DEPLOY.md), never this.
 set -eu
 mkdir -p nginx/certs
 openssl req -x509 -nodes -days 90 -newkey rsa:2048 \

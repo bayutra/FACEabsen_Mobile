@@ -382,7 +382,7 @@ class _HomeDashboardState extends State<HomeDashboard> {
           ),
           const SizedBox(height: 12),
 
-          // Location & Geofence Details Box
+          // Unit / Ruang Kerja Details Box
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
@@ -425,10 +425,10 @@ class _HomeDashboardState extends State<HomeDashboard> {
                   children: [
                     Row(
                       children: [
-                        const Icon(Icons.verified_user, size: 16, color: AppColors.primary),
+                        const Icon(Icons.schedule, size: 16, color: AppColors.primary),
                         const SizedBox(width: 4),
                         Text(
-                          'Radius RS Valid',
+                          'Toleransi ${shift?.gracePeriodMin ?? 15} mnt',
                           style: AppText.labelMd.copyWith(
                             color: AppColors.primary,
                             fontWeight: FontWeight.w600,
@@ -438,10 +438,10 @@ class _HomeDashboardState extends State<HomeDashboard> {
                     ),
                     Row(
                       children: [
-                        const Icon(Icons.near_me, size: 14, color: AppColors.tertiary),
+                        const Icon(Icons.timer_outlined, size: 14, color: AppColors.inkSecondary),
                         const SizedBox(width: 4),
                         Text(
-                          '15m dari titik presensi',
+                          'Ambang telat ${shift?.lateThresholdMin ?? 30} mnt',
                           style: AppText.labelSm.copyWith(color: AppColors.inkSecondary),
                         ),
                       ],
@@ -502,7 +502,9 @@ class _HomeDashboardState extends State<HomeDashboard> {
                     const SizedBox(width: 4),
                     Text(
                       hasIn
-                          ? (row?.checkInStatus == 'ON_TIME' ? 'Tepat Waktu' : 'Hadir')
+                          ? (row?.checkInStatus == null
+                              ? 'Hadir'
+                              : checkInStatusLabel(row!.checkInStatus))
                           : 'Belum Absen',
                       style: AppText.labelMd.copyWith(
                         color: hasIn ? AppColors.primary : AppColors.inkSecondary,

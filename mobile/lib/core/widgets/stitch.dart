@@ -345,8 +345,8 @@ class AppCard extends StatelessWidget {
   final Widget child;
   final EdgeInsetsGeometry? padding;
 
-  /// 4px accent line docked to the top border, used by the geofence module to
-  /// encode "inside" (green) vs "outside" (red) at a glance.
+  /// 4px accent line docked to the top border, used to encode a pass/fail
+  /// state at a glance.
   final Color? accent;
 
   final VoidCallback? onTap;

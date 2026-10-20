@@ -1,8 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
-    <!-- STEP 11: GPS + geofence (fine location for attendance proof). -->
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <!-- STEP 9: on-device camera for face registration (no image leaves the phone). -->
     <uses-permission android:name="android.permission.CAMERA" />
     <!-- Release builds need explicit INTERNET (debug/profile manifests
@@ -15,7 +12,7 @@
     <uses-feature android:name="android.hardware.camera" android:required="false" />
     <uses-feature android:name="android.hardware.camera.front" android:required="false" />
     <application
-        android:label="face_absen_mobile"
+        android:label="Face Absen"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
         android:allowBackup="false"

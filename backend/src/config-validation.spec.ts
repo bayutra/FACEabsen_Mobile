@@ -14,16 +14,14 @@ describe('validateEnv numeric bounds (M13)', () => {
     expect(() => validateEnv({ FACE_MATCH_THRESHOLD: '1' })).not.toThrow();
   });
 
-  it('rejects non-positive geo/liveness/skew bounds', () => {
-    expect(() => validateEnv({ GEO_MAX_ACCURACY_M: '0' })).toThrow('GEO_MAX_ACCURACY_M');
-    expect(() => validateEnv({ GEO_MAX_SKEW_MIN: '-1' })).toThrow('GEO_MAX_SKEW_MIN');
+  it('rejects non-positive liveness/skew bounds', () => {
     expect(() => validateEnv({ LIVENESS_MAX_AGE_MIN: '0' })).toThrow('LIVENESS_MAX_AGE_MIN');
     expect(() => validateEnv({ REQUEST_MAX_SKEW_MIN: '0' })).toThrow('REQUEST_MAX_SKEW_MIN');
   });
 
   it('rejects risk weights not summing to 100', () => {
     expect(() => validateEnv({ RISK_W_FACE: '50' })).toThrow('RISK_W_');
-    expect(() => validateEnv({ RISK_W_FACE: '30' })).not.toThrow();
+    expect(() => validateEnv({ RISK_W_FACE: '45' })).not.toThrow();
   });
 
   it('rejects RISK_LOW_MIN <= RISK_MEDIUM_MIN', () => {

@@ -26,7 +26,6 @@ const SHIFT = {
 interface Deps {
   prisma: PrismaService;
   devices: { validateDeviceFor: ReturnType<typeof vi.fn> };
-  geo: { check: ReturnType<typeof vi.fn> };
   face: { matchScore: ReturnType<typeof vi.fn>; loadCipher: ReturnType<typeof vi.fn> };
   svc: AttendanceService;
 }
@@ -34,7 +33,6 @@ interface Deps {
 function makeDeps(over: {
   schedule?: unknown;
   openAttendance?: unknown;
-  geoInside?: boolean;
   faceScore?: number;
   deviceOk?: boolean;
   idempotent?: boolean;
@@ -66,21 +64,6 @@ function makeDeps(over: {
         : { ok: true, device: { id: 'd1', status: 'ACTIVE' } },
     ),
   };
-  const geo = {
-    check: vi.fn(async () =>
-      over.geoInside === false
-        ? {
-            inside: false, distanceM: 500, radiusM: 100, mockSuspected: false,
-            checks: { coordsValid: true, accuracyOk: true, timestampFresh: true },
-            hospital: { id: 'h1', code: 'RS-A', name: 'RS' },
-          }
-        : {
-            inside: true, distanceM: 5, radiusM: 100, mockSuspected: false,
-            checks: { coordsValid: true, accuracyOk: true, timestampFresh: true },
-            hospital: { id: 'h1', code: 'RS-A', name: 'RS' },
-          },
-    ),
-  };
   const face = {
     matchScore: vi.fn(async () => over.faceScore ?? 0.9),
     loadCipher: vi.fn(),
@@ -89,17 +72,12 @@ function makeDeps(over: {
     hasActiveConsent: vi.fn(async () => over.consent !== false),
   };
   const risk = new RiskService({ get: (_k: string, d: unknown) => d } as never);
-  const svc = new AttendanceService(prisma, devices as never, geo as never, face as never, risk, privacy as never, auditStub, configStub);
-  return { prisma, devices, geo, face, svc };
+  const svc = new AttendanceService(prisma, devices as never, face as never, risk, privacy as never, auditStub, configStub);
+  return { prisma, devices, face, svc };
 }
 
 const dto = (over: Record<string, unknown> = {}) => ({
   deviceId: 'd1',
-  latitude: -7.65,
-  longitude: 112.23,
-  accuracyM: 10,
-  fixTimestamp: new Date().toISOString(),
-  isMocked: false,
   faceEmbedding: Array(192).fill(0.1),
   liveness: { passed: true, challenges: ['blink'], completedAt: new Date().toISOString(), score: 1 },
   requestId: '11111111-2222-3333-4444-555555555555',
@@ -145,10 +123,10 @@ describe('AttendanceService.checkIn', () => {
     };
     expect(out.faceMatch.matched).toBe(true);
     expect(['ON_TIME', 'LATE', 'VERY_LATE']).toContain(out.checkInStatus);
-    expect(out.risk).toEqual({ score: 97, category: 'LOW', needsReview: false });
+    expect(out.risk).toEqual({ score: 96, category: 'LOW', needsReview: false });
     expect(prisma.attendance.create).toHaveBeenCalledWith(
       expect.objectContaining({
-        data: expect.objectContaining({ riskScore: 97, riskCategory: 'LOW', needsReview: false }),
+        data: expect.objectContaining({ riskScore: 96, riskCategory: 'LOW', needsReview: false }),
       }),
     );
     expect(auditStub.log).toHaveBeenCalledWith(expect.objectContaining({ action: 'CHECK_IN' }));
@@ -158,7 +136,7 @@ describe('AttendanceService.checkIn', () => {
     const out = (await svc.checkIn(dto(), 'u1')) as {
       risk: { score: number; category: string; needsReview: boolean };
     };
-    expect(out.risk).toEqual({ score: 88, category: 'MEDIUM', needsReview: true });
+    expect(out.risk).toEqual({ score: 82, category: 'MEDIUM', needsReview: true });
     expect(prisma.attendance.create).toHaveBeenCalledWith(
       expect.objectContaining({ data: expect.objectContaining({ needsReview: true }) }),
     );
@@ -196,15 +174,17 @@ describe('AttendanceService.checkIn', () => {
     ).rejects.toMatchObject({ response: { reason: 'DEVICE_COMPROMISED' } });
   });
 
-  it('no schedule / already checked in / outside / stale liveness / face mismatch', async () => {
+  it('no schedule / already checked in / outside radius / stale liveness / face mismatch', async () => {
     await expect(makeDeps({ schedule: null }).svc.checkIn(dto(), 'u1')).rejects.toMatchObject({
       response: { reason: 'NO_SCHEDULE' },
     });
     await expect(
       makeDeps({ openAttendance: { id: 'a0' } }).svc.checkIn(dto(), 'u1'),
     ).rejects.toMatchObject({ response: { reason: 'ALREADY_CHECKED_IN' } });
-    await expect(makeDeps({ geoInside: false }).svc.checkIn(dto(), 'u1')).rejects.toMatchObject({
-      response: { reason: 'OUTSIDE_GEOFENCE' },
+    // GPS removed entirely — no geofence gate.
+    const out = await makeDeps().svc.checkIn(dto(), 'u1');
+    expect(out).toMatchObject({
+      risk: { score: 96, category: 'LOW', needsReview: false },
     });
     const staleLive = dto({
       liveness: { passed: true, challenges: ['blink'], completedAt: new Date(Date.now() - 30 * 60_000).toISOString(), score: 1 },
@@ -255,14 +235,14 @@ describe('AttendanceService.checkIn', () => {
   });
 
   it('rejections carry risk score + category in audit and response', async () => {
-    // face 0.1 → 3 + 70 = 73 MEDIUM even though rejected
+    // face 0.1 → 4.5 + 55 = 59.5 → 60 HIGH even though rejected
     await expect(makeDeps({ faceScore: 0.1 }).svc.checkIn(dto(), 'u1')).rejects.toMatchObject({
-      response: { reason: 'FACE_MISMATCH', riskScore: 73, riskCategory: 'MEDIUM' },
+      response: { reason: 'FACE_MISMATCH', riskScore: 60, riskCategory: 'HIGH' },
     });
     expect(auditStub.log).toHaveBeenCalledWith(
       expect.objectContaining({
         action: 'ATTENDANCE_REJECTED',
-        metadata: expect.objectContaining({ riskScore: 73, riskCategory: 'MEDIUM' }),
+        metadata: expect.objectContaining({ riskScore: 60, riskCategory: 'HIGH' }),
       }),
     );
   });
@@ -295,11 +275,11 @@ describe('AttendanceService.checkOut', () => {
     const out = (await svc.checkOut(dto(), 'u1')) as {
       risk: { score: number; category: string; needsReview: boolean };
     };
-    // Checkout alone scores 97/LOW, but the row keeps the worse check-in flag.
-    expect(out.risk).toEqual({ score: 97, category: 'MEDIUM', needsReview: true });
+    // Checkout alone scores 96/LOW, but the row keeps the worse check-in flag.
+    expect(out.risk).toEqual({ score: 96, category: 'MEDIUM', needsReview: true });
     expect(prisma.attendance.update).toHaveBeenCalledWith(
       expect.objectContaining({
-        data: expect.objectContaining({ riskScore: 97, riskCategory: 'MEDIUM', needsReview: true }),
+        data: expect.objectContaining({ riskScore: 96, riskCategory: 'MEDIUM', needsReview: true }),
       }),
     );
   });

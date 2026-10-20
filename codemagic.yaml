@@ -1,0 +1,57 @@
+# Codemagic CI — build IPA iOS TANPA signing.
+#
+# Tujuan: menghasilkan `FaceAbsen-unsigned.ipa` yang bisa ditandatangani lalu
+# dipasang dari Windows memakai Sideloadly (lihat docs/guides/IOS_SETUP.md).
+# Tidak butuh akun Apple Developer berbayar: signing dilakukan di sisi Windows
+# dengan Apple ID biasa (sertifikat gratis, berlaku 7 hari).
+#
+# Cara pakai:
+#   1. Push repo ini ke GitHub / Bitbucket / GitLab.
+#   2. Codemagic > Add application > pilih repo > pilih "codemagic.yaml".
+#   3. Jalankan workflow `ios-unsigned`, unduh artifact FaceAbsen-unsigned.ipa.
+#
+# Catatan: `flutter build ios` HANYA bisa jalan di macOS. Workflow inilah
+# pengganti Mac lokal — jangan dijalankan di Windows.
+
+workflows:
+  ios-unsigned:
+    name: iOS unsigned IPA (for Sideloadly)
+    max_build_duration: 60
+    environment:
+      flutter: 3.22.2
+      xcode: 15.4
+      cocoapods: default
+    triggering:
+      events:
+        - push
+      branch_patterns:
+        - pattern: master
+          include: true
+      cancel_previous_builds: true
+    scripts:
+      - name: Flutter pub get
+        script: |
+          cd mobile
+          flutter --version
+          flutter pub get
+      - name: Analyze & unit test
+        script: |
+          cd mobile
+          flutter analyze
+          flutter test
+      - name: Build iOS (unsigned, arm64 device)
+        script: |
+          cd mobile
+          flutter build ios --release --no-codesign
+      - name: Package IPA
+        script: |
+          # `ditto` menjaga symlink di dalam framework — wajib agar IPA valid.
+          cd mobile/build/ios/iphoneos
+          rm -rf Payload
+          mkdir Payload
+          cp -R Runner.app Payload/
+          ditto -c -k --sequesterRsrc --keepParent Payload FaceAbsen-unsigned.ipa
+          ls -lh FaceAbsen-unsigned.ipa
+    artifacts:
+      - mobile/build/ios/iphoneos/FaceAbsen-unsigned.ipa
+      - mobile/build/ios/iphoneos/Runner.app

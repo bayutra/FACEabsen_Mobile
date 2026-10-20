@@ -72,11 +72,6 @@ describe('CheckInDto nesting', () => {
       CheckInDto,
       {
         deviceId: 'dev-1',
-        latitude: -7.66,
-        longitude: 111.53,
-        accuracyM: 12,
-        fixTimestamp: new Date().toISOString(),
-        isMocked: false,
         faceEmbedding: Array(192).fill(0.1),
         liveness,
         requestId: '11111111-2222-3333-4444-555555555555',

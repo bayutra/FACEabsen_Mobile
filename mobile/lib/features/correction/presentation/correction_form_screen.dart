@@ -335,7 +335,7 @@ class _CorrectionFormScreenState extends State<CorrectionFormScreen> {
                 _typeCard(
                   type: 'TECHNICAL_ISSUE',
                   title: 'Masalah Teknis',
-                  subtitle: 'GPS / Biometrik',
+                  subtitle: 'Wajah / Biometrik',
                   icon: Icons.build_circle_outlined,
                 ),
               ],

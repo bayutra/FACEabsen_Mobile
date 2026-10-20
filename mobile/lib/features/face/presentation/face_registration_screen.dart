@@ -10,7 +10,6 @@ import 'face_guidance_card.dart';
 import 'face_registered_screen.dart';
 import '../../attendance/data/attendance_repository.dart';
 import '../../device/data/device_repository.dart';
-import '../../location/data/location_repository.dart';
 
 /// STEP 9 face registration (Stitch "Pendaftaran Wajah"): camera viewport
 /// with guide overlay, quality-gated capture, server upload of embedding only.
@@ -21,7 +20,6 @@ class FaceRegistrationScreen extends StatefulWidget {
     this.displayName = 'Karyawan',
     this.employeeNo = '—',
     this.attendance,
-    this.locations,
     this.devices,
   });
 
@@ -33,7 +31,6 @@ class FaceRegistrationScreen extends StatefulWidget {
 
   /// Optional dependencies for the post-registration "Mulai Presensi" shortcut.
   final AttendanceRepository? attendance;
-  final LocationRepository? locations;
   final DeviceRepository? devices;
 
   @override
@@ -142,9 +139,8 @@ class _FaceRegistrationScreenState extends State<FaceRegistrationScreen> with Wi
       // Stitch "Pendaftaran Wajah - Berhasil": a dedicated confirmation screen.
       if (result.ok) {
         final AttendanceRepository? att = widget.attendance;
-        final LocationRepository? loc = widget.locations;
         final DeviceRepository? dev = widget.devices;
-        if (att == null || loc == null || dev == null) return;
+        if (att == null || dev == null) return;
         await Navigator.of(context).push(
           MaterialPageRoute(
             builder: (_) => FaceRegisteredScreen(
@@ -154,7 +150,6 @@ class _FaceRegistrationScreenState extends State<FaceRegistrationScreen> with Wi
               displayName: widget.displayName,
               registeredAt: DateTime.now(),
               attendance: att,
-              locations: loc,
               faces: widget.faces,
               devices: dev,
             ),
