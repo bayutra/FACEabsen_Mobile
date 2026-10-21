@@ -50,11 +50,29 @@ class ReportAdminRepository {
   }
 
   /// Daftar karyawan untuk dropdown "Per Karyawan".
+  ///
+  /// `GET /employees` khusus ADMIN. Supervisor hanya boleh melihat timnya,
+  /// jadi bila server menolak (403) kami memakai `/supervisor/team` yang
+  /// memuat id, nama, dan NIP anggota tim.
   Future<List<AdminEmployeeOption>> employees({int pageSize = 100}) async {
-    final Response<dynamic> res = await _dio.get<dynamic>(
-      '/employees',
-      queryParameters: <String, dynamic>{'pageSize': pageSize},
-    );
+    final Response<dynamic> res;
+    try {
+      res = await _dio.get<dynamic>(
+        '/employees',
+        queryParameters: <String, dynamic>{'pageSize': pageSize},
+      );
+    } on DioException catch (e) {
+      if (e.response?.statusCode != 403) rethrow;
+      final Response<dynamic> team = await _dio.get<dynamic>('/supervisor/team');
+      final Object? teamData = team.data;
+      if (teamData is! List) return const <AdminEmployeeOption>[];
+      return teamData
+          .whereType<Map>()
+          .map((Map e) =>
+              AdminEmployeeOption.fromJson(Map<String, dynamic>.from(e)))
+          .where((AdminEmployeeOption e) => e.id.isNotEmpty)
+          .toList();
+    }
     final Object? data = res.data;
     final List<dynamic> list;
     if (data is Map) {
