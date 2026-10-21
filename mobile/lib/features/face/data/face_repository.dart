@@ -4,6 +4,7 @@ import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 import 'package:image/image.dart' as img;
 
 import '../domain/face_quality.dart';
@@ -165,6 +166,23 @@ class FaceRepository {
       );
     }
     final faces = await _detector.detect(path);
+    // Gate mata tertutup (analog flood illuminator/TrueDepth: mata harus
+    // terlihat). Classification hanya tersedia bila detector diaktifkan dengan
+    // classification:true (lihat app.dart).
+    if (faces.isNotEmpty) {
+      final Face face = faces.first;
+      final double? leftOpen = face.leftEyeOpenProbability;
+      final double? rightOpen = face.rightEyeOpenProbability;
+      if (leftOpen != null &&
+          rightOpen != null &&
+          (leftOpen < 0.4 || rightOpen < 0.4)) {
+        return _EvaluatedPicture(
+          gate: FaceGate.eyesClosed,
+          score: 0,
+          message: faceGateMessage(FaceGate.eyesClosed),
+        );
+      }
+    }
     int left = 0, top = 0, width = 0, height = 0;
     double boxWidth = 0;
     if (faces.isNotEmpty) {

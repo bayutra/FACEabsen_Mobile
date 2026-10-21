@@ -4,7 +4,7 @@ import 'package:image/image.dart' as img;
 
 /// STEP 9 — pure face-quality gates (PRD §54 acceptance).
 /// Tested without camera/ML Kit: synthetic images + injected face counts.
-enum FaceGate { ok, noFace, multipleFaces, tooSmall, tooBlurry, tooDark, tooBright }
+enum FaceGate { ok, noFace, multipleFaces, tooSmall, tooBlurry, tooDark, tooBright, eyesClosed }
 
 String faceGateMessage(FaceGate gate) {
   switch (gate) {
@@ -22,6 +22,8 @@ String faceGateMessage(FaceGate gate) {
       return 'Pencahayaan kurang. Cari tempat lebih terang.';
     case FaceGate.tooBright:
       return 'Pencahayaan berlebih. Hindari cahaya langsung.';
+    case FaceGate.eyesClosed:
+      return 'Mata tertutup. Buka mata dan lihat kamera.';
   }
 }
 

@@ -16,6 +16,8 @@ String guidanceTitle(FaceGate gate) {
       return 'Pencahayaan Kurang';
     case FaceGate.tooBright:
       return 'Pencahayaan Berlebih';
+    case FaceGate.eyesClosed:
+      return 'Mata Tertutup';
     case FaceGate.noFace:
     case FaceGate.multipleFaces:
     case FaceGate.tooSmall:
@@ -60,6 +62,11 @@ List<GuidanceTile> guidanceTiles(FaceGate gate) {
         GuidanceTile('Pencahayaan', 'Berlebih', false),
         GuidanceTile('Wajah Terdeteksi', '1 Wajah', true),
         GuidanceTile('Jarak', 'Ideal', true),
+      ];
+    case FaceGate.eyesClosed:
+      return const <GuidanceTile>[
+        GuidanceTile('Mata', 'Tertutup', false),
+        GuidanceTile('Wajah Terdeteksi', '1 Wajah', true),
       ];
     case FaceGate.ok:
       return const <GuidanceTile>[];

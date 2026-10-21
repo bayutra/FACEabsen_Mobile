@@ -79,7 +79,11 @@ class _BootstrapGateState extends State<BootstrapGate> {
     _devices = DeviceRepository(dio: _dio, store: _store);
     _faces = FaceRepository(
       dio: _dio,
-      detector: FaceDetectorService(),
+      detector: FaceDetectorService(
+        classification: true,
+        contours: true,
+        landmarks: true,
+      ),
       embedder: FaceEmbedder(),
     );
     _attendance = AttendanceRepository(dio: _dio, store: _store);

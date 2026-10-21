@@ -46,6 +46,8 @@ class _FaceRegistrationScreenState extends State<FaceRegistrationScreen> with Wi
   bool _consented = false;
   bool _noticeRead = false;
   String? _noticeVersion;
+  bool _useScreenFlash = false;
+  bool _flashOverlay = false;
 
   /// Real failing quality gate for the last shot (null = no failure or a
   /// non-capture error). Drives the guidance card; never a guessed diagnosis.
@@ -124,7 +126,13 @@ class _FaceRegistrationScreenState extends State<FaceRegistrationScreen> with Wi
       _failGate = null;
     });
     try {
+      if (_useScreenFlash) {
+        setState(() => _flashOverlay = true);
+        await Future.delayed(const Duration(milliseconds: 250));
+        if (!mounted) return;
+      }
       final XFile shot = await controller.takePicture();
+      if (_useScreenFlash && mounted) setState(() => _flashOverlay = false);
       final FaceResult result = await widget.faces.registerFromFile(
         shot.path,
         noticeVersion: _noticeVersion,
@@ -165,6 +173,7 @@ class _FaceRegistrationScreenState extends State<FaceRegistrationScreen> with Wi
         if (mounted) setState(() => _message = null);
       }
     } catch (e) {
+      if (mounted) setState(() => _flashOverlay = false);
       if (!mounted) return;
       setState(() {
         _message = 'Gagal memproses. Periksa koneksi server. (${describeError(e)})';
@@ -244,6 +253,10 @@ class _FaceRegistrationScreenState extends State<FaceRegistrationScreen> with Wi
                             children: [
                               CameraPreview(controller),
                               const CustomPaint(painter: _OvalGuide()),
+                              if (_flashOverlay)
+                                Positioned.fill(
+                                  child: Container(color: Colors.white.withOpacity(0.85)),
+                                ),
                               const Align(
                                 alignment: Alignment.topCenter,
                                 child: Padding(
@@ -262,6 +275,25 @@ class _FaceRegistrationScreenState extends State<FaceRegistrationScreen> with Wi
               ),
             ),
             const SizedBox(height: 16),
+            Row(
+              children: [
+                Switch(
+                  value: _useScreenFlash,
+                  onChanged: _busy
+                      ? null
+                      : (v) => setState(() => _useScreenFlash = v),
+                ),
+                const SizedBox(width: 8),
+                const Expanded(
+                  child: Text(
+                    'Gunakan cahaya layar (mode gelap) — layar akan '
+                    'berkilat sebentar sebelum capture untuk menerangi wajah.',
+                    style: TextStyle(fontSize: 12),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
