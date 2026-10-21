@@ -1,4 +1,6 @@
 import {
+  BadRequestException,
+  ConflictException,
   ForbiddenException,
   Injectable,
   Logger,
@@ -12,7 +14,7 @@ import { createHash, randomBytes } from 'node:crypto';
 import { AuditService } from '../audit/audit.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { AUTH_POLICY } from './constants.js';
-import type { ChangePasswordDto, LoginDto } from './dto.js';
+import type { ChangePasswordDto, LoginDto, RegisterDto } from './dto.js';
 import { validatePasswordPolicy } from './password.js';
 import { TOTP_TOKEN_PURPOSE, TOTP_TOKEN_TTL_SEC } from './totp.js';
 
@@ -141,6 +143,92 @@ export class AuthService {
       expiresIn: this.accessTtlSec,
       user: { id: user.id, email: user.email, roles },
     };
+  }
+
+  /**
+   * Pendaftaran mandiri: membuat User + Employee + peran EMPLOYEE dalam satu
+   * transaksi, lalu langsung menerbitkan sesi sehingga pengguna masuk tanpa
+   * login ulang. Peran administratif tidak pernah diberikan di sini.
+   */
+  async register(dto: RegisterDto, meta: RequestMeta = {}) {
+    const email = dto.email.trim().toLowerCase();
+    const name = dto.name.trim();
+    validatePasswordPolicy(dto.password);
+
+    const [userClash, employeeClash] = await Promise.all([
+      this.prisma.user.findUnique({ where: { email } }),
+      this.prisma.employee.findUnique({ where: { email } }),
+    ]);
+    if (userClash || employeeClash) {
+      throw new ConflictException('Email sudah terdaftar');
+    }
+    if (dto.departmentId) {
+      const department = await this.prisma.department.findUnique({
+        where: { id: dto.departmentId },
+      });
+      if (!department) throw new BadRequestException('Departemen tidak ditemukan');
+    }
+    const role = await this.prisma.role.findUnique({ where: { name: 'EMPLOYEE' } });
+    if (!role) throw new BadRequestException('Peran EMPLOYEE belum tersedia');
+
+    const employeeNo = dto.employeeNo?.trim() || (await this.nextEmployeeNo());
+    const passwordHash = await argon2.hash(dto.password);
+
+    let userId: string;
+    try {
+      userId = await this.prisma.$transaction(async (tx) => {
+        const user = await tx.user.create({ data: { email, passwordHash } });
+        await tx.userRole.create({ data: { userId: user.id, roleId: role.id } });
+        await tx.employee.create({
+          data: {
+            userId: user.id,
+            employeeNo,
+            name,
+            email,
+            phone: dto.phone?.trim() || null,
+            position: dto.position?.trim() || null,
+            departmentId: dto.departmentId ?? null,
+          },
+        });
+        return user.id;
+      });
+    } catch (e) {
+      if (typeof e === 'object' && e !== null && (e as { code?: string }).code === 'P2002') {
+        throw new ConflictException('Email atau nomor karyawan sudah dipakai');
+      }
+      throw e;
+    }
+
+    await this.audit.log({
+      actorId: userId,
+      action: 'ACCOUNT_REGISTERED',
+      targetType: 'user',
+      targetId: userId,
+      ipAddress: meta.ip,
+      metadata: { email, employeeNo },
+    });
+
+    const session = await this.createSession(userId, undefined, meta);
+    const accessToken = await this.signAccess(userId, email, ['EMPLOYEE'], session.id);
+    return {
+      accessToken,
+      refreshToken: session.refreshToken,
+      expiresIn: this.accessTtlSec,
+      user: { id: userId, email, roles: ['EMPLOYEE'], name, employeeNo },
+    };
+  }
+
+  /** EMP-001, EMP-002, ... melewati nomor yang sudah terpakai. */
+  private async nextEmployeeNo(): Promise<string> {
+    const count = await this.prisma.employee.count();
+    for (let i = count + 1; i <= count + 50; i++) {
+      const candidate = `EMP-${String(i).padStart(3, '0')}`;
+      const clash = await this.prisma.employee.findUnique({
+        where: { employeeNo: candidate },
+      });
+      if (!clash) return candidate;
+    }
+    throw new ConflictException('Tidak dapat membuat nomor karyawan otomatis');
   }
 
   async refresh(refreshToken: string, meta: RequestMeta = {}) {

@@ -99,8 +99,8 @@ class DeviceRegisterScreen extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             const InfoBanner(
-              '1 Akun = 1 Perangkat. IMEI dan kamera biometrik dicek otomatis.',
-              title: 'Kebijakan 1 Akun 1 Perangkat',
+              'Akun boleh dipakai di lebih dari satu perangkat. Perangkat yang dipakai akan terdaftar otomatis untuk presensi.',
+              title: 'Kebijakan Multi-Perangkat',
             ),
             const SizedBox(height: 8),
             const AppCard(

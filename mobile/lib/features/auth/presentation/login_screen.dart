@@ -9,10 +9,7 @@ import '../../../core/widgets/hospital_mark.dart';
 import '../../../core/widgets/stitch.dart';
 import '../data/auth_repository.dart';
 import '../../device/data/device_repository.dart';
-import '../../device/domain/device_models.dart';
-import '../../device/presentation/device_register_screen.dart';
-import '../../device/presentation/replacement_screen.dart';
-import '../../device/presentation/replacement_status_screen.dart';
+import 'register_screen.dart';
 
 /// Stitch "Login Karyawan - Autentikasi" (design/stitch_rs_absen_mobile_app)
 /// Clinical hospital authentication with automatic device binding.
@@ -109,109 +106,31 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  /// Jalur pasca-login bersama: registrasi perangkat lalu [onDone].
-  /// Dipakai persis sama oleh login langsung maupun penyelesaian TOTP.
-  /// Perangkat yang belum aktif tidak lagi berhenti di banner error —
-  /// user dibawa ke layar Daftarkan Perangkat (langkah 2 dari 3) yang
-  /// menampilkan status nyata dari server.
+  /// Jalur pasca-login bersama: registrasi perangkat (best-effort) lalu
+  /// [onDone]. Perangkat kini boleh lebih dari satu dan tidak ada lagi
+  /// persetujuan admin, sehingga tidak ada layar perantara — pengguna
+  /// langsung masuk ke dashboard.
   Future<void> _finishSession() async {
-    final BoundDevice device = await widget.devices.register();
-    if (!mounted) return;
-    if (device.status != DeviceStatus.active) {
-      setState(() => _busy = false);
-      await _openPendingDevice(device);
-      return;
+    try {
+      await widget.devices.register();
+    } catch (_) {
+      // Kegagalan menyiapkan perangkat tidak menahan login; presensi akan
+      // menampilkan pesannya sendiri bila perangkat belum siap.
     }
+    if (!mounted) return;
     widget.onDone();
   }
 
-  Future<void> _openPendingDevice(BoundDevice device) async {
-    final String rawId = device.installationId.isEmpty
-        ? device.id
-        : device.installationId;
-    await Navigator.of(context).push<void>(
+  Future<void> _openRegister() async {
+    final bool? registered = await Navigator.of(context).push<bool>(
       MaterialPageRoute(
-        builder: (_) => DeviceRegisterScreen(
-          deviceName: device.deviceName?.isNotEmpty == true
-              ? device.deviceName!
-              : 'Perangkat ini',
-          deviceModel: device.platform.isEmpty ? '—' : device.platform,
-          osLabel: device.appVersion?.isNotEmpty == true
-              ? '${device.platform} • v${device.appVersion}'
-              : (device.platform.isEmpty ? '—' : device.platform),
-          deviceId: shortDeviceId(rawId),
-          ownerName: _email.text.trim().isEmpty ? '—' : _email.text.trim(),
-          onContinue: () => _recheckPending(device.id),
-          onRequestReplacement: () => _openReplacementRequest(device.id),
-          onUseOther: () {
-            Navigator.of(context).pop();
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text(
-                    'Masuk dari perangkat lain bila tersedia. Perangkat ini tetap menunggu aktivasi.'),
-              ),
-            );
-          },
-        ),
-      ),
-    );
-  }
-
-  /// Dari layar Daftarkan Perangkat: ajukan HP PENDING ini sebagai pengganti
-  /// perangkat aktif lama. Butuh password + persetujuan admin di web.
-  /// Setelah disetujui, tombol Lanjutkan di layar register meloloskan user.
-  Future<void> _openReplacementRequest(String pendingDeviceId) async {
-    final ChangeRequest? created = await Navigator.of(context).push<ChangeRequest>(
-      MaterialPageRoute(
-        builder: (_) => ReplacementScreen(
-          devices: widget.devices,
-          newDeviceId: pendingDeviceId,
-        ),
-      ),
-    );
-    if (created == null || !mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Pengajuan terkirim. Menunggu persetujuan admin.')),
-    );
-    if (!mounted) return;
-    await Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => ReplacementStatusScreen(
-          request: created,
+        builder: (_) => RegisterScreen(
+          auth: widget.auth,
           devices: widget.devices,
         ),
       ),
     );
-  }
-
-  /// Cek ulang status ke server: hanya lanjut bila admin sudah
-  /// mengaktifkan — tidak pernah mengarang status aktif.
-  Future<void> _recheckPending(String deviceId) async {
-    try {
-      final String? currentId = await widget.devices.currentDeviceId();
-      final List<BoundDevice> all = await widget.devices.myDevices();
-      BoundDevice? now;
-      for (final BoundDevice d in all) {
-        if (d.id == (currentId ?? deviceId)) now = d;
-      }
-      if (!mounted) return;
-      if (now?.status == DeviceStatus.active) {
-        Navigator.of(context).pop();
-        widget.onDone();
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-                'Perangkat masih ${deviceStatusLabel(now?.status ?? DeviceStatus.pending)}. Minta aktivasi admin SIMRS.'),
-          ),
-        );
-      }
-    } catch (_) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Gagal memeriksa status. Periksa koneksi.')),
-      );
-    }
+    if (registered == true && mounted) widget.onDone();
   }
 
   Future<void> _submitTotp() async {
@@ -631,6 +550,28 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                             ),
                           ),
+                          const SizedBox(height: 4),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                'Belum punya akun?',
+                                style: AppText.labelSm.copyWith(
+                                  color: AppColors.inkSecondary,
+                                ),
+                              ),
+                              TextButton(
+                                onPressed: _busy ? null : _openRegister,
+                                child: Text(
+                                  'Daftar',
+                                  style: AppText.labelMd.copyWith(
+                                    color: AppColors.secondary,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ],
                       ),
                     ),
@@ -688,7 +629,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                         borderRadius: BorderRadius.circular(AppColors.radiusFull),
                                       ),
                                       child: Text(
-                                        '1 Nakes = 1 HP',
+                                        'Multi-Perangkat',
                                         style: AppText.labelSm.copyWith(
                                           color: AppColors.onSecondaryContainer,
                                           fontWeight: FontWeight.w600,
@@ -699,7 +640,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ),
                                 const SizedBox(height: 2),
                                 Text(
-                                  'Perangkat ini akan didaftarkan sebagai perangkat absensi utama Anda untuk mencegah duplikasi presensi.',
+                                  'Perangkat ini didaftarkan otomatis untuk presensi. Anda tetap bisa masuk dari perangkat lain dengan akun yang sama.',
                                   style: AppText.labelSm.copyWith(
                                     color: AppColors.inkSecondary,
                                   ),

@@ -6,11 +6,25 @@ tidak ada logika bisnis yang diduplikasi.
 
 ## Akses
 
-- Kartu **"Mode Admin"** muncul di halaman Profil hanya untuk peran
-  `SUPERVISOR`, `ADMIN`, atau `SUPER_ADMIN`.
-- Karyawan biasa tidak pernah melihat kartu maupun layar admin.
+- Pintasan **"Mode Admin"** tampil di **Beranda** (banner di atas konten) dan
+  di halaman **Profil**, hanya untuk peran `SUPERVISOR`, `ADMIN`, atau
+  `SUPER_ADMIN`.
+- Karyawan biasa tidak pernah melihat pintasan maupun layar admin.
 - Server tetap menegakkan RBAC per endpoint; UI hanya menyembunyikan menu
   yang tidak berhak diakses.
+
+## Pendaftaran akun
+
+- Layar login punya tautan **Daftar** untuk pendaftaran mandiri
+  (`POST /auth/register`). Akun baru otomatis mendapat peran `EMPLOYEE`,
+  nomor karyawan dibuat otomatis (`EMP-###`) bila dikosongkan, dan sesi
+  langsung terbit sehingga pengguna masuk ke Beranda tanpa login ulang.
+- Peran `SUPERVISOR`/`ADMIN`/`SUPER_ADMIN` **tidak** bisa dipilih saat
+  mendaftar; hanya SUPER_ADMIN yang dapat memberikannya lewat
+  **Kelola → Pengguna**.
+- Setelah login/daftar, aplikasi mendaftarkan perangkat secara otomatis dan
+  langsung membuka Beranda (tidak ada layar "menunggu aktivasi"). Satu akun
+  boleh dipakai di beberapa perangkat.
 
 ## Modul
 
@@ -34,7 +48,8 @@ tidak ada logika bisnis yang diduplikasi.
 
 - Akun demo: `supervisor@rs.test`, `admin@rs.test`, `superadmin@rs.test`
   (semua password `Password123!`).
-- Perangkat yang baru dipasang perlu diaktifkan — baik lewat layar
-  **Kelola → Perangkat** maupun skrip `scripts/approve-device.psi`
-  (`scripts/approve-device.ps1`) yang memanggil endpoint yang sama.
+- Perangkat baru langsung ACTIVE saat registrasi (multi-perangkat), jadi
+  aktivasi manual hanya diperlukan untuk perangkat lama yang masih PENDING.
+  Aktivasi bisa lewat layar **Kelola → Perangkat** atau skrip
+  `scripts/approve-device.ps1` yang memanggil endpoint yang sama.
 - Semua aksi di area ini tercatat di audit log (`GET /audit`).

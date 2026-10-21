@@ -26,6 +26,49 @@ void main() {
     expect(done, isTrue);
   });
 
+  testWidgets('device registration failure still opens dashboard', (tester) async {
+    var done = false;
+    await tester.pumpWidget(
+      MaterialApp(
+        home: LoginScreen(
+          auth: FakeAuthRepository(),
+          devices: FakeDeviceRepository(failRegister: true),
+          onDone: () => done = true,
+        ),
+      ),
+    );
+
+    await tester.enterText(find.byType(TextField).at(0), 'karyawan@rs.test');
+    await tester.enterText(find.byType(TextField).at(1), 'Password123!');
+    await tester.tap(find.text('Masuk'));
+    await tester.pumpAndSettle();
+
+    expect(done, isTrue);
+  });
+
+  testWidgets('tapping Daftar opens the registration screen', (tester) async {
+    // Layar uji default 600px membuat tautan tertutup footer sticky.
+    tester.view.physicalSize = const Size(1080, 2400);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: LoginScreen(
+          auth: FakeAuthRepository(),
+          devices: FakeDeviceRepository(),
+          onDone: () {},
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('Daftar'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Daftar Akun'), findsOneWidget);
+    expect(find.text('Daftar & Masuk'), findsOneWidget);
+  });
+
   testWidgets('wrong credentials show Indonesian error', (tester) async {
     await tester.pumpWidget(
       MaterialApp(

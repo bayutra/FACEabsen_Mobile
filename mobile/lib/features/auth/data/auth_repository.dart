@@ -41,6 +41,32 @@ class AuthRepository {
     return _storeSession(body, rememberMe);
   }
 
+  /// Pendaftaran mandiri: membuat akun login + profil karyawan sekaligus.
+  /// Server selalu memberi peran EMPLOYEE; peran administratif hanya dapat
+  /// diberikan admin lewat menu Pengguna.
+  Future<Map<String, dynamic>> register({
+    required String name,
+    required String email,
+    required String password,
+    String? phone,
+    String? employeeNo,
+    String? position,
+    bool rememberMe = true,
+  }) async {
+    final Response res = await _dio.post(
+      '/auth/register',
+      data: {
+        'name': name,
+        'email': email,
+        'password': password,
+        if (phone != null && phone.isNotEmpty) 'phone': phone,
+        if (employeeNo != null && employeeNo.isNotEmpty) 'employeeNo': employeeNo,
+        if (position != null && position.isNotEmpty) 'position': position,
+      },
+    );
+    return _storeSession(Map<String, dynamic>.from(res.data as Map), rememberMe);
+  }
+
   /// Second-factor login with a 6-digit authenticator code.
   Future<Map<String, dynamic>> verifyTotp({
     required String totpToken,

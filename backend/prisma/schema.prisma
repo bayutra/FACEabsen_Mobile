@@ -258,8 +258,9 @@ model Device {
   attendances     Attendance[]
   oldChanges      DeviceChangeRequest[] @relation("OldDevice")
   newChanges      DeviceChangeRequest[] @relation("NewDevice")
-  // NOTE: single ACTIVE device per employee enforced by partial unique index
-  // in migration SQL (devices_one_active_per_employee), not expressible in Prisma DSL.
+  // Catatan: index parsial "devices_one_active_per_employee" sudah DIHAPUS
+  // (migrasi 20261021000000_multi_device). Satu karyawan boleh punya beberapa
+  // perangkat ACTIVE sekaligus.
 
   @@index([employeeId])
   @@index([status])

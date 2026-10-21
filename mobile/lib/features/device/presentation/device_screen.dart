@@ -77,7 +77,7 @@ class _DeviceScreenState extends State<DeviceScreen> {
           padding: const EdgeInsets.all(AppColors.pageMargin),
           children: [
             const InfoBanner(
-              '1 Karyawan = 1 Perangkat. Pindah HP lewat pengajuan di bawah; diverifikasi Admin IT 1x24 jam.',
+              'Akun boleh aktif di beberapa perangkat. Bila perangkat hilang atau dicuri, ajukan penggantian di bawah agar perangkat lama dicabut.',
               title: 'Penggantian Perangkat',
             ),
             const SizedBox(height: 12),

@@ -284,3 +284,74 @@ describe('AuthService.changePassword/sessions', () => {
     await expect(svc.revokeSession('u1', 'sx')).rejects.toThrow('Session not found');
   });
 });
+
+describe('AuthService.register (pendaftaran mandiri)', () => {
+  function registerPrisma(over: Record<string, Record<string, unknown>> = {}) {
+    const prisma = {
+      user: {
+        findUnique: vi.fn(async () => null),
+        create: vi.fn(async (a: { data: Record<string, unknown> }) => ({ id: 'u-new', ...a.data })),
+        ...over.user,
+      },
+      employee: {
+        findUnique: vi.fn(async () => null),
+        count: vi.fn(async () => 0),
+        create: vi.fn(async (a: { data: Record<string, unknown> }) => ({ id: 'e-new', ...a.data })),
+        ...over.employee,
+      },
+      department: { findUnique: vi.fn(async () => ({ id: 'dept-1' })), ...over.department },
+      role: { findUnique: vi.fn(async () => ({ id: 'r-emp', name: 'EMPLOYEE' })), ...over.role },
+      userRole: { create: vi.fn(async () => ({})), ...over.userRole },
+      session: {
+        create: vi.fn(async (a: { data: Record<string, unknown> }) => ({
+          id: 's1',
+          deviceId: null,
+          ...a.data,
+        })),
+        ...over.session,
+      },
+      $transaction: vi.fn(async (fn: (tx: unknown) => unknown) => fn(prisma)),
+    } as unknown as ConstructorParameters<typeof AuthService>[0];
+    return prisma;
+  }
+
+  it('membuat akun + karyawan + peran EMPLOYEE, langsung memberi sesi', async () => {
+    const prisma = registerPrisma();
+    const svc = new AuthService(prisma, jwt, configStub, auditStub);
+    const out = await svc.register({
+      name: 'Budi Baru',
+      email: 'Baru@RS.test',
+      password: PASSWORD,
+    });
+
+    expect(out.accessToken).toBeTruthy();
+    expect(out.refreshToken).toBeTruthy();
+    expect(out.user).toMatchObject({
+      email: 'baru@rs.test',
+      roles: ['EMPLOYEE'],
+      employeeNo: 'EMP-001',
+    });
+    expect(
+      (prisma as unknown as { userRole: { create: ReturnType<typeof vi.fn> } }).userRole.create,
+    ).toHaveBeenCalledWith({ data: { userId: 'u-new', roleId: 'r-emp' } });
+    expect(auditStub.log).toHaveBeenCalledWith(
+      expect.objectContaining({ action: 'ACCOUNT_REGISTERED', targetId: 'u-new' }),
+    );
+  });
+
+  it('email yang sudah terdaftar ditolak', async () => {
+    const prisma = registerPrisma({ user: { findUnique: vi.fn(async () => ({ id: 'u1' })) } });
+    const svc = new AuthService(prisma, jwt, configStub, auditStub);
+    await expect(
+      svc.register({ name: 'Budi', email: 'employee@rs.test', password: PASSWORD }),
+    ).rejects.toThrow('Email sudah terdaftar');
+  });
+
+  it('password lemah ditolak sebelum menyentuh database', async () => {
+    const prisma = registerPrisma();
+    const svc = new AuthService(prisma, jwt, configStub, auditStub);
+    await expect(
+      svc.register({ name: 'Budi', email: 'lemah@rs.test', password: 'pendek' }),
+    ).rejects.toThrow('Weak password');
+  });
+});

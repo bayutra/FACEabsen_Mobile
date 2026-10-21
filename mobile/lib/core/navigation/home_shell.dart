@@ -292,6 +292,9 @@ class _HomeShellState extends State<HomeShell> {
         onOpenSchedule: () => _go(2),
         onOpenProfile: () => _go(4),
         onOpenHistory: () => _go(1),
+        onOpenAdmin: canOpenAdminArea(_roles)
+            ? () => _push(AdminHomeScreen(dio: widget.dio, roles: _roles))
+            : null,
       ),
       // Riwayat: presensi + detail bottom-sheet (28px). Izin/cuti & koreksi
       // dibuka dari Beranda quick-grid, sesuai Stitch.

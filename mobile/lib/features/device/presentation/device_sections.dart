@@ -370,7 +370,7 @@ class _DeviceStatusSectionState extends State<DeviceStatusSection> {
                 ),
                 const SizedBox(height: 6),
                 const Text(
-                  '1 Karyawan = 1 Perangkat Terdaftar',
+                  'Perangkat Terdaftar Akun Anda',
                   style: TextStyle(
                     fontSize: 13.5,
                     fontWeight: FontWeight.w700,
@@ -379,7 +379,7 @@ class _DeviceStatusSectionState extends State<DeviceStatusSection> {
                 ),
                 const SizedBox(height: 3),
                 const Text(
-                  'Presensi kehadiran dan verifikasi biometrik hanya sah dilakukan melalui satu perangkat resmi yang terikat aktif dengan akun SIMRS Anda.',
+                  'Presensi kehadiran dan verifikasi biometrik sah dilakukan dari perangkat yang terdaftar pada akun SIMRS Anda. Lebih dari satu perangkat diperbolehkan.',
                   style: TextStyle(
                     fontSize: 11.5,
                     height: 1.4,
@@ -1073,6 +1073,21 @@ class _DeviceChangeRequestSectionState extends State<DeviceChangeRequestSection>
     if (deviceId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Belum ada perangkat terdaftar.')),
+      );
+      return;
+    }
+    // Penggantian hanya masuk akal bila ada perangkat ACTIVE lain (mis. HP
+    // lama yang hilang). Perangkat baru kini terdaftar otomatis saat login.
+    final bool hasOther = _devices.any(
+      (BoundDevice d) => d.id != deviceId && d.status == DeviceStatus.active,
+    );
+    if (!hasOther) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Tidak ada perangkat lama yang perlu diganti. Perangkat ini sudah aktif.',
+          ),
+        ),
       );
       return;
     }

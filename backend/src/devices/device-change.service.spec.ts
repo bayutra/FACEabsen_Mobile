@@ -100,12 +100,12 @@ describe('DeviceChangeService.request', () => {
       makePrisma({
         device: {
           findFirst: vi.fn(async () => oldActive),
-          findUnique: vi.fn(async () => ({ ...newPending, status: 'ACTIVE' })),
+          findUnique: vi.fn(async () => ({ ...newPending, status: 'REVOKED' })),
         },
       }),
       auditStub,
     );
-    await expect(svc4.request(dto(), 'u1')).rejects.toThrow('not pending');
+    await expect(svc4.request(dto(), 'u1')).rejects.toThrow('not eligible');
   });
 
   it('duplicate pending request -> 409', async () => {
@@ -164,11 +164,11 @@ describe('DeviceChangeService.approve/reject/cancel', () => {
     const svc2 = new DeviceChangeService(
       makePrisma({
         deviceChange: { findUnique: vi.fn(async () => pending) },
-        device: { findUnique: vi.fn(async () => ({ ...newPending, status: 'ACTIVE' })) },
+        device: { findUnique: vi.fn(async () => ({ ...newPending, status: 'REVOKED' })) },
       }),
       auditStub,
     );
-    await expect(svc2.approve('r1', 'admin', ['SUPER_ADMIN'])).rejects.toThrow('no longer pending');
+    await expect(svc2.approve('r1', 'admin', ['SUPER_ADMIN'])).rejects.toThrow('no longer eligible');
   });
 
   it('reject flips + audits; cancel is owner-only and pending-only', async () => {

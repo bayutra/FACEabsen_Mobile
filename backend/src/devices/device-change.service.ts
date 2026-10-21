@@ -13,9 +13,10 @@ import type { CreateChangeRequestDto, ListChangeRequestsQuery } from './change-r
 
 /**
  * STEP 8 — Device replacement (PRD §11, §53).
- * Flow: new phone registers (PENDING) → employee requests with password
- * proof → admin approves/rejects → old REVOKED + new ACTIVE atomically.
- * Old-device sessions die on approval (containment).
+ * Flow: perangkat pengganti terdaftar (kini langsung ACTIVE) → karyawan
+ * mengajukan dengan bukti kata sandi → admin menyetujui/menolak → perangkat
+ * lama REVOKED + perangkat baru dipastikan ACTIVE secara atomik.
+ * Sesi perangkat lama berakhir saat disetujui (containment).
  */
 @Injectable()
 export class DeviceChangeService {
@@ -43,8 +44,10 @@ export class DeviceChangeService {
       throw new UnauthorizedException('Identity verification failed');
     }
 
+    // Multi-perangkat: perangkat lama yang diganti adalah perangkat ACTIVE
+    // LAIN, bukan perangkat yang sedang dipakai mengajukan (newDeviceId).
     const oldDevice = await this.prisma.device.findFirst({
-      where: { employeeId: employee.id, status: 'ACTIVE' },
+      where: { employeeId: employee.id, status: 'ACTIVE', id: { not: dto.newDeviceId } },
     });
     if (!oldDevice) throw new ConflictException('No active device to replace');
 
@@ -53,7 +56,9 @@ export class DeviceChangeService {
       throw new NotFoundException('New device not found');
     }
     if (next.id === oldDevice.id) throw new ConflictException('New device must differ from current');
-    if (next.status !== 'PENDING') throw new ConflictException('New device is not pending activation');
+    if (next.status === 'REVOKED' || next.status === 'LOST') {
+      throw new ConflictException('New device is not eligible for replacement');
+    }
 
     const dupe = await this.prisma.deviceChangeRequest.findFirst({
       where: { employeeId: employee.id, newDeviceId: next.id, status: 'PENDING' },
@@ -128,8 +133,8 @@ export class DeviceChangeService {
       ? await this.prisma.device.findUnique({ where: { id: req.oldDeviceId } })
       : null;
     const next = await this.prisma.device.findUnique({ where: { id: req.newDeviceId } });
-    if (!next || next.status !== 'PENDING') {
-      throw new ConflictException('New device is no longer pending');
+    if (!next || next.status === 'REVOKED' || next.status === 'LOST') {
+      throw new ConflictException('New device is no longer eligible');
     }
     if (oldDevice && oldDevice.status !== 'ACTIVE') {
       throw new ConflictException('Old device is no longer active');

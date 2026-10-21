@@ -242,15 +242,27 @@ Splash → refresh token ada?
         └─ gagal/offline → layar "Tidak dapat terhubung" + Coba Lagi
 ```
 
-**Registrasi perangkat pertama**
+**Registrasi akun mandiri**
 
 ```text
-Login → /devices/me kosong
-  → GET /devices/register-challenge (nonce, 5 menit)
+Login → "Daftar"
+  → POST /auth/register (nama, email, password, HP opsional)
+  → server membuat User + Employee + peran EMPLOYEE (nomor karyawan otomatis EMP-###)
+  → sesi langsung terbit → Beranda (tanpa login ulang)
+```
+
+Peran administratif tidak pernah diberikan lewat pendaftaran publik; hanya
+ADMIN/SUPER_ADMIN melalui menu **Pengguna** di Mode Admin.
+
+**Registrasi perangkat**
+
+```text
+Login → GET /devices/register-challenge (nonce, 5 menit)
   → buat key pair Ed25519 di secure storage
   → POST /devices/register (public key + signature nonce)
-  → perangkat pertama = ACTIVE
-  → lanjut registrasi wajah
+  → perangkat langsung ACTIVE (multi-perangkat diperbolehkan)
+  → langsung ke Beranda; tidak ada layar "menunggu aktivasi"
+  → registrasi wajah dilakukan dari Beranda sebelum presensi pertama
 ```
 
 **Registrasi wajah**
@@ -280,11 +292,11 @@ Beranda → CTA Presensi
 **Penggantian perangkat**
 
 ```text
-Perangkat → Ajukan penggantian
-  → daftarkan perangkat baru (PENDING)
+Perangkat → Ajukan penggantian (mis. HP hilang/dicuri)
+  → pilih perangkat pengganti
   → POST /device-change (alasan)
   → status menunggu admin
-  → disetujui: device lama REVOKED, baru ACTIVE
+  → disetujui: device lama REVOKED, perangkat baru ACTIVE
 ```
 
 **Koreksi presensi**
@@ -333,9 +345,9 @@ berikutnya.
 
 | ID | Prioritas | Requirement |
 |---|---|---|
-| FR-DEV-01 | P0 | Satu karyawan hanya boleh punya **satu** perangkat ACTIVE (partial unique index). |
+| FR-DEV-01 | P0 | Satu karyawan **boleh** punya lebih dari satu perangkat ACTIVE (kebijakan multi-perangkat; index parsial lama sudah dihapus). |
 | FR-DEV-02 | P0 | Registrasi memakai challenge JWT 5 menit + signature Ed25519 atas nonce. |
-| FR-DEV-03 | P0 | Perangkat pertama otomatis ACTIVE; perangkat berikutnya PENDING sampai penggantian disetujui. |
+| FR-DEV-03 | P0 | Setiap perangkat baru langsung ACTIVE saat registrasi; tidak ada status PENDING untuk perangkat biasa. |
 | FR-DEV-04 | P0 | Perangkat dicabut tidak dapat dipakai presensi (`DEVICE_NOT_ACTIVE`). |
 | FR-DEV-05 | P0 | Setiap presensi wajib menyertakan `deviceId` milik karyawan yang login. |
 | FR-DEV-06 | P1 | Heartbeat memperbarui `lastSeenAt` dan versi aplikasi. |
@@ -344,7 +356,7 @@ berikutnya.
 
 **Acceptance criteria**
 
-- Mendaftarkan device kedua tidak langsung mengaktifkannya.
+- Mendaftarkan device kedua langsung ACTIVE dan tidak mencabut device pertama.
 - Presensi dari device yang bukan milik akun → 403.
 - Presensi dari device REVOKED/LOST → 422 `DEVICE_NOT_ACTIVE`.
 - Setelah penggantian disetujui, device lama tidak bisa presensi lagi.

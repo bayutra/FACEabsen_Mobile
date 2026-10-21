@@ -65,17 +65,16 @@ describe('DevicesService.register', () => {
     );
   });
 
-  it('second device stays PENDING; duplicates rejected', async () => {
+  it('second device also ACTIVE (multi-perangkat)', async () => {
     const prisma = makePrisma({
       device: {
-        findFirst: vi.fn(async (a: { where: Record<string, unknown> }) => ('status' in a.where ? { id: 'd0' } : null)),
+        findFirst: vi.fn(async () => null),
         create: vi.fn(async (a: { data: Record<string, unknown> }) => ({ id: 'd2', ...a.data })),
       },
     });
     const svc = new DevicesService(prisma, auditStub, jwtFor('u1'));
-    // uniqueness probe passes (OR shape), active probe hits
     const out = (await svc.register(dto(), 'u1')) as { status: string };
-    expect(out.status).toBe('PENDING');
+    expect(out.status).toBe('ACTIVE');
   });
 
   it('duplicate installationId -> 409; no employee profile -> 404', async () => {
@@ -214,13 +213,8 @@ describe('DevicesService admin (STEP 18)', () => {
 describe('DevicesService.activate (STEP 18 — aktivasi langsung)', () => {
   const pending = { id: 'd2', employeeId: 'e1', status: 'PENDING' };
 
-  function txPrisma(over: Record<string, Record<string, unknown>> = {}) {
-    const tx = {
-      device: { update: vi.fn(async (a: { where: { id: string }; data: object }) => ({ id: a.where.id, ...a.data })) },
-      session: { updateMany: vi.fn(async () => ({ count: 2 })) },
-    };
+  function activatePrisma(over: Record<string, Record<string, unknown>> = {}) {
     const prisma = {
-      __tx: tx,
       employee: {
         findUnique: vi.fn(async (a: { where: Record<string, unknown> }) =>
           'userId' in a.where ? { id: 'e-adm', department: { hospitalId: 'h1' } } : { id: 'e1' },
@@ -229,80 +223,52 @@ describe('DevicesService.activate (STEP 18 — aktivasi langsung)', () => {
       },
       device: {
         findUnique: vi.fn(async () => null),
-        findFirst: vi.fn(async () => null),
+        update: vi.fn(async (a: { where: { id: string }; data: object }) => ({ id: a.where.id, ...a.data })),
         ...over.device,
       },
-      session: { updateMany: vi.fn(async () => ({ count: 0 })), ...over.session },
-      $transaction: vi.fn(async (fn: (t: unknown) => unknown) => fn(tx)),
       ...over,
     } as unknown as PrismaService;
     return prisma;
   }
 
-  it('PENDING → ACTIVE; old ACTIVE device is revoked atomically + sessions die', async () => {
-    const prisma = txPrisma({
+  it('PENDING → ACTIVE tanpa mencabut perangkat aktif lain', async () => {
+    // auditStub dipakai bersama antar-tes; bersihkan agar asersi "tidak ada
+    // DEVICE_REVOKED" hanya menilai pemanggilan dari tes ini.
+    (auditStub as unknown as { log: ReturnType<typeof vi.fn> }).log.mockClear();
+    const prisma = activatePrisma({
       device: {
         findUnique: vi.fn(async () => ({ ...pending, employee: { department: { hospitalId: 'h1' } } })),
-        findFirst: vi.fn(async () => ({ id: 'd1', employeeId: 'e1', status: 'ACTIVE' })),
+        update: vi.fn(async (a: { where: { id: string }; data: object }) => ({ id: a.where.id, ...a.data })),
       },
     });
     const svc = new DevicesService(prisma, auditStub);
     const out = (await svc.activate('d2', 'admin', ['SUPER_ADMIN'], 'kasir RS')) as { status: string };
     expect(out.status).toBe('ACTIVE');
 
-    const tx = (prisma as unknown as { __tx: { device: { update: ReturnType<typeof vi.fn> }; session: { updateMany: ReturnType<typeof vi.fn> } } }).__tx;
-    expect(tx.device.update).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: { id: 'd2' },
-        data: expect.objectContaining({ status: 'ACTIVE' }),
-      }),
-    );
-    // 1 karyawan 1 perangkat aktif — perangkat lama dicabut dalam transaksi sama.
-    expect(tx.device.update).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: { id: 'd1' },
-        data: expect.objectContaining({ status: 'REVOKED', revokeReason: 'activated-replace-d2' }),
-      }),
-    );
-    expect(tx.session.updateMany).toHaveBeenCalledWith(
-      expect.objectContaining({ where: { deviceId: 'd1', revokedAt: null } }),
-    );
+    const update = (prisma as unknown as { device: { update: ReturnType<typeof vi.fn> } }).device.update;
+    // Multi-perangkat: hanya target yang berubah, perangkat ACTIVE lain tetap.
+    expect(update).toHaveBeenCalledTimes(1);
+    expect(update).toHaveBeenCalledWith({ where: { id: 'd2' }, data: { status: 'ACTIVE' } });
     expect(auditStub.log).toHaveBeenCalledWith(expect.objectContaining({ action: 'DEVICE_ACTIVATED', targetId: 'd2' }));
-    expect(auditStub.log).toHaveBeenCalledWith(expect.objectContaining({ action: 'DEVICE_REVOKED', targetId: 'd1' }));
+    expect(auditStub.log).not.toHaveBeenCalledWith(expect.objectContaining({ action: 'DEVICE_REVOKED' }));
   });
 
   it('non-PENDING device -> 409; foreign-facility ADMIN -> 404', async () => {
     const svc = new DevicesService(
-      txPrisma({
+      activatePrisma({
         device: { findUnique: vi.fn(async () => ({ ...pending, status: 'REVOKED', employee: { department: { hospitalId: 'h1' } } })) },
       }),
       auditStub,
     );
     await expect(svc.activate('d2', 'admin', ['SUPER_ADMIN'])).rejects.toThrow('Only PENDING devices can be activated');
 
-    const foreign = txPrisma({
+    const foreign = activatePrisma({
       device: {
         findUnique: vi.fn(async () => ({ ...pending, employee: { department: { hospitalId: 'h-other' } } })),
       },
     });
     const svc2 = new DevicesService(foreign, auditStub);
     await expect(svc2.activate('d2', 'admin', ['ADMIN'])).rejects.toThrow('Device not found');
-  });
-
-  it('no previously ACTIVE device: only the target flips', async () => {
-    const prisma = txPrisma({
-      device: {
-        findUnique: vi.fn(async () => ({ ...pending, employee: { department: { hospitalId: 'h1' } } })),
-        findFirst: vi.fn(async () => null),
-      },
-    });
-    const svc = new DevicesService(prisma, auditStub);
-    await expect(svc.activate('d2', 'admin', ['SUPER_ADMIN'])).resolves.toMatchObject({ status: 'ACTIVE' });
-    const tx = (prisma as unknown as { __tx: { device: { update: ReturnType<typeof vi.fn> } } }).__tx;
-    expect(tx.device.update).toHaveBeenCalledTimes(1);
-    expect(tx.device.update).toHaveBeenCalledWith(
-      expect.objectContaining({ where: { id: 'd2' }, data: expect.objectContaining({ status: 'ACTIVE' }) }),
-    );
   });
 });
 

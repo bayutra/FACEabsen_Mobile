@@ -22,6 +22,7 @@ class HomeDashboard extends StatefulWidget {
     required this.onOpenSchedule,
     required this.onOpenProfile,
     this.onOpenHistory,
+    this.onOpenAdmin,
   });
 
   final AttendanceRepository attendance;
@@ -35,6 +36,11 @@ class HomeDashboard extends StatefulWidget {
   final VoidCallback onOpenSchedule;
   final VoidCallback onOpenProfile;
   final VoidCallback? onOpenHistory;
+
+  /// Diisi hanya untuk SUPERVISOR/ADMIN/SUPER_ADMIN: membuka konsol kelola
+  /// (koreksi, izin, jadwal, karyawan, laporan, ...). Server tetap menegakkan
+  /// RBAC, jadi menyembunyikan tombol bukan satu-satunya pengaman.
+  final VoidCallback? onOpenAdmin;
 
   @override
   State<HomeDashboard> createState() => _HomeDashboardState();
@@ -130,6 +136,65 @@ class _HomeDashboardState extends State<HomeDashboard> {
     if (h < 15) return 'Selamat Siang,';
     if (h < 18) return 'Selamat Sore,';
     return 'Selamat Malam,';
+  }
+
+  /// Pintasan ke konsol admin — hanya muncul untuk peran yang berhak, supaya
+  /// pengelola tidak perlu mencari lewat tab Profil.
+  Widget _adminBanner() {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: widget.onOpenAdmin,
+        borderRadius: BorderRadius.circular(AppColors.radiusCard),
+        child: Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: AppColors.primaryFixed,
+            borderRadius: BorderRadius.circular(AppColors.radiusCard),
+            border: Border.all(color: AppColors.primaryContainer),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  color: AppColors.primary,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.admin_panel_settings_outlined,
+                  color: Colors.white,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Mode Admin',
+                      style: AppText.labelMd.copyWith(
+                        color: AppColors.onPrimaryFixed,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    Text(
+                      'Kelola koreksi, izin, jadwal, karyawan & laporan',
+                      style: AppText.labelSm.copyWith(
+                        color: AppColors.onPrimaryFixed,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(Icons.chevron_right, color: AppColors.onPrimaryFixed),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   @override
@@ -234,6 +299,10 @@ class _HomeDashboardState extends State<HomeDashboard> {
         child: ListView(
           padding: const EdgeInsets.all(AppColors.pageMargin),
           children: [
+            if (widget.onOpenAdmin != null) ...[
+              _adminBanner(),
+              const SizedBox(height: 12),
+            ],
             // Sub-header Department Context Bar
             Row(
               children: [

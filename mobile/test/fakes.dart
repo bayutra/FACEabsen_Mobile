@@ -63,12 +63,14 @@ class FakeAuthRepository extends AuthRepository {
     this.failConnection = false,
     this.challengeTotp = false,
     this.failTotp = false,
+    this.failRegister = false,
   }) : super(dio: Dio(), store: FakeStore());
 
   final bool failLogin;
   final bool failConnection;
   final bool challengeTotp;
   final bool failTotp;
+  final bool failRegister;
 
   /// Last `rememberMe` flag received (across login/TOTP paths).
   bool? lastRememberMe;
@@ -127,17 +129,53 @@ class FakeAuthRepository extends AuthRepository {
   }
 
   @override
+  Future<Map<String, dynamic>> register({
+    required String name,
+    required String email,
+    required String password,
+    String? phone,
+    String? employeeNo,
+    String? position,
+    bool rememberMe = true,
+  }) async {
+    if (failRegister) {
+      final RequestOptions opts = RequestOptions(path: '/auth/register');
+      throw DioException(
+        requestOptions: opts,
+        response: Response(requestOptions: opts, statusCode: 409),
+        type: DioExceptionType.badResponse,
+      );
+    }
+    return {
+      'id': 'u2',
+      'email': email,
+      'name': name,
+      'roles': ['EMPLOYEE'],
+      'employeeNo': 'EMP-999',
+    };
+  }
+
+  @override
   Future<void> logout() async {}
 }
 
 class FakeDeviceRepository extends DeviceRepository {
-  FakeDeviceRepository() : super(dio: Dio(), store: FakeStore());
+  FakeDeviceRepository({this.failRegister = false})
+      : super(dio: Dio(), store: FakeStore());
 
+  final bool failRegister;
   int registerCalls = 0;
 
   @override
   Future<BoundDevice> register() async {
     registerCalls++;
+    if (failRegister) {
+      final RequestOptions opts = RequestOptions(path: '/devices/register');
+      throw DioException(
+        requestOptions: opts,
+        type: DioExceptionType.connectionError,
+      );
+    }
     return BoundDevice(
         id: 'd1',
         installationId: 'install-test',

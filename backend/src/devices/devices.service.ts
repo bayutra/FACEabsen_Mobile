@@ -58,6 +58,11 @@ export class DevicesService {
     };
   }
 
+  /**
+   * Karyawan kini boleh memakai lebih dari satu perangkat sekaligus
+   * (mis. HP pribadi + tablet ruangan), jadi nomor karyawan tidak lagi
+   * "mengikat" satu perangkat ACTIVE. Perangkat baru langsung ACTIVE.
+   */
   async register(dto: RegisterDeviceDto, userId: string, meta: { ip?: string } = {}) {
     await this.verifyRegistrationProof(dto, userId);
     const employee = await this.prisma.employee.findUnique({ where: { userId } });
@@ -76,10 +81,6 @@ export class DevicesService {
       throw new ConflictException('Device already registered');
     }
 
-    const active = await this.prisma.device.findFirst({
-      where: { employeeId: employee.id, status: 'ACTIVE' },
-    });
-
     try {
       const device = await this.prisma.device.create({
         data: {
@@ -89,7 +90,7 @@ export class DevicesService {
           deviceName: dto.deviceName,
           appVersion: dto.appVersion,
           devicePublicKey: dto.devicePublicKey,
-          status: active ? 'PENDING' : 'ACTIVE',
+          status: 'ACTIVE',
         },
       });
       await this.audit.log({
@@ -260,10 +261,10 @@ export class DevicesService {
    * nurse registered while waiting at the counter — can be trusted without the
    * full replacement request, but never blindly:
    * - only PENDING devices are activatable (revoked/lost/active → 409);
-   * - facility gate identical to revoke (ADMIN stays inside its hospital);
-   * - "1 employee = 1 ACTIVE device" is preserved atomically: the currently
-   *   ACTIVE device (sessions included) is revoked in the same transaction,
-   *   exactly like the replacement approval path does.
+   * - facility gate identical to revoke (ADMIN stays inside its hospital).
+   *
+   * Catatan: aturan "1 karyawan = 1 perangkat ACTIVE" sudah dihapus. Perangkat
+   * aktif lain TIDAK lagi dicabut otomatis; admin mencabut manual bila perlu.
    */
   async activate(
     id: string,
@@ -287,27 +288,9 @@ export class DevicesService {
       throw new ConflictException('Only PENDING devices can be activated');
     }
 
-    const previouslyActive = await this.prisma.device.findFirst({
-      where: { employeeId: device.employeeId, status: 'ACTIVE' },
-    });
-
-    const updated = await this.prisma.$transaction(async (tx) => {
-      if (previouslyActive) {
-        await tx.device.update({
-          where: { id: previouslyActive.id },
-          data: {
-            status: 'REVOKED',
-            revokedAt: new Date(),
-            revokedBy: adminId,
-            revokeReason: `activated-replace-${id}`,
-          },
-        });
-        await tx.session.updateMany({
-          where: { deviceId: previouslyActive.id, revokedAt: null },
-          data: { revokedAt: new Date() },
-        });
-      }
-      return tx.device.update({ where: { id }, data: { status: 'ACTIVE' } });
+    const updated = await this.prisma.device.update({
+      where: { id },
+      data: { status: 'ACTIVE' },
     });
 
     await this.audit.log({
@@ -316,21 +299,8 @@ export class DevicesService {
       targetType: 'device',
       targetId: id,
       ipAddress: meta.ip,
-      metadata: {
-        note: note ?? null,
-        replacedActiveDeviceId: previouslyActive?.id ?? null,
-      },
+      metadata: { note: note ?? null },
     });
-    if (previouslyActive) {
-      await this.audit.log({
-        actorId: adminId,
-        action: 'DEVICE_REVOKED',
-        targetType: 'device',
-        targetId: previouslyActive.id,
-        ipAddress: meta.ip,
-        metadata: { reason: `activated-replace-${id}` },
-      });
-    }
     return updated;
   }
 

@@ -15,7 +15,7 @@ import type { Request } from 'express';
 import { AuthService, type RequestMeta } from './auth.service.js';
 import { AUTH_POLICY } from './constants.js';
 import { CurrentUser, Public, type AuthContext } from './decorators.js';
-import { ChangePasswordDto, LoginDto, RefreshDto } from './dto.js';
+import { ChangePasswordDto, LoginDto, RefreshDto, RegisterDto } from './dto.js';
 import { JwtAuthGuard } from './guards/jwt-auth.guard.js';
 
 const loginThrottle = {
@@ -45,6 +45,15 @@ export class AuthController {
   @Post('refresh')
   refresh(@Body() dto: RefreshDto, @Req() req: Request) {
     return this.auth.refresh(dto.refreshToken, metaOf(req));
+  }
+
+  /** Pendaftaran mandiri; akun baru selalu berperan EMPLOYEE. */
+  @Public()
+  @Throttle({ default: { limit: AUTH_POLICY.loginThrottle.limit, ttl: AUTH_POLICY.loginThrottle.ttl } })
+  @HttpCode(HttpStatus.CREATED)
+  @Post('register')
+  register(@Body() dto: RegisterDto, @Req() req: Request) {
+    return this.auth.register(dto, metaOf(req));
   }
 
   @HttpCode(HttpStatus.OK)
