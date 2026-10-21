@@ -72,7 +72,7 @@ class _LivenessScreenState extends State<LivenessScreen>
       },
     );
     _startedAt = DateTime.now();
-    _session = LivenessSession(challenges: generateChallenges(), startedAt: _startedAt);
+    _session = LivenessSession(challenges: generateChallenges(count: 1), startedAt: _startedAt);
     _initCamera();
   }
 
@@ -119,7 +119,7 @@ class _LivenessScreenState extends State<LivenessScreen>
       );
       final CameraController controller = CameraController(
         front,
-        ResolutionPreset.medium,
+        ResolutionPreset.low,
         enableAudio: false,
         imageFormatGroup: ImageFormatGroup.nv21,
       );
@@ -138,7 +138,7 @@ class _LivenessScreenState extends State<LivenessScreen>
         _controller = controller;
         _flashOn = false;
       });
-      _timer = Timer.periodic(const Duration(milliseconds: 400), (_) => _tick());
+      _timer = Timer.periodic(const Duration(milliseconds: 250), (_) => _tick());
     } on CameraException catch (e) {
       if (!mounted) return;
       setState(() => _error = e.code == 'CameraAccessDenied'
@@ -257,7 +257,7 @@ class _LivenessScreenState extends State<LivenessScreen>
     _startedAt = DateTime.now();
     setState(() {
       _session = LivenessSession(
-        challenges: generateChallenges(),
+        challenges: generateChallenges(count: 1),
         startedAt: _startedAt,
       );
       _error = null;

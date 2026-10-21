@@ -293,15 +293,22 @@ class _PrepWire {
 /// preprocess. Pure move of the former inline pipeline (same math).
 _PrepWire _decodeGatePreprocess(_PrepJob job) {
   final Uint8List bytes = job.jpeg.materialize().asUint8List();
-  final img.Image? decoded = img.decodeImage(bytes);
-  if (decoded == null) {
+  final img.Image? raw = img.decodeImage(bytes);
+  if (raw == null) {
     return _PrepWire(
       gateIndex: FaceGate.noFace.index,
       score: 0,
       message: faceGateMessage(FaceGate.noFace),
     );
   }
-  final double relativeWidth = job.boxWidth / decoded.width;
+  // Percepat gate kualitas: turunkan resolusi gambar sebelum evaluasi
+  // (rasio wajah tetap dihitung dari ukuran asli).
+  final double relativeWidth =
+      job.boxWidth > 0 && raw.width > 0 ? job.boxWidth / raw.width : 0.0;
+  img.Image decoded = raw;
+  if (decoded.width > 480) {
+    decoded = img.copyResize(decoded, width: 480);
+  }
   final FaceGate countGate = decideFaces(count: job.count, relativeWidth: relativeWidth);
   if (countGate != FaceGate.ok) {
     return _PrepWire(
