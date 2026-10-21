@@ -40,11 +40,12 @@ tidak ada logika bisnis yang diduplikasi.
 
 | Seksi | Modul | Peran | Endpoint |
 |---|---|---|---|
-| SDM | Karyawan | ADMIN | `GET/POST /employees`, `PATCH /employees/{id}`, `POST /employees/{id}/deactivate` |
-| SDM | Unit Kerja | ADMIN | `GET/POST /departments`, `PATCH/DELETE /departments/{id}` |
+| SDM | Karyawan | ADMIN | `GET/POST /employees` (`?departmentId=` untuk filter unit), `PATCH /employees/{id}`, `POST /employees/{id}/deactivate` |
+| SDM | Unit Kerja | ADMIN | `GET/POST /departments`, `PATCH/DELETE /departments/{id}`; ketuk unit → anggota (`GET /employees?departmentId={id}`) |
 | SDM | Shift | ADMIN | `GET/POST /shifts`, `PATCH/DELETE /shifts/{id}` |
 | SDM | Jadwal | ADMIN | `GET/POST /schedules`, `DELETE /schedules/{id}` |
 | Persetujuan | Koreksi Presensi | SUPERVISOR+ | `GET /corrections`, `POST /corrections/{id}/approve\|reject` |
+| Persetujuan | Tinjauan Presensi | SUPERVISOR+ | `GET /attendance/review`, `POST /attendance/{id}/review` |
 | Persetujuan | Cuti & Izin | SUPERVISOR+ | `GET /leaves`, `POST /leaves/{id}/approve\|reject` |
 | Laporan | Laporan | SUPERVISOR+ | `GET /reports/{daily,monthly,late,leaves,department,employee}` |
 | Laporan | Tim Supervisor | SUPERVISOR+ | `GET /supervisor/{team,team/{id},attendance,summary}` |

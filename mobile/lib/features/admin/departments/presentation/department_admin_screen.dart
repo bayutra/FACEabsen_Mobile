@@ -5,6 +5,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/stitch.dart';
 import '../../presentation/admin_widgets.dart';
 import '../data/department_admin_repository.dart';
+import 'unit_members_screen.dart';
 
 /// Kelola master data Unit rumah sakit (ADMIN).
 ///
@@ -100,6 +101,18 @@ class _DepartmentAdminScreenState extends State<DepartmentAdminScreen> {
     }
   }
 
+  Future<void> _openMembers(AdminDepartmentItem department) async {
+    await Navigator.of(context).push<void>(
+      MaterialPageRoute<void>(
+        builder: (_) => UnitMembersScreen(
+          dio: widget.dio,
+          departmentId: department.id,
+          departmentName: department.name,
+        ),
+      ),
+    );
+  }
+
   Future<void> _delete(AdminDepartmentItem department) async {
     final bool ok = await confirmAdminAction(
       context,
@@ -166,11 +179,13 @@ class _DepartmentAdminScreenState extends State<DepartmentAdminScreen> {
                 icon: Icons.apartment_outlined,
                 title: department.name,
                 subtitle: department.hospitalLabel,
-                onTap: () => _openForm(department),
+                onTap: () => _openMembers(department),
                 trailing: PopupMenuButton<String>(
                   tooltip: 'Aksi Unit',
                   onSelected: (String value) {
-                    if (value == 'edit') {
+                    if (value == 'members') {
+                      _openMembers(department);
+                    } else if (value == 'edit') {
                       _openForm(department);
                     } else if (value == 'delete') {
                       _delete(department);
@@ -178,6 +193,10 @@ class _DepartmentAdminScreenState extends State<DepartmentAdminScreen> {
                   },
                   itemBuilder: (BuildContext ctx) =>
                       const <PopupMenuEntry<String>>[
+                    PopupMenuItem<String>(
+                      value: 'members',
+                      child: Text('Lihat anggota'),
+                    ),
                     PopupMenuItem<String>(
                       value: 'edit',
                       child: Text('Ubah nama'),

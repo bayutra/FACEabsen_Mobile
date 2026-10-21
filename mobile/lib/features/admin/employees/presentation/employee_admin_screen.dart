@@ -28,17 +28,34 @@ class _EmployeeAdminScreenState extends State<EmployeeAdminScreen> {
   String _search = '';
   int _pageNo = 1;
 
+  List<AdminDepartment> _units = const <AdminDepartment>[];
+  String _departmentId = '';
+
   @override
   void initState() {
     super.initState();
     _load();
+    _loadUnits();
+  }
+
+  Future<void> _loadUnits() async {
+    try {
+      final List<AdminDepartment> units = await _repo.departments();
+      if (mounted) setState(() => _units = units);
+    } catch (_) {
+      // Filter unit bersifat opsional; daftar karyawan tetap bisa dipakai.
+    }
   }
 
   Future<void> _load() async {
     setState(() => _loading = true);
     try {
-      final AdminEmployeePage page =
-          await _repo.list(search: _search, status: _status, page: _pageNo);
+      final AdminEmployeePage page = await _repo.list(
+        search: _search,
+        status: _status,
+        departmentId: _departmentId.isEmpty ? null : _departmentId,
+        page: _pageNo,
+      );
       if (!mounted) return;
       setState(() {
         _page = page;
@@ -161,6 +178,31 @@ class _EmployeeAdminScreenState extends State<EmployeeAdminScreen> {
               _load();
             },
           ),
+          const SizedBox(height: 8),
+          if (_units.isNotEmpty)
+            DropdownButtonFormField<String>(
+              value: _departmentId,
+              decoration: const InputDecoration(
+                labelText: 'Kelompok Unit',
+                prefixIcon: Icon(Icons.apartment_outlined, size: 20),
+              ),
+              items: <DropdownMenuItem<String>>[
+                const DropdownMenuItem<String>(
+                  value: '',
+                  child: Text('Semua Unit'),
+                ),
+                for (final AdminDepartment unit in _units)
+                  DropdownMenuItem<String>(
+                    value: unit.id,
+                    child: Text(unit.name),
+                  ),
+              ],
+              onChanged: (String? v) {
+                _departmentId = v ?? '';
+                _pageNo = 1;
+                _load();
+              },
+            ),
           const SizedBox(height: 8),
           AdminFilterChips(
             values: const <String?>[null, 'ACTIVE', 'INACTIVE'],
