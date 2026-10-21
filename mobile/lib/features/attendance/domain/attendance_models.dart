@@ -197,6 +197,10 @@ String attendanceRejectMessage(String? reason) {
       return 'Liveness tidak valid. Ulangi verifikasi.';
     case 'DEVICE_NOT_ACTIVE':
       return 'Perangkat tidak aktif.';
+    case 'WRONG_OWNER_DEVICE':
+      return 'Perangkat ini terdaftar pada akun lain. Logout lalu login ulang.';
+    case 'UNKNOWN_DEVICE':
+      return 'Perangkat belum terdaftar. Login ulang untuk mendaftarkan ulang.';
     case 'INVALID_SIGNATURE':
       return 'Sesi perangkat bermasalah. Login ulang.';
     case 'DEVICE_COMPROMISED':

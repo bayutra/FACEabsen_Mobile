@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 /// Typed wrapper over platform secure storage (Keystore/Keychain).
@@ -47,14 +49,46 @@ class SecureStore {
     await _storage.delete(key: _refreshKey);
   }
 
-  Future<String?> readInstallationId() => _storage.read(key: _installKey);
-  Future<void> writeInstallationId(String v) => _storage.write(key: _installKey, value: v);
+  /// Identitas perangkat HARUS terpisah per akun. Satu HP bisa dipakai
+  /// bergantian oleh beberapa karyawan (mis. HP ruangan), dan backend
+  /// mengikat `installationId` + public key ke satu karyawan. Kunci storage
+  /// karena itu diberi sufiks subjek token (user id), bukan global.
+  Future<String> _deviceScope() async {
+    final String? sub = _jwtSubject(await readAccessToken());
+    return sub ?? 'anon';
+  }
 
-  Future<String?> readPrivateSeed() => _storage.read(key: _seedKey);
-  Future<void> writePrivateSeed(String v) => _storage.write(key: _seedKey, value: v);
+  static String? _jwtSubject(String? token) {
+    if (token == null || token.isEmpty) return null;
+    final List<String> parts = token.split('.');
+    if (parts.length < 2) return null;
+    try {
+      final String payload = utf8.decode(base64Url.decode(base64Url.normalize(parts[1])));
+      final Object? decoded = jsonDecode(payload);
+      if (decoded is Map && decoded['sub'] is String) {
+        final String sub = decoded['sub'] as String;
+        return sub.isEmpty ? null : sub;
+      }
+    } catch (_) {
+      // Token uji/opaque: pakai scope 'anon'.
+    }
+    return null;
+  }
 
-  Future<String?> readDeviceId() => _storage.read(key: _deviceIdKey);
-  Future<void> writeDeviceId(String v) => _storage.write(key: _deviceIdKey, value: v);
+  Future<String?> readInstallationId() async =>
+      _storage.read(key: '${_installKey}_${await _deviceScope()}');
+  Future<void> writeInstallationId(String v) async =>
+      _storage.write(key: '${_installKey}_${await _deviceScope()}', value: v);
+
+  Future<String?> readPrivateSeed() async =>
+      _storage.read(key: '${_seedKey}_${await _deviceScope()}');
+  Future<void> writePrivateSeed(String v) async =>
+      _storage.write(key: '${_seedKey}_${await _deviceScope()}', value: v);
+
+  Future<String?> readDeviceId() async =>
+      _storage.read(key: '${_deviceIdKey}_${await _deviceScope()}');
+  Future<void> writeDeviceId(String v) async =>
+      _storage.write(key: '${_deviceIdKey}_${await _deviceScope()}', value: v);
 
   /// Override alamat backend, diisi dari layar "Server API". `null` berarti
   /// memakai default compile-time (`Env.apiBaseUrl`). Dipakai untuk pengujian
@@ -72,6 +106,16 @@ class SecureStore {
   Future<void> clearOutbox() => _storage.delete(key: outboxKey);
 
   Future<void> clearDevice() async {
-    await _storage.delete(key: _deviceIdKey);
+    await _storage.delete(key: '${_deviceIdKey}_${await _deviceScope()}');
+  }
+
+  /// Dipakai saat server menolak identitas perangkat (409): buang installation
+  /// id, keypair, dan device id akun ini supaya registrasi berikutnya memakai
+  /// identitas baru yang tidak bentrok.
+  Future<void> clearDeviceIdentity() async {
+    final String scope = await _deviceScope();
+    await _storage.delete(key: '${_installKey}_$scope');
+    await _storage.delete(key: '${_seedKey}_$scope');
+    await _storage.delete(key: '${_deviceIdKey}_$scope');
   }
 }

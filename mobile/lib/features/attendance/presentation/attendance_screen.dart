@@ -124,9 +124,19 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
         _step = 1;
         _phase = 'Mengirim presensi…';
       });
-      final String? boundId = await widget.devices.currentDeviceId();
+      final String boundId;
+      try {
+        boundId = await widget.devices.ensureDeviceId();
+      } catch (_) {
+        if (!mounted) return;
+        setState(() {
+          _error = 'Perangkat gagal didaftarkan. Logout lalu login ulang.';
+          _busy = false;
+          _phase = null;
+        });
+        return;
+      }
       if (!mounted || _cancelled) return;
-      if (boundId == null) throw StateError('Perangkat belum terdaftar.');
       deviceId = boundId;
       compromised = await widget.devices.isCompromised();
       if (!mounted || _cancelled) return;

@@ -52,6 +52,22 @@ class DeviceRepository {
   /// used for attendance signing, and the server verifies the signature
   /// against `devicePublicKey` before storing it.
   Future<BoundDevice> register() async {
+    try {
+      return await _registerOnce();
+    } on DioException catch (e) {
+      // 409 = installation id / public key sudah terikat ke akun LAIN
+      // (mis. HP dipakai bergantian). Buang identitas akun ini lalu daftar
+      // ulang dengan installation id + keypair baru; backend mengizinkan
+      // banyak perangkat per karyawan.
+      if (e.response?.statusCode == 409) {
+        await _store.clearDeviceIdentity();
+        return _registerOnce();
+      }
+      rethrow;
+    }
+  }
+
+  Future<BoundDevice> _registerOnce() async {
     final DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
     String? model;
     if (Platform.isAndroid) {
@@ -90,6 +106,15 @@ class DeviceRepository {
         BoundDevice.fromJson(Map<String, dynamic>.from(res.data as Map));
     await _store.writeDeviceId(device.id);
     return device;
+  }
+
+  /// Device id yang siap dipakai presensi. Bila belum ada (login lama,
+  /// pergantian akun, atau storage baru), daftarkan dulu.
+  Future<String> ensureDeviceId() async {
+    final String? bound = await _store.readDeviceId();
+    if (bound != null && bound.isNotEmpty) return bound;
+    final BoundDevice device = await register();
+    return device.id;
   }
 
   Future<List<BoundDevice>> myDevices() async {
