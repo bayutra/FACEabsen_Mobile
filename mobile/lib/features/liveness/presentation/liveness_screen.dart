@@ -64,6 +64,7 @@ class _LivenessScreenState extends State<LivenessScreen>
       classification: true,
       contours: needsContours,
       performanceMode: FaceDetectorMode.fast,
+      minFaceSize: 0.10,
       onError: (String message) {
         // Surface ML Kit setup failures instead of leaving the user on an
         // endless "face not detected" loop with no cause.

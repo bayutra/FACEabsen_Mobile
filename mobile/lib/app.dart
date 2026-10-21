@@ -83,6 +83,7 @@ class _BootstrapGateState extends State<BootstrapGate> {
         classification: true,
         contours: true,
         landmarks: true,
+        minFaceSize: 0.10,
       ),
       embedder: FaceEmbedder(),
     );
