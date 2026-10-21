@@ -62,7 +62,7 @@ class AdminHomeScreen extends StatelessWidget {
           MaterialPageRoute<void>(
             builder: (_) => EmployeeAdminScreen(
               dio: dio,
-              canManageAll: admin,
+              canManageAll: canManageAllEmployees(roles),
             ),
           ),
         ),
@@ -77,7 +77,7 @@ class AdminHomeScreen extends StatelessWidget {
           MaterialPageRoute<void>(
             builder: (_) => DepartmentAdminScreen(
               dio: dio,
-              canManageAll: admin,
+              canManageAll: canManageAllEmployees(roles),
             ),
           ),
         ),

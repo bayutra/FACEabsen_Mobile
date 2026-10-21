@@ -23,3 +23,7 @@ bool isSupervisor(List<String> roles) =>
 
 /// Pintu masuk area "Kelola" (disembunyikan untuk karyawan biasa).
 bool canOpenAdminArea(List<String> roles) => isSupervisor(roles);
+
+/// Hak penuh SDM: tambah & nonaktifkan karyawan, serta ubah unit/atasan.
+/// Supervisor hanya boleh mengubah nama, telepon, dan jabatan anggotanya.
+bool canManageAllEmployees(List<String> roles) => isAdmin(roles);

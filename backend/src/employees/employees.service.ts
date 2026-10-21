@@ -281,7 +281,7 @@ export class EmployeesService {
         targetType: 'employee',
         targetId: id,
         ipAddress: meta.ip,
-        metadata: { updated: Object.keys(data) },
+        metadata: { updated: Object.keys(data), scope: supervisorOnly ? 'supervisor' : 'admin' },
       });
       return this.loadOne(employee.id);
     } catch (e) {

@@ -36,4 +36,11 @@ void main() {
       expect(isAdmin(roles), isFalse);
     });
   });
+
+  test('supervisor tidak punya hak penuh SDM (hanya ubah kontak)', () {
+    const List<String> roles = <String>['SUPERVISOR'];
+    expect(canManageAllEmployees(roles), isFalse);
+    expect(canManageAllEmployees(const <String>['ADMIN']), isTrue);
+    expect(canManageAllEmployees(const <String>['SUPER_ADMIN']), isTrue);
+  });
 }
