@@ -3,7 +3,8 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:camera/camera.dart';
-import 'package:flutter/foundation.dart' show defaultTargetPlatform, TargetPlatform;
+import 'package:flutter/foundation.dart'
+    show defaultTargetPlatform, TargetPlatform;
 import 'package:flutter/material.dart';
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 import 'package:image/image.dart' as img;
@@ -17,14 +18,19 @@ import '../../../core/theme/app_colors.dart';
 List<EyePoint> contourOf(Face face, FaceContourType type) {
   final FaceContour? contour = face.contours[type];
   if (contour == null) return const [];
-  return contour.points.map((p) => EyePoint(p.x.toDouble(), p.y.toDouble())).toList();
+  return contour.points
+      .map((p) => EyePoint(p.x.toDouble(), p.y.toDouble()))
+      .toList();
 }
 
 /// Stitch "Presensi - Liveness Challenge Biometrik": progress header, a
 /// countdown, the active instruction, per-challenge chips, the guided camera
 /// viewport, live signal tiles, and the capture / re-roll actions.
 class LivenessScreen extends StatefulWidget {
-  const LivenessScreen({super.key, this.returnAttestation = false, this.displayName = 'Karyawan'});
+  const LivenessScreen(
+      {super.key,
+      this.returnAttestation = false,
+      this.displayName = 'Karyawan'});
 
   final bool returnAttestation;
   final String displayName;
@@ -73,7 +79,8 @@ class _LivenessScreenState extends State<LivenessScreen>
       },
     );
     _startedAt = DateTime.now();
-    _session = LivenessSession(challenges: generateChallenges(count: 1), startedAt: _startedAt);
+    _session = LivenessSession(
+        challenges: generateChallenges(count: 1), startedAt: _startedAt);
     _initCamera();
   }
 
@@ -82,7 +89,8 @@ class _LivenessScreenState extends State<LivenessScreen>
     // Same hazard as the passive scan: release the session + frame timer on
     // background; rebuild and re-arm (fresh timeout window, stale error
     // cleared) on resume.
-    if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive) {
       _timer?.cancel();
       _timer = null;
       final CameraController? controller = _controller;
@@ -138,7 +146,8 @@ class _LivenessScreenState extends State<LivenessScreen>
         _controller = controller;
         _flashOn = false;
       });
-      _timer = Timer.periodic(const Duration(milliseconds: 250), (_) => _tick());
+      _timer =
+          Timer.periodic(const Duration(milliseconds: 250), (_) => _tick());
     } on CameraException catch (e) {
       if (!mounted) return;
       setState(() => _error = e.code == 'CameraAccessDenied'
@@ -183,8 +192,7 @@ class _LivenessScreenState extends State<LivenessScreen>
         final Uint8List bytes = await File(shot.path).readAsBytes();
         if (!mounted) return;
         final img.Decoder? decoder = img.findDecoderForData(bytes);
-        final img.DecodeInfo? info =
-            decoder?.startDecode(bytes);
+        final img.DecodeInfo? info = decoder?.startDecode(bytes);
         if (info == null || info.width <= 0) return;
         final double rel = f.boundingBox.width / info.width;
 
@@ -200,12 +208,16 @@ class _LivenessScreenState extends State<LivenessScreen>
         status = _session.process(FrameObservation(
           eyeOpenLeft: hasProbability
               ? leftProb
-              : eyeOpenRatioFromLandmarks(contourOf(f, FaceContourType.leftEye)),
+              : eyeOpenRatioFromLandmarks(
+                  contourOf(f, FaceContourType.leftEye)),
           eyeOpenRight: hasProbability
               ? rightProb
-              : eyeOpenRatioFromLandmarks(contourOf(f, FaceContourType.rightEye)),
+              : eyeOpenRatioFromLandmarks(
+                  contourOf(f, FaceContourType.rightEye)),
           yaw: f.headEulerAngleY,
-          eyeSource: hasProbability ? EyeSignalSource.probability : EyeSignalSource.landmarkRatio,
+          eyeSource: hasProbability
+              ? EyeSignalSource.probability
+              : EyeSignalSource.landmarkRatio,
         ));
       }
       setState(() {
@@ -218,7 +230,8 @@ class _LivenessScreenState extends State<LivenessScreen>
           _doneMessage =
               'Liveness lolos (${(att['challenges'] as List).length} tantangan).';
         } else if (status == LivenessStatus.timeout) {
-          _error = 'Waktu habis. Foto/video statis tidak akan lolos â€” coba lagi.';
+          _error =
+              'Waktu habis. Foto/video statis tidak akan lolos â€” coba lagi.';
         }
       });
     } catch (_) {
@@ -351,7 +364,8 @@ class _LivenessScreenState extends State<LivenessScreen>
                         color: Colors.white.withOpacity(0.1),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.arrow_back, color: Colors.white, size: 20),
+                      child: const Icon(Icons.arrow_back,
+                          color: Colors.white, size: 20),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -381,7 +395,8 @@ class _LivenessScreenState extends State<LivenessScreen>
                     ),
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
                       color: AppColors.primaryContainer.withOpacity(0.6),
                       borderRadius: BorderRadius.circular(AppColors.radiusFull),
@@ -424,7 +439,8 @@ class _LivenessScreenState extends State<LivenessScreen>
                     children: [
                       const Row(
                         children: [
-                          Icon(Icons.security_update_good, size: 16, color: tertiaryFixed),
+                          Icon(Icons.security_update_good,
+                              size: 16, color: tertiaryFixed),
                           SizedBox(width: 6),
                           Text(
                             'Tantangan Biometrik (Liveness)',
@@ -511,7 +527,8 @@ class _LivenessScreenState extends State<LivenessScreen>
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                                   children: [
                                     const Text(
                                       'INSTRUKSI MEDIS AKTIF',
@@ -523,15 +540,19 @@ class _LivenessScreenState extends State<LivenessScreen>
                                       ),
                                     ),
                                     Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 6, vertical: 2),
                                       decoration: BoxDecoration(
                                         color: AppColors.surfaceHigh,
-                                        borderRadius: BorderRadius.circular(AppColors.radiusFull),
+                                        borderRadius: BorderRadius.circular(
+                                            AppColors.radiusFull),
                                       ),
                                       child: Row(
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
-                                          const Icon(Icons.timer, size: 12, color: Color(0xFF004C6E)),
+                                          const Icon(Icons.timer,
+                                              size: 12,
+                                              color: Color(0xFF004C6E)),
                                           const SizedBox(width: 3),
                                           Text(
                                             '${_mm(_remaining)} dtk',
@@ -588,19 +609,23 @@ class _LivenessScreenState extends State<LivenessScreen>
                           final bool isActive = index == _session.index;
                           final bool isDone = index < _session.index;
                           return Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 6),
                             decoration: BoxDecoration(
                               color: isActive
                                   ? AppColors.primary
                                   : (isDone
-                                      ? AppColors.primaryContainer.withOpacity(0.4)
+                                      ? AppColors.primaryContainer
+                                          .withOpacity(0.4)
                                       : Colors.white.withOpacity(0.08)),
-                              borderRadius: BorderRadius.circular(AppColors.radiusFull),
+                              borderRadius:
+                                  BorderRadius.circular(AppColors.radiusFull),
                               border: Border.all(
                                 color: isActive
                                     ? AppColors.inversePrimary
                                     : (isDone
-                                        ? const Color(0xFF89F5E7).withOpacity(0.4)
+                                        ? const Color(0xFF89F5E7)
+                                            .withOpacity(0.4)
                                         : Colors.white.withOpacity(0.2)),
                               ),
                             ),
@@ -608,21 +633,25 @@ class _LivenessScreenState extends State<LivenessScreen>
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Icon(
-                                  isDone
-                                      ? Icons.check_circle
-                                      : _iconFor(c),
+                                  isDone ? Icons.check_circle : _iconFor(c),
                                   size: 15,
                                   color: isActive
                                       ? const Color(0xFF89F5E7)
-                                      : (isDone ? const Color(0xFF89F5E7) : Colors.white70),
+                                      : (isDone
+                                          ? const Color(0xFF89F5E7)
+                                          : Colors.white70),
                                 ),
                                 const SizedBox(width: 6),
                                 Text(
                                   _shortLabel(c),
                                   style: TextStyle(
-                                    color: isActive ? Colors.white : Colors.white70,
+                                    color: isActive
+                                        ? Colors.white
+                                        : Colors.white70,
                                     fontSize: 11.5,
-                                    fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
+                                    fontWeight: isActive
+                                        ? FontWeight.w600
+                                        : FontWeight.w500,
                                   ),
                                 ),
                               ],
@@ -648,11 +677,13 @@ class _LivenessScreenState extends State<LivenessScreen>
                     const Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.lock_outline, size: 13, color: Color(0xFFCBDDF5)),
+                        Icon(Icons.lock_outline,
+                            size: 13, color: Color(0xFFCBDDF5)),
                         SizedBox(width: 5),
                         Text(
                           'Enkripsi Biometrik ISO/IEC 30107-3 Liveness Anti-Spoofing',
-                          style: TextStyle(fontSize: 10.5, color: Color(0xFFCBDDF5)),
+                          style: TextStyle(
+                              fontSize: 10.5, color: Color(0xFFCBDDF5)),
                         ),
                       ],
                     ),
@@ -660,7 +691,8 @@ class _LivenessScreenState extends State<LivenessScreen>
                     if (_error != null || _doneMessage != null) ...[
                       const SizedBox(height: 10),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 8),
                         decoration: BoxDecoration(
                           color: _error != null
                               ? AppColors.errorTint.withOpacity(0.2)
@@ -677,7 +709,9 @@ class _LivenessScreenState extends State<LivenessScreen>
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 12,
-                            color: _error != null ? AppColors.errorTint : const Color(0xFF89F5E7),
+                            color: _error != null
+                                ? AppColors.errorTint
+                                : const Color(0xFF89F5E7),
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -717,8 +751,11 @@ class _LivenessScreenState extends State<LivenessScreen>
                       onPressed: finished || _error != null ? _retry : _tick,
                       icon: const Icon(Icons.photo_camera, size: 20),
                       label: Text(
-                        _error != null || finished ? 'Coba Lagi' : 'Ambil Foto Presensi',
-                        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                        _error != null || finished
+                            ? 'Coba Lagi'
+                            : 'Ambil Foto Presensi',
+                        style: const TextStyle(
+                            fontSize: 15, fontWeight: FontWeight.w600),
                       ),
                     ),
                   ),
@@ -739,7 +776,8 @@ class _LivenessScreenState extends State<LivenessScreen>
                       icon: const Icon(Icons.shuffle, size: 18),
                       label: const Text(
                         'Ganti Tantangan Gerakan',
-                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+                        style: TextStyle(
+                            fontSize: 13, fontWeight: FontWeight.w500),
                       ),
                     ),
                   ),
@@ -749,11 +787,13 @@ class _LivenessScreenState extends State<LivenessScreen>
                     children: [
                       Text(
                         'Anti-spoofing aktif',
-                        style: TextStyle(fontSize: 10, color: Colors.white.withOpacity(0.5)),
+                        style: TextStyle(
+                            fontSize: 10, color: Colors.white.withOpacity(0.5)),
                       ),
                       Text(
                         'ID Karyawan: ${widget.displayName}',
-                        style: TextStyle(fontSize: 10, color: Colors.white.withOpacity(0.5)),
+                        style: TextStyle(
+                            fontSize: 10, color: Colors.white.withOpacity(0.5)),
                       ),
                     ],
                   ),
@@ -766,205 +806,224 @@ class _LivenessScreenState extends State<LivenessScreen>
     );
   }
 
-  Widget _viewport(CameraController? controller) => SizedBox(
-        width: 256,
-        height: 320,
-        child: Container(
-          decoration: BoxDecoration(
-            color: AppColors.ink,
-            borderRadius: BorderRadius.circular(32),
-            border: Border.all(color: AppColors.primaryFixed.withOpacity(0.4), width: 2),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.4),
-                blurRadius: 16,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          clipBehavior: Clip.antiAlias,
-          child: _error != null && controller == null
-              ? Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(24),
-                    child: Text(
-                      _error!,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(color: Colors.white, fontSize: 13),
-                    ),
+  Widget _viewport(CameraController? controller) => Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 420),
+          child: AspectRatio(
+            // Match the wide portrait scan frame from the mobile design.
+            aspectRatio: 0.8,
+            child: Container(
+              decoration: BoxDecoration(
+                color: AppColors.ink,
+                borderRadius: BorderRadius.circular(32),
+                border: Border.all(
+                    color: AppColors.primaryFixed.withOpacity(0.4), width: 2),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.4),
+                    blurRadius: 16,
+                    offset: const Offset(0, 4),
                   ),
-                )
-              : controller == null
-                  ? const Center(child: CircularProgressIndicator(color: Color(0xFF89F5E7)))
-                  : Stack(
-                      fit: StackFit.expand,
-                      children: [
-                        CameraPreview(controller),
-                        // Dark gradient vignette
-                        DecoratedBox(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                              colors: [
-                                AppColors.inverseSurface.withOpacity(0.6),
-                                Colors.transparent,
-                                AppColors.inverseSurface.withOpacity(0.75),
-                              ],
-                            ),
-                          ),
+                ],
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: _error != null && controller == null
+                  ? Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(24),
+                        child: Text(
+                          _error!,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                              color: Colors.white, fontSize: 13),
                         ),
-                        // Custom biometric HUD and face mesh
-                        const CustomPaint(painter: _BiometricHudPainter()),
-                        // Garis pindai bergerak: menandakan kamera aktif
-                        // mengambil sampel, tanpa menyalakan flash.
-                        Positioned.fill(
-                          child: IgnorePointer(
-                            child: AnimatedBuilder(
-                              animation: _scan,
-                              builder: (BuildContext context, Widget? child) {
-                                final double t =
-                                    Curves.easeInOut.transform(_scan.value);
-                                return Align(
-                                  alignment: Alignment(0, -1 + 2 * t),
-                                  child: Container(
-                                    height: 2,
-                                    margin: const EdgeInsets.symmetric(
-                                      horizontal: 26,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      gradient: LinearGradient(
-                                        colors: [
-                                          Colors.transparent,
-                                          AppColors.primaryFixed
-                                              .withOpacity(0.9),
-                                          Colors.transparent,
-                                        ],
-                                      ),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: AppColors.primaryFixed
-                                              .withOpacity(0.45),
-                                          blurRadius: 8,
+                      ),
+                    )
+                  : controller == null
+                      ? const Center(
+                          child: CircularProgressIndicator(
+                              color: Color(0xFF89F5E7)))
+                      : Stack(
+                          fit: StackFit.expand,
+                          children: [
+                            CameraPreview(controller),
+                            // Dark gradient vignette
+                            DecoratedBox(
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
+                                  colors: [
+                                    AppColors.inverseSurface.withOpacity(0.6),
+                                    Colors.transparent,
+                                    AppColors.inverseSurface.withOpacity(0.75),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            // Custom biometric HUD and face mesh
+                            const CustomPaint(painter: _BiometricHudPainter()),
+                            // Garis pindai bergerak: menandakan kamera aktif
+                            // mengambil sampel, tanpa menyalakan flash.
+                            Positioned.fill(
+                              child: IgnorePointer(
+                                child: AnimatedBuilder(
+                                  animation: _scan,
+                                  builder:
+                                      (BuildContext context, Widget? child) {
+                                    final double t =
+                                        Curves.easeInOut.transform(_scan.value);
+                                    return Align(
+                                      alignment: Alignment(0, -1 + 2 * t),
+                                      child: Container(
+                                        height: 2,
+                                        margin: const EdgeInsets.symmetric(
+                                          horizontal: 26,
                                         ),
-                                      ],
-                                    ),
-                                  ),
-                                );
-                              },
+                                        decoration: BoxDecoration(
+                                          gradient: LinearGradient(
+                                            colors: [
+                                              Colors.transparent,
+                                              AppColors.primaryFixed
+                                                  .withOpacity(0.9),
+                                              Colors.transparent,
+                                            ],
+                                          ),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: AppColors.primaryFixed
+                                                  .withOpacity(0.45),
+                                              blurRadius: 8,
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
                             ),
-                          ),
-                        ),
-                        // Lampu kilat manual — default mati, tidak pernah auto.
-                        Align(
-                          alignment: Alignment.topRight,
-                          child: Padding(
-                            padding: const EdgeInsets.only(top: 8, right: 8),
-                            child: Tooltip(
-                              message: _flashOn
-                                  ? 'Matikan lampu kilat'
-                                  : 'Nyalakan lampu kilat',
-                              child: Material(
-                                color: _flashOn
-                                    ? AppColors.primaryFixed
-                                    : Colors.black.withOpacity(0.45),
-                                shape: const CircleBorder(),
-                                child: InkWell(
-                                  customBorder: const CircleBorder(),
-                                  onTap: _toggleFlash,
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(8),
-                                    child: Icon(
-                                      _flashOn
-                                          ? Icons.flash_on
-                                          : Icons.flash_off,
-                                      size: 18,
-                                      color: _flashOn
-                                          ? AppColors.inverseSurface
-                                          : Colors.white,
+                            // Lampu kilat manual — default mati, tidak pernah auto.
+                            Align(
+                              alignment: Alignment.topRight,
+                              child: Padding(
+                                padding:
+                                    const EdgeInsets.only(top: 8, right: 8),
+                                child: Tooltip(
+                                  message: _flashOn
+                                      ? 'Matikan lampu kilat'
+                                      : 'Nyalakan lampu kilat',
+                                  child: Material(
+                                    color: _flashOn
+                                        ? AppColors.primaryFixed
+                                        : Colors.black.withOpacity(0.45),
+                                    shape: const CircleBorder(),
+                                    child: InkWell(
+                                      customBorder: const CircleBorder(),
+                                      onTap: _toggleFlash,
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(8),
+                                        child: Icon(
+                                          _flashOn
+                                              ? Icons.flash_on
+                                              : Icons.flash_off,
+                                          size: 18,
+                                          color: _flashOn
+                                              ? AppColors.inverseSurface
+                                              : Colors.white,
+                                        ),
+                                      ),
                                     ),
                                   ),
                                 ),
                               ),
                             ),
-                          ),
-                        ),
-                        // Top status badge
-                        Align(
-                          alignment: Alignment.topCenter,
-                          child: Padding(
-                            padding: const EdgeInsets.only(top: 10),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: AppColors.inverseSurface.withOpacity(0.85),
-                                borderRadius: BorderRadius.circular(AppColors.radiusFull),
-                                border: Border.all(color: AppColors.primaryFixed.withOpacity(0.4)),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  CircleAvatar(
-                                    radius: 3,
-                                    backgroundColor: _faceCount == 1
-                                        ? const Color(0xFF34D399)
-                                        : const Color(0xFF89F5E7),
+                            // Top status badge
+                            Align(
+                              alignment: Alignment.topCenter,
+                              child: Padding(
+                                padding: const EdgeInsets.only(top: 10),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.inverseSurface
+                                        .withOpacity(0.85),
+                                    borderRadius: BorderRadius.circular(
+                                        AppColors.radiusFull),
+                                    border: Border.all(
+                                        color: AppColors.primaryFixed
+                                            .withOpacity(0.4)),
                                   ),
-                                  const SizedBox(width: 5),
-                                  Text(
-                                    _faceCount == 1
-                                        ? 'Wajah Terdeteksi'
-                                        : 'Mencari Wajah...',
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.w600,
-                                    ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      CircleAvatar(
+                                        radius: 3,
+                                        backgroundColor: _faceCount == 1
+                                            ? const Color(0xFF34D399)
+                                            : const Color(0xFF89F5E7),
+                                      ),
+                                      const SizedBox(width: 5),
+                                      Text(
+                                        _faceCount == 1
+                                            ? 'Wajah Terdeteksi'
+                                            : 'Mencari Wajah...',
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                        // Bottom hint badge
-                        Align(
-                          alignment: Alignment.bottomCenter,
-                          child: Padding(
-                            padding: const EdgeInsets.only(bottom: 10),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: AppColors.primaryContainer.withOpacity(0.9),
-                                borderRadius: BorderRadius.circular(AppColors.radiusFull),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    _faceCount == 1
-                                        ? Icons.center_focus_strong
-                                        : Icons.face_retouching_natural,
-                                    size: 13,
-                                    color: Colors.white,
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    _faceCount == 1
-                                        ? 'Tahan Posisi'
-                                        : 'Posisikan Wajah di Tengah',
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ],
+                                ),
                               ),
                             ),
-                          ),
+                            // Bottom hint badge
+                            Align(
+                              alignment: Alignment.bottomCenter,
+                              child: Padding(
+                                padding: const EdgeInsets.only(bottom: 10),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.primaryContainer
+                                        .withOpacity(0.9),
+                                    borderRadius: BorderRadius.circular(
+                                        AppColors.radiusFull),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        _faceCount == 1
+                                            ? Icons.center_focus_strong
+                                            : Icons.face_retouching_natural,
+                                        size: 13,
+                                        color: Colors.white,
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        _faceCount == 1
+                                            ? 'Tahan Posisi'
+                                            : 'Posisikan Wajah di Tengah',
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
+            ),
+          ),
         ),
       );
 
@@ -983,19 +1042,24 @@ class _LivenessScreenState extends State<LivenessScreen>
           Expanded(
             child: _telemetryColumn(
               title: 'WAJAH',
-              value: detected ? 'Optimal' : (_faceCount > 1 ? 'Ramai' : 'Posisikan'),
+              value: detected
+                  ? 'Optimal'
+                  : (_faceCount > 1 ? 'Ramai' : 'Posisikan'),
               ok: detected,
             ),
           ),
-          Container(width: 1, height: 26, color: Colors.white.withOpacity(0.15)),
+          Container(
+              width: 1, height: 26, color: Colors.white.withOpacity(0.15)),
           Expanded(
             child: _telemetryColumn(
               title: 'CAHAYA',
-              value: closeEnough ? 'Cukup' : (detected ? 'Dekatkan' : 'Optimal'),
+              value:
+                  closeEnough ? 'Cukup' : (detected ? 'Dekatkan' : 'Optimal'),
               ok: true,
             ),
           ),
-          Container(width: 1, height: 26, color: Colors.white.withOpacity(0.15)),
+          Container(
+              width: 1, height: 26, color: Colors.white.withOpacity(0.15)),
           Expanded(
             child: _telemetryColumn(
               title: 'LIVENESS',
@@ -1117,20 +1181,32 @@ class _BiometricHudPainter extends CustomPainter {
     const double pad = 12;
 
     // Top-Left
-    canvas.drawLine(const Offset(pad, pad), const Offset(pad + bracketSize, pad), bracketPaint);
-    canvas.drawLine(const Offset(pad, pad), const Offset(pad, pad + bracketSize), bracketPaint);
+    canvas.drawLine(const Offset(pad, pad),
+        const Offset(pad + bracketSize, pad), bracketPaint);
+    canvas.drawLine(const Offset(pad, pad),
+        const Offset(pad, pad + bracketSize), bracketPaint);
 
     // Top-Right
-    canvas.drawLine(Offset(size.width - pad, pad), Offset(size.width - pad - bracketSize, pad), bracketPaint);
-    canvas.drawLine(Offset(size.width - pad, pad), Offset(size.width - pad, pad + bracketSize), bracketPaint);
+    canvas.drawLine(Offset(size.width - pad, pad),
+        Offset(size.width - pad - bracketSize, pad), bracketPaint);
+    canvas.drawLine(Offset(size.width - pad, pad),
+        Offset(size.width - pad, pad + bracketSize), bracketPaint);
 
     // Bottom-Left
-    canvas.drawLine(Offset(pad, size.height - pad), Offset(pad + bracketSize, size.height - pad), bracketPaint);
-    canvas.drawLine(Offset(pad, size.height - pad), Offset(pad, size.height - pad - bracketSize), bracketPaint);
+    canvas.drawLine(Offset(pad, size.height - pad),
+        Offset(pad + bracketSize, size.height - pad), bracketPaint);
+    canvas.drawLine(Offset(pad, size.height - pad),
+        Offset(pad, size.height - pad - bracketSize), bracketPaint);
 
     // Bottom-Right
-    canvas.drawLine(Offset(size.width - pad, size.height - pad), Offset(size.width - pad - bracketSize, size.height - pad), bracketPaint);
-    canvas.drawLine(Offset(size.width - pad, size.height - pad), Offset(size.width - pad, size.height - pad - bracketSize), bracketPaint);
+    canvas.drawLine(
+        Offset(size.width - pad, size.height - pad),
+        Offset(size.width - pad - bracketSize, size.height - pad),
+        bracketPaint);
+    canvas.drawLine(
+        Offset(size.width - pad, size.height - pad),
+        Offset(size.width - pad, size.height - pad - bracketSize),
+        bracketPaint);
   }
 
   @override
@@ -1139,8 +1215,9 @@ class _BiometricHudPainter extends CustomPainter {
 
 Widget pill(Color bg, Color fg, String label) => Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(AppColors.radiusFull)),
+      decoration: BoxDecoration(
+          color: bg, borderRadius: BorderRadius.circular(AppColors.radiusFull)),
       child: Text(label,
-          style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: fg)),
+          style:
+              TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: fg)),
     );
-

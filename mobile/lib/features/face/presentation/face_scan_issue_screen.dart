@@ -127,7 +127,7 @@ class _FaceScanIssueScreenState extends State<FaceScanIssueScreen> {
               child: Column(
                 children: [
                   Container(
-                    height: 240,
+                    height: 360,
                     decoration: BoxDecoration(
                       borderRadius:
                           BorderRadius.circular(AppColors.radiusViewport),
@@ -136,30 +136,74 @@ class _FaceScanIssueScreenState extends State<FaceScanIssueScreen> {
                         width: 2,
                       ),
                     ),
-                    child: Center(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.face,
-                              size: 64, color: Colors.white70),
-                          const SizedBox(height: 8),
-                          AppPill(
-                            switch (_activeGate) {
-                              FaceGate.tooBlurry => 'Gambar Buram',
-                              FaceGate.tooDark => 'Pencahayaan Kurang',
-                              FaceGate.tooBright => 'Pencahayaan Berlebih',
-                              FaceGate.eyesClosed => 'Mata Tertutup',
-                              FaceGate.multipleFaces => 'Wajah Lebih dari Satu',
-                              FaceGate.noFace => 'Wajah Tidak Terdeteksi',
-                              FaceGate.tooSmall => 'Wajah Terlalu Jauh',
-                              FaceGate.ok => 'Perlu Pemindaian Ulang',
-                            },
-                            AppColors.roseTint,
-                            AppColors.roseText,
-                            border: AppColors.roseBorder,
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        const CustomPaint(
+                          painter: _CameraGuidePainter(AppColors.roseFill),
+                        ),
+                        Positioned(
+                          top: 18,
+                          left: 18,
+                          child: AppPill(
+                            'KAMERA DEPAN',
+                            AppColors.inverseSurface.withOpacity(0.88),
+                            AppColors.onInverseSurface,
+                            icon: Icons.camera_alt_outlined,
                           ),
-                        ],
-                      ),
+                        ),
+                        Center(
+                          child: Container(
+                            width: 216,
+                            height: 272,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(120),
+                              border: Border.all(
+                                color: AppColors.roseFill.withOpacity(0.85),
+                                width: 2,
+                              ),
+                              color: AppColors.roseFill.withOpacity(0.06),
+                            ),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Icon(Icons.face_retouching_natural,
+                                    size: 64, color: Colors.white70),
+                                const SizedBox(height: 12),
+                                AppPill(
+                                  switch (_activeGate) {
+                                    FaceGate.tooBlurry => 'Gambar Buram',
+                                    FaceGate.tooDark => 'Pencahayaan Kurang',
+                                    FaceGate.tooBright =>
+                                      'Pencahayaan Berlebih',
+                                    FaceGate.eyesClosed => 'Mata Tertutup',
+                                    FaceGate.multipleFaces =>
+                                      'Wajah Lebih dari Satu',
+                                    FaceGate.noFace => 'Wajah Tidak Terdeteksi',
+                                    FaceGate.tooSmall => 'Wajah Terlalu Jauh',
+                                    FaceGate.ok => 'Perlu Pemindaian Ulang',
+                                  },
+                                  AppColors.roseTint,
+                                  AppColors.roseText,
+                                  border: AppColors.roseBorder,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          bottom: 18,
+                          left: 18,
+                          right: 18,
+                          child: Text(
+                            'Panduan pemeriksaan kamera',
+                            textAlign: TextAlign.center,
+                            style: AppText.labelSm.copyWith(
+                              color: AppColors.onInverseSurface,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                   const SizedBox(height: 10),
@@ -245,4 +289,39 @@ class _QualityTile extends StatelessWidget {
           ],
         ),
       );
+}
+
+class _CameraGuidePainter extends CustomPainter {
+  const _CameraGuidePainter(this.color);
+
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final Paint paint = Paint()
+      ..color = color
+      ..strokeWidth = 3
+      ..strokeCap = StrokeCap.round
+      ..style = PaintingStyle.stroke;
+    const double inset = 18;
+    const double length = 28;
+    final double right = size.width - inset;
+    final double bottom = size.height - inset;
+    for (final (Offset start, Offset end) in <(Offset, Offset)>[
+      (const Offset(inset, inset), const Offset(inset + length, inset)),
+      (const Offset(inset, inset), const Offset(inset, inset + length)),
+      (Offset(right, inset), Offset(right - length, inset)),
+      (Offset(right, inset), Offset(right, inset + length)),
+      (Offset(inset, bottom), Offset(inset + length, bottom)),
+      (Offset(inset, bottom), Offset(inset, bottom - length)),
+      (Offset(right, bottom), Offset(right - length, bottom)),
+      (Offset(right, bottom), Offset(right, bottom - length)),
+    ]) {
+      canvas.drawLine(start, end, paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _CameraGuidePainter oldDelegate) =>
+      oldDelegate.color != color;
 }

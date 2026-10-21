@@ -37,7 +37,8 @@ class FaceRegistrationScreen extends StatefulWidget {
   State<FaceRegistrationScreen> createState() => _FaceRegistrationScreenState();
 }
 
-class _FaceRegistrationScreenState extends State<FaceRegistrationScreen> with WidgetsBindingObserver {
+class _FaceRegistrationScreenState extends State<FaceRegistrationScreen>
+    with WidgetsBindingObserver {
   CameraController? _controller;
   String? _initError;
   bool _busy = false;
@@ -64,7 +65,8 @@ class _FaceRegistrationScreenState extends State<FaceRegistrationScreen> with Wi
   void didChangeAppLifecycleState(AppLifecycleState state) {
     // Same dead-preview hazard as the verify screen: release on background,
     // rebuild + clear the stale error on resume.
-    if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive) {
       final CameraController? controller = _controller;
       _controller = null;
       controller?.dispose();
@@ -140,15 +142,16 @@ class _FaceRegistrationScreenState extends State<FaceRegistrationScreen> with Wi
       if (!mounted) return;
       setState(() {
         _message = result.message +
-            (result.score != null ? ' (skor ${(result.score! * 100).round()}%)' : '');
+            (result.score != null
+                ? ' (skor ${(result.score! * 100).round()}%)'
+                : '');
         _success = result.ok;
         // Guidance card only for real quality-gate failures; server/network
         // failures (gate null/ok) keep the bare message.
-        _failGate = (!result.ok &&
-                result.gate != null &&
-                result.gate != FaceGate.ok)
-            ? result.gate
-            : null;
+        _failGate =
+            (!result.ok && result.gate != null && result.gate != FaceGate.ok)
+                ? result.gate
+                : null;
         _busy = false;
       });
       // Stitch "Pendaftaran Wajah - Berhasil": a dedicated confirmation screen.
@@ -176,7 +179,8 @@ class _FaceRegistrationScreenState extends State<FaceRegistrationScreen> with Wi
       if (mounted) setState(() => _flashOverlay = false);
       if (!mounted) return;
       setState(() {
-        _message = 'Gagal memproses. Periksa koneksi server. (${describeError(e)})';
+        _message =
+            'Gagal memproses. Periksa koneksi server. (${describeError(e)})';
         _busy = false;
       });
     }
@@ -199,14 +203,17 @@ class _FaceRegistrationScreenState extends State<FaceRegistrationScreen> with Wi
             mainAxisSize: MainAxisSize.min,
             children: [
               Text('Versi ${notice.version}',
-                  style: const TextStyle(color: AppColors.inkSecondary, fontSize: 12)),
+                  style: const TextStyle(
+                      color: AppColors.inkSecondary, fontSize: 12)),
               const SizedBox(height: 8),
               Text(notice.body, style: const TextStyle(fontSize: 14)),
             ],
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Tutup')),
+          TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Tutup')),
         ],
       ),
     );
@@ -231,122 +238,149 @@ class _FaceRegistrationScreenState extends State<FaceRegistrationScreen> with Wi
           children: [
             AspectRatio(
               aspectRatio: 4 / 4.2,
-              child: Container(
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 240),
+                padding: const EdgeInsets.all(3),
                 decoration: BoxDecoration(
-                  color: AppColors.ink,
                   borderRadius: BorderRadius.circular(24),
+                  border: Border.all(
+                    color: _success ? AppColors.success : AppColors.scanner,
+                    width: 3,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: (_success ? AppColors.success : AppColors.scanner)
+                          .withOpacity(0.22),
+                      blurRadius: 16,
+                    ),
+                  ],
                 ),
-                clipBehavior: Clip.antiAlias,
-                child: _initError != null
-                    ? Center(
-                        child: Padding(
-                          padding: const EdgeInsets.all(24),
-                          child: Text(_initError!,
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(color: Colors.white)),
-                        ),
-                      )
-                    : controller == null
-                        ? const Center(child: CircularProgressIndicator(color: Colors.white))
-                        : Stack(
-                            fit: StackFit.expand,
-                            children: [
-                              CameraPreview(controller),
-                              const CustomPaint(painter: _OvalGuide()),
-                              if (_flashOverlay)
-                                Positioned.fill(
-                                  child: Container(color: Colors.white.withOpacity(0.85)),
-                                ),
-                              // Badge status registrasi
-                              Align(
-                                alignment: Alignment.topCenter,
-                                child: Padding(
-                                  padding: const EdgeInsets.only(top: 12),
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 10,
-                                      vertical: 4,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: AppColors.inverseSurface.withOpacity(0.85),
-                                      borderRadius: BorderRadius.circular(AppColors.radiusFull),
-                                      border: Border.all(
-                                        color: AppColors.primaryFixed.withOpacity(0.4),
-                                      ),
-                                    ),
-                                    child: const Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Icon(Icons.verified_user_outlined,
-                                            size: 12, color: Color(0xFF89F5E7)),
-                                        SizedBox(width: 5),
-                                        Text(
-                                          'Registrasi Wajah',
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 10,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              // Tombol cahaya layar (flood illuminator analog)
-                              Align(
-                                alignment: Alignment.topRight,
-                                child: Padding(
-                                  padding: const EdgeInsets.only(top: 8, right: 8),
-                                  child: Tooltip(
-                                    message: _useScreenFlash
-                                        ? 'Matikan cahaya layar'
-                                        : 'Nyalakan cahaya layar (mode gelap)',
-                                    child: Material(
-                                      color: _useScreenFlash
-                                          ? AppColors.primaryFixed
-                                          : Colors.black.withOpacity(0.45),
-                                      shape: const CircleBorder(),
-                                      child: InkWell(
-                                        customBorder: const CircleBorder(),
-                                        onTap: _busy
-                                            ? null
-                                            : () => setState(
-                                                  () => _useScreenFlash = !_useScreenFlash,
-                                                ),
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(8),
-                                          child: Icon(
-                                            _useScreenFlash
-                                                ? Icons.flash_on
-                                                : Icons.flash_off,
-                                            size: 18,
-                                            color: _useScreenFlash
-                                                ? AppColors.inverseSurface
-                                                : Colors.white,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              const Align(
-                                alignment: Alignment.bottomCenter,
-                                child: Padding(
-                                  padding: EdgeInsets.only(bottom: 12),
-                                  child: Text(
-                                    'Posisikan wajah di lingkaran • mata terbuka',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: AppColors.ink,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  clipBehavior: Clip.antiAlias,
+                  child: _initError != null
+                      ? Center(
+                          child: Padding(
+                            padding: const EdgeInsets.all(24),
+                            child: Text(_initError!,
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(color: Colors.white)),
                           ),
+                        )
+                      : controller == null
+                          ? const Center(
+                              child: CircularProgressIndicator(
+                                  color: Colors.white))
+                          : Stack(
+                              fit: StackFit.expand,
+                              children: [
+                                CameraPreview(controller),
+                                const CustomPaint(painter: _CameraFrameGuide()),
+                                if (_flashOverlay)
+                                  Positioned.fill(
+                                    child: Container(
+                                        color: Colors.white.withOpacity(0.85)),
+                                  ),
+                                // Badge status registrasi
+                                Align(
+                                  alignment: Alignment.topCenter,
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(top: 12),
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 10,
+                                        vertical: 4,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.inverseSurface
+                                            .withOpacity(0.85),
+                                        borderRadius: BorderRadius.circular(
+                                            AppColors.radiusFull),
+                                        border: Border.all(
+                                          color: AppColors.primaryFixed
+                                              .withOpacity(0.4),
+                                        ),
+                                      ),
+                                      child: const Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(Icons.verified_user_outlined,
+                                              size: 12,
+                                              color: Color(0xFF89F5E7)),
+                                          SizedBox(width: 5),
+                                          Text(
+                                            'Registrasi Wajah',
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                // Tombol cahaya layar (flood illuminator analog)
+                                Align(
+                                  alignment: Alignment.topRight,
+                                  child: Padding(
+                                    padding:
+                                        const EdgeInsets.only(top: 8, right: 8),
+                                    child: Tooltip(
+                                      message: _useScreenFlash
+                                          ? 'Matikan cahaya layar'
+                                          : 'Nyalakan cahaya layar (mode gelap)',
+                                      child: Material(
+                                        color: _useScreenFlash
+                                            ? AppColors.primaryFixed
+                                            : Colors.black.withOpacity(0.45),
+                                        shape: const CircleBorder(),
+                                        child: InkWell(
+                                          customBorder: const CircleBorder(),
+                                          onTap: _busy
+                                              ? null
+                                              : () => setState(
+                                                    () => _useScreenFlash =
+                                                        !_useScreenFlash,
+                                                  ),
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(8),
+                                            child: Icon(
+                                              _useScreenFlash
+                                                  ? Icons.flash_on
+                                                  : Icons.flash_off,
+                                              size: 18,
+                                              color: _useScreenFlash
+                                                  ? AppColors.inverseSurface
+                                                  : Colors.white,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const Align(
+                                  alignment: Alignment.bottomCenter,
+                                  child: Padding(
+                                    padding: EdgeInsets.only(bottom: 12),
+                                    child: Text(
+                                      'Posisikan wajah di dalam bingkai • mata terbuka',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                ),
               ),
             ),
             const SizedBox(height: 16),
@@ -354,9 +388,8 @@ class _FaceRegistrationScreenState extends State<FaceRegistrationScreen> with Wi
               children: [
                 Switch(
                   value: _useScreenFlash,
-                  onChanged: _busy
-                      ? null
-                      : (v) => setState(() => _useScreenFlash = v),
+                  onChanged:
+                      _busy ? null : (v) => setState(() => _useScreenFlash = v),
                 ),
                 const SizedBox(width: 8),
                 const Expanded(
@@ -423,7 +456,9 @@ class _FaceRegistrationScreenState extends State<FaceRegistrationScreen> with Wi
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: 14,
-                          color: _success ? AppColors.successText : AppColors.errorText,
+                          color: _success
+                              ? AppColors.successText
+                              : AppColors.errorText,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -447,50 +482,51 @@ class _FaceRegistrationScreenState extends State<FaceRegistrationScreen> with Wi
   }
 }
 
-/// Teal scanning oval per Stitch viewport spec.
-class _OvalGuide extends CustomPainter {
-  const _OvalGuide();
+/// Rounded-square face framing guide for the registration camera.
+class _CameraFrameGuide extends CustomPainter {
+  const _CameraFrameGuide();
 
   @override
   void paint(Canvas canvas, Size size) {
-    final double d = size.shortestSide * 0.72;
-    final Rect circle = Rect.fromCenter(
+    final double side = size.shortestSide * 0.82;
+    final Rect frame = Rect.fromCenter(
       center: size.center(Offset.zero),
-      width: d,
-      height: d,
+      width: side,
+      height: side,
     );
-    // dim background outside circle
+    final RRect roundedFrame = RRect.fromRectAndRadius(
+      frame,
+      const Radius.circular(24),
+    );
+    // Keep the camera visible inside a square target and dim the surrounding preview.
     canvas.drawPath(
       Path()
-        ..addOval(circle)
+        ..addRRect(roundedFrame)
         ..addRect(Rect.fromLTWH(0, 0, size.width, size.height))
         ..fillType = PathFillType.evenOdd,
       Paint()..color = const Color(0x730F172A),
     );
-    canvas.drawOval(circle, Paint()
-      ..color = AppColors.interactive
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2);
-    // corner reticles
-    const double r = 16;
+    const double cornerLength = 24;
     final Paint p = Paint()
-      ..color = AppColors.interactive
-      ..strokeWidth = 2
+      ..color = AppColors.scanner
+      ..strokeWidth = 3
+      ..strokeCap = StrokeCap.round
       ..style = PaintingStyle.stroke;
-    // top-left
-    canvas.drawLine(Offset(circle.left - 2, circle.top - 2), Offset(circle.left - 2 + r, circle.top - 2), p);
-    canvas.drawLine(Offset(circle.left - 2, circle.top - 2), Offset(circle.left - 2, circle.top - 2 + r), p);
-    // top-right
-    canvas.drawLine(Offset(circle.right + 2, circle.top - 2), Offset(circle.right + 2 - r, circle.top - 2), p);
-    canvas.drawLine(Offset(circle.right + 2, circle.top - 2), Offset(circle.right + 2, circle.top - 2 + r), p);
-    // bottom-left
-    canvas.drawLine(Offset(circle.left - 2, circle.bottom + 2), Offset(circle.left - 2 + r, circle.bottom + 2), p);
-    canvas.drawLine(Offset(circle.left - 2, circle.bottom + 2), Offset(circle.left - 2, circle.bottom + 2 - r), p);
-    // bottom-right
-    canvas.drawLine(Offset(circle.right + 2, circle.bottom + 2), Offset(circle.right + 2 - r, circle.bottom + 2), p);
-    canvas.drawLine(Offset(circle.right + 2, circle.bottom + 2), Offset(circle.right + 2, circle.bottom + 2 - r), p);
+    canvas.drawRRect(roundedFrame, p);
+    for (final (Offset start, Offset end) in <(Offset, Offset)>[
+      (frame.topLeft, Offset(frame.left + cornerLength, frame.top)),
+      (frame.topLeft, Offset(frame.left, frame.top + cornerLength)),
+      (frame.topRight, Offset(frame.right - cornerLength, frame.top)),
+      (frame.topRight, Offset(frame.right, frame.top + cornerLength)),
+      (frame.bottomLeft, Offset(frame.left + cornerLength, frame.bottom)),
+      (frame.bottomLeft, Offset(frame.left, frame.bottom - cornerLength)),
+      (frame.bottomRight, Offset(frame.right - cornerLength, frame.bottom)),
+      (frame.bottomRight, Offset(frame.right, frame.bottom - cornerLength)),
+    ]) {
+      canvas.drawLine(start, end, p);
+    }
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant _CameraFrameGuide oldDelegate) => false;
 }

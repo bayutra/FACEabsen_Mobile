@@ -425,17 +425,28 @@ class _PassiveScanScreenState extends State<PassiveScanScreen>
     final bool ok = _passed;
     final Color ring = ok ? AppColors.success : Colors.white;
     return SizedBox(
-      width: 236,
-      height: 300,
+      width: 320,
+      height: 400,
       child: Stack(
         alignment: Alignment.center,
         children: <Widget>[
+          Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(AppColors.radiusViewport),
+              border: Border.all(color: ring.withOpacity(0.55), width: 2),
+              color: Colors.black.withOpacity(0.08),
+            ),
+          ),
+          const CustomPaint(
+            size: Size(320, 400),
+            painter: _ScanFramePainter(),
+          ),
           TweenAnimationBuilder<double>(
             tween: Tween<double>(begin: 0, end: ok ? 1 : _progress),
             duration: const Duration(milliseconds: 260),
             builder: (BuildContext _, double v, Widget? child) => SizedBox(
-              width: 236,
-              height: 236,
+              width: 286,
+              height: 286,
               child: CircularProgressIndicator(
                 value: v,
                 strokeWidth: 3.5,
@@ -537,4 +548,37 @@ class _PassiveScanScreenState extends State<PassiveScanScreen>
           ),
         ),
       );
+}
+
+class _ScanFramePainter extends CustomPainter {
+  const _ScanFramePainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    const double inset = 18;
+    const double length = 28;
+    final double right = size.width - inset;
+    final double bottom = size.height - inset;
+    final Paint paint = Paint()
+      ..color = const Color(0xFF89F5E7)
+      ..strokeWidth = 3
+      ..strokeCap = StrokeCap.round
+      ..style = PaintingStyle.stroke;
+    final List<(Offset, Offset)> corners = <(Offset, Offset)>[
+      (const Offset(inset, inset), const Offset(inset + length, inset)),
+      (const Offset(inset, inset), const Offset(inset, inset + length)),
+      (Offset(right, inset), Offset(right - length, inset)),
+      (Offset(right, inset), Offset(right, inset + length)),
+      (Offset(inset, bottom), Offset(inset + length, bottom)),
+      (Offset(inset, bottom), Offset(inset, bottom - length)),
+      (Offset(right, bottom), Offset(right - length, bottom)),
+      (Offset(right, bottom), Offset(right, bottom - length)),
+    ];
+    for (final (Offset start, Offset end) in corners) {
+      canvas.drawLine(start, end, paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _ScanFramePainter oldDelegate) => false;
 }
