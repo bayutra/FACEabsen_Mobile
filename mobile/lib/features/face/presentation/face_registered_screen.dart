@@ -69,7 +69,8 @@ class FaceRegisteredScreen extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text('Versi ${notice.version}',
-                    style: const TextStyle(color: AppColors.inkSecondary, fontSize: 12)),
+                    style: const TextStyle(
+                        color: AppColors.inkSecondary, fontSize: 12)),
                 const SizedBox(height: 8),
                 Text(notice.body, style: const TextStyle(fontSize: 14)),
               ],
@@ -129,7 +130,8 @@ class FaceRegisteredScreen extends StatelessWidget {
             child: Text(
               'Pendaftaran Wajah Berhasil!',
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 28, fontWeight: FontWeight.w700, height: 36 / 28),
+              style: TextStyle(
+                  fontSize: 28, fontWeight: FontWeight.w700, height: 36 / 28),
             ),
           ),
           const SizedBox(height: 6),
@@ -203,7 +205,8 @@ class FaceRegisteredScreen extends StatelessWidget {
                       color: AppColors.tealBadgeBg,
                       border: Border.all(color: AppColors.primary, width: 3),
                     ),
-                    child: const Icon(Icons.face, size: 62, color: AppColors.primary),
+                    child: const Icon(Icons.face,
+                        size: 62, color: AppColors.primary),
                   ),
                   Positioned(
                     right: 8,
@@ -214,7 +217,8 @@ class FaceRegisteredScreen extends StatelessWidget {
                         color: AppColors.success,
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.check, size: 18, color: Colors.white),
+                      child: const Icon(Icons.check,
+                          size: 18, color: Colors.white),
                     ),
                   ),
                   Positioned(
@@ -248,7 +252,8 @@ class FaceRegisteredScreen extends StatelessWidget {
                 Icon(Icons.verified_user, size: 13, color: AppColors.primary),
                 SizedBox(width: 5),
                 Text('Template Terdaftar',
-                    style: TextStyle(fontSize: 11, color: AppColors.inkSecondary)),
+                    style:
+                        TextStyle(fontSize: 11, color: AppColors.inkSecondary)),
               ],
             ),
           ],
@@ -257,94 +262,98 @@ class FaceRegisteredScreen extends StatelessWidget {
 
   Widget _receipt() => AppCard(
         child: Column(
-            children: [
-              Row(
-                children: [
-                  const Icon(Icons.badge_outlined, size: 18, color: AppColors.primary),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text('NIP / ID Karyawan',
-                            style: TextStyle(fontSize: 10, color: AppColors.inkSecondary)),
-                        Text(employeeNo,
-                            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
-                        Text(displayName,
-                            style: const TextStyle(
-                                fontSize: 11,
-                                color: AppColors.primary,
-                                fontWeight: FontWeight.w600)),
-                      ],
-                    ),
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.badge_outlined,
+                    size: 18, color: AppColors.primary),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text('NIP / ID Karyawan',
+                          style: TextStyle(
+                              fontSize: 10, color: AppColors.inkSecondary)),
+                      Text(employeeNo,
+                          style: const TextStyle(
+                              fontSize: 14, fontWeight: FontWeight.w700)),
+                      Text(displayName,
+                          style: const TextStyle(
+                              fontSize: 11,
+                              color: AppColors.primary,
+                              fontWeight: FontWeight.w600)),
+                    ],
                   ),
-                  const _Pill(
-                    'Perawat Rawat Inap',
-                    AppColors.surfaceContainer,
-                    AppColors.inkSecondary,
+                ),
+              ],
+            ),
+            const Divider(height: 20),
+            _qualityRow(),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                const Icon(Icons.lock_outline,
+                    size: 16, color: AppColors.inkSecondary),
+                const SizedBox(width: 10),
+                const Expanded(
+                  child: Text('Status Enkripsi',
+                      style: TextStyle(
+                          fontSize: 12, color: AppColors.inkSecondary)),
+                ),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: AppColors.canvas,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: AppColors.border),
                   ),
-                ],
-              ),
-              const Divider(height: 20),
-              _qualityRow(),
-              const SizedBox(height: 10),
-              Row(
-                children: [
-                  const Icon(Icons.lock_outline, size: 16, color: AppColors.inkSecondary),
-                  const SizedBox(width: 10),
-                  const Expanded(
-                    child: Text('Status Enkripsi',
-                        style: TextStyle(fontSize: 12, color: AppColors.inkSecondary)),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: AppColors.canvas,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: AppColors.border),
-                    ),
-                    child: const Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        SizedBox(
-                          width: 6,
-                          height: 6,
-                          child: DecoratedBox(
-                            decoration: BoxDecoration(
-                              color: AppColors.success,
-                              shape: BoxShape.circle,
-                            ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      SizedBox(
+                        width: 6,
+                        height: 6,
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            color: AppColors.success,
+                            shape: BoxShape.circle,
                           ),
                         ),
-                        SizedBox(width: 6),
-                        Text('SIMRS (AES-256)',
-                            style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600)),
-                      ],
-                    ),
+                      ),
+                      SizedBox(width: 6),
+                      Text('SIMRS (AES-256)',
+                          style: TextStyle(
+                              fontSize: 11, fontWeight: FontWeight.w600)),
+                    ],
                   ),
-                ],
-              ),
-              const SizedBox(height: 10),
-              Row(
-                children: [
-                  const Icon(Icons.schedule, size: 16, color: AppColors.inkSecondary),
-                  const SizedBox(width: 10),
-                  const Expanded(
-                    child: Text('Tanggal Registrasi',
-                        style: TextStyle(fontSize: 12, color: AppColors.inkSecondary)),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                const Icon(Icons.schedule,
+                    size: 16, color: AppColors.inkSecondary),
+                const SizedBox(width: 10),
+                const Expanded(
+                  child: Text('Tanggal Registrasi',
+                      style: TextStyle(
+                          fontSize: 12, color: AppColors.inkSecondary)),
+                ),
+                Text(
+                  registeredAt != null ? formatIdDateTime(registeredAt!) : '—',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    fontFeatures: [FontFeature.tabularFigures()],
                   ),
-                  Text(
-                    registeredAt != null ? formatIdDateTime(registeredAt!) : '—',
-                    style: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      fontFeatures: [FontFeature.tabularFigures()],
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
+                ),
+              ],
+            ),
+          ],
+        ),
       );
 
   Widget _qualityRow() {
@@ -366,7 +375,8 @@ class FaceRegisteredScreen extends StatelessWidget {
                     fontWeight: FontWeight.w700,
                     color: AppColors.primary)),
             Text('(${_qualitySubline(qualityScore)})',
-                style: const TextStyle(fontSize: 11, color: AppColors.inkSecondary)),
+                style: const TextStyle(
+                    fontSize: 11, color: AppColors.inkSecondary)),
           ],
         ),
       ],
@@ -415,6 +425,7 @@ class _Pill extends StatelessWidget {
         bg,
         fg,
         icon: icon,
-        border: bg == AppColors.card ? AppColors.border : AppColors.tealBadgeBorder,
+        border:
+            bg == AppColors.card ? AppColors.border : AppColors.tealBadgeBorder,
       );
 }

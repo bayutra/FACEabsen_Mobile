@@ -18,7 +18,8 @@ class FaceCaptureScreen extends StatefulWidget {
   State<FaceCaptureScreen> createState() => _FaceCaptureScreenState();
 }
 
-class _FaceCaptureScreenState extends State<FaceCaptureScreen> with WidgetsBindingObserver {
+class _FaceCaptureScreenState extends State<FaceCaptureScreen>
+    with WidgetsBindingObserver {
   CameraController? _controller;
   String? _error;
   bool _busy = false;
@@ -38,7 +39,8 @@ class _FaceCaptureScreenState extends State<FaceCaptureScreen> with WidgetsBindi
   void didChangeAppLifecycleState(AppLifecycleState state) {
     // Backgrounding with an open session resumes to a dead preview whose
     // takePicture throws (frozen scan). Drop the session; rebuild on resume.
-    if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive) {
       final CameraController? controller = _controller;
       _controller = null;
       controller?.dispose();
@@ -95,7 +97,8 @@ class _FaceCaptureScreenState extends State<FaceCaptureScreen> with WidgetsBindi
     });
     try {
       final XFile shot = await controller.takePicture();
-      final FaceCapture? capture = await widget.faces.captureEmbedding(shot.path);
+      final FaceCapture? capture =
+          await widget.faces.captureEmbedding(shot.path);
       if (!mounted) return;
       if (capture == null) {
         final String message = await widget.faces.rejectionMessage(shot.path);
@@ -103,8 +106,7 @@ class _FaceCaptureScreenState extends State<FaceCaptureScreen> with WidgetsBindi
         if (!mounted) return;
         setState(() {
           _error = message;
-          _failGate =
-              (gate != null && gate != FaceGate.ok) ? gate : null;
+          _failGate = (gate != null && gate != FaceGate.ok) ? gate : null;
           _busy = false;
         });
         return;
@@ -126,7 +128,8 @@ class _FaceCaptureScreenState extends State<FaceCaptureScreen> with WidgetsBindi
     final bool? retry = await Navigator.of(context).push<bool>(
       MaterialPageRoute(
         builder: (_) => FaceScanIssueScreen(
-          initialTab: FaceScanIssueScreen.tabForGate(gate),
+          gate: gate,
+          message: _error,
           onRetry: () => Navigator.of(context).pop(true),
           onHelp: () => Navigator.of(context).pop(false),
         ),
@@ -136,7 +139,8 @@ class _FaceCaptureScreenState extends State<FaceCaptureScreen> with WidgetsBindi
     if (retry == false) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Hubungi Helpdesk SIMRS Ext. 104 untuk verifikasi manual.'),
+          content:
+              Text('Hubungi Helpdesk SIMRS Ext. 104 untuk verifikasi manual.'),
         ),
       );
     }
@@ -177,7 +181,9 @@ class _FaceCaptureScreenState extends State<FaceCaptureScreen> with WidgetsBindi
                         ),
                       )
                     : controller == null
-                        ? const Center(child: CircularProgressIndicator(color: Colors.white))
+                        ? const Center(
+                            child:
+                                CircularProgressIndicator(color: Colors.white))
                         : Stack(
                             fit: StackFit.expand,
                             children: [
@@ -226,7 +232,8 @@ class _FaceCaptureScreenState extends State<FaceCaptureScreen> with WidgetsBindi
                       padding: const EdgeInsets.only(bottom: 12),
                       child: Text(_error!,
                           textAlign: TextAlign.center,
-                          style: const TextStyle(color: AppColors.errorText, fontSize: 14)),
+                          style: const TextStyle(
+                              color: AppColors.errorText, fontSize: 14)),
                     ),
             FilledButton(
               onPressed: (controller == null || _busy) ? null : _capture,

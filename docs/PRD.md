@@ -21,10 +21,10 @@ Sejak versi 2.0, produk ini **mobile-only**:
 
 - Tidak ada web dashboard, desktop app, atau target Flutter web/desktop.
 - Tidak ada GPS/geofence. Kepercayaan tidak dibangun dari lokasi, melainkan
-  dari kecocokan wajah, liveness, binding perangkat, signature Ed25519,
-  device integrity, dan risk engine.
+dari kecocokan wajah, liveness, binding perangkat, signature Ed25519,
+device integrity, dan risk engine.
 - Foto mentah tidak pernah meninggalkan perangkat. Klien mengirim embedding
-  192-d; server menyimpannya terenkripsi AES-256-GCM.
+192-d; server menyimpannya terenkripsi AES-256-GCM.
 
 ### 1.1 Tujuan
 
@@ -36,14 +36,16 @@ Sejak versi 2.0, produk ini **mobile-only**:
 
 ### 1.2 Indikator keberhasilan
 
-| Metrik | Target |
-|---|---|
-| Presensi berhasil pada percobaan pertama | ≥ 98% (setelah kalibrasi) |
-| Waktu dari capture ke hasil | ≤ 5 detik (jaringan normal) |
-| Presensi hilang karena jaringan | 0 (masuk outbox, dikirim ulang) |
-| Foto mentah tersimpan di server | 0 |
-| Punch ganda untuk satu jadwal | 0 |
-| Insiden data biometrik bocor | 0 |
+
+| Metrik                                   | Target                          |
+| ---------------------------------------- | ------------------------------- |
+| Presensi berhasil pada percobaan pertama | ≥ 98% (setelah kalibrasi)       |
+| Waktu dari capture ke hasil              | ≤ 5 detik (jaringan normal)     |
+| Presensi hilang karena jaringan          | 0 (masuk outbox, dikirim ulang) |
+| Foto mentah tersimpan di server          | 0                               |
+| Punch ganda untuk satu jadwal            | 0                               |
+| Insiden data biometrik bocor             | 0                               |
+
 
 ### 1.3 Prinsip produk
 
@@ -65,14 +67,16 @@ yang dikirim klien tanpa verifikasi.
 
 ## 2. Perubahan dari Versi 1.0
 
-| Area | v1.0 | v2.0 (dokumen ini) |
-|---|---|---|
-| Platform | Mobile + Web | **Mobile saja** (Android + iOS) |
-| Dashboard admin/supervisor | Next.js | Dihapus dari repo; API tetap ada |
-| GPS & geofence | Wajib | **Dihapus total** |
-| Bobot risk | Termasuk GPS/geofence | Wajah 45, liveness 20, device 15, integrity 15, signature 5 |
-| Target Flutter | Android, iOS, web, Windows, Linux, macOS | Android + iOS |
-| Desain | Mockup mobile + dashboard | Mockup mobile saja (lihat catatan historis) |
+
+| Area                       | v1.0                                     | v2.0 (dokumen ini)                                          |
+| -------------------------- | ---------------------------------------- | ----------------------------------------------------------- |
+| Platform                   | Mobile + Web                             | **Mobile saja** (Android + iOS)                             |
+| Dashboard admin/supervisor | Next.js                                  | Dihapus dari repo; API tetap ada                            |
+| GPS &amp; geofence         | Wajib                                    | **Dihapus total**                                           |
+| Bobot risk                 | Termasuk GPS/geofence                    | Wajah 45, liveness 20, device 15, integrity 15, signature 5 |
+| Target Flutter             | Android, iOS, web, Windows, Linux, macOS | Android + iOS                                               |
+| Desain                     | Mockup mobile + dashboard                | Mockup mobile saja (lihat catatan historis)                 |
+
 
 > **Catatan desain:** sebagian mockup di `docs/design/mobile/` masih
 > menampilkan copy GPS/geofence dari versi 1.0. Implementasi saat ini **tidak**
@@ -86,7 +90,7 @@ yang dikirim klien tanpa verifikasi.
 
 - Aplikasi Flutter untuk **karyawan** (Android 5.0+, iOS 15.5+).
 - Login, sesi, ganti password, TOTP bila diaktifkan admin.
-- Pendaftaran mandiri, profil mandiri, dan multi-perangkat.
+- Registrasi &amp; penggantian perangkat.
 - Registrasi wajah + consent biometrik.
 - Liveness aktif dan pasif.
 - Check-in, check-out, outbox offline, retry.
@@ -107,18 +111,18 @@ yang dikirim klien tanpa verifikasi.
 
 ### 3.3 Pengguna dan status UI
 
-| Peran | Kebutuhan | Status di repo |
-|---|---|---|
-| **Karyawan** | Semua fitur presensi mandiri | Mobile app lengkap |
-| **Atasan / Supervisor** | Approve koreksi/izin, lihat tim | UI mobile tersedia (menu Kelola) + API |
-| **Admin** | Kelola karyawan, shift, device, laporan | UI mobile tersedia (menu Kelola) + API |
-| **Super Admin** | Kelola role, audit, retensi | UI mobile tersedia (menu Kelola) + API |
 
-Keputusan produk: fase 1 fokus pada pengalaman karyawan. Sejak v2.1 area
-**Kelola** ada di aplikasi mobile — dibuka dari kartu "Mode Admin" di halaman
-Profil, tampil hanya untuk peran Supervisor/Admin/Super Admin. Setiap modul
-memanggil endpoint yang sama dengan API, jadi tidak ada logika yang
-diduplikasi (lihat `docs/guides/ADMIN_MOBILE.md`).
+| Peran                   | Kebutuhan                               | Status di repo                 |
+| ----------------------- | --------------------------------------- | ------------------------------ |
+| **Karyawan**            | Semua fitur presensi mandiri            | Mobile app lengkap             |
+| **Atasan / Supervisor** | Approve koreksi/izin, lihat tim         | API tersedia, **belum ada UI** |
+| **Admin**               | Kelola karyawan, shift, device, laporan | API tersedia, **belum ada UI** |
+| **Super Admin**         | Kelola role, audit, retensi             | API tersedia, **belum ada UI** |
+
+
+Keputusan produk: fase 1 fokus pada pengalaman karyawan. Fungsi
+supervisor/admin tetap tersedia lewat API untuk integrasi, dan akan mendapat
+UI mobile pada fase 2 (lihat §15).
 
 ---
 
@@ -158,16 +162,18 @@ diduplikasi (lihat `docs/guides/ADMIN_MOBILE.md`).
 
 ### 4.1 Stack
 
-| Layer | Teknologi |
-|---|---|
-| Mobile | Flutter 3.22 / Dart 3.4, Dio, flutter_secure_storage, camera, google_mlkit_face_detection, tflite_flutter, cryptography |
-| Face model | MobileFaceNet `.tflite` (embedding 192-d, on-device) |
-| Backend | NestJS 12, TypeScript, Prisma, Argon2id, JWT, ExcelJS, PDFKit |
-| Database | PostgreSQL 17 |
-| Cache / limit | Redis 7 (opsional di lokal) |
-| Reverse proxy | nginx 1.27 + TLS |
-| Deploy | Docker Compose |
-| Testing | Vitest (backend), flutter_test (mobile) |
+
+| Layer         | Teknologi                                                                                                                     |
+| ------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| Mobile        | Flutter 3.22 / Dart 3.4, Dio, flutter\_secure\_storage, camera, google\_mlkit\_face\_detection, tflite\_flutter, cryptography |
+| Face model    | MobileFaceNet `.tflite` (embedding 192-d, on-device)                                                                          |
+| Backend       | NestJS 12, TypeScript, Prisma, Argon2id, JWT, ExcelJS, PDFKit                                                                 |
+| Database      | PostgreSQL 17                                                                                                                 |
+| Cache / limit | Redis 7 (opsional di lokal)                                                                                                   |
+| Reverse proxy | nginx 1.27 + TLS                                                                                                              |
+| Deploy        | Docker Compose                                                                                                                |
+| Testing       | Vitest (backend), flutter\_test (mobile)                                                                                      |
+
 
 ### 4.2 Alur data presensi
 
@@ -192,42 +198,47 @@ Tidak ada langkah yang mengirim gambar. Tidak ada langkah yang memakai GPS.
 
 ### 5.1 Navigasi utama (5 tab)
 
-| Tab | Isi |
-|---|---|
-| **Beranda** | Sapaan, status shift hari ini, status presensi, CTA presensi, ringkasan |
-| **Riwayat** | Daftar presensi + filter + detail |
-| **Jadwal** | Roster mingguan, status shift, navigasi minggu |
-| **Perangkat** | Perangkat aktif, status, riwayat, bantuan IT |
-| **Profil** | Data karyawan, wajah, privasi, ganti password, logout |
+
+| Tab           | Isi                                                                     |
+| ------------- | ----------------------------------------------------------------------- |
+| **Beranda**   | Sapaan, status shift hari ini, status presensi, CTA presensi, ringkasan |
+| **Riwayat**   | Daftar presensi + filter + detail                                       |
+| **Jadwal**    | Roster mingguan, status shift, navigasi minggu                          |
+| **Perangkat** | Perangkat aktif, status, penggantian, bantuan IT                        |
+| **Profil**    | Data karyawan, wajah, privasi, ganti password, logout                   |
+
 
 Presensi, koreksi, izin/cuti, dan registrasi wajah berjalan sebagai **alur
 linear** (bukan tab): CTA → pra-validasi → liveness → proses → hasil.
 
 ### 5.2 Inventaris layar
 
-| # | Layar | Implementasi | Mockup |
-|---|---|---|---|
-| 1 | Login karyawan | `features/auth/presentation/login_screen.dart` | `login_karyawan_autentikasi` |
-| 2 | Verifikasi TOTP | alur login | — |
-| 3 | Daftarkan perangkat | `features/device/presentation/device_register_screen.dart` | `daftarkan_perangkat` |
-| 4 | Beranda | `features/home/presentation/home_dashboard.dart` | `beranda_presensi_dashboard_nakes` |
-| 5 | Pra-validasi presensi | `features/preflight/presentation/preflight_screen.dart` | `presensi_pra_validasi_geofence` |
-| 6 | Liveness challenge | `features/liveness/presentation/liveness_screen.dart` | `presensi_liveness_challenge_biometrik` |
-| 7 | Pemindaian pasif | `features/liveness/presentation/passive_scan_screen.dart` | — |
-| 8 | Proses verifikasi | alur presensi | `presensi_verifikasi_sedang_diproses` |
-| 9 | Hasil presensi | `features/attendance/presentation/attendance_result_screen.dart` | `presensi_hasil_verifikasi_presensi` |
-| 10 | Riwayat presensi | `features/attendance/presentation/history_screen.dart` | `riwayat_presensi_detail_bottom_sheet` |
-| 11 | Jadwal dinas | `features/schedule/presentation/schedule_screen.dart` | `jadwal_dinas_mingguan_shift_nakes` |
-| 12 | Perangkat saya | `features/device/presentation/device_screen.dart` | `perangkat_saya_manajemen_perangkat` |
-| 13 | Ubah profil | `features/profile/presentation/edit_profile_screen.dart` | - |
-| 15 | Registrasi wajah | `features/face/presentation/face_registration_screen.dart` | `clinical_attendance_identity` |
-| 16 | Wajah berhasil | `features/face/presentation/face_registered_screen.dart` | `pendaftaran_wajah_berhasil` |
-| 17 | Kendala pemindaian | `features/face/presentation/face_scan_issue_screen.dart` | `pendaftaran_wajah_kendala_pemindaian` |
-| 18 | Daftar koreksi | `features/correction/presentation/correction_list_screen.dart` | `riwayat_status_koreksi` |
-| 19 | Form koreksi | `features/correction/presentation/correction_form_screen.dart` | `pengajuan_koreksi_presensi` |
-| 20 | Daftar izin/cuti | `features/leave/presentation/leave_list_screen.dart` | `riwayat_kuota_cuti` |
-| 21 | Form izin/cuti | `features/leave/presentation/leave_form_screen.dart` | `pengajuan_izin_cuti` |
-| 22 | Profil | `features/profile/presentation/profile_screen.dart` | `profil_karyawan_pengaturan_akun` |
+
+| #   | Layar                 | Implementasi                                                     | Mockup                                        |
+| --- | --------------------- | ---------------------------------------------------------------- | --------------------------------------------- |
+| 1   | Login karyawan        | `features/auth/presentation/login_screen.dart`                   | `login_karyawan_autentikasi`                  |
+| 2   | Verifikasi TOTP       | alur login                                                       | —                                             |
+| 3   | Daftarkan perangkat   | `features/device/presentation/device_register_screen.dart`       | `daftarkan_perangkat`                         |
+| 4   | Beranda               | `features/home/presentation/home_dashboard.dart`                 | `beranda_presensi_dashboard_nakes`            |
+| 5   | Pra-validasi presensi | `features/preflight/presentation/preflight_screen.dart`          | `presensi_pra_validasi_geofence`              |
+| 6   | Liveness challenge    | `features/liveness/presentation/liveness_screen.dart`            | `presensi_liveness_challenge_biometrik`       |
+| 7   | Pemindaian pasif      | `features/liveness/presentation/passive_scan_screen.dart`        | —                                             |
+| 8   | Proses verifikasi     | alur presensi                                                    | `presensi_verifikasi_sedang_diproses`         |
+| 9   | Hasil presensi        | `features/attendance/presentation/attendance_result_screen.dart` | `presensi_hasil_verifikasi_presensi`          |
+| 10  | Riwayat presensi      | `features/attendance/presentation/history_screen.dart`           | `riwayat_presensi_detail_bottom_sheet`        |
+| 11  | Jadwal dinas          | `features/schedule/presentation/schedule_screen.dart`            | `jadwal_dinas_mingguan_shift_nakes`           |
+| 12  | Perangkat saya        | `features/device/presentation/device_screen.dart`                | `perangkat_saya_manajemen_perangkat`          |
+| 13  | Form penggantian      | `features/device/presentation/replacement_screen.dart`           | `penggantian_perangkat_form_verifikasi`       |
+| 14  | Status penggantian    | `features/device/presentation/replacement_status_screen.dart`    | `status_penggantian_perangkat_menunggu_admin` |
+| 15  | Registrasi wajah      | `features/face/presentation/face_registration_screen.dart`       | `clinical_attendance_identity`                |
+| 16  | Wajah berhasil        | `features/face/presentation/face_registered_screen.dart`         | `pendaftaran_wajah_berhasil`                  |
+| 17  | Kendala pemindaian    | `features/face/presentation/face_scan_issue_screen.dart`         | `pendaftaran_wajah_kendala_pemindaian`        |
+| 18  | Daftar koreksi        | `features/correction/presentation/correction_list_screen.dart`   | `riwayat_status_koreksi`                      |
+| 19  | Form koreksi          | `features/correction/presentation/correction_form_screen.dart`   | `pengajuan_koreksi_presensi`                  |
+| 20  | Daftar izin/cuti      | `features/leave/presentation/leave_list_screen.dart`             | `riwayat_kuota_cuti`                          |
+| 21  | Form izin/cuti        | `features/leave/presentation/leave_form_screen.dart`             | `pengajuan_izin_cuti`                         |
+| 22  | Profil                | `features/profile/presentation/profile_screen.dart`              | `profil_karyawan_pengaturan_akun`             |
+
 
 ### 5.3 Alur kunci
 
@@ -241,27 +252,15 @@ Splash → refresh token ada?
         └─ gagal/offline → layar "Tidak dapat terhubung" + Coba Lagi
 ```
 
-**Registrasi akun mandiri**
+**Registrasi perangkat pertama**
 
 ```text
-Login → "Daftar"
-  → POST /auth/register (nama, email, password, HP opsional)
-  → server membuat User + Employee + peran EMPLOYEE (nomor karyawan otomatis EMP-###)
-  → sesi langsung terbit → Beranda (tanpa login ulang)
-```
-
-Peran administratif tidak pernah diberikan lewat pendaftaran publik; hanya
-ADMIN/SUPER_ADMIN melalui menu **Pengguna** di Mode Admin.
-
-**Registrasi perangkat**
-
-```text
-Login → GET /devices/register-challenge (nonce, 5 menit)
+Login → /devices/me kosong
+  → GET /devices/register-challenge (nonce, 5 menit)
   → buat key pair Ed25519 di secure storage
   → POST /devices/register (public key + signature nonce)
-  → perangkat langsung ACTIVE (multi-perangkat diperbolehkan)
-  → langsung ke Beranda; tidak ada layar "menunggu aktivasi"
-  → registrasi wajah dilakukan dari Beranda sebelum presensi pertama
+  → perangkat pertama = ACTIVE
+  → lanjut registrasi wajah
 ```
 
 **Registrasi wajah**
@@ -288,12 +287,14 @@ Beranda → CTA Presensi
   └─ sukses → beranda diperbarui
 ```
 
-**Perangkat (multi-perangkat)**
+**Penggantian perangkat**
 
 ```text
-Login/Daftar → perangkat ini terdaftar otomatis (ACTIVE)
-  → akun boleh aktif di beberapa perangkat
-  → HP hilang/dicuri → admin menandai LOST/REVOKED lewat menu Perangkat
+Perangkat → Ajukan penggantian
+  → daftarkan perangkat baru (PENDING)
+  → POST /device-change (alasan)
+  → status menunggu admin
+  → disetujui: device lama REVOKED, baru ACTIVE
 ```
 
 **Koreksi presensi**
@@ -319,19 +320,19 @@ Profil/Beranda → Izin & Cuti → ajukan
 Kode prioritas: **P0** wajib untuk produksi, **P1** penting, **P2** fase
 berikutnya.
 
-### 6.1 Autentikasi & sesi (FR-AUTH)
+### 6.1 Autentikasi &amp; sesi (FR-AUTH)
 
-| ID | Prioritas | Requirement |
-|---|---|---|
-| FR-AUTH-01 | P0 | Login dengan email akun + password. Password di-hash Argon2id. |
-| FR-AUTH-02 | P0 | Access token JWT berumur pendek (default 900 detik) + refresh token rotasi. |
-| FR-AUTH-03 | P0 | Refresh token disimpan sebagai hash SHA-256 di server; token lama langsung dicabut saat rotasi. |
-| FR-AUTH-04 | P0 | Lockout setelah `LOGIN_MAX_ATTEMPTS` gagal (default 5) selama `LOCKOUT_MINUTES` (default 15). |
-| FR-AUTH-05 | P0 | Logout mencabut sesi aktif; ganti password mencabut semua sesi lain. |
-| FR-AUTH-06 | P1 | TOTP setup/verify/recover untuk akun yang diwajibkan MFA. |
-| FR-AUTH-07 | P0 | Aplikasi tidak menyimpan password. Token & device key disimpan di secure storage. |
-| FR-AUTH-08 | P0 | Pendaftaran mandiri membuat akun EMPLOYEE + profil karyawan dalam satu transaksi; unit kerja wajib dipilih dari daftar publik GET /departments/public. |
-| FR-AUTH-09 | P0 | Login/daftar langsung membuka Beranda; tidak ada layar persetujuan perangkat. |
+
+| ID         | Prioritas | Requirement                                                                                     |
+| ---------- | --------- | ----------------------------------------------------------------------------------------------- |
+| FR-AUTH-01 | P0        | Login dengan email akun + password. Password di-hash Argon2id.                                  |
+| FR-AUTH-02 | P0        | Access token JWT berumur pendek (default 900 detik) + refresh token rotasi.                     |
+| FR-AUTH-03 | P0        | Refresh token disimpan sebagai hash SHA-256 di server; token lama langsung dicabut saat rotasi. |
+| FR-AUTH-04 | P0        | Lockout setelah `LOGIN_MAX_ATTEMPTS` gagal (default 5) selama `LOCKOUT_MINUTES` (default 15).   |
+| FR-AUTH-05 | P0        | Logout mencabut sesi aktif; ganti password mencabut semua sesi lain.                            |
+| FR-AUTH-06 | P1        | TOTP setup/verify/recover untuk akun yang diwajibkan MFA.                                       |
+| FR-AUTH-07 | P0        | Aplikasi tidak menyimpan password. Token &amp; device key disimpan di secure storage.           |
+
 
 **Acceptance criteria**
 
@@ -342,35 +343,39 @@ berikutnya.
 
 ### 6.2 Perangkat (FR-DEV)
 
-| ID | Prioritas | Requirement |
-|---|---|---|
-| FR-DEV-01 | P0 | Satu karyawan **boleh** punya lebih dari satu perangkat ACTIVE (kebijakan multi-perangkat; index parsial lama sudah dihapus). |
-| FR-DEV-02 | P0 | Registrasi memakai challenge JWT 5 menit + signature Ed25519 atas nonce. |
-| FR-DEV-03 | P0 | Setiap perangkat baru langsung ACTIVE saat registrasi; tidak ada status PENDING untuk perangkat biasa. |
-| FR-DEV-04 | P0 | Perangkat dicabut tidak dapat dipakai presensi (`DEVICE_NOT_ACTIVE`). |
-| FR-DEV-05 | P0 | Setiap presensi wajib menyertakan `deviceId` milik karyawan yang login. |
-| FR-DEV-06 | P1 | Heartbeat memperbarui `lastSeenAt` dan versi aplikasi. |
-| FR-DEV-07 | P1 | Pengajuan penggantian perangkat dihapus dari aplikasi; perangkat baru terdaftar otomatis saat login. |
-| FR-DEV-08 | P1 | Perangkat hilang/dicuri ditandai `LOST`/`REVOKED` oleh admin lewat menu Perangkat. |
+
+| ID        | Prioritas | Requirement                                                                                       |
+| --------- | --------- | ------------------------------------------------------------------------------------------------- |
+| FR-DEV-01 | P0        | Satu karyawan hanya boleh punya **satu** perangkat ACTIVE (partial unique index).                 |
+| FR-DEV-02 | P0        | Registrasi memakai challenge JWT 5 menit + signature Ed25519 atas nonce.                          |
+| FR-DEV-03 | P0        | Perangkat pertama otomatis ACTIVE; perangkat berikutnya PENDING sampai penggantian disetujui.     |
+| FR-DEV-04 | P0        | Perangkat dicabut tidak dapat dipakai presensi (`DEVICE_NOT_ACTIVE`).                             |
+| FR-DEV-05 | P0        | Setiap presensi wajib menyertakan `deviceId` milik karyawan yang login.                           |
+| FR-DEV-06 | P1        | Heartbeat memperbarui `lastSeenAt` dan versi aplikasi.                                            |
+| FR-DEV-07 | P1        | Pengajuan penggantian memuat alasan; dapat dibatalkan selama PENDING.                             |
+| FR-DEV-08 | P1        | Approval penggantian mencabut device lama, sesi lama, dan mengaktifkan device baru secara atomik. |
+
 
 **Acceptance criteria**
 
-- Mendaftarkan device kedua langsung ACTIVE dan tidak mencabut device pertama.
+- Mendaftarkan device kedua tidak langsung mengaktifkannya.
 - Presensi dari device yang bukan milik akun → 403.
 - Presensi dari device REVOKED/LOST → 422 `DEVICE_NOT_ACTIVE`.
-- Perangkat yang ditandai `LOST`/`REVOKED` tidak bisa dipakai presensi lagi.
+- Setelah penggantian disetujui, device lama tidak bisa presensi lagi.
 
 ### 6.3 Wajah (FR-FACE)
 
-| ID | Prioritas | Requirement |
-|---|---|---|
-| FR-FACE-01 | P0 | Foto mentah tidak boleh dikirim/dipertahankan; hanya embedding 192-d. |
-| FR-FACE-02 | P0 | Registrasi wajah wajib consent `BIOMETRIC_ATTENDANCE`. |
-| FR-FACE-03 | P0 | Kualitas wajah diperiksa sebelum registrasi (pencahayaan, pose, ketajaman, satu wajah). |
-| FR-FACE-04 | P0 | Template disimpan terenkripsi AES-256-GCM dan tidak pernah dikembalikan API. |
-| FR-FACE-05 | P0 | Pencocokan memakai cosine similarity; ambang default 0.5, dapat dikalibrasi. |
-| FR-FACE-06 | P1 | Karyawan dapat melihat status wajah terdaftar dan mengganti template. |
-| FR-FACE-07 | P1 | Penghapusan wajah lewat privasi menghapus template dan menghentikan presensi wajah. |
+
+| ID         | Prioritas | Requirement                                                                             |
+| ---------- | --------- | --------------------------------------------------------------------------------------- |
+| FR-FACE-01 | P0        | Foto mentah tidak boleh dikirim/dipertahankan; hanya embedding 192-d.                   |
+| FR-FACE-02 | P0        | Registrasi wajah wajib consent `BIOMETRIC_ATTENDANCE`.                                  |
+| FR-FACE-03 | P0        | Kualitas wajah diperiksa sebelum registrasi (pencahayaan, pose, ketajaman, satu wajah). |
+| FR-FACE-04 | P0        | Template disimpan terenkripsi AES-256-GCM dan tidak pernah dikembalikan API.            |
+| FR-FACE-05 | P0        | Pencocokan memakai cosine similarity; ambang default 0.5, dapat dikalibrasi.            |
+| FR-FACE-06 | P1        | Karyawan dapat melihat status wajah terdaftar dan mengganti template.                   |
+| FR-FACE-07 | P1        | Penghapusan wajah lewat privasi menghapus template dan menghentikan presensi wajah.     |
+
 
 **Acceptance criteria**
 
@@ -381,13 +386,15 @@ berikutnya.
 
 ### 6.4 Liveness (FR-LIVE)
 
-| ID | Prioritas | Requirement |
-|---|---|---|
-| FR-LIVE-01 | P0 | Liveness aktif memakai challenge acak: kedip dan/atau menoleh. |
-| FR-LIVE-02 | P1 | Liveness pasif mendukung mode tanpa instruksi dengan `padScore` > 0. |
-| FR-LIVE-03 | P0 | Server memvalidasi `passed`, mode, daftar challenge/skor, dan kesegaran (`LIVENESS_MAX_AGE_MIN`, default 10 menit). |
-| FR-LIVE-04 | P0 | Attestation liveness bukan batas keamanan tunggal; keputusan akhir tetap pada face match + device + integrity. |
-| FR-LIVE-05 | P1 | Kegagalan menampilkan panduan perbaikan, bukan error mentah. |
+
+| ID         | Prioritas | Requirement                                                                                                         |
+| ---------- | --------- | ------------------------------------------------------------------------------------------------------------------- |
+| FR-LIVE-01 | P0        | Liveness aktif memakai challenge acak: kedip dan/atau menoleh.                                                      |
+| FR-LIVE-02 | P1        | Liveness pasif mendukung mode tanpa instruksi dengan `padScore` &gt; 0.                                             |
+| FR-LIVE-03 | P0        | Server memvalidasi `passed`, mode, daftar challenge/skor, dan kesegaran (`LIVENESS_MAX_AGE_MIN`, default 10 menit). |
+| FR-LIVE-04 | P0        | Attestation liveness bukan batas keamanan tunggal; keputusan akhir tetap pada face match + device + integrity.      |
+| FR-LIVE-05 | P1        | Kegagalan menampilkan panduan perbaikan, bukan error mentah.                                                        |
+
 
 **Acceptance criteria**
 
@@ -398,18 +405,20 @@ berikutnya.
 
 ### 6.5 Presensi (FR-ATT)
 
-| ID | Prioritas | Requirement |
-|---|---|---|
-| FR-ATT-01 | P0 | Check-in dan check-out hanya untuk karyawan yang punya jadwal pada `workDate` tersebut. |
-| FR-ATT-02 | P0 | Satu jadwal = satu baris presensi. Check-in kedua saat masih terbuka ditolak `ALREADY_CHECKED_IN`. |
-| FR-ATT-03 | P0 | Check-out tanpa check-in ditolak `NO_OPEN_ATTENDANCE`. |
-| FR-ATT-04 | P0 | Status check-in dihitung dari jam mulai shift: `ON_TIME`, `LATE`, `VERY_LATE`. |
-| FR-ATT-05 | P0 | Status check-out dihitung dari jam selesai shift: `NORMAL_CHECKOUT`, `EARLY_CHECKOUT`. |
-| FR-ATT-06 | P0 | Setiap request wajib `requestId` UUID v4 (single-use), `requestTimestamp` (±5 menit), dan signature Ed25519. |
-| FR-ATT-07 | P0 | Risk score dihitung server; check-out menyimpan kategori **terburuk** dari check-in dan check-out. |
-| FR-ATT-08 | P0 | Semua penolakan dicatat di audit `ATTENDANCE_REJECTED` beserta alasan dan skor. |
-| FR-ATT-09 | P1 | Hasil presensi menampilkan status, jam, nama shift, skor wajah, dan kategori risk. |
-| FR-ATT-10 | P1 | Presensi yang sudah check-in tetapi belum check-out tampil sebagai "belum selesai" di beranda. |
+
+| ID        | Prioritas | Requirement                                                                                                  |
+| --------- | --------- | ------------------------------------------------------------------------------------------------------------ |
+| FR-ATT-01 | P0        | Check-in dan check-out hanya untuk karyawan yang punya jadwal pada `workDate` tersebut.                      |
+| FR-ATT-02 | P0        | Satu jadwal = satu baris presensi. Check-in kedua saat masih terbuka ditolak `ALREADY_CHECKED_IN`.           |
+| FR-ATT-03 | P0        | Check-out tanpa check-in ditolak `NO_OPEN_ATTENDANCE`.                                                       |
+| FR-ATT-04 | P0        | Status check-in dihitung dari jam mulai shift: `ON_TIME`, `LATE`, `VERY_LATE`.                               |
+| FR-ATT-05 | P0        | Status check-out dihitung dari jam selesai shift: `NORMAL_CHECKOUT`, `EARLY_CHECKOUT`.                       |
+| FR-ATT-06 | P0        | Setiap request wajib `requestId` UUID v4 (single-use), `requestTimestamp` (±5 menit), dan signature Ed25519. |
+| FR-ATT-07 | P0        | Risk score dihitung server; check-out menyimpan kategori **terburuk** dari check-in dan check-out.           |
+| FR-ATT-08 | P0        | Semua penolakan dicatat di audit `ATTENDANCE_REJECTED` beserta alasan dan skor.                              |
+| FR-ATT-09 | P1        | Hasil presensi menampilkan status, jam, nama shift, skor wajah, dan kategori risk.                           |
+| FR-ATT-10 | P1        | Presensi yang sudah check-in tetapi belum check-out tampil sebagai "belum selesai" di beranda.               |
+
 
 **Acceptance criteria**
 
@@ -420,15 +429,17 @@ berikutnya.
 - Presensi sukses selalu punya baris audit `CHECK_IN`/`CHECK_OUT`.
 - Check-out setelah check-in yang berisiko tidak menurunkan kategori risk.
 
-### 6.6 Mode offline & outbox (FR-OFF)
+### 6.6 Mode offline &amp; outbox (FR-OFF)
 
-| ID | Prioritas | Requirement |
-|---|---|---|
-| FR-OFF-01 | P0 | Punch yang gagal karena jaringan/timeout/429/5xx dimasukkan ke outbox terenkripsi. |
-| FR-OFF-02 | P0 | Outbox maksimal 10 entri; entri terlama dibuang saat melebihi batas. |
-| FR-OFF-03 | P0 | Saat flush, setiap entri ditandatangani ulang dengan `requestId` dan timestamp baru. |
-| FR-OFF-04 | P0 | Respons 4xx (selain 429) dianggap verdict final: entri dihapus dan alasan dilaporkan. |
-| FR-OFF-05 | P1 | Outbox hanya untuk gangguan singkat; punch yang terlalu basi akan ditolak server dan dilaporkan, bukan diulang selamanya. |
+
+| ID        | Prioritas | Requirement                                                                                                               |
+| --------- | --------- | ------------------------------------------------------------------------------------------------------------------------- |
+| FR-OFF-01 | P0        | Punch yang gagal karena jaringan/timeout/429/5xx dimasukkan ke outbox terenkripsi.                                        |
+| FR-OFF-02 | P0        | Outbox maksimal 10 entri; entri terlama dibuang saat melebihi batas.                                                      |
+| FR-OFF-03 | P0        | Saat flush, setiap entri ditandatangani ulang dengan `requestId` dan timestamp baru.                                      |
+| FR-OFF-04 | P0        | Respons 4xx (selain 429) dianggap verdict final: entri dihapus dan alasan dilaporkan.                                     |
+| FR-OFF-05 | P1        | Outbox hanya untuk gangguan singkat; punch yang terlalu basi akan ditolak server dan dilaporkan, bukan diulang selamanya. |
+
 
 **Acceptance criteria**
 
@@ -439,100 +450,115 @@ berikutnya.
 
 ### 6.7 Riwayat (FR-HIST)
 
-| ID | Prioritas | Requirement |
-|---|---|---|
-| FR-HIST-01 | P0 | Riwayat menampilkan tanggal, shift, check-in, check-out, status, risk. |
-| FR-HIST-02 | P1 | Filter tanggal dan status check-in; pagination. |
-| FR-HIST-03 | P1 | Detail presensi menampilkan alasan penolakan/koreksi bila ada. |
-| FR-HIST-04 | P1 | Data hanya milik karyawan yang login. |
+
+| ID         | Prioritas | Requirement                                                            |
+| ---------- | --------- | ---------------------------------------------------------------------- |
+| FR-HIST-01 | P0        | Riwayat menampilkan tanggal, shift, check-in, check-out, status, risk. |
+| FR-HIST-02 | P1        | Filter tanggal dan status check-in; pagination.                        |
+| FR-HIST-03 | P1        | Detail presensi menampilkan alasan penolakan/koreksi bila ada.         |
+| FR-HIST-04 | P1        | Data hanya milik karyawan yang login.                                  |
+
 
 ### 6.8 Jadwal (FR-SCH)
 
-| ID | Prioritas | Requirement |
-|---|---|---|
-| FR-SCH-01 | P0 | `GET /schedules/me` mengembalikan roster pada rentang tanggal. |
-| FR-SCH-02 | P0 | Shift malam (mis. 23:00–07:00) dihitung satu shift pada tanggal mulai. |
-| FR-SCH-03 | P1 | Tampilan mingguan dengan navigasi maju/mundur dan penanda hari ini. |
-| FR-SCH-04 | P1 | Status shift: akan datang, berlangsung, selesai, libur. |
+
+| ID        | Prioritas | Requirement                                                            |
+| --------- | --------- | ---------------------------------------------------------------------- |
+| FR-SCH-01 | P0        | `GET /schedules/me` mengembalikan roster pada rentang tanggal.         |
+| FR-SCH-02 | P0        | Shift malam (mis. 23:00–07:00) dihitung satu shift pada tanggal mulai. |
+| FR-SCH-03 | P1        | Tampilan mingguan dengan navigasi maju/mundur dan penanda hari ini.    |
+| FR-SCH-04 | P1        | Status shift: akan datang, berlangsung, selesai, libur.                |
+
 
 ### 6.9 Koreksi (FR-COR)
 
-| ID | Prioritas | Requirement |
-|---|---|---|
-| FR-COR-01 | P0 | Karyawan dapat mengajukan koreksi untuk presensi miliknya. |
-| FR-COR-02 | P0 | Jenis: `MISSED_CHECK_IN`, `MISSED_CHECK_OUT`, `WRONG_TIME`, `TECHNICAL_ISSUE`. |
-| FR-COR-03 | P0 | Minimal satu jam pengganti harus diisi; alasan wajib. |
-| FR-COR-04 | P0 | Hanya satu koreksi PENDING per baris presensi. |
-| FR-COR-05 | P1 | Approval memperbarui presensi dan status secara atomik + audit. |
-| FR-COR-06 | P1 | Karyawan dapat membatalkan koreksi selama PENDING. |
 
-### 6.10 Izin & cuti (FR-LEAVE)
+| ID        | Prioritas | Requirement                                                                    |
+| --------- | --------- | ------------------------------------------------------------------------------ |
+| FR-COR-01 | P0        | Karyawan dapat mengajukan koreksi untuk presensi miliknya.                     |
+| FR-COR-02 | P0        | Jenis: `MISSED_CHECK_IN`, `MISSED_CHECK_OUT`, `WRONG_TIME`, `TECHNICAL_ISSUE`. |
+| FR-COR-03 | P0        | Minimal satu jam pengganti harus diisi; alasan wajib.                          |
+| FR-COR-04 | P0        | Hanya satu koreksi PENDING per baris presensi.                                 |
+| FR-COR-05 | P1        | Approval memperbarui presensi dan status secara atomik + audit.                |
+| FR-COR-06 | P1        | Karyawan dapat membatalkan koreksi selama PENDING.                             |
 
-| ID | Prioritas | Requirement |
-|---|---|---|
-| FR-LEAVE-01 | P0 | Jenis: `CUTI`, `SAKIT`, `IZIN`, `DINAS`, `LAINNYA`. |
-| FR-LEAVE-02 | P0 | Rentang tanggal valid (`end >= start`) dan tidak boleh tumpang tindih dengan pengajuan PENDING/APPROVED. |
-| FR-LEAVE-03 | P1 | Alasan wajib; status mengikuti alur PENDING/APPROVED/REJECTED/CANCELLED. |
-| FR-LEAVE-04 | P1 | Approval/reject hanya oleh atasan/admin yang berwenang. |
-| FR-LEAVE-05 | P1 | Karyawan dapat membatalkan pengajuan selama PENDING. |
 
-### 6.11 Profil & privasi (FR-PROF / FR-PRIV)
+### 6.10 Izin &amp; cuti (FR-LEAVE)
 
-| ID | Prioritas | Requirement |
-|---|---|---|
-| FR-PROF-01 | P0 | Profil menampilkan NIP, nama, unit kerja, jabatan, status wajah, device, consent. |
-| FR-PROF-04 | P1 | Karyawan dapat mengubah nama, email login, dan nomor HP sendiri (PATCH /employees/me); unit kerja dan peran tetap wewenang admin. |
-| FR-PROF-02 | P1 | Ganti password dengan validasi minimal 8 karakter, huruf besar/kecil + angka. |
-| FR-PROF-03 | P1 | Bantuan IT dapat dihubungi dari layar perangkat. |
-| FR-PRIV-01 | P0 | Notice privasi versi `2026-10-01` ditampilkan sebelum consent. |
-| FR-PRIV-02 | P0 | Consent dapat dicabut; presensi berikutnya ditolak `NO_CONSENT`. |
-| FR-PRIV-03 | P0 | Karyawan dapat mengekspor datanya (tanpa template bytes) dan menghapus wajahnya. |
-| FR-PRIV-04 | P1 | Retensi sesi 30 hari dan wajah staf nonaktif 90 hari dijalankan berkala. |
+
+| ID          | Prioritas | Requirement                                                                                              |
+| ----------- | --------- | -------------------------------------------------------------------------------------------------------- |
+| FR-LEAVE-01 | P0        | Jenis: `CUTI`, `SAKIT`, `IZIN`, `DINAS`, `LAINNYA`.                                                      |
+| FR-LEAVE-02 | P0        | Rentang tanggal valid (`end >= start`) dan tidak boleh tumpang tindih dengan pengajuan PENDING/APPROVED. |
+| FR-LEAVE-03 | P1        | Alasan wajib; status mengikuti alur PENDING/APPROVED/REJECTED/CANCELLED.                                 |
+| FR-LEAVE-04 | P1        | Approval/reject hanya oleh atasan/admin yang berwenang.                                                  |
+| FR-LEAVE-05 | P1        | Karyawan dapat membatalkan pengajuan selama PENDING.                                                     |
+
+
+### 6.11 Profil &amp; privasi (FR-PROF / FR-PRIV)
+
+
+| ID         | Prioritas | Requirement                                                                       |
+| ---------- | --------- | --------------------------------------------------------------------------------- |
+| FR-PROF-01 | P0        | Profil menampilkan NIP, nama, departemen, jabatan, status wajah, device, consent. |
+| FR-PROF-02 | P1        | Ganti password dengan validasi minimal 8 karakter, huruf besar/kecil + angka.     |
+| FR-PROF-03 | P1        | Bantuan IT dapat dihubungi dari layar perangkat.                                  |
+| FR-PRIV-01 | P0        | Notice privasi versi `2026-10-01` ditampilkan sebelum consent.                    |
+| FR-PRIV-02 | P0        | Consent dapat dicabut; presensi berikutnya ditolak `NO_CONSENT`.                  |
+| FR-PRIV-03 | P0        | Karyawan dapat mengekspor datanya (tanpa template bytes) dan menghapus wajahnya.  |
+| FR-PRIV-04 | P1        | Retensi sesi 30 hari dan wajah staf nonaktif 90 hari dijalankan berkala.          |
+
 
 ### 6.12 Device integrity (FR-INT)
 
-| ID | Prioritas | Requirement |
-|---|---|---|
-| FR-INT-01 | P1 | Android mengirim Play Integrity token; iOS mengirim App Attest assertion. |
-| FR-INT-02 | P1 | Server memvalidasi expiry, package/bundle, dan verdict integritas. |
-| FR-INT-03 | P0 | `INTEGRITY_STRICT=false` (pilot): tanpa token, fallback ke `deviceCompromised`; token tidak valid tetap ditolak. |
-| FR-INT-04 | P0 | `INTEGRITY_STRICT=true` (produksi): tanpa token = ditolak `INTEGRITY_FAILED`. |
-| FR-INT-05 | P2 | Verifikasi server-to-server ke Google/Apple (fase 2). |
+
+| ID        | Prioritas | Requirement                                                                                                      |
+| --------- | --------- | ---------------------------------------------------------------------------------------------------------------- |
+| FR-INT-01 | P1        | Android mengirim Play Integrity token; iOS mengirim App Attest assertion.                                        |
+| FR-INT-02 | P1        | Server memvalidasi expiry, package/bundle, dan verdict integritas.                                               |
+| FR-INT-03 | P0        | `INTEGRITY_STRICT=false` (pilot): tanpa token, fallback ke `deviceCompromised`; token tidak valid tetap ditolak. |
+| FR-INT-04 | P0        | `INTEGRITY_STRICT=true` (produksi): tanpa token = ditolak `INTEGRITY_FAILED`.                                    |
+| FR-INT-05 | P2        | Verifikasi server-to-server ke Google/Apple (fase 2).                                                            |
+
 
 > **Status:** `IntegrityRepository.getToken()` masih stub `null`. Karena itu
 > produksi harus memakai `INTEGRITY_STRICT=false` sampai implementasi klien
 > dan verifikasi server selesai.
 
-### 6.13 API supervisor/admin (FR-ADM)
+### 6.13 API supervisor/admin (FR-ADM, tanpa UI)
 
-| ID | Prioritas | Requirement |
-|---|---|---|
-| FR-ADM-01 | P1 | CRUD karyawan, unit, shift, roster, user, role. |
-| FR-ADM-02 | P1 | Approve/reject koreksi dan izin. |
-| FR-ADM-03 | P1 | Laporan harian, bulanan, unit, keterlambatan, cuti (Excel/PDF). |
-| FR-ADM-04 | P1 | Audit log read-only dan ekspor. |
-| FR-ADM-05 | P1 | Revoke/activate device dan queue `needsReview`. |
-| FR-ADM-06 | P2 | UI mobile untuk supervisor/admin. |
+
+| ID        | Prioritas | Requirement                                                           |
+| --------- | --------- | --------------------------------------------------------------------- |
+| FR-ADM-01 | P1        | CRUD karyawan, departemen, shift, roster, user, role.                 |
+| FR-ADM-02 | P1        | Approve/reject koreksi, izin, dan penggantian perangkat.              |
+| FR-ADM-03 | P1        | Laporan harian, bulanan, departemen, keterlambatan, cuti (Excel/PDF). |
+| FR-ADM-04 | P1        | Audit log read-only dan ekspor.                                       |
+| FR-ADM-05 | P1        | Revoke/activate device dan queue `needsReview`.                       |
+| FR-ADM-06 | P2        | UI mobile untuk supervisor/admin.                                     |
+
 
 ---
 
 ## 7. Aturan Bisnis
 
-### 7.1 Shift & tanggal kerja
+### 7.1 Shift &amp; tanggal kerja
 
-| Parameter | Default | Arti |
-|---|---|---|
-| `startTime` / `endTime` | — | Jam shift (`HH:mm`) |
-| `overnight` | otomatis | `true` bila jam selesai ≤ jam mulai |
-| `gracePeriodMin` | 15 | Toleransi keterlambatan |
-| `lateThresholdMin` | 30 | Batas `LATE` → `VERY_LATE` |
-| `earlyCheckoutThresholdMin` | 15 | Toleransi pulang cepat |
+
+| Parameter                   | Default  | Arti                                |
+| --------------------------- | -------- | ----------------------------------- |
+| `startTime` / `endTime`     | —        | Jam shift (`HH:mm`)                 |
+| `overnight`                 | otomatis | `true` bila jam selesai ≤ jam mulai |
+| `gracePeriodMin`            | 15       | Toleransi keterlambatan             |
+| `lateThresholdMin`          | 30       | Batas `LATE` → `VERY_LATE`          |
+| `earlyCheckoutThresholdMin` | 15       | Toleransi pulang cepat              |
+
 
 - `workDate` = tanggal **mulai** shift pada zona `HOSPITAL_TZ`
-  (default `Asia/Jakarta`).
+(default `Asia/Jakarta`).
 - Shift malam 23:00 → 07:00 tetap satu baris presensi pada tanggal mulai.
 - Contoh: check-in 23 Sep 22:50, check-out 24 Sep 07:05 = satu shift
-  23 September.
+23 September.
 
 Perhitungan:
 
@@ -551,24 +577,28 @@ earlyMinutes = shiftEnd − checkOutAt
 
 Bobot default (jumlah = 100, divalidasi saat boot):
 
-| Sinyal | Bobot | Syarat poin penuh |
-|---|---|---|
-| Face match | 45 | Cosine similarity × 45 |
-| Liveness | 20 | Attestation valid |
-| Trusted device | 15 | Device ACTIVE milik karyawan |
-| Device integrity | 15 | Token valid / tidak compromised |
-| Request signature | 5 | Ed25519 valid |
 
-| Skor | Kategori | Keputusan |
-|---|---|---|
-| 90–100 | LOW | Presensi normal |
-| 70–89 | MEDIUM | Presensi diterima, `needsReview=true` untuk atasan |
-| < 70 | HIGH | Tidak boleh menjadi presensi valid; gate individual menolak lebih dulu |
+| Sinyal            | Bobot | Syarat poin penuh               |
+| ----------------- | ----- | ------------------------------- |
+| Face match        | 45    | Cosine similarity × 45          |
+| Liveness          | 20    | Attestation valid               |
+| Trusted device    | 15    | Device ACTIVE milik karyawan    |
+| Device integrity  | 15    | Token valid / tidak compromised |
+| Request signature | 5     | Ed25519 valid                   |
+
+
+
+| Skor    | Kategori | Keputusan                                                              |
+| ------- | -------- | ---------------------------------------------------------------------- |
+| 90–100  | LOW      | Presensi normal                                                        |
+| 70–89   | MEDIUM   | Presensi diterima, `needsReview=true` untuk atasan                     |
+| &lt; 70 | HIGH     | Tidak boleh menjadi presensi valid; gate individual menolak lebih dulu |
+
 
 Semua bobot dan ambang dapat diubah lewat env dan **wajib dikalibrasi**
 dengan data pilot (lihat `guides/CALIBRATION.md`).
 
-### 7.3 Status & transisi
+### 7.3 Status &amp; transisi
 
 **Presensi**
 
@@ -577,7 +607,7 @@ Check-in  → ON_TIME | LATE | VERY_LATE
 Check-out → NORMAL_CHECKOUT | EARLY_CHECKOUT
 ```
 
-**Pengajuan (koreksi/izin)**
+**Pengajuan (koreksi/izin/penggantian)**
 
 ```text
 PENDING → APPROVED
@@ -596,7 +626,7 @@ ACTIVE  → REPLACED
 Aturan: satu karyawan = satu ACTIVE. Aktivasi/approval mencabut perangkat
 lama beserta sesinya.
 
-### 7.4 Idempotensi & anti-replay
+### 7.4 Idempotensi &amp; anti-replay
 
 - `requestId` UUID v4 disimpan di `idempotency_keys`; duplikat → 409.
 - `requestTimestamp` harus dalam ±`REQUEST_MAX_SKEW_MIN` (default 5 menit).
@@ -607,22 +637,24 @@ lama beserta sesinya.
 
 ## 8. Keamanan
 
-### 8.1 Ancaman & mitigasi
+### 8.1 Ancaman &amp; mitigasi
 
-| Ancaman | Mitigasi |
-|---|---|
-| Titip absen | Face match + liveness + device binding + audit |
-| Replay request | `requestId` single-use + timestamp window + signature |
-| Request diubah | Signature Ed25519 atas requestId + timestamp |
-| Device dicuri | Perangkat terikat 1:1; bisa dicabut admin; sesi dicabut |
-| Root/jailbreak | Integrity token + `deviceCompromised` |
-| Template wajah bocor | AES-256-GCM, akses terbatas, tidak pernah keluar API |
-| Brute force login | Argon2id + lockout + rate limit per akun |
-| Enumeration | Error login generik; rate limit |
-| Manipulasi lokal | Server menghitung ulang semua keputusan |
-| Foto dipalsukan | Liveness aktif/pasif + kualitas wajah |
 
-### 8.2 Autentikasi & otorisasi
+| Ancaman              | Mitigasi                                                |
+| -------------------- | ------------------------------------------------------- |
+| Titip absen          | Face match + liveness + device binding + audit          |
+| Replay request       | `requestId` single-use + timestamp window + signature   |
+| Request diubah       | Signature Ed25519 atas requestId + timestamp            |
+| Device dicuri        | Perangkat terikat 1:1; bisa dicabut admin; sesi dicabut |
+| Root/jailbreak       | Integrity token + `deviceCompromised`                   |
+| Template wajah bocor | AES-256-GCM, akses terbatas, tidak pernah keluar API    |
+| Brute force login    | Argon2id + lockout + rate limit per akun                |
+| Enumeration          | Error login generik; rate limit                         |
+| Manipulasi lokal     | Server menghitung ulang semua keputusan                 |
+| Foto dipalsukan      | Liveness aktif/pasif + kualitas wajah                   |
+
+
+### 8.2 Autentikasi &amp; otorisasi
 
 - Argon2id untuk password.
 - JWT HS256 dengan issuer/audience terikat; access token pendek.
@@ -638,16 +670,16 @@ lama beserta sesinya.
 - Presensi ditandatangani private key; server memverifikasi public key.
 - Partial unique index mencegah dua ACTIVE per karyawan.
 
-### 8.4 Wajah & liveness
+### 8.4 Wajah &amp; liveness
 
-- Deteksi & embedding 100% on-device.
+- Deteksi &amp; embedding 100% on-device.
 - Server hanya menyimpan embedding terenkripsi.
 - Raw image tidak pernah dikirim, tidak pernah disimpan.
 - Liveness: challenge acak (kedip/toleh), evaluasi landmark, skor PAD.
 - Attestation klien tidak dipercaya sendirian; digabung face match,
-  device, dan integrity.
+device, dan integrity.
 
-### 8.5 Integritas request & rate limit
+### 8.5 Integritas request &amp; rate limit
 
 - Helmet security headers.
 - ValidationPipe: whitelist + forbid unknown fields.
@@ -677,7 +709,7 @@ Audit log append-only; user biasa tidak dapat mengubah/menghapus.
 
 - Hanya nginx yang terbuka (80/443). Backend, PostgreSQL, Redis internal.
 - TLS 1.2/1.3, HSTS, `X-Content-Type-Options`, `X-Frame-Options`,
-  `Referrer-Policy`.
+`Referrer-Policy`.
 - Secret produksi di `.env.production` (chmod 600), tidak di image.
 - Boot gagal bila secret masih placeholder (`assertProductionEnv`).
 - Backup harian + retensi 14 hari + checksum.
@@ -685,18 +717,20 @@ Audit log append-only; user biasa tidak dapat mengubah/menghapus.
 
 ---
 
-## 9. Privasi & UU PDP
+## 9. Privasi &amp; UU PDP
 
 ### 9.1 Data yang diproses
 
-| Data | Tujuan | Dasar | Retensi |
-|---|---|---|---|
-| Embedding wajah (192-d, terenkripsi) | Verifikasi presensi | Consent `BIOMETRIC_ATTENDANCE` + kontrak kerja | Sampai consent dicabut / 90 hari setelah nonaktif |
-| Foto mentah | — | — | **Tidak pernah dikirim/disimpan** |
-| NIP, nama, email, unit kerja, jabatan | Identitas & administrasi | Kontrak kerja | Sesuai kebijakan SDM |
-| Device ID, public key, nama perangkat | Binding & keamanan | Kepentingan sah | Selama perangkat aktif + audit |
-| Presensi, shift, risk, audit | Operasional & bukti | Kontrak kerja / kewajiban hukum | Sesuai retensi SDM |
-| Consent | Bukti kepatuhan | UU PDP | Selama + setelah pencabutan |
+
+| Data                                  | Tujuan                       | Dasar                                          | Retensi                                           |
+| ------------------------------------- | ---------------------------- | ---------------------------------------------- | ------------------------------------------------- |
+| Embedding wajah (192-d, terenkripsi)  | Verifikasi presensi          | Consent `BIOMETRIC_ATTENDANCE` + kontrak kerja | Sampai consent dicabut / 90 hari setelah nonaktif |
+| Foto mentah                           | —                            | —                                              | **Tidak pernah dikirim/disimpan**                 |
+| NIP, nama, email, departemen, jabatan | Identitas &amp; administrasi | Kontrak kerja                                  | Sesuai kebijakan SDM                              |
+| Device ID, public key, nama perangkat | Binding &amp; keamanan       | Kepentingan sah                                | Selama perangkat aktif + audit                    |
+| Presensi, shift, risk, audit          | Operasional &amp; bukti      | Kontrak kerja / kewajiban hukum                | Sesuai retensi SDM                                |
+| Consent                               | Bukti kepatuhan              | UU PDP                                         | Selama + setelah pencabutan                       |
+
 
 ### 9.2 Hak subjek data
 
@@ -716,26 +750,28 @@ Audit log append-only; user biasa tidak dapat mengubah/menghapus.
 
 ## 10. Model Data (ringkas)
 
-| Tabel | Isi penting |
-|---|---|
-| `hospitals` | Identitas rumah sakit |
-| `departments` | Unit kerja |
-| `users` | Akun login, hash password, TOTP, lockout |
-| `employees` | NIP, nama, unit kerja, jabatan, atasan, status |
-| `roles`, `permissions`, `role_permissions`, `user_roles` | RBAC |
-| `face_templates` | Embedding terenkripsi, algoritma, versi, kualitas |
-| `devices` | Public key, installation id, platform, status, last seen |
-| `device_change_requests` | Pengajuan penggantian (legacy; UI pengajuan dihapus) |
-| `shifts` | Jam, overnight, grace, late, early checkout |
-| `employee_schedules` | Roster per karyawan per `workDate` |
-| `attendance` | Check-in/out, status, risk, device, schedule |
-| `correction_requests` | Koreksi + review |
-| `leave_requests` | Izin/cuti + review |
-| `audit_logs` | Append-only |
-| `sessions` | Refresh token hash, expiry, revoke |
-| `idempotency_keys` | Anti-replay |
-| `consents` | Consent per purpose + versi notice |
-| `totp_recovery_codes` | Kode pemulihan MFA |
+
+| Tabel                                                    | Isi penting                                              |
+| -------------------------------------------------------- | -------------------------------------------------------- |
+| `hospitals`                                              | Identitas rumah sakit                                    |
+| `departments`                                            | Departemen/unit                                          |
+| `users`                                                  | Akun login, hash password, TOTP, lockout                 |
+| `employees`                                              | NIP, nama, departemen, jabatan, atasan, status           |
+| `roles`, `permissions`, `role_permissions`, `user_roles` | RBAC                                                     |
+| `face_templates`                                         | Embedding terenkripsi, algoritma, versi, kualitas        |
+| `devices`                                                | Public key, installation id, platform, status, last seen |
+| `device_change_requests`                                 | Pengajuan penggantian + review                           |
+| `shifts`                                                 | Jam, overnight, grace, late, early checkout              |
+| `employee_schedules`                                     | Roster per karyawan per `workDate`                       |
+| `attendance`                                             | Check-in/out, status, risk, device, schedule             |
+| `correction_requests`                                    | Koreksi + review                                         |
+| `leave_requests`                                         | Izin/cuti + review                                       |
+| `audit_logs`                                             | Append-only                                              |
+| `sessions`                                               | Refresh token hash, expiry, revoke                       |
+| `idempotency_keys`                                       | Anti-replay                                              |
+| `consents`                                               | Consent per purpose + versi notice                       |
+| `totp_recovery_codes`                                    | Kode pemulihan MFA                                       |
+
 
 Constraint penting:
 
@@ -757,51 +793,54 @@ Content-Type: `application/json`
 ### 11.1 Konvensi
 
 - Error bisnis: HTTP 422 dengan body
-  `{ "reason": "...", "message": "...", "riskScore": 0, "riskCategory": "LOW" }`.
+`{ "reason": "...", "message": "...", "riskScore": 0, "riskCategory": "LOW" }`.
 - Duplikat: 409. Tidak ditemukan: 404. Bukan pemilik: 403.
 - Rate limit: 429 dengan `Retry-After`.
 - Semua waktu ISO-8601 UTC.
 
 ### 11.2 Endpoint mobile
 
-| Method | Path | Fungsi |
-|---|---|---|
-| POST | `/auth/login` | Login, kembalikan access + refresh token |
-| POST | `/auth/refresh` | Rotasi refresh token |
-| POST | `/auth/logout` | Cabut sesi |
-| GET | `/auth/me` | Profil akun + role |
-| POST | `/auth/change-password` | Ganti password |
-| POST | `/auth/totp/verify` | Verifikasi TOTP |
-| POST | `/auth/totp/recover` | Pemulihan TOTP |
-| GET | `/devices/register-challenge` | Nonce registrasi (5 menit) |
-| POST | `/devices/register` | Daftarkan perangkat + public key (otomatis saat login) |
-| GET | `/devices/me` | Perangkat milik akun |
-| POST | `/devices/:id/heartbeat` | Update last seen |
-| GET | `/departments/public` | Daftar unit untuk pendaftaran (publik) |
-| PATCH | `/employees/me` | Ubah nama/email/HP milik sendiri |
-| GET | `/face/status` | Status template wajah |
-| POST | `/face/register` | Registrasi template wajah |
-| GET | `/privacy/notice` | Notice privasi aktif |
-| POST | `/privacy/consent` | Beri/cabut consent |
-| GET | `/privacy/consents/me` | Riwayat consent |
-| GET | `/privacy/export/me` | Ekspor data pribadi |
-| DELETE | `/privacy/face/me` | Hapus wajah |
-| POST | `/attendance/check-in` | Check-in |
-| POST | `/attendance/check-out` | Check-out |
-| GET | `/attendance/me` | Riwayat presensi sendiri |
-| GET | `/attendance/:id` | Detail presensi |
-| GET | `/schedules/me` | Jadwal sendiri |
-| GET | `/corrections/me` | Koreksi sendiri |
-| POST | `/corrections` | Ajukan koreksi |
-| POST | `/corrections/:id/cancel` | Batalkan koreksi |
-| GET | `/leaves/me` | Izin/cuti sendiri |
-| POST | `/leaves` | Ajukan izin/cuti |
-| POST | `/leaves/:id/cancel` | Batalkan izin/cuti |
-| GET | `/employees/me` | Data karyawan sendiri |
-| GET | `/health` | Readiness + status DB |
-| GET | `/health/live` | Liveness probe |
 
-### 11.3 Endpoint supervisor/admin (dipakai Mode Admin)
+| Method | Path                          | Fungsi                                   |
+| ------ | ----------------------------- | ---------------------------------------- |
+| POST   | `/auth/login`                 | Login, kembalikan access + refresh token |
+| POST   | `/auth/refresh`               | Rotasi refresh token                     |
+| POST   | `/auth/logout`                | Cabut sesi                               |
+| GET    | `/auth/me`                    | Profil akun + role                       |
+| POST   | `/auth/change-password`       | Ganti password                           |
+| POST   | `/auth/totp/verify`           | Verifikasi TOTP                          |
+| POST   | `/auth/totp/recover`          | Pemulihan TOTP                           |
+| GET    | `/devices/register-challenge` | Nonce registrasi (5 menit)               |
+| POST   | `/devices/register`           | Daftarkan perangkat + public key         |
+| GET    | `/devices/me`                 | Perangkat milik akun                     |
+| POST   | `/devices/:id/heartbeat`      | Update last seen                         |
+| GET    | `/device-change/me`           | Status pengajuan penggantian             |
+| POST   | `/device-change`              | Ajukan penggantian                       |
+| POST   | `/device-change/:id/cancel`   | Batalkan pengajuan                       |
+| GET    | `/face/status`                | Status template wajah                    |
+| POST   | `/face/register`              | Registrasi template wajah                |
+| GET    | `/privacy/notice`             | Notice privasi aktif                     |
+| POST   | `/privacy/consent`            | Beri/cabut consent                       |
+| GET    | `/privacy/consents/me`        | Riwayat consent                          |
+| GET    | `/privacy/export/me`          | Ekspor data pribadi                      |
+| DELETE | `/privacy/face/me`            | Hapus wajah                              |
+| POST   | `/attendance/check-in`        | Check-in                                 |
+| POST   | `/attendance/check-out`       | Check-out                                |
+| GET    | `/attendance/me`              | Riwayat presensi sendiri                 |
+| GET    | `/attendance/:id`             | Detail presensi                          |
+| GET    | `/schedules/me`               | Jadwal sendiri                           |
+| GET    | `/corrections/me`             | Koreksi sendiri                          |
+| POST   | `/corrections`                | Ajukan koreksi                           |
+| POST   | `/corrections/:id/cancel`     | Batalkan koreksi                         |
+| GET    | `/leaves/me`                  | Izin/cuti sendiri                        |
+| POST   | `/leaves`                     | Ajukan izin/cuti                         |
+| POST   | `/leaves/:id/cancel`          | Batalkan izin/cuti                       |
+| GET    | `/employees/me`               | Data karyawan sendiri                    |
+| GET    | `/health`                     | Readiness + status DB                    |
+| GET    | `/health/live`                | Liveness probe                           |
+
+
+### 11.3 Endpoint supervisor/admin (tanpa UI)
 
 ```text
 GET/POST/PATCH/DELETE  /employees, /departments, /users
@@ -809,6 +848,7 @@ POST                   /employees/:id/deactivate
 POST                   /users/:id/reset-password
 POST/PATCH/DELETE      /shifts, /schedules
 POST                   /devices/:id/revoke | activate | mark-lost
+POST                   /device-change/:id/approve | reject
 POST                   /corrections/:id/approve | reject
 POST                   /leaves/:id/approve | reject
 GET                    /attendance (filter admin)
@@ -843,24 +883,26 @@ POST                   /privacy/retention/run (SUPER_ADMIN)
 
 ### 11.5 Kode alasan penolakan
 
-| Kode | Arti |
-|---|---|
-| `NO_CONSENT` | Consent biometrik belum/tidak aktif |
-| `NO_SCHEDULE` | Tidak ada jadwal pada tanggal kerja |
-| `ALREADY_CHECKED_IN` | Masih ada presensi terbuka |
-| `NO_OPEN_ATTENDANCE` | Check-out tanpa check-in |
-| `NO_FACE_TEMPLATE` | Wajah belum terdaftar |
-| `FACE_MISMATCH` | Skor wajah di bawah ambang |
-| `LIVENESS_FAILED` | Liveness tidak lolos |
-| `LIVENESS_STALE` | Attestation kedaluwarsa |
-| `LIVENESS_EMPTY` | Challenge/skor tidak ada |
-| `LIVENESS_MODE_UNSUPPORTED` | Mode tidak dikenal |
-| `DEVICE_NOT_ACTIVE` | Perangkat tidak aktif |
-| `INVALID_SIGNATURE` | Signature perangkat salah |
-| `STALE_REQUEST` | Timestamp di luar jendela |
-| `DUPLICATE_REQUEST` | `requestId` sudah dipakai |
-| `INTEGRITY_FAILED` | Verifikasi integritas gagal |
-| `DEVICE_COMPROMISED` | Perangkat terindikasi root/jailbreak |
+
+| Kode                        | Arti                                 |
+| --------------------------- | ------------------------------------ |
+| `NO_CONSENT`                | Consent biometrik belum/tidak aktif  |
+| `NO_SCHEDULE`               | Tidak ada jadwal pada tanggal kerja  |
+| `ALREADY_CHECKED_IN`        | Masih ada presensi terbuka           |
+| `NO_OPEN_ATTENDANCE`        | Check-out tanpa check-in             |
+| `NO_FACE_TEMPLATE`          | Wajah belum terdaftar                |
+| `FACE_MISMATCH`             | Skor wajah di bawah ambang           |
+| `LIVENESS_FAILED`           | Liveness tidak lolos                 |
+| `LIVENESS_STALE`            | Attestation kedaluwarsa              |
+| `LIVENESS_EMPTY`            | Challenge/skor tidak ada             |
+| `LIVENESS_MODE_UNSUPPORTED` | Mode tidak dikenal                   |
+| `DEVICE_NOT_ACTIVE`         | Perangkat tidak aktif                |
+| `INVALID_SIGNATURE`         | Signature perangkat salah            |
+| `STALE_REQUEST`             | Timestamp di luar jendela            |
+| `DUPLICATE_REQUEST`         | `requestId` sudah dipakai            |
+| `INTEGRITY_FAILED`          | Verifikasi integritas gagal          |
+| `DEVICE_COMPROMISED`        | Perangkat terindikasi root/jailbreak |
+
 
 ---
 
@@ -868,15 +910,17 @@ POST                   /privacy/retention/run (SUPER_ADMIN)
 
 ### 12.1 Performa
 
-| Aspek | Target |
-|---|---|
-| Deteksi wajah + liveness | ≤ 2 detik di perangkat mid-range |
-| Total presensi (jaringan normal) | ≤ 5 detik |
-| API p95 | ≤ 500 ms (di luar biometrik) |
-| Cold start aplikasi | ≤ 3 detik |
-| Ukuran APK | Wajar untuk model 5 MB + TFLite |
 
-### 12.2 Kapasitas & ketersediaan
+| Aspek                            | Target                           |
+| -------------------------------- | -------------------------------- |
+| Deteksi wajah + liveness         | ≤ 2 detik di perangkat mid-range |
+| Total presensi (jaringan normal) | ≤ 5 detik                        |
+| API p95                          | ≤ 500 ms (di luar biometrik)     |
+| Cold start aplikasi              | ≤ 3 detik                        |
+| Ukuran APK                       | Wajar untuk model 5 MB + TFLite  |
+
+
+### 12.2 Kapasitas &amp; ketersediaan
 
 - 500 karyawan, puncak ~150 request/menit saat pergantian shift.
 - Backend stateless; dapat di-scale horizontal (`--scale backend=3`).
@@ -885,14 +929,16 @@ POST                   /privacy/retention/run (SUPER_ADMIN)
 
 ### 12.3 Kompatibilitas
 
-| Platform | Minimum |
-|---|---|
-| Android | 5.0 (API 21), arm64-v8a + armeabi-v7a |
-| iOS | 15.5 |
-| Orientasi | Portrait (utama) |
-| Koneksi | HTTPS; HTTP hanya untuk development |
 
-### 12.4 UX & aksesibilitas
+| Platform  | Minimum                               |
+| --------- | ------------------------------------- |
+| Android   | 5.0 (API 21), arm64-v8a + armeabi-v7a |
+| iOS       | 15.5                                  |
+| Orientasi | Portrait (utama)                      |
+| Koneksi   | HTTPS; HTTP hanya untuk development   |
+
+
+### 12.4 UX &amp; aksesibilitas
 
 - Bahasa Indonesia.
 - Target sentuh ≥ 48 dp, kontras WCAG AA.
@@ -905,22 +951,24 @@ POST                   /privacy/retention/run (SUPER_ADMIN)
 - `GET /health` (DB) dan `GET /health/live` (tanpa DB).
 - Log terstruktur ke stdout, rotasi Docker.
 - Audit untuk semua aksi penting.
-- Alert minimal: health turun, 5xx > 1%, antrean `needsReview` menumpuk.
+- Alert minimal: health turun, 5xx &gt; 1%, antrean `needsReview` menumpuk.
 
 ---
 
-## 13. Pengujian & Kriteria Terima
+## 13. Pengujian &amp; Kriteria Terima
 
 ### 13.1 Lapisan pengujian
 
-| Lapisan | Cakupan |
-|---|---|
-| Unit backend | Shift math, risk, liveness, signature, DTO, config, privacy |
-| E2E backend | Auth, device, face, attendance, correction, leave, audit, reports, TOTP, privacy |
-| E2E DB nyata | Login Argon2, lockout, rotasi refresh token (PostgreSQL) |
-| Unit/widget mobile | Liveness, eye geometry, kualitas wajah, outbox, retry, model, password policy |
-| Security test | 13 skenario serangan (replay, signature, device, integrity, dsb.) |
-| Device farm | HP bersih, bukan root/emulator, kalibrasi ambang |
+
+| Lapisan            | Cakupan                                                                          |
+| ------------------ | -------------------------------------------------------------------------------- |
+| Unit backend       | Shift math, risk, liveness, signature, DTO, config, privacy                      |
+| E2E backend        | Auth, device, face, attendance, correction, leave, audit, reports, TOTP, privacy |
+| E2E DB nyata       | Login Argon2, lockout, rotasi refresh token (PostgreSQL)                         |
+| Unit/widget mobile | Liveness, eye geometry, kualitas wajah, outbox, retry, model, password policy    |
+| Security test      | 13 skenario serangan (replay, signature, device, integrity, dsb.)                |
+| Device farm        | HP bersih, bukan root/emulator, kalibrasi ambang                                 |
+
 
 ### 13.2 Definition of Done
 
@@ -938,54 +986,60 @@ POST                   /privacy/retention/run (SUPER_ADMIN)
 
 ---
 
-## 14. Status Implementasi & Roadmap
+## 14. Status Implementasi &amp; Roadmap
 
 ### 14.1 Fase 1 — selesai (baseline)
 
-| Modul | Status |
-|---|---|
-| Auth, refresh rotation, lockout, ganti password | Selesai |
-| Registrasi perangkat otomatis (multi-perangkat), challenge, revoke | Selesai |
-| Face registration + enkripsi template | Selesai |
-| Liveness aktif + pasif | Selesai |
-| Attendance engine + risk + audit | Selesai |
-| Outbox + retry + cancel | Selesai |
-| Riwayat, jadwal, koreksi, izin/cuti | Selesai |
-| Privasi (consent/export/erase/retensi) | Selesai |
-| API supervisor/admin/report/audit | Selesai (Mode Admin di aplikasi) |
-| Restrukturisasi mobile-only | Selesai |
+
+| Modul                                           | Status             |
+| ----------------------------------------------- | ------------------ |
+| Auth, refresh rotation, lockout, ganti password | Selesai            |
+| Device binding, challenge, revoke, replacement  | Selesai            |
+| Face registration + enkripsi template           | Selesai            |
+| Liveness aktif + pasif                          | Selesai            |
+| Attendance engine + risk + audit                | Selesai            |
+| Outbox + retry + cancel                         | Selesai            |
+| Riwayat, jadwal, koreksi, izin/cuti             | Selesai            |
+| Privasi (consent/export/erase/retensi)          | Selesai            |
+| API supervisor/admin/report/audit               | Selesai (tanpa UI) |
+| Restrukturisasi mobile-only                     | Selesai            |
+
 
 ### 14.2 Fase 2 — berikutnya
 
-| Item | Alasan |
-|---|---|
-| UI mobile supervisor/admin | Saat ini approval hanya lewat API |
+
+| Item                              | Alasan                                   |
+| --------------------------------- | ---------------------------------------- |
+| UI mobile supervisor/admin        | Saat ini approval hanya lewat API        |
 | Play Integrity / App Attest penuh | Stub klien + verifikasi server-to-server |
-| Kalibrasi ambang produksi | Default belum diukur |
-| Push notification | Belum ada notifikasi approval/pengingat |
-| Liveness iOS final | Ambang landmark masih provisional |
-| Offline lebih lama | Outbox saat ini untuk gangguan singkat |
+| Kalibrasi ambang produksi         | Default belum diukur                     |
+| Push notification                 | Belum ada notifikasi approval/pengingat  |
+| Liveness iOS final                | Ambang landmark masih provisional        |
+| Offline lebih lama                | Outbox saat ini untuk gangguan singkat   |
+
 
 ---
 
-## 15. Risiko & Mitigasi
+## 15. Risiko &amp; Mitigasi
 
-| Risiko | Dampak | Mitigasi |
-|---|---|---|
-| Ambang wajah belum dikalibrasi | FAR/FRR tidak sesuai | Kalibrasi ≥ 50 genuine + 50 impostor per kelas device |
-| Liveness klien bisa dimodifikasi | Attestation palsu | Face match + device + integrity + audit |
-| Integrity masih stub | Root device lolos di mode lax | `strict=false` sampai fase 2; monitoring audit |
-| Approval admin menumpuk | Operasional macet | Mode Admin mobile tersedia; pantau beban approver |
-| Sinyal buruk di basement | Presensi gagal | Outbox + retry; komunikasi batas waktu |
-| HP lama (API 21) | ML Kit butuh Play Services | Pesan eksplisit + daftar device yang didukung |
-| Kebocoran template | Risiko privasi tinggi | AES-256-GCM, akses terbatas, audit, retensi |
+
+| Risiko                           | Dampak                        | Mitigasi                                              |
+| -------------------------------- | ----------------------------- | ----------------------------------------------------- |
+| Ambang wajah belum dikalibrasi   | FAR/FRR tidak sesuai          | Kalibrasi ≥ 50 genuine + 50 impostor per kelas device |
+| Liveness klien bisa dimodifikasi | Attestation palsu             | Face match + device + integrity + audit               |
+| Integrity masih stub             | Root device lolos di mode lax | `strict=false` sampai fase 2; monitoring audit        |
+| Approval admin tanpa UI          | Operasional macet             | Integrasi API sementara / prioritaskan UI fase 2      |
+| Sinyal buruk di basement         | Presensi gagal                | Outbox + retry; komunikasi batas waktu                |
+| HP lama (API 21)                 | ML Kit butuh Play Services    | Pesan eksplisit + daftar device yang didukung         |
+| Kebocoran template               | Risiko privasi tinggi         | AES-256-GCM, akses terbatas, audit, retensi           |
+
 
 ---
 
 ## 16. Keputusan Terbuka
 
 1. **UI admin/supervisor**: mobile app terpisah, role-aware di app yang sama,
-   atau integrasi SIMRS?
+ atau integrasi SIMRS?
 2. **Kebijakan cuti**: kuota dan approval berlapis belum dimodelkan.
 3. **Push notification**: perlu atau cukup polling saat app dibuka?
 4. **Integrity produksi**: kapan `INTEGRITY_STRICT=true` diaktifkan?
@@ -1008,36 +1062,40 @@ scripts/      operasional host/DB/smoke
 
 ### 17.2 Environment penting
 
-| Variabel | Default | Fungsi |
-|---|---|---|
-| `FACE_MATCH_THRESHOLD` | 0.5 | Ambang cosine similarity |
-| `LIVENESS_MAX_AGE_MIN` | 10 | Kesegaran attestation |
-| `REQUEST_MAX_SKEW_MIN` | 5 | Jendela timestamp |
-| `RISK_W_FACE` | 45 | Bobot wajah |
-| `RISK_W_LIVENESS` | 20 | Bobot liveness |
-| `RISK_W_DEVICE` | 15 | Bobot device |
-| `RISK_W_INTEGRITY` | 15 | Bobot integrity |
-| `RISK_W_SIGNATURE` | 5 | Bobot signature |
-| `RISK_LOW_MIN` | 90 | Batas LOW |
-| `RISK_MEDIUM_MIN` | 70 | Batas MEDIUM |
-| `HOSPITAL_TZ` | Asia/Jakarta | Zona tanggal kerja |
-| `RETENTION_SESSION_DAYS` | 30 | Retensi sesi |
-| `RETENTION_FACE_INACTIVE_DAYS` | 90 | Retensi wajah staf nonaktif |
-| `INTEGRITY_STRICT` | false | Mode integritas |
+
+| Variabel                       | Default      | Fungsi                      |
+| ------------------------------ | ------------ | --------------------------- |
+| `FACE_MATCH_THRESHOLD`         | 0.5          | Ambang cosine similarity    |
+| `LIVENESS_MAX_AGE_MIN`         | 10           | Kesegaran attestation       |
+| `REQUEST_MAX_SKEW_MIN`         | 5            | Jendela timestamp           |
+| `RISK_W_FACE`                  | 45           | Bobot wajah                 |
+| `RISK_W_LIVENESS`              | 20           | Bobot liveness              |
+| `RISK_W_DEVICE`                | 15           | Bobot device                |
+| `RISK_W_INTEGRITY`             | 15           | Bobot integrity             |
+| `RISK_W_SIGNATURE`             | 5            | Bobot signature             |
+| `RISK_LOW_MIN`                 | 90           | Batas LOW                   |
+| `RISK_MEDIUM_MIN`              | 70           | Batas MEDIUM                |
+| `HOSPITAL_TZ`                  | Asia/Jakarta | Zona tanggal kerja          |
+| `RETENTION_SESSION_DAYS`       | 30           | Retensi sesi                |
+| `RETENTION_FACE_INACTIVE_DAYS` | 90           | Retensi wajah staf nonaktif |
+| `INTEGRITY_STRICT`             | false        | Mode integritas             |
+
 
 ### 17.3 Glosarium
 
-| Istilah | Arti |
-|---|---|
-| Embedding | Vektor 192 angka hasil model wajah |
-| Liveness | Bukti subjek adalah orang hidup, bukan foto/video |
-| PAD | Presentation Attack Detection |
-| Registrasi perangkat | Pendaftaran perangkat otomatis saat login; satu akun boleh punya banyak perangkat ACTIVE |
-| Outbox | Antrean punch terenkripsi saat jaringan gagal |
-| `workDate` | Tanggal mulai shift pada zona rumah sakit |
-| `needsReview` | Presensi MEDIUM risk yang perlu ditinjau atasan |
-| DPO | Data Protection Officer |
-| UU PDP | UU No. 27/2022 tentang Pelindungan Data Pribadi |
+
+| Istilah       | Arti                                              |
+| ------------- | ------------------------------------------------- |
+| Embedding     | Vektor 192 angka hasil model wajah                |
+| Liveness      | Bukti subjek adalah orang hidup, bukan foto/video |
+| PAD           | Presentation Attack Detection                     |
+| Binding       | Pengikatan 1 karyawan ke 1 perangkat              |
+| Outbox        | Antrean punch terenkripsi saat jaringan gagal     |
+| `workDate`    | Tanggal mulai shift pada zona rumah sakit         |
+| `needsReview` | Presensi MEDIUM risk yang perlu ditinjau atasan   |
+| DPO           | Data Protection Officer                           |
+| UU PDP        | UU No. 27/2022 tentang Pelindungan Data Pribadi   |
+
 
 ---
 
