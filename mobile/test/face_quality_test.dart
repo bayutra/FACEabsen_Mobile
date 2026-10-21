@@ -29,7 +29,7 @@ void main() {
   test('decideFaces matrix (PRD §54 acceptance)', () {
     expect(decideFaces(count: 0, relativeWidth: 0).name, FaceGate.noFace.name);
     expect(decideFaces(count: 2, relativeWidth: 0.5).name, FaceGate.multipleFaces.name);
-    expect(decideFaces(count: 1, relativeWidth: 0.1).name, FaceGate.tooSmall.name);
+    expect(decideFaces(count: 1, relativeWidth: 0.05).name, FaceGate.tooSmall.name);
     expect(decideFaces(count: 1, relativeWidth: 0.4).name, FaceGate.ok.name);
     expect(faceGateMessage(FaceGate.noFace), contains('Tidak ada wajah'));
     expect(faceGateMessage(FaceGate.multipleFaces), contains('lebih dari satu'));

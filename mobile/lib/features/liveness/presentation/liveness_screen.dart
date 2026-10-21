@@ -64,7 +64,7 @@ class _LivenessScreenState extends State<LivenessScreen>
       classification: true,
       contours: needsContours,
       performanceMode: FaceDetectorMode.fast,
-      minFaceSize: 0.10,
+      minFaceSize: 0.05,
       onError: (String message) {
         // Surface ML Kit setup failures instead of leaving the user on an
         // endless "face not detected" loop with no cause.
@@ -120,9 +120,8 @@ class _LivenessScreenState extends State<LivenessScreen>
       );
       final CameraController controller = CameraController(
         front,
-        ResolutionPreset.low,
+        ResolutionPreset.medium,
         enableAudio: false,
-        imageFormatGroup: ImageFormatGroup.nv21,
       );
       await controller.initialize();
       // Default kamera adalah FlashMode.auto. Pada kamera depan iOS itu

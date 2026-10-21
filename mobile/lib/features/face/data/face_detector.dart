@@ -15,7 +15,7 @@ class FaceDetectorService {
     bool contours = false,
     bool landmarks = false,
     FaceDetectorMode performanceMode = FaceDetectorMode.accurate,
-    double minFaceSize = 0.10,
+    double minFaceSize = 0.05,
     void Function(String message)? onError,
   })  : _onError = onError,
         _detector = FaceDetector(

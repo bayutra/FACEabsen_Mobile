@@ -31,7 +31,7 @@ String faceGateMessage(FaceGate gate) {
 FaceGate decideFaces({required int count, required double relativeWidth}) {
   if (count == 0) return FaceGate.noFace;
   if (count > 1) return FaceGate.multipleFaces;
-  if (relativeWidth < 0.12) return FaceGate.tooSmall;
+  if (relativeWidth < 0.10) return FaceGate.tooSmall;
   return FaceGate.ok;
 }
 
