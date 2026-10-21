@@ -12,7 +12,7 @@ class DepartmentHospital {
   final String code;
   final String name;
 
-  String get label => code.isEmpty ? name : '$code · $name';
+  String get label => code.isEmpty ? name : '$code Â· $name';
 
   factory DepartmentHospital.fromJson(Map<String, dynamic> json) =>
       DepartmentHospital(
@@ -22,7 +22,7 @@ class DepartmentHospital {
       );
 }
 
-/// Departemen beserta rumah sakit induknya (GET /departments).
+/// Unit beserta rumah sakit induknya (GET /departments).
 class AdminDepartmentItem {
   const AdminDepartmentItem({
     required this.id,
@@ -39,7 +39,7 @@ class AdminDepartmentItem {
   final String hospitalCode;
 
   String get hospitalLabel =>
-      hospitalCode.isEmpty ? hospitalName : '$hospitalCode · $hospitalName';
+      hospitalCode.isEmpty ? hospitalName : '$hospitalCode Â· $hospitalName';
 
   factory AdminDepartmentItem.fromJson(Map<String, dynamic> json) {
     final Map<String, dynamic> hospital = _mapOf(json['hospital']);
@@ -59,7 +59,7 @@ class AdminDepartmentItem {
   }
 }
 
-/// Endpoint master data departemen untuk ADMIN.
+/// Endpoint master data Unit untuk ADMIN.
 ///
 /// Backend: GET /departments, POST /departments, PATCH /departments/:id,
 /// DELETE /departments/:id. Daftar rumah sakit diambil dari GET /hospitals.
@@ -116,7 +116,7 @@ class DepartmentAdminRepository {
     );
   }
 
-  /// Server menolak (409) bila departemen masih memiliki karyawan.
+  /// Server menolak (409) bila Unit masih memiliki karyawan.
   Future<void> delete(String id) async {
     await _dio.delete<dynamic>('/departments/$id');
   }

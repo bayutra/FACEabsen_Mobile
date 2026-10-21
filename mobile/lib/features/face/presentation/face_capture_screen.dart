@@ -68,6 +68,12 @@ class _FaceCaptureScreenState extends State<FaceCaptureScreen> with WidgetsBindi
         enableAudio: false,
       );
       await controller.initialize();
+      // Default AUTO memicu Retina Flash saat menangkap frame; matikan.
+      try {
+        await controller.setFlashMode(FlashMode.off);
+      } on CameraException {
+        // Perangkat tanpa lampu kilat.
+      }
       if (mounted) setState(() => _controller = controller);
     } on CameraException catch (e) {
       if (!mounted) return;

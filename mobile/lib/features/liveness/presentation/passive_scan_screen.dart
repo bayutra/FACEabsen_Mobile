@@ -1,4 +1,4 @@
-﻿import 'dart:async';
+import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -141,6 +141,12 @@ class _PassiveScanScreenState extends State<PassiveScanScreen> with WidgetsBindi
         imageFormatGroup: ImageFormatGroup.nv21,
       );
       await controller.initialize();
+      // Jangan pernah menyalakan flash otomatis selama pemindaian pasif.
+      try {
+        await controller.setFlashMode(FlashMode.off);
+      } on CameraException {
+        // Perangkat tanpa lampu kilat.
+      }
       if (!mounted) {
         await controller.dispose();
         return;

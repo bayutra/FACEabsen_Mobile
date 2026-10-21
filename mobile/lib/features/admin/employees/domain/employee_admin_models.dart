@@ -1,4 +1,4 @@
-/// Model karyawan & departemen untuk layar admin SDM.
+/// Model karyawan & Unit untuk layar admin SDM.
 class AdminEmployee {
   const AdminEmployee({
     required this.id,
@@ -36,9 +36,9 @@ class AdminEmployee {
     return AdminEmployee(
       id: json['id'] as String,
       userId: json['userId'] as String?,
-      employeeNo: json['employeeNo'] as String? ?? '—',
-      name: json['name'] as String? ?? '—',
-      email: json['email'] as String? ?? '—',
+      employeeNo: json['employeeNo'] as String? ?? 'â€”',
+      name: json['name'] as String? ?? 'â€”',
+      email: json['email'] as String? ?? 'â€”',
       status: json['status'] as String? ?? 'ACTIVE',
       phone: json['phone'] as String?,
       position: json['position'] as String?,
@@ -63,7 +63,7 @@ class AdminEmployeePage {
   final int totalItems;
 }
 
-/// Departemen ringkas untuk pemilih pada formulir karyawan.
+/// Unit ringkas untuk pemilih pada formulir karyawan.
 class AdminDepartment {
   const AdminDepartment({required this.id, required this.name, this.hospitalId});
 
@@ -73,7 +73,7 @@ class AdminDepartment {
 
   factory AdminDepartment.fromJson(Map<String, dynamic> json) => AdminDepartment(
         id: json['id'] as String,
-        name: json['name'] as String? ?? '—',
+        name: json['name'] as String? ?? 'â€”',
         hospitalId: json['hospitalId'] as String?,
       );
 }

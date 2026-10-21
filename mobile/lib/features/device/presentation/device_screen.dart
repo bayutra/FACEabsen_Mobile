@@ -5,10 +5,10 @@ import '../../../core/widgets/stitch.dart';
 import '../data/device_repository.dart';
 import 'device_sections.dart';
 
-/// Tab Perangkat — khusus alur penggantian perangkat.
+/// Tab Perangkat — status semua perangkat yang terhubung ke akun.
 ///
-/// Detail perangkat (status, heartbeat, riwayat) tinggal di menu Profil
-/// agar tidak dobel; di sini hanya ada pengajuan penggantian + statusnya.
+/// Pengajuan penggantian perangkat sudah dihapus: akun boleh aktif di banyak
+/// perangkat, dan perangkat baru otomatis terdaftar saat login.
 class DeviceScreen extends StatefulWidget {
   const DeviceScreen({
     super.key,
@@ -77,11 +77,16 @@ class _DeviceScreenState extends State<DeviceScreen> {
           padding: const EdgeInsets.all(AppColors.pageMargin),
           children: [
             const InfoBanner(
-              'Akun boleh aktif di beberapa perangkat. Bila perangkat hilang atau dicuri, ajukan penggantian di bawah agar perangkat lama dicabut.',
-              title: 'Penggantian Perangkat',
+              'Akun boleh aktif di beberapa perangkat. Perangkat baru otomatis '
+              'terdaftar saat Anda masuk, dan perangkat yang hilang dapat '
+              'dicabut oleh Admin IT.',
+              title: 'Perangkat Saya',
             ),
             const SizedBox(height: 12),
-            DeviceChangeRequestSection(devices: widget.devices),
+            DeviceStatusSection(
+              devices: widget.devices,
+              employeeName: widget.displayName,
+            ),
           ],
         ),
       ),

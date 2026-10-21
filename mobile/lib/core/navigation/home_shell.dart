@@ -178,8 +178,8 @@ class _HomeShellState extends State<HomeShell> {
       builder: (BuildContext dialogContext) => AlertDialog(
         title: const Text('Keluar dari akun?'),
         content: const Text(
-          'Sesi di perangkat ini akan dicabut. Untuk presensi, masuk kembali dan '
-          'daftar ulang perangkat bila diperlukan.',
+          'Sesi di perangkat ini akan dicabut. Masuk kembali kapan saja; '
+          'perangkat akan terdaftar otomatis saat Anda masuk.',
         ),
         actions: [
           TextButton(

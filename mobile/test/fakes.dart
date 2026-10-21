@@ -72,6 +72,19 @@ class FakeAuthRepository extends AuthRepository {
   final bool failTotp;
   final bool failRegister;
 
+  /// Unit yang dikembalikan [listUnits]; kosong untuk mensimulasikan
+  /// master data yang belum diisi admin.
+  List<RegistrationUnit> units = const <RegistrationUnit>[
+    RegistrationUnit(
+      id: 'dept-1',
+      name: 'Instalasi Rawat Inap',
+      hospitalName: 'RSU Darmaga',
+    ),
+  ];
+
+  /// Unit yang dikirim pada pendaftaran terakhir (null bila tidak dipilih).
+  String? lastRegisterUnit;
+
   /// Last `rememberMe` flag received (across login/TOTP paths).
   bool? lastRememberMe;
 
@@ -129,6 +142,9 @@ class FakeAuthRepository extends AuthRepository {
   }
 
   @override
+  Future<List<RegistrationUnit>> listUnits() async => units;
+
+  @override
   Future<Map<String, dynamic>> register({
     required String name,
     required String email,
@@ -136,8 +152,10 @@ class FakeAuthRepository extends AuthRepository {
     String? phone,
     String? employeeNo,
     String? position,
+    String? departmentId,
     bool rememberMe = true,
   }) async {
+    lastRegisterUnit = departmentId;
     if (failRegister) {
       final RequestOptions opts = RequestOptions(path: '/auth/register');
       throw DioException(

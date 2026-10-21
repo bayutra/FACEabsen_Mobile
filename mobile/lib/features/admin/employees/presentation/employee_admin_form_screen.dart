@@ -56,7 +56,7 @@ class _EmployeeAdminFormScreenState extends State<EmployeeAdminFormScreen> {
       final List<AdminDepartment> list = await _repo.departments();
       if (mounted) setState(() => _departments = list);
     } catch (_) {
-      // Pemilih departemen opsional; form tetap bisa disimpan tanpa itu.
+      // Pemilih Unit opsional; form tetap bisa disimpan tanpa itu.
     }
   }
 
@@ -166,9 +166,9 @@ class _EmployeeAdminFormScreenState extends State<EmployeeAdminFormScreen> {
             const SizedBox(height: 12),
             DropdownButtonFormField<String>(
               value: _departmentId,
-              decoration: const InputDecoration(labelText: 'Departemen'),
+              decoration: const InputDecoration(labelText: 'Unit'),
               items: <DropdownMenuItem<String>>[
-                const DropdownMenuItem<String>(value: null, child: Text('—')),
+                const DropdownMenuItem<String>(value: null, child: Text('â€”')),
                 for (final AdminDepartment d in _departments)
                   DropdownMenuItem<String>(value: d.id, child: Text(d.name)),
               ],
@@ -221,7 +221,7 @@ class _EmployeeAdminFormScreenState extends State<EmployeeAdminFormScreen> {
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
                   : const Icon(Icons.save_outlined),
-              label: Text(_saving ? 'Menyimpan…' : 'Simpan'),
+              label: Text(_saving ? 'Menyimpanâ€¦' : 'Simpan'),
             ),
           ],
         ),

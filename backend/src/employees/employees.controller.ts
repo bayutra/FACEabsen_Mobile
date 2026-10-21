@@ -4,7 +4,12 @@ import { RequirePermissions, Roles, CurrentUser, type AuthContext } from '../aut
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
 import { PermissionsGuard } from '../auth/guards/permissions.guard.js';
 import { RolesGuard } from '../auth/guards/roles.guard.js';
-import { CreateEmployeeDto, ListEmployeesQuery, UpdateEmployeeDto } from './dto.js';
+import {
+  CreateEmployeeDto,
+  ListEmployeesQuery,
+  UpdateEmployeeDto,
+  UpdateMyProfileDto,
+} from './dto.js';
 import { EmployeesService } from './employees.service.js';
 
 @UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
@@ -29,6 +34,16 @@ export class EmployeesController {
   @Get('me')
   findMe(@CurrentUser() user: AuthContext) {
     return this.employees.findMyEmployee(user.userId);
+  }
+
+  /** Pemilik akun merapikan namanya sendiri, email login, dan nomor HP. */
+  @Patch('me')
+  updateMe(
+    @Body() dto: UpdateMyProfileDto,
+    @CurrentUser() actor: AuthContext,
+    @Req() req: Request,
+  ) {
+    return this.employees.updateMyProfile(actor.userId, dto, { ip: req.ip });
   }
 
   @Roles('ADMIN')

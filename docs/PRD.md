@@ -86,7 +86,7 @@ yang dikirim klien tanpa verifikasi.
 
 - Aplikasi Flutter untuk **karyawan** (Android 5.0+, iOS 15.5+).
 - Login, sesi, ganti password, TOTP bila diaktifkan admin.
-- Registrasi & penggantian perangkat.
+- Pendaftaran mandiri, profil mandiri, dan multi-perangkat.
 - Registrasi wajah + consent biometrik.
 - Liveness aktif dan pasif.
 - Check-in, check-out, outbox offline, retry.
@@ -197,7 +197,7 @@ Tidak ada langkah yang mengirim gambar. Tidak ada langkah yang memakai GPS.
 | **Beranda** | Sapaan, status shift hari ini, status presensi, CTA presensi, ringkasan |
 | **Riwayat** | Daftar presensi + filter + detail |
 | **Jadwal** | Roster mingguan, status shift, navigasi minggu |
-| **Perangkat** | Perangkat aktif, status, penggantian, bantuan IT |
+| **Perangkat** | Perangkat aktif, status, riwayat, bantuan IT |
 | **Profil** | Data karyawan, wajah, privasi, ganti password, logout |
 
 Presensi, koreksi, izin/cuti, dan registrasi wajah berjalan sebagai **alur
@@ -219,8 +219,7 @@ linear** (bukan tab): CTA → pra-validasi → liveness → proses → hasil.
 | 10 | Riwayat presensi | `features/attendance/presentation/history_screen.dart` | `riwayat_presensi_detail_bottom_sheet` |
 | 11 | Jadwal dinas | `features/schedule/presentation/schedule_screen.dart` | `jadwal_dinas_mingguan_shift_nakes` |
 | 12 | Perangkat saya | `features/device/presentation/device_screen.dart` | `perangkat_saya_manajemen_perangkat` |
-| 13 | Form penggantian | `features/device/presentation/replacement_screen.dart` | `penggantian_perangkat_form_verifikasi` |
-| 14 | Status penggantian | `features/device/presentation/replacement_status_screen.dart` | `status_penggantian_perangkat_menunggu_admin` |
+| 13 | Ubah profil | `features/profile/presentation/edit_profile_screen.dart` | - |
 | 15 | Registrasi wajah | `features/face/presentation/face_registration_screen.dart` | `clinical_attendance_identity` |
 | 16 | Wajah berhasil | `features/face/presentation/face_registered_screen.dart` | `pendaftaran_wajah_berhasil` |
 | 17 | Kendala pemindaian | `features/face/presentation/face_scan_issue_screen.dart` | `pendaftaran_wajah_kendala_pemindaian` |
@@ -289,14 +288,12 @@ Beranda → CTA Presensi
   └─ sukses → beranda diperbarui
 ```
 
-**Penggantian perangkat**
+**Perangkat (multi-perangkat)**
 
 ```text
-Perangkat → Ajukan penggantian (mis. HP hilang/dicuri)
-  → pilih perangkat pengganti
-  → POST /device-change (alasan)
-  → status menunggu admin
-  → disetujui: device lama REVOKED, perangkat baru ACTIVE
+Login/Daftar → perangkat ini terdaftar otomatis (ACTIVE)
+  → akun boleh aktif di beberapa perangkat
+  → HP hilang/dicuri → admin menandai LOST/REVOKED lewat menu Perangkat
 ```
 
 **Koreksi presensi**
@@ -333,6 +330,8 @@ berikutnya.
 | FR-AUTH-05 | P0 | Logout mencabut sesi aktif; ganti password mencabut semua sesi lain. |
 | FR-AUTH-06 | P1 | TOTP setup/verify/recover untuk akun yang diwajibkan MFA. |
 | FR-AUTH-07 | P0 | Aplikasi tidak menyimpan password. Token & device key disimpan di secure storage. |
+| FR-AUTH-08 | P0 | Pendaftaran mandiri membuat akun EMPLOYEE + profil karyawan dalam satu transaksi; unit kerja wajib dipilih dari daftar publik GET /departments/public. |
+| FR-AUTH-09 | P0 | Login/daftar langsung membuka Beranda; tidak ada layar persetujuan perangkat. |
 
 **Acceptance criteria**
 
@@ -351,15 +350,15 @@ berikutnya.
 | FR-DEV-04 | P0 | Perangkat dicabut tidak dapat dipakai presensi (`DEVICE_NOT_ACTIVE`). |
 | FR-DEV-05 | P0 | Setiap presensi wajib menyertakan `deviceId` milik karyawan yang login. |
 | FR-DEV-06 | P1 | Heartbeat memperbarui `lastSeenAt` dan versi aplikasi. |
-| FR-DEV-07 | P1 | Pengajuan penggantian memuat alasan; dapat dibatalkan selama PENDING. |
-| FR-DEV-08 | P1 | Approval penggantian mencabut device lama, sesi lama, dan mengaktifkan device baru secara atomik. |
+| FR-DEV-07 | P1 | Pengajuan penggantian perangkat dihapus dari aplikasi; perangkat baru terdaftar otomatis saat login. |
+| FR-DEV-08 | P1 | Perangkat hilang/dicuri ditandai `LOST`/`REVOKED` oleh admin lewat menu Perangkat. |
 
 **Acceptance criteria**
 
 - Mendaftarkan device kedua langsung ACTIVE dan tidak mencabut device pertama.
 - Presensi dari device yang bukan milik akun → 403.
 - Presensi dari device REVOKED/LOST → 422 `DEVICE_NOT_ACTIVE`.
-- Setelah penggantian disetujui, device lama tidak bisa presensi lagi.
+- Perangkat yang ditandai `LOST`/`REVOKED` tidak bisa dipakai presensi lagi.
 
 ### 6.3 Wajah (FR-FACE)
 
@@ -481,7 +480,8 @@ berikutnya.
 
 | ID | Prioritas | Requirement |
 |---|---|---|
-| FR-PROF-01 | P0 | Profil menampilkan NIP, nama, departemen, jabatan, status wajah, device, consent. |
+| FR-PROF-01 | P0 | Profil menampilkan NIP, nama, unit kerja, jabatan, status wajah, device, consent. |
+| FR-PROF-04 | P1 | Karyawan dapat mengubah nama, email login, dan nomor HP sendiri (PATCH /employees/me); unit kerja dan peran tetap wewenang admin. |
 | FR-PROF-02 | P1 | Ganti password dengan validasi minimal 8 karakter, huruf besar/kecil + angka. |
 | FR-PROF-03 | P1 | Bantuan IT dapat dihubungi dari layar perangkat. |
 | FR-PRIV-01 | P0 | Notice privasi versi `2026-10-01` ditampilkan sebelum consent. |
@@ -503,13 +503,13 @@ berikutnya.
 > produksi harus memakai `INTEGRITY_STRICT=false` sampai implementasi klien
 > dan verifikasi server selesai.
 
-### 6.13 API supervisor/admin (FR-ADM, tanpa UI)
+### 6.13 API supervisor/admin (FR-ADM)
 
 | ID | Prioritas | Requirement |
 |---|---|---|
-| FR-ADM-01 | P1 | CRUD karyawan, departemen, shift, roster, user, role. |
-| FR-ADM-02 | P1 | Approve/reject koreksi, izin, dan penggantian perangkat. |
-| FR-ADM-03 | P1 | Laporan harian, bulanan, departemen, keterlambatan, cuti (Excel/PDF). |
+| FR-ADM-01 | P1 | CRUD karyawan, unit, shift, roster, user, role. |
+| FR-ADM-02 | P1 | Approve/reject koreksi dan izin. |
+| FR-ADM-03 | P1 | Laporan harian, bulanan, unit, keterlambatan, cuti (Excel/PDF). |
 | FR-ADM-04 | P1 | Audit log read-only dan ekspor. |
 | FR-ADM-05 | P1 | Revoke/activate device dan queue `needsReview`. |
 | FR-ADM-06 | P2 | UI mobile untuk supervisor/admin. |
@@ -577,7 +577,7 @@ Check-in  → ON_TIME | LATE | VERY_LATE
 Check-out → NORMAL_CHECKOUT | EARLY_CHECKOUT
 ```
 
-**Pengajuan (koreksi/izin/penggantian)**
+**Pengajuan (koreksi/izin)**
 
 ```text
 PENDING → APPROVED
@@ -693,7 +693,7 @@ Audit log append-only; user biasa tidak dapat mengubah/menghapus.
 |---|---|---|---|
 | Embedding wajah (192-d, terenkripsi) | Verifikasi presensi | Consent `BIOMETRIC_ATTENDANCE` + kontrak kerja | Sampai consent dicabut / 90 hari setelah nonaktif |
 | Foto mentah | — | — | **Tidak pernah dikirim/disimpan** |
-| NIP, nama, email, departemen, jabatan | Identitas & administrasi | Kontrak kerja | Sesuai kebijakan SDM |
+| NIP, nama, email, unit kerja, jabatan | Identitas & administrasi | Kontrak kerja | Sesuai kebijakan SDM |
 | Device ID, public key, nama perangkat | Binding & keamanan | Kepentingan sah | Selama perangkat aktif + audit |
 | Presensi, shift, risk, audit | Operasional & bukti | Kontrak kerja / kewajiban hukum | Sesuai retensi SDM |
 | Consent | Bukti kepatuhan | UU PDP | Selama + setelah pencabutan |
@@ -719,13 +719,13 @@ Audit log append-only; user biasa tidak dapat mengubah/menghapus.
 | Tabel | Isi penting |
 |---|---|
 | `hospitals` | Identitas rumah sakit |
-| `departments` | Departemen/unit |
+| `departments` | Unit kerja |
 | `users` | Akun login, hash password, TOTP, lockout |
-| `employees` | NIP, nama, departemen, jabatan, atasan, status |
+| `employees` | NIP, nama, unit kerja, jabatan, atasan, status |
 | `roles`, `permissions`, `role_permissions`, `user_roles` | RBAC |
 | `face_templates` | Embedding terenkripsi, algoritma, versi, kualitas |
 | `devices` | Public key, installation id, platform, status, last seen |
-| `device_change_requests` | Pengajuan penggantian + review |
+| `device_change_requests` | Pengajuan penggantian (legacy; UI pengajuan dihapus) |
 | `shifts` | Jam, overnight, grace, late, early checkout |
 | `employee_schedules` | Roster per karyawan per `workDate` |
 | `attendance` | Check-in/out, status, risk, device, schedule |
@@ -774,12 +774,11 @@ Content-Type: `application/json`
 | POST | `/auth/totp/verify` | Verifikasi TOTP |
 | POST | `/auth/totp/recover` | Pemulihan TOTP |
 | GET | `/devices/register-challenge` | Nonce registrasi (5 menit) |
-| POST | `/devices/register` | Daftarkan perangkat + public key |
+| POST | `/devices/register` | Daftarkan perangkat + public key (otomatis saat login) |
 | GET | `/devices/me` | Perangkat milik akun |
 | POST | `/devices/:id/heartbeat` | Update last seen |
-| GET | `/device-change/me` | Status pengajuan penggantian |
-| POST | `/device-change` | Ajukan penggantian |
-| POST | `/device-change/:id/cancel` | Batalkan pengajuan |
+| GET | `/departments/public` | Daftar unit untuk pendaftaran (publik) |
+| PATCH | `/employees/me` | Ubah nama/email/HP milik sendiri |
 | GET | `/face/status` | Status template wajah |
 | POST | `/face/register` | Registrasi template wajah |
 | GET | `/privacy/notice` | Notice privasi aktif |
@@ -802,7 +801,7 @@ Content-Type: `application/json`
 | GET | `/health` | Readiness + status DB |
 | GET | `/health/live` | Liveness probe |
 
-### 11.3 Endpoint supervisor/admin (tanpa UI)
+### 11.3 Endpoint supervisor/admin (dipakai Mode Admin)
 
 ```text
 GET/POST/PATCH/DELETE  /employees, /departments, /users
@@ -810,7 +809,6 @@ POST                   /employees/:id/deactivate
 POST                   /users/:id/reset-password
 POST/PATCH/DELETE      /shifts, /schedules
 POST                   /devices/:id/revoke | activate | mark-lost
-POST                   /device-change/:id/approve | reject
 POST                   /corrections/:id/approve | reject
 POST                   /leaves/:id/approve | reject
 GET                    /attendance (filter admin)
@@ -947,14 +945,14 @@ POST                   /privacy/retention/run (SUPER_ADMIN)
 | Modul | Status |
 |---|---|
 | Auth, refresh rotation, lockout, ganti password | Selesai |
-| Device binding, challenge, revoke, replacement | Selesai |
+| Registrasi perangkat otomatis (multi-perangkat), challenge, revoke | Selesai |
 | Face registration + enkripsi template | Selesai |
 | Liveness aktif + pasif | Selesai |
 | Attendance engine + risk + audit | Selesai |
 | Outbox + retry + cancel | Selesai |
 | Riwayat, jadwal, koreksi, izin/cuti | Selesai |
 | Privasi (consent/export/erase/retensi) | Selesai |
-| API supervisor/admin/report/audit | Selesai (tanpa UI) |
+| API supervisor/admin/report/audit | Selesai (Mode Admin di aplikasi) |
 | Restrukturisasi mobile-only | Selesai |
 
 ### 14.2 Fase 2 — berikutnya
@@ -977,7 +975,7 @@ POST                   /privacy/retention/run (SUPER_ADMIN)
 | Ambang wajah belum dikalibrasi | FAR/FRR tidak sesuai | Kalibrasi ≥ 50 genuine + 50 impostor per kelas device |
 | Liveness klien bisa dimodifikasi | Attestation palsu | Face match + device + integrity + audit |
 | Integrity masih stub | Root device lolos di mode lax | `strict=false` sampai fase 2; monitoring audit |
-| Approval admin tanpa UI | Operasional macet | Integrasi API sementara / prioritaskan UI fase 2 |
+| Approval admin menumpuk | Operasional macet | Mode Admin mobile tersedia; pantau beban approver |
 | Sinyal buruk di basement | Presensi gagal | Outbox + retry; komunikasi batas waktu |
 | HP lama (API 21) | ML Kit butuh Play Services | Pesan eksplisit + daftar device yang didukung |
 | Kebocoran template | Risiko privasi tinggi | AES-256-GCM, akses terbatas, audit, retensi |
@@ -1034,7 +1032,7 @@ scripts/      operasional host/DB/smoke
 | Embedding | Vektor 192 angka hasil model wajah |
 | Liveness | Bukti subjek adalah orang hidup, bukan foto/video |
 | PAD | Presentation Attack Detection |
-| Binding | Pengikatan 1 karyawan ke 1 perangkat |
+| Registrasi perangkat | Pendaftaran perangkat otomatis saat login; satu akun boleh punya banyak perangkat ACTIVE |
 | Outbox | Antrean punch terenkripsi saat jaringan gagal |
 | `workDate` | Tanggal mulai shift pada zona rumah sakit |
 | `needsReview` | Presensi MEDIUM risk yang perlu ditinjau atasan |

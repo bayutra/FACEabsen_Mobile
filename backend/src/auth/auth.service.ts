@@ -50,7 +50,7 @@ export class AuthService {
     this.maxFailedAttempts = Number(config.get('LOGIN_MAX_ATTEMPTS', AUTH_POLICY.maxFailedAttempts));
     this.lockoutMinutes = Number(config.get('LOCKOUT_MINUTES', AUTH_POLICY.lockoutMinutes));
     if (!config.get('JWT_ACCESS_SECRET')) {
-      this.logger.warn('JWT_ACCESS_SECRET missing — using dev fallback. Set it in production.');
+      this.logger.warn('JWT_ACCESS_SECRET missing â€” using dev fallback. Set it in production.');
     }
   }
 
@@ -112,7 +112,7 @@ export class AuthService {
     });
 
     // Second factor pending: password was correct (counters reset above) but
-    // NO session is created yet — the client must complete /auth/totp/verify.
+    // NO session is created yet â€” the client must complete /auth/totp/verify.
     if (user.totpEnabled) {
       const totpToken = await this.jwt.signAsync(
         { sub: user.id, purpose: TOTP_TOKEN_PURPOSE },
@@ -166,7 +166,7 @@ export class AuthService {
       const department = await this.prisma.department.findUnique({
         where: { id: dto.departmentId },
       });
-      if (!department) throw new BadRequestException('Departemen tidak ditemukan');
+      if (!department) throw new BadRequestException('Unit tidak ditemukan');
     }
     const role = await this.prisma.role.findUnique({ where: { name: 'EMPLOYEE' } });
     if (!role) throw new BadRequestException('Peran EMPLOYEE belum tersedia');
@@ -428,7 +428,7 @@ function addMinutes(base: Date, minutes: number): Date {
   return new Date(base.getTime() + minutes * 60 * 1000);
 }
 
-// Structural subset of PrismaService used here — keeps unit tests DB-free.
+// Structural subset of PrismaService used here â€” keeps unit tests DB-free.
 export interface PrismaServiceLike {
   user: {
     findUnique(args: unknown): Promise<any>;

@@ -8,8 +8,8 @@ import '../data/report_admin_repository.dart';
 import '../domain/report_admin_models.dart';
 
 /// Laporan kehadiran (SUPERVISOR ke atas): harian, bulanan, keterlambatan,
-/// izin/cuti, per departemen, dan per karyawan. Semua data diambil dari
-/// endpoint `/reports/*` — tidak ada data tiruan.
+/// izin/cuti, per Unit, dan per karyawan. Semua data diambil dari
+/// endpoint `/reports/*` â€” tidak ada data tiruan.
 class ReportAdminScreen extends StatefulWidget {
   const ReportAdminScreen({super.key, required this.dio});
 

@@ -38,6 +38,42 @@ class _RegisterScreenState extends State<RegisterScreen> {
   bool _busy = false;
   String? _error;
 
+  List<RegistrationUnit> _units = const [];
+  bool _unitsLoading = true;
+  String? _unitsError;
+  String? _unitId;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUnits();
+  }
+
+  Future<void> _loadUnits() async {
+    setState(() {
+      _unitsLoading = true;
+      _unitsError = null;
+    });
+    try {
+      final List<RegistrationUnit> units = await widget.auth.listUnits();
+      if (!mounted) return;
+      setState(() {
+        _units = units;
+        _unitsLoading = false;
+        if (_unitId != null && !units.any((u) => u.id == _unitId)) {
+          _unitId = null;
+        }
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _unitsLoading = false;
+        _unitsError =
+            'Gagal memuat daftar unit. Periksa koneksi lalu coba lagi.';
+      });
+    }
+  }
+
   @override
   void dispose() {
     _name.dispose();
@@ -70,6 +106,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
       setState(() => _error = 'Konfirmasi kata sandi tidak sama.');
       return;
     }
+    if (_unitId == null || _unitId!.isEmpty) {
+      setState(() => _error = 'Unit kerja wajib dipilih.');
+      return;
+    }
 
     setState(() {
       _error = null;
@@ -83,6 +123,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         password: password,
         phone: _phone.text.trim(),
         employeeNo: _employeeNo.text.trim(),
+        departmentId: _unitId,
       );
 
       // Sesi sudah aktif. Daftarkan perangkat tanpa menahan pengguna masuk:
@@ -130,6 +171,80 @@ class _RegisterScreenState extends State<RegisterScreen> {
         padding: const EdgeInsets.only(bottom: 6),
         child: Text(text, style: AppText.labelMd.copyWith(color: AppColors.ink)),
       );
+
+  Widget _unitField() {
+    Widget child;
+    if (_unitsLoading) {
+      child = Row(
+        children: [
+          const SizedBox(
+            width: 16,
+            height: 16,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
+          const SizedBox(width: 10),
+          Text(
+            'Memuat unit kerja...',
+            style: AppText.labelMd.copyWith(color: AppColors.inkSecondary),
+          ),
+        ],
+      );
+    } else if (_unitsError != null) {
+      child = Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          InfoBanner(
+            _unitsError!,
+            tone: InfoBannerTone.error,
+            title: 'Unit tidak termuat',
+          ),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton.icon(
+              onPressed: _loadUnits,
+              icon: const Icon(Icons.refresh, size: 18),
+              label: const Text('Coba lagi'),
+            ),
+          ),
+        ],
+      );
+    } else if (_units.isEmpty) {
+      child = const InfoBanner(
+        'Belum ada unit kerja terdaftar. Hubungi admin kepegawaian untuk '
+        'menambahkan unit sebelum mendaftar.',
+        tone: InfoBannerTone.warning,
+        title: 'Unit belum tersedia',
+      );
+    } else {
+      child = DropdownButtonFormField<String>(
+        value: _unitId,
+        isExpanded: true,
+        decoration: const InputDecoration(
+          hintText: 'Pilih unit kerja Anda',
+          prefixIcon: Icon(Icons.apartment_outlined),
+        ),
+        items: _units
+            .map(
+              (u) => DropdownMenuItem<String>(
+                value: u.id,
+                child: Text(u.name, overflow: TextOverflow.ellipsis),
+              ),
+            )
+            .toList(),
+        onChanged: _busy
+            ? null
+            : (String? value) => setState(() => _unitId = value),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _label('Unit Kerja *'),
+        child,
+      ],
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -215,6 +330,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ),
                     ),
                     const SizedBox(height: 16),
+                    _unitField(),
+                    const SizedBox(height: 16),
                     _label('Nomor Induk Pegawai'),
                     TextField(
                       controller: _employeeNo,
@@ -269,7 +386,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       width: double.infinity,
                       height: AppColors.buttonHeight,
                       child: FilledButton(
-                        onPressed: _busy ? null : _submit,
+                        onPressed: (_busy ||
+                                _unitsLoading ||
+                                _unitsError != null ||
+                                _units.isEmpty)
+                            ? null
+                            : _submit,
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [

@@ -6,6 +6,7 @@ import '../../device/presentation/device_sections.dart';
 import '../../device/presentation/helpdesk_sheet.dart';
 import '../../../core/theme/app_colors.dart';
 import '../data/profile_repository.dart';
+import 'edit_profile_screen.dart';
 
 /// Stitch "Profil Karyawan & Pengaturan Akun" (profil_karyawan_pengaturan_akun):
 /// clinical bento identity header, security & biometric verification status,
@@ -1201,10 +1202,95 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ],
       );
 
+  Future<void> _openEditProfile() async {
+    final ProfileSnapshot? data = _data;
+    if (data == null) return;
+    final bool? saved = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (_) => EditProfileScreen(
+          profiles: widget.profiles,
+          snapshot: data,
+        ),
+      ),
+    );
+    if (saved == true && mounted) await _load();
+  }
+
   Widget _actions() => Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           _buildSectionHeader('AKUN & KEAMANAN'),
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0x66BDC9C6)),
+              boxShadow: const [
+                BoxShadow(
+                  color: Color(0x0A000000),
+                  blurRadius: 8,
+                  offset: Offset(0, 2),
+                ),
+              ],
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: InkWell(
+              onTap: _openEditProfile,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 12,
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 38,
+                      height: 38,
+                      decoration: BoxDecoration(
+                        color: AppColors.surfaceLow,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(
+                        Icons.edit_outlined,
+                        color: AppColors.inkSecondary,
+                        size: 20,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    const Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Ubah Profil',
+                            style: TextStyle(
+                              fontSize: 13.5,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.ink,
+                            ),
+                          ),
+                          SizedBox(height: 2),
+                          Text(
+                            'Nama, email masuk, dan nomor HP',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: AppColors.inkSecondary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Icon(
+                      Icons.chevron_right_rounded,
+                      color: AppColors.border,
+                      size: 20,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 10),
           Container(
             decoration: BoxDecoration(
               color: Colors.white,
@@ -1339,7 +1425,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
                 const SizedBox(height: 2),
                 const Text(
-                  'Terhubung ke Server Kemenkes RI Cloud Gateway',
+                  'Terhubung ke server rumah sakit',
                   style: TextStyle(
                     fontSize: 11,
                     color: Color(0xFF9EABA8),

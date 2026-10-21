@@ -92,6 +92,13 @@ class _FaceRegistrationScreenState extends State<FaceRegistrationScreen> with Wi
         enableAudio: false,
       );
       await controller.initialize();
+      // Default AUTO memicu Retina Flash (kamera depan iOS) saat menangkap
+      // frame; matikan agar pemindaian tidak berkedip menyilaukan.
+      try {
+        await controller.setFlashMode(FlashMode.off);
+      } on CameraException {
+        // Perangkat tanpa lampu kilat.
+      }
       if (mounted) setState(() => _controller = controller);
     } on CameraException catch (e) {
       if (!mounted) return;

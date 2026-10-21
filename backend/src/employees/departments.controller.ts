@@ -13,7 +13,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import type { Request } from 'express';
-import { RequirePermissions, Roles, CurrentUser, type AuthContext } from '../auth/decorators.js';
+import { RequirePermissions, Roles, CurrentUser, type AuthContext, Public } from '../auth/decorators.js';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
 import { PermissionsGuard } from '../auth/guards/permissions.guard.js';
 import { RolesGuard } from '../auth/guards/roles.guard.js';
@@ -24,6 +24,13 @@ import { EmployeesService } from './employees.service.js';
 @Controller('departments')
 export class DepartmentsController {
   constructor(private readonly employees: EmployeesService) {}
+
+  /** Dipakai layar pendaftaran mandiri sebelum pengguna punya sesi. */
+  @Public()
+  @Get('public')
+  listPublic() {
+    return this.employees.listPublicDepartments();
+  }
 
   @Roles('ADMIN')
   @RequirePermissions('employee:read')

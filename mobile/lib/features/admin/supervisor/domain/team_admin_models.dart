@@ -28,9 +28,9 @@ class TeamMember {
 
   String get subtitle {
     final String dept =
-        departmentName.isEmpty ? 'Tanpa departemen' : departmentName;
+        departmentName.isEmpty ? 'Tanpa Unit' : departmentName;
     if (employeeNo.isEmpty) return dept;
-    return '$employeeNo · $dept';
+    return '$employeeNo Â· $dept';
   }
 
   int _count(String status) =>
@@ -45,8 +45,8 @@ class TeamMember {
   /// Ringkasan satu baris untuk subtitle daftar anggota.
   String get daySummary {
     if (days.isEmpty) return '';
-    return 'Hadir $presentCount · Terlambat $lateCount · Absen '
-        '$absentCount · Off $offCount';
+    return 'Hadir $presentCount Â· Terlambat $lateCount Â· Absen '
+        '$absentCount Â· Off $offCount';
   }
 
   factory TeamMember.fromJson(Map<String, dynamic> json) {
@@ -64,7 +64,7 @@ class TeamMember {
     }
     return TeamMember(
       id: json['id']?.toString() ?? '',
-      name: json['name']?.toString() ?? '—',
+      name: json['name']?.toString() ?? 'â€”',
       employeeNo: json['employeeNo']?.toString() ?? '',
       position: json['position']?.toString(),
       departmentName: department['name']?.toString() ?? '',
@@ -166,9 +166,9 @@ class TeamAttendance {
       checkInAt: DateTime.tryParse(json['checkInAt']?.toString() ?? ''),
       checkOutAt: DateTime.tryParse(json['checkOutAt']?.toString() ?? ''),
       checkInStatus: json['checkInStatus']?.toString(),
-      shiftName: shift['name']?.toString() ?? '—',
-      employeeName: employee['name']?.toString() ?? '—',
-      employeeNo: employee['employeeNo']?.toString() ?? '—',
+      shiftName: shift['name']?.toString() ?? 'â€”',
+      employeeName: employee['name']?.toString() ?? 'â€”',
+      employeeNo: employee['employeeNo']?.toString() ?? 'â€”',
     );
   }
 }

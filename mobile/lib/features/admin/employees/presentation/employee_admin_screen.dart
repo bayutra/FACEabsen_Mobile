@@ -107,10 +107,10 @@ class _EmployeeAdminScreenState extends State<EmployeeAdminScreen> {
               const SizedBox(height: 12),
               DetailRow('NIP', e.employeeNo),
               DetailRow('Email', e.email),
-              DetailRow('Telepon', e.phone ?? '—'),
-              DetailRow('Jabatan', e.position ?? '—'),
-              DetailRow('Departemen', e.departmentName ?? '—'),
-              DetailRow('Atasan', e.supervisorName ?? '—'),
+              DetailRow('Telepon', e.phone ?? 'â€”'),
+              DetailRow('Jabatan', e.position ?? 'â€”'),
+              DetailRow('Unit', e.departmentName ?? 'â€”'),
+              DetailRow('Atasan', e.supervisorName ?? 'â€”'),
               const SizedBox(height: 16),
               FilledButton.icon(
                 onPressed: () => Navigator.of(ctx).pop('edit'),
@@ -190,9 +190,9 @@ class _EmployeeAdminScreenState extends State<EmployeeAdminScreen> {
             for (final AdminEmployee e in items) ...<Widget>[
               AdminTile(
                 icon: Icons.badge_outlined,
-                title: '${e.name} · ${e.employeeNo}',
-                subtitle: '${e.departmentName ?? 'Tanpa departemen'}'
-                    '${e.position == null ? '' : ' · ${e.position}'}',
+                title: '${e.name} Â· ${e.employeeNo}',
+                subtitle: '${e.departmentName ?? 'Tanpa Unit'}'
+                    '${e.position == null ? '' : ' Â· ${e.position}'}',
                 trailing: StatusPill(e.status),
                 onTap: () => _openDetail(e),
               ),

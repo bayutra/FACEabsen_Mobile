@@ -42,6 +42,7 @@ class ProfileRepository {
       isActive: me['isActive'] == true,
       name: employee?['name'] as String? ?? '—',
       employeeNo: employee?['employeeNo'] as String? ?? '—',
+      phone: employee?['phone'] as String? ?? '',
       position: employee?['position'] as String? ?? '—',
       department: department?['name'] as String? ?? '—',
       faceRegistered: face?['registered'] == true,
@@ -96,6 +97,20 @@ class ProfileRepository {
     final String? position = e['position'] as String?;
     return position == null || position.isEmpty ? name : '$name, $position';
   }
+
+  /// Menyimpan perubahan profil milik sendiri (nama, email login, nomor HP).
+  /// Unit kerja dan peran tidak dapat diubah dari sini.
+  Future<void> updateProfile({
+    required String name,
+    required String email,
+    String? phone,
+  }) async {
+    await _dio.patch('/employees/me', data: {
+      'name': name,
+      'email': email,
+      'phone': phone ?? '',
+    });
+  }
 }
 
 /// Raised only when the identity call itself fails (auth expired / offline).
@@ -112,6 +127,7 @@ class ProfileSnapshot {
     required this.isActive,
     required this.name,
     required this.employeeNo,
+    required this.phone,
     required this.position,
     required this.department,
     required this.faceRegistered,
@@ -126,6 +142,7 @@ class ProfileSnapshot {
   final bool isActive;
   final String name;
   final String employeeNo;
+  final String phone;
   final String position;
   final String department;
   final bool faceRegistered;

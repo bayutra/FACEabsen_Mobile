@@ -6,7 +6,6 @@ import '../../../core/widgets/stitch.dart';
 import '../audit/presentation/audit_admin_screen.dart';
 import '../corrections/presentation/correction_admin_screen.dart';
 import '../departments/presentation/department_admin_screen.dart';
-import '../device_change/presentation/device_change_admin_screen.dart';
 import '../devices/presentation/device_admin_screen.dart';
 import '../domain/admin_access.dart';
 import '../employees/presentation/employee_admin_screen.dart';
@@ -63,7 +62,7 @@ class AdminHomeScreen extends StatelessWidget {
       ),
       AdminTile(
         icon: Icons.account_tree_outlined,
-        title: 'Departemen',
+        title: 'Unit',
         subtitle: 'Kelola unit kerja di rumah sakit',
         onTap: () => Navigator.of(context).push(
           MaterialPageRoute<void>(
@@ -126,7 +125,7 @@ class AdminHomeScreen extends StatelessWidget {
       AdminTile(
         icon: Icons.insights_outlined,
         title: 'Laporan',
-        subtitle: 'Rekap kehadiran harian, bulanan, dan per departemen',
+        subtitle: 'Rekap kehadiran harian, bulanan, dan per Unit',
         onTap: () => Navigator.of(context).push(
           MaterialPageRoute<void>(
             builder: (_) => ReportAdminScreen(dio: dio),
@@ -157,16 +156,6 @@ class AdminHomeScreen extends StatelessWidget {
           onTap: () => Navigator.of(context).push(
             MaterialPageRoute<void>(
               builder: (_) => DeviceAdminScreen(dio: dio),
-            ),
-          ),
-        ),
-        AdminTile(
-          icon: Icons.swap_horiz,
-          title: 'Penggantian Perangkat',
-          subtitle: 'Permintaan pindah perangkat karyawan',
-          onTap: () => Navigator.of(context).push(
-            MaterialPageRoute<void>(
-              builder: (_) => DeviceChangeAdminScreen(dio: dio),
             ),
           ),
         ),

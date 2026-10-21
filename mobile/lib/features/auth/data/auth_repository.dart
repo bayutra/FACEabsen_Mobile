@@ -12,6 +12,29 @@ class TotpChallengeException implements Exception {
   final int expiresIn;
 }
 
+/// Satu unit kerja pada formulir pendaftaran mandiri.
+class RegistrationUnit {
+  const RegistrationUnit({
+    required this.id,
+    required this.name,
+    required this.hospitalName,
+  });
+
+  final String id;
+  final String name;
+  final String hospitalName;
+
+  String get label => hospitalName.isEmpty ? name : '$name — $hospitalName';
+
+  factory RegistrationUnit.fromJson(Map<String, dynamic> json) {
+    return RegistrationUnit(
+      id: json['id'] as String,
+      name: (json['name'] as String?) ?? '',
+      hospitalName: (json['hospitalName'] as String?) ?? '',
+    );
+  }
+}
+
 /// Minimal auth calls needed for device binding (PRD STEP 7).
 /// Full session UI arrives with attendance history (STEP 14).
 class AuthRepository {
@@ -41,6 +64,16 @@ class AuthRepository {
     return _storeSession(body, rememberMe);
   }
 
+  /// Daftar unit untuk dropdown pendaftaran. Endpoint ini publik karena
+  /// dipanggil sebelum pengguna punya sesi.
+  Future<List<RegistrationUnit>> listUnits() async {
+    final Response res = await _dio.get('/departments/public');
+    final List<dynamic> rows = (res.data as List<dynamic>?) ?? const [];
+    return rows
+        .map((e) => RegistrationUnit.fromJson(Map<String, dynamic>.from(e as Map)))
+        .toList();
+  }
+
   /// Pendaftaran mandiri: membuat akun login + profil karyawan sekaligus.
   /// Server selalu memberi peran EMPLOYEE; peran administratif hanya dapat
   /// diberikan admin lewat menu Pengguna.
@@ -51,6 +84,7 @@ class AuthRepository {
     String? phone,
     String? employeeNo,
     String? position,
+    String? departmentId,
     bool rememberMe = true,
   }) async {
     final Response res = await _dio.post(
@@ -62,6 +96,8 @@ class AuthRepository {
         if (phone != null && phone.isNotEmpty) 'phone': phone,
         if (employeeNo != null && employeeNo.isNotEmpty) 'employeeNo': employeeNo,
         if (position != null && position.isNotEmpty) 'position': position,
+        if (departmentId != null && departmentId.isNotEmpty)
+          'departmentId': departmentId,
       },
     );
     return _storeSession(Map<String, dynamic>.from(res.data as Map), rememberMe);

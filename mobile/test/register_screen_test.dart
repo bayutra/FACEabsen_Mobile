@@ -36,17 +36,31 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  Future<void> selectUnit(WidgetTester tester) async {
+    final Finder dropdown = find.byType(DropdownButtonFormField<String>);
+    await tester.ensureVisible(dropdown);
+    await tester.pumpAndSettle();
+    await tester.tap(dropdown);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Instalasi Rawat Inap').last);
+    await tester.pumpAndSettle();
+  }
+
   testWidgets('pendaftaran sukses menutup layar dan mengembalikan true',
       (tester) async {    bool? result;
+    final auth = FakeAuthRepository();
     final devices = FakeDeviceRepository();
     await openRegister(
       tester,
-      auth: FakeAuthRepository(),
+      auth: auth,
       devices: devices,
       onResult: (bool? value) => result = value,
     );
 
     expect(find.text('Daftar Akun'), findsOneWidget);
+
+    // Pilih unit kerja (wajib) dari master data yang dimuat server.
+    await selectUnit(tester);
 
     // Urutan kolom: nama, email, HP, NIP, kata sandi, ulangi kata sandi.
     await tester.enterText(find.byType(TextField).at(0), 'Budi Baru');
@@ -62,6 +76,29 @@ void main() {
     expect(result, isTrue);
     expect(find.text('Daftar Akun'), findsNothing);
     expect(devices.registerCalls, 1);
+    expect(auth.lastRegisterUnit, 'dept-1');
+  });
+
+  testWidgets('unit kerja wajib dipilih sebelum mengirim', (tester) async {
+    final devices = FakeDeviceRepository();
+    await openRegister(
+      tester,
+      auth: FakeAuthRepository(),
+      devices: devices,
+    );
+
+    await tester.enterText(find.byType(TextField).at(0), 'Budi Baru');
+    await tester.enterText(find.byType(TextField).at(1), 'budi@rs.test');
+    await tester.enterText(find.byType(TextField).at(4), 'Password123!');
+    await tester.enterText(find.byType(TextField).at(5), 'Password123!');
+    final Finder submit = find.text('Daftar & Masuk');
+    await tester.ensureVisible(submit);
+    await tester.pumpAndSettle();
+    await tester.tap(submit);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Unit kerja wajib dipilih.'), findsOneWidget);
+    expect(devices.registerCalls, 0);
   });
 
   testWidgets('email sudah terdaftar menampilkan pesan Indonesia',
@@ -76,6 +113,7 @@ void main() {
     await tester.enterText(find.byType(TextField).at(1), 'employee@rs.test');
     await tester.enterText(find.byType(TextField).at(4), 'Password123!');
     await tester.enterText(find.byType(TextField).at(5), 'Password123!');
+    await selectUnit(tester);
     final Finder submit = find.text('Daftar & Masuk');
     await tester.ensureVisible(submit);
     await tester.pumpAndSettle();

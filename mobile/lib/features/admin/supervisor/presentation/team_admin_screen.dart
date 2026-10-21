@@ -9,7 +9,7 @@ import '../domain/team_admin_models.dart';
 
 /// Tim supervisor: ringkasan kehadiran anggota tim per rentang tanggal.
 /// Data diambil dari `/supervisor/summary`, `/supervisor/team`, dan
-/// `/supervisor/attendance` — tanpa data tiruan.
+/// `/supervisor/attendance` â€” tanpa data tiruan.
 class TeamAdminScreen extends StatefulWidget {
   const TeamAdminScreen({super.key, required this.dio});
 
@@ -136,9 +136,9 @@ class _TeamAdminScreenState extends State<TeamAdminScreen> {
 
   String _memberSubtitle(TeamMember m) {
     final String base =
-        m.position == null ? m.subtitle : '${m.subtitle} · ${m.position}';
+        m.position == null ? m.subtitle : '${m.subtitle} Â· ${m.position}';
     if (m.days.isEmpty) return base;
-    return '$base · ${m.daySummary}';
+    return '$base Â· ${m.daySummary}';
   }
 
   Widget _totals(TeamTotals totals) {
@@ -225,7 +225,7 @@ class _TeamAdminScreenState extends State<TeamAdminScreen> {
   Widget build(BuildContext context) {
     return AdminScaffold(
       title: 'Tim Supervisor',
-      subtitle: '${adminShortDate(_from)} – ${adminShortDate(_to)}',
+      subtitle: '${adminShortDate(_from)} â€“ ${adminShortDate(_to)}',
       actions: <Widget>[
         IconButton(
           tooltip: 'Muat ulang',
@@ -410,7 +410,7 @@ class _MemberSheetState extends State<_MemberSheet> {
                 Text(adminShortDate(a.workDate), style: AppText.bodyMdMedium),
                 const SizedBox(height: 2),
                 Text(
-                  '${a.shiftName} · Masuk ${_time(a.checkInAt)} · '
+                  '${a.shiftName} Â· Masuk ${_time(a.checkInAt)} Â· '
                   'Pulang ${_time(a.checkOutAt)}',
                   style:
                       AppText.labelSm.copyWith(color: AppColors.inkSecondary),
@@ -439,7 +439,7 @@ class _MemberSheetState extends State<_MemberSheet> {
                 Expanded(child: Text(member.name, style: AppText.headlineSm)),
                 const SizedBox(width: 8),
                 AppPill(
-                  member.employeeNo.isEmpty ? '—' : member.employeeNo,
+                  member.employeeNo.isEmpty ? 'â€”' : member.employeeNo,
                   AppColors.surfaceLow,
                   AppColors.inkSecondary,
                 ),
@@ -448,12 +448,12 @@ class _MemberSheetState extends State<_MemberSheet> {
             const SizedBox(height: 12),
             DetailRow(
               'NIP',
-              member.employeeNo.isEmpty ? '—' : member.employeeNo,
+              member.employeeNo.isEmpty ? 'â€”' : member.employeeNo,
             ),
-            DetailRow('Jabatan', member.position ?? '—'),
+            DetailRow('Jabatan', member.position ?? 'â€”'),
             DetailRow(
-              'Departemen',
-              member.departmentName.isEmpty ? '—' : member.departmentName,
+              'Unit',
+              member.departmentName.isEmpty ? 'â€”' : member.departmentName,
             ),
             if (member.days.isNotEmpty) ...<Widget>[
               const SizedBox(height: 8),
@@ -502,7 +502,7 @@ class _MemberSheetState extends State<_MemberSheet> {
 }
 
 String _time(DateTime? dt) {
-  if (dt == null) return '—';
+  if (dt == null) return 'â€”';
   final DateTime local = dt.toLocal();
   final String hh = local.hour.toString().padLeft(2, '0');
   final String mm = local.minute.toString().padLeft(2, '0');

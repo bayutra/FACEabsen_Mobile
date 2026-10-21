@@ -6,9 +6,9 @@ import '../../../../core/widgets/stitch.dart';
 import '../../presentation/admin_widgets.dart';
 import '../data/department_admin_repository.dart';
 
-/// Kelola master data departemen rumah sakit (ADMIN).
+/// Kelola master data Unit rumah sakit (ADMIN).
 ///
-/// Tambah/ubah nama departemen, pilih rumah sakit induk saat membuat baru,
+/// Tambah/ubah nama Unit, pilih rumah sakit induk saat membuat baru,
 /// dan hapus dengan peringatan bila masih ada karyawan yang terhubung.
 class DepartmentAdminScreen extends StatefulWidget {
   const DepartmentAdminScreen({super.key, required this.dio});
@@ -54,7 +54,7 @@ class _DepartmentAdminScreenState extends State<DepartmentAdminScreen> {
     await _loadHospitals();
   }
 
-  /// Pemilih rumah sakit hanya dibutuhkan saat menambah departemen, jadi
+  /// Pemilih rumah sakit hanya dibutuhkan saat menambah Unit, jadi
   /// kegagalannya tidak boleh menutupi daftar yang sudah tampil.
   Future<void> _loadHospitals() async {
     try {
@@ -93,8 +93,8 @@ class _DepartmentAdminScreenState extends State<DepartmentAdminScreen> {
       showAdminSnack(
         context,
         department == null
-            ? 'Departemen ditambahkan.'
-            : 'Departemen diperbarui.',
+            ? 'Unit ditambahkan.'
+            : 'Unit diperbarui.',
       );
       await _load();
     }
@@ -104,7 +104,7 @@ class _DepartmentAdminScreenState extends State<DepartmentAdminScreen> {
     final bool ok = await confirmAdminAction(
       context,
       title: 'Hapus ${department.name}?',
-      message: 'Departemen yang masih memiliki karyawan tidak dapat dihapus. '
+      message: 'Unit yang masih memiliki karyawan tidak dapat dihapus. '
           'Pindahkan karyawan yang terhubung terlebih dahulu agar jadwal dan '
           'presensi mereka tetap utuh.',
       confirmLabel: 'Hapus',
@@ -125,7 +125,7 @@ class _DepartmentAdminScreenState extends State<DepartmentAdminScreen> {
 
   Widget _body() {
     if (_loading && _items.isEmpty) {
-      return const LoadingState(label: 'Memuat departemen');
+      return const LoadingState(label: 'Memuat Unit');
     }
     if (_error != null && _items.isEmpty) {
       return AdminError(message: _error!, onRetry: _load);
@@ -148,14 +148,14 @@ class _DepartmentAdminScreenState extends State<DepartmentAdminScreen> {
                 children: <Widget>[
                   const AdminEmpty(
                     icon: Icons.apartment_outlined,
-                    title: 'Belum ada departemen',
+                    title: 'Belum ada Unit',
                     subtitle: 'Tambahkan unit kerja agar karyawan bisa '
                         'dikelompokkan.',
                   ),
                   FilledButton.icon(
                     onPressed: () => _openForm(),
                     icon: const Icon(Icons.add),
-                    label: const Text('Tambah Departemen'),
+                    label: const Text('Tambah Unit'),
                   ),
                 ],
               ),
@@ -168,7 +168,7 @@ class _DepartmentAdminScreenState extends State<DepartmentAdminScreen> {
                 subtitle: department.hospitalLabel,
                 onTap: () => _openForm(department),
                 trailing: PopupMenuButton<String>(
-                  tooltip: 'Aksi departemen',
+                  tooltip: 'Aksi Unit',
                   onSelected: (String value) {
                     if (value == 'edit') {
                       _openForm(department);
@@ -193,7 +193,7 @@ class _DepartmentAdminScreenState extends State<DepartmentAdminScreen> {
             ],
           const SizedBox(height: 24),
           Text(
-            'Total ${_items.length} departemen',
+            'Total ${_items.length} Unit',
             style: AppText.labelSm.copyWith(color: AppColors.inkSecondary),
             textAlign: TextAlign.center,
           ),
@@ -205,11 +205,11 @@ class _DepartmentAdminScreenState extends State<DepartmentAdminScreen> {
   @override
   Widget build(BuildContext context) {
     return AdminScaffold(
-      title: 'Departemen',
+      title: 'Unit',
       subtitle: 'Unit kerja & rumah sakit induk',
       actions: <Widget>[
         IconButton(
-          tooltip: 'Tambah departemen',
+          tooltip: 'Tambah Unit',
           onPressed: () => _openForm(),
           icon: const Icon(Icons.add),
         ),
@@ -288,7 +288,7 @@ class _DepartmentFormDialogState extends State<_DepartmentFormDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(_editing ? 'Ubah Departemen' : 'Departemen Baru'),
+      title: Text(_editing ? 'Ubah Unit' : 'Unit Baru'),
       content: Form(
         key: _formKey,
         child: SingleChildScrollView(
@@ -302,7 +302,7 @@ class _DepartmentFormDialogState extends State<_DepartmentFormDialog> {
                 textCapitalization: TextCapitalization.words,
                 maxLength: 64,
                 decoration: const InputDecoration(
-                  labelText: 'Nama departemen',
+                  labelText: 'Nama Unit',
                   hintText: 'Contoh: Instalasi Rawat Inap',
                 ),
                 validator: (String? value) {

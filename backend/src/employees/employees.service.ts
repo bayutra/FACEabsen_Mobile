@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   ForbiddenException,
   Injectable,
@@ -16,6 +17,7 @@ import type {
   ListEmployeesQuery,
   UpdateDepartmentDto,
   UpdateEmployeeDto,
+  UpdateMyProfileDto,
 } from './dto.js';
 
 /**
@@ -152,6 +154,61 @@ export class EmployeesService {
     return this.loadOne(employee.id);
   }
 
+  /**
+   * Profil milik sendiri: nama, email login, dan nomor HP saja. Unit kerja,
+   * peran, dan atasan tetap wewenang admin supaya endpoint ini tidak menjadi
+   * jalur eskalasi.
+   */
+  async updateMyProfile(
+    userId: string,
+    dto: UpdateMyProfileDto,
+    meta: { ip?: string } = {},
+  ) {
+    const existing = await this.prisma.employee.findUnique({ where: { userId } });
+    if (!existing) throw new NotFoundException('No employee profile for this account');
+
+    const name = dto.name?.trim();
+    if (dto.name !== undefined && (!name || name.length < 2)) {
+      throw new BadRequestException('Nama minimal 2 karakter');
+    }
+    const email = dto.email?.trim().toLowerCase();
+    if (email && email !== existing.email) {
+      await this.assertUnique(existing.id, email, undefined);
+    }
+
+    try {
+      await this.prisma.$transaction(async (tx) => {
+        await tx.employee.update({
+          where: { id: existing.id },
+          data: {
+            ...(name ? { name } : {}),
+            ...(email ? { email } : {}),
+            ...(dto.phone !== undefined ? { phone: dto.phone.trim() || null } : {}),
+          },
+        });
+        if (email && email !== existing.email && existing.userId) {
+          await tx.user.update({ where: { id: existing.userId }, data: { email } });
+        }
+      });
+    } catch (e) {
+      throw this.mapUnique(e);
+    }
+
+    await this.audit.log({
+      actorId: userId,
+      action: 'PROFILE_UPDATED',
+      targetType: 'employee',
+      targetId: existing.id,
+      ipAddress: meta.ip,
+      metadata: {
+        fields: Object.keys(dto).filter(
+          (key) => (dto as Record<string, unknown>)[key] !== undefined,
+        ),
+      },
+    });
+    return this.loadOne(existing.id);
+  }
+
   async update(id: string, dto: UpdateEmployeeDto, actorId: string, meta: { ip?: string } = {}) {
     const existing = await this.prisma.employee.findUnique({
       where: { id },
@@ -237,6 +294,30 @@ export class EmployeesService {
       orderBy: { name: 'asc' },
       include: { hospital: { select: { id: true, code: true, name: true } } },
     });
+  }
+
+  /**
+   * Daftar unit untuk formulir pendaftaran publik. Hanya id + nama + rumah
+   * sakit induk; tidak ada data kepegawaian yang terbuka. Dibatasi 500 baris
+   * karena ini hanya untuk dropdown.
+   */
+  async listPublicDepartments() {
+    const rows = await this.prisma.department.findMany({
+      take: 500,
+      orderBy: [{ hospital: { name: 'asc' } }, { name: 'asc' }],
+      select: {
+        id: true,
+        name: true,
+        hospitalId: true,
+        hospital: { select: { name: true } },
+      },
+    });
+    return rows.map((row) => ({
+      id: row.id,
+      name: row.name,
+      hospitalId: row.hospitalId,
+      hospitalName: row.hospital.name,
+    }));
   }
 
   /**

@@ -11,7 +11,7 @@ enum ReportKind {
   monthly('monthly', 'Bulanan'),
   lateness('late', 'Terlambat'),
   leaves('leaves', 'Izin/Cuti'),
-  department('department', 'Per Departemen'),
+  department('department', 'Per Unit'),
   employee('employee', 'Per Karyawan');
 
   const ReportKind(this.code, this.label);
@@ -48,13 +48,13 @@ class AdminEmployeeOption {
   final String employeeNo;
   final String name;
 
-  String get label => employeeNo.isEmpty ? name : '$employeeNo · $name';
+  String get label => employeeNo.isEmpty ? name : '$employeeNo Â· $name';
 
   factory AdminEmployeeOption.fromJson(Map<String, dynamic> json) =>
       AdminEmployeeOption(
         id: json['id']?.toString() ?? '',
         employeeNo: json['employeeNo']?.toString() ?? '',
-        name: json['name']?.toString() ?? '—',
+        name: json['name']?.toString() ?? 'â€”',
       );
 }
 

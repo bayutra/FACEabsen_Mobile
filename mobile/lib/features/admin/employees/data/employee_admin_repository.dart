@@ -2,7 +2,7 @@ import 'package:dio/dio.dart';
 
 import '../domain/employee_admin_models.dart';
 
-/// Endpoint SDM untuk ADMIN: daftar/kirim karyawan, departemen, nonaktifkan.
+/// Endpoint SDM untuk ADMIN: daftar/kirim karyawan, Unit, nonaktifkan.
 class EmployeeAdminRepository {
   EmployeeAdminRepository({required Dio dio}) : _dio = dio;
 

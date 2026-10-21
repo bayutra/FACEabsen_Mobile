@@ -1,4 +1,5 @@
-﻿import 'package:face_absen_mobile/features/device/presentation/device_sections.dart';
+﻿import 'package:face_absen_mobile/features/device/presentation/device_screen.dart';
+import 'package:face_absen_mobile/features/device/presentation/device_sections.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -9,33 +10,22 @@ import 'fakes.dart';
 /// Test ini mengunci tiap entry point agar distribusi tidak diam-diam
 /// kembali menjadi junk drawer.
 void main() {
-  group('device change requests (tab Perangkat)', () {
-    testWidgets('shows the replacement request entry point',
+  group('perangkat (tab Perangkat)', () {
+    testWidgets('menampilkan status perangkat, bukan pengajuan penggantian',
         (WidgetTester tester) async {
       await tester.pumpWidget(
         MaterialApp(
-          home: Scaffold(body: DeviceChangeRequestSection(devices: FakeDeviceRepository())),
+          home: DeviceScreen(devices: FakeDeviceRepository()),
         ),
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('Ajukan Penggantian Perangkat'), findsOneWidget);
-    });
-
-    testWidgets('says so when there is no request yet',
-        (WidgetTester tester) async {
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(body: DeviceChangeRequestSection(devices: FakeDeviceRepository())),
-        ),
-      );
-      await tester.pumpAndSettle();
-
-      expect(find.textContaining('Belum ada riwayat pengajuan'), findsOneWidget);
+      expect(find.byType(DeviceStatusSection), findsOneWidget);
+      expect(find.text('Ajukan Penggantian Perangkat'), findsNothing);
     });
   });
 
-  group('device status (Profil tab)', () {
+  group('device status (tab Perangkat)', () {
     testWidgets('warns when no device is bound, since punching needs one',
         (WidgetTester tester) async {
       await tester.pumpWidget(

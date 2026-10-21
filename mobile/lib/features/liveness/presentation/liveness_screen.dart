@@ -33,7 +33,8 @@ class LivenessScreen extends StatefulWidget {
   State<LivenessScreen> createState() => _LivenessScreenState();
 }
 
-class _LivenessScreenState extends State<LivenessScreen> with WidgetsBindingObserver {
+class _LivenessScreenState extends State<LivenessScreen>
+    with WidgetsBindingObserver, SingleTickerProviderStateMixin {
   CameraController? _controller;
   late final FaceDetectorService _detector;
   late LivenessSession _session;
@@ -41,6 +42,11 @@ class _LivenessScreenState extends State<LivenessScreen> with WidgetsBindingObse
   String? _error;
   String? _doneMessage;
   bool _processing = false;
+  bool _flashOn = false;
+  late final AnimationController _scan = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 2200),
+  )..repeat(reverse: true);
   Timer? _timer;
 
   // Live signals derived from the last analysed frame (never fabricated).
@@ -118,8 +124,20 @@ class _LivenessScreenState extends State<LivenessScreen> with WidgetsBindingObse
         imageFormatGroup: ImageFormatGroup.nv21,
       );
       await controller.initialize();
+      // Default kamera adalah FlashMode.auto. Pada kamera depan iOS itu
+      // memicu Retina Flash setiap takePicture(), sehingga layar berkedip
+      // menyilaukan selama pemindaian. Pengguna menyalakannya sendiri lewat
+      // tombol lampu kilat.
+      try {
+        await controller.setFlashMode(FlashMode.off);
+      } on CameraException {
+        // Perangkat tanpa lampu kilat: abaikan.
+      }
       if (!mounted) return;
-      setState(() => _controller = controller);
+      setState(() {
+        _controller = controller;
+        _flashOn = false;
+      });
       _timer = Timer.periodic(const Duration(milliseconds: 400), (_) => _tick());
     } on CameraException catch (e) {
       if (!mounted) return;
@@ -215,6 +233,26 @@ class _LivenessScreenState extends State<LivenessScreen> with WidgetsBindingObse
     }
   }
 
+  /// Menyalakan/mematikan lampu kilat hanya atas permintaan pengguna.
+  /// Kamera depan banyak perangkat tidak punya LED; kegagalan ditampilkan
+  /// apa adanya, bukan didiamkan.
+  Future<void> _toggleFlash() async {
+    final CameraController? controller = _controller;
+    if (controller == null || !controller.value.isInitialized) return;
+    final bool next = !_flashOn;
+    try {
+      await controller.setFlashMode(next ? FlashMode.torch : FlashMode.off);
+      if (mounted) setState(() => _flashOn = next);
+    } on CameraException {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Lampu kilat tidak tersedia pada kamera ini.'),
+        ),
+      );
+    }
+  }
+
   void _retry() {
     _startedAt = DateTime.now();
     setState(() {
@@ -233,6 +271,7 @@ class _LivenessScreenState extends State<LivenessScreen> with WidgetsBindingObse
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _timer?.cancel();
+    _scan.dispose();
     _controller?.dispose();
     _detector.dispose();
     super.dispose();
@@ -329,7 +368,7 @@ class _LivenessScreenState extends State<LivenessScreen> with WidgetsBindingObse
                           ),
                         ),
                         Text(
-                          '${widget.displayName} • Poli Rawat Inap',
+                          widget.displayName,
                           style: const TextStyle(
                             color: primaryFixed,
                             fontSize: 11,
@@ -709,7 +748,7 @@ class _LivenessScreenState extends State<LivenessScreen> with WidgetsBindingObse
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        'RS Absen Server v4.12 • Node Jakarta-02',
+                        'Anti-spoofing aktif',
                         style: TextStyle(fontSize: 10, color: Colors.white.withOpacity(0.5)),
                       ),
                       Text(
@@ -728,8 +767,8 @@ class _LivenessScreenState extends State<LivenessScreen> with WidgetsBindingObse
   }
 
   Widget _viewport(CameraController? controller) => SizedBox(
-        width: 256,
-        height: 320,
+        width: 300,
+        height: 400,
         child: Container(
           decoration: BoxDecoration(
             color: AppColors.ink,
@@ -777,6 +816,79 @@ class _LivenessScreenState extends State<LivenessScreen> with WidgetsBindingObse
                         ),
                         // Custom biometric HUD and face mesh
                         const CustomPaint(painter: _BiometricHudPainter()),
+                        // Garis pindai bergerak: menandakan kamera aktif
+                        // mengambil sampel, tanpa menyalakan flash.
+                        Positioned.fill(
+                          child: IgnorePointer(
+                            child: AnimatedBuilder(
+                              animation: _scan,
+                              builder: (BuildContext context, Widget? child) {
+                                final double t =
+                                    Curves.easeInOut.transform(_scan.value);
+                                return Align(
+                                  alignment: Alignment(0, -1 + 2 * t),
+                                  child: Container(
+                                    height: 2,
+                                    margin: const EdgeInsets.symmetric(
+                                      horizontal: 26,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      gradient: LinearGradient(
+                                        colors: [
+                                          Colors.transparent,
+                                          AppColors.primaryFixed
+                                              .withOpacity(0.9),
+                                          Colors.transparent,
+                                        ],
+                                      ),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: AppColors.primaryFixed
+                                              .withOpacity(0.45),
+                                          blurRadius: 8,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ),
+                        // Lampu kilat manual — default mati, tidak pernah auto.
+                        Align(
+                          alignment: Alignment.topRight,
+                          child: Padding(
+                            padding: const EdgeInsets.only(top: 8, right: 8),
+                            child: Tooltip(
+                              message: _flashOn
+                                  ? 'Matikan lampu kilat'
+                                  : 'Nyalakan lampu kilat',
+                              child: Material(
+                                color: _flashOn
+                                    ? AppColors.primaryFixed
+                                    : Colors.black.withOpacity(0.45),
+                                shape: const CircleBorder(),
+                                child: InkWell(
+                                  customBorder: const CircleBorder(),
+                                  onTap: _toggleFlash,
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(8),
+                                    child: Icon(
+                                      _flashOn
+                                          ? Icons.flash_on
+                                          : Icons.flash_off,
+                                      size: 18,
+                                      color: _flashOn
+                                          ? AppColors.inverseSurface
+                                          : Colors.white,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
                         // Top status badge
                         Align(
                           alignment: Alignment.topCenter,
@@ -789,14 +901,21 @@ class _LivenessScreenState extends State<LivenessScreen> with WidgetsBindingObse
                                 borderRadius: BorderRadius.circular(AppColors.radiusFull),
                                 border: Border.all(color: AppColors.primaryFixed.withOpacity(0.4)),
                               ),
-                              child: const Row(
+                              child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  CircleAvatar(radius: 3, backgroundColor: Color(0xFF89F5E7)),
-                                  SizedBox(width: 5),
+                                  CircleAvatar(
+                                    radius: 3,
+                                    backgroundColor: _faceCount == 1
+                                        ? const Color(0xFF34D399)
+                                        : const Color(0xFF89F5E7),
+                                  ),
+                                  const SizedBox(width: 5),
                                   Text(
-                                    'Pelacakan Wajah Aktif',
-                                    style: TextStyle(
+                                    _faceCount == 1
+                                        ? 'Wajah Terdeteksi'
+                                        : 'Mencari Wajah...',
+                                    style: const TextStyle(
                                       color: Colors.white,
                                       fontSize: 10,
                                       fontWeight: FontWeight.w600,
@@ -818,14 +937,22 @@ class _LivenessScreenState extends State<LivenessScreen> with WidgetsBindingObse
                                 color: AppColors.primaryContainer.withOpacity(0.9),
                                 borderRadius: BorderRadius.circular(AppColors.radiusFull),
                               ),
-                              child: const Row(
+                              child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Icon(Icons.center_focus_strong, size: 13, color: Colors.white),
-                                  SizedBox(width: 4),
+                                  Icon(
+                                    _faceCount == 1
+                                        ? Icons.center_focus_strong
+                                        : Icons.face_retouching_natural,
+                                    size: 13,
+                                    color: Colors.white,
+                                  ),
+                                  const SizedBox(width: 4),
                                   Text(
-                                    'Jaga Posisi Tegak Lurus',
-                                    style: TextStyle(
+                                    _faceCount == 1
+                                        ? 'Tahan Posisi'
+                                        : 'Posisikan Wajah di Tengah',
+                                    style: const TextStyle(
                                       color: Colors.white,
                                       fontSize: 10,
                                       fontWeight: FontWeight.w600,

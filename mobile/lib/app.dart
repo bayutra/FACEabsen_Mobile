@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'core/config/env.dart';
 import 'core/config/server_settings.dart';
 import 'core/config/server_settings_dialog.dart';
-import 'core/navigation/startup_state.dart';
 import 'core/network/api_client.dart';
 import 'core/storage/secure_store.dart';
 import 'core/theme/app_theme.dart';
@@ -23,8 +22,15 @@ import 'features/schedule/data/schedule_repository.dart';
 import 'features/preflight/data/preflight_repository.dart';
 import 'core/navigation/home_shell.dart';
 
-/// STEP 7 shell: splash → login or device status. Feature routing (face,
-/// attendance, history) arrives in later STEPs.
+/// Root gate: memeriksa sesi sekali, lalu menampilkan Login atau HomeShell
+/// secara deklaratif.
+///
+/// Sebelumnya gate ini bernavigasi dengan `pushReplacement` dari method milik
+/// State-nya sendiri. Begitu route-nya diganti, State tersebut dibuang,
+/// sehingga closure `onDone`/`onLogout` yang dipegang LoginScreen/HomeShell
+/// memanggil `Navigator` dari context yang sudah mati: login berakhir di
+/// "Terjadi kesalahan sistem" dan logout tidak kembali ke menu login.
+/// Menukar widget lewat state menghilangkan seluruh kelas bug itu.
 class App extends StatelessWidget {
   const App({super.key});
 
@@ -58,7 +64,10 @@ class _BootstrapGateState extends State<BootstrapGate> {
   late final ScheduleRepository _schedules;
   late final ProfileRepository _profiles;
   late final PreflightRepository _preflight;
-  late Future<bool> _session;
+
+  /// `null` selama pemeriksaan sesi awal belum selesai.
+  bool? _authed;
+  Object? _startupError;
 
   @override
   void initState() {
@@ -82,14 +91,25 @@ class _BootstrapGateState extends State<BootstrapGate> {
       profiles: _profiles,
       schedules: _schedules,
     );
-    _session = _bootstrap();
+    _restore();
   }
 
   /// Pulihkan alamat server yang pernah diubah pengguna sebelum request
   /// pertama, lalu periksa sesi.
-  Future<bool> _bootstrap() async {
-    await _servers.restore();
-    return _hasSession();
+  Future<void> _restore() async {
+    setState(() {
+      _authed = null;
+      _startupError = null;
+    });
+    try {
+      await _servers.restore();
+      final bool authed = await _hasSession();
+      if (!mounted) return;
+      setState(() => _authed = authed);
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _startupError = e);
+    }
   }
 
   Future<bool> _hasSession() async {
@@ -97,111 +117,77 @@ class _BootstrapGateState extends State<BootstrapGate> {
     return (await _auth.me()) != null;
   }
 
-  /// Re-runs the session probe after a startup failure (offline at launch).
-  void _retry() {
-    setState(() {
-      _session = _bootstrap();
-    });
-  }
-
   Future<void> _openServerSettings() async {
     final bool changed = await showServerSettingsDialog(context, _servers);
-    if (changed && mounted) _retry();
+    if (changed && mounted) await _restore();
   }
 
-  void _goHome() {
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(
-        builder: (_) => HomeShell(
-          auth: _auth,
-          devices: _devices,
-          faces: _faces,
-          attendance: _attendance,
-          corrections: _corrections,
-          leaves: _leaves,
-          schedules: _schedules,
-          profiles: _profiles,
-          preflight: _preflight,
-          onLogout: _goLogin,
-          dio: _dio,
-        ),
-      ),
-    );
-  }
+  void _onLoggedIn() => setState(() => _authed = true);
 
-  void _goLogin() {
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(
-        builder: (_) => LoginScreen(
-          auth: _auth,
-          devices: _devices,
-          servers: _servers,
-          onDone: _goHome,
-        ),
-      ),
-    );
-  }
+  void _onLoggedOut() => setState(() => _authed = false);
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<bool>(
-      future: _session,
-      builder: (context, snap) {
-        final StartupState state = resolveStartupState(snap);
-        switch (state) {
-          case StartupState.loading:
-            return const Scaffold(body: LoadingState(label: 'Menyiapkan sesi'));
-          case StartupState.error:
-            // Offline (or server down) at launch: _auth.me() rethrows, so
-            // without this branch the gate would spin forever. Show an
-            // error panel with a retry instead of hanging.
-            return Scaffold(
-              body: Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const InfoBanner(
-                        'Periksa koneksi internet, lalu coba lagi. Data '
-                        'presensi yang tersimpan di perangkat tetap aman.',
-                        tone: InfoBannerTone.error,
-                        title: 'Tidak dapat terhubung ke server',
-                      ),
-                      const SizedBox(height: 12),
-                      const Text('RSU Darmayu Madiun'),
-                      const SizedBox(height: 16),
-                      FilledButton.icon(
-                        onPressed: _retry,
-                        icon: const Icon(Icons.refresh),
-                        label: const Text('Coba Lagi'),
-                      ),
-                      const SizedBox(height: 4),
-                      TextButton.icon(
-                        onPressed: _openServerSettings,
-                        icon: const Icon(Icons.dns_outlined, size: 18),
-                        label: Text('Server: ${_servers.hostLabel}'),
-                      ),
-                    ],
-                  ),
+    if (_startupError != null) {
+      return Scaffold(
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const InfoBanner(
+                  'Periksa koneksi internet, lalu coba lagi. Data '
+                  'presensi yang tersimpan di perangkat tetap aman.',
+                  tone: InfoBannerTone.error,
+                  title: 'Tidak dapat terhubung ke server',
                 ),
-              ),
-            );
-          case StartupState.authenticated:
-          case StartupState.login:
-            final bool authed = state == StartupState.authenticated;
-            // Defer navigation until after first frame.
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (!mounted) return;
-              if (authed) {
-                _goHome();
-              } else {
-                _goLogin();
-              }
-            });
-            return const Scaffold(body: LoadingState(label: 'Membuka aplikasi'));
-        }
-      },
+                const SizedBox(height: 12),
+                const Text('RSU Darmayu Madiun'),
+                const SizedBox(height: 16),
+                FilledButton.icon(
+                  onPressed: _restore,
+                  icon: const Icon(Icons.refresh),
+                  label: const Text('Coba Lagi'),
+                ),
+                const SizedBox(height: 4),
+                TextButton.icon(
+                  onPressed: _openServerSettings,
+                  icon: const Icon(Icons.dns_outlined, size: 18),
+                  label: Text('Server: ${_servers.hostLabel}'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    if (_authed == null) {
+      return const Scaffold(body: LoadingState(label: 'Menyiapkan sesi'));
+    }
+
+    if (_authed!) {
+      return HomeShell(
+        auth: _auth,
+        devices: _devices,
+        faces: _faces,
+        attendance: _attendance,
+        corrections: _corrections,
+        leaves: _leaves,
+        schedules: _schedules,
+        profiles: _profiles,
+        preflight: _preflight,
+        onLogout: _onLoggedOut,
+        dio: _dio,
+      );
+    }
+
+    return LoginScreen(
+      auth: _auth,
+      devices: _devices,
+      servers: _servers,
+      onDone: _onLoggedIn,
     );
   }
 }

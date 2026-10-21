@@ -87,6 +87,28 @@ export class UpdateEmployeeDto {
   supervisorId?: string;
 }
 
+/**
+ * Perubahan profil oleh pemilik akun sendiri. Peran, unit kerja, dan atasan
+ * tetap wewenang admin kepegawaian; karyawan hanya merapikan data kontak.
+ */
+export class UpdateMyProfileDto {
+  @IsOptional()
+  @IsString()
+  @MinLength(2)
+  @MaxLength(120)
+  name?: string;
+
+  @IsOptional()
+  @IsEmail()
+  @MaxLength(255)
+  email?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(32)
+  phone?: string;
+}
+
 export class CreateDepartmentDto {
   @IsString()
   @MinLength(1)
