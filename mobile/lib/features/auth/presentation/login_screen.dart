@@ -355,7 +355,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               Row(
                                 children: [
                                   Text(
-                                    'RS Absen',
+                                    'Darmayu Face ID',
                                     style: AppText.headlineSm.copyWith(
                                       color: AppColors.primary,
                                       fontWeight: FontWeight.w700,

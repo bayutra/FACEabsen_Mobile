@@ -17,6 +17,9 @@ const ROLE_PERMISSIONS = {
     'correction:approve:team',
     'leave:approve:team',
     'report:read:team',
+    // SDM terbatas: service layer membatasi ke unit/tim sendiri.
+    'employee:read',
+    'employee:update',
   ],
   ADMIN: [
     'employee:create',

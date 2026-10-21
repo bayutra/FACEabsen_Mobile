@@ -7,12 +7,21 @@ import '../../presentation/admin_widgets.dart';
 import '../data/employee_admin_repository.dart';
 import '../domain/employee_admin_models.dart';
 
-/// Formulir tambah/ubah karyawan (ADMIN).
+/// Formulir tambah/ubah karyawan.
+///
+/// `canEditAll = false` dipakai supervisor: hanya nama, telepon, dan jabatan
+/// yang dapat diubah; email login, unit, dan status tetap milik admin.
 class EmployeeAdminFormScreen extends StatefulWidget {
-  const EmployeeAdminFormScreen({super.key, required this.dio, this.employee});
+  const EmployeeAdminFormScreen({
+    super.key,
+    required this.dio,
+    this.employee,
+    this.canEditAll = true,
+  });
 
   final Dio dio;
   final AdminEmployee? employee;
+  final bool canEditAll;
 
   @override
   State<EmployeeAdminFormScreen> createState() => _EmployeeAdminFormScreenState();
@@ -79,10 +88,10 @@ class _EmployeeAdminFormScreenState extends State<EmployeeAdminFormScreen> {
         await _repo.update(
           widget.employee!.id,
           name: _name.text,
-          email: _email.text,
+          email: widget.canEditAll ? _email.text : null,
           phone: _phone.text,
           position: _position.text,
-          departmentId: _departmentId,
+          departmentId: widget.canEditAll ? _departmentId : null,
         );
       } else {
         await _repo.create(
@@ -115,6 +124,16 @@ class _EmployeeAdminFormScreenState extends State<EmployeeAdminFormScreen> {
         child: ListView(
           padding: const EdgeInsets.all(AppColors.pageMargin),
           children: <Widget>[
+            if (_editing && !widget.canEditAll) ...<Widget>[
+              const InfoBanner(
+                'Sebagai supervisor Anda dapat mengubah nama, telepon, dan '
+                'jabatan anggota unit/tim. Perubahan unit, email login, dan '
+                'status akun dilakukan admin.',
+                tone: InfoBannerTone.info,
+                title: 'Wewenang supervisor',
+              ),
+              const SizedBox(height: 16),
+            ],
             if (!_editing) ...<Widget>[
               TextFormField(
                 controller: _no,
@@ -142,9 +161,15 @@ class _EmployeeAdminFormScreenState extends State<EmployeeAdminFormScreen> {
             const SizedBox(height: 12),
             TextFormField(
               controller: _email,
+              enabled: widget.canEditAll,
               keyboardType: TextInputType.emailAddress,
               autocorrect: false,
-              decoration: const InputDecoration(labelText: 'Email'),
+              decoration: InputDecoration(
+                labelText: 'Email',
+                helperText: widget.canEditAll
+                    ? null
+                    : 'Hanya admin yang dapat mengubah email login.',
+              ),
               validator: (String? v) {
                 final String s = (v ?? '').trim();
                 if (s.isEmpty) return 'Wajib diisi.';
@@ -166,13 +191,20 @@ class _EmployeeAdminFormScreenState extends State<EmployeeAdminFormScreen> {
             const SizedBox(height: 12),
             DropdownButtonFormField<String>(
               value: _departmentId,
-              decoration: const InputDecoration(labelText: 'Unit'),
+              decoration: InputDecoration(
+                labelText: 'Unit',
+                helperText: widget.canEditAll
+                    ? null
+                    : 'Unit hanya dapat diubah admin.',
+              ),
               items: <DropdownMenuItem<String>>[
                 const DropdownMenuItem<String>(value: null, child: Text('â€”')),
                 for (final AdminDepartment d in _departments)
                   DropdownMenuItem<String>(value: d.id, child: Text(d.name)),
               ],
-              onChanged: (String? v) => setState(() => _departmentId = v),
+              onChanged: widget.canEditAll
+                  ? (String? v) => setState(() => _departmentId = v)
+                  : null,
             ),
             if (!_editing) ...<Widget>[
               const SizedBox(height: 12),

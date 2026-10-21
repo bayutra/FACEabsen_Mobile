@@ -8,11 +8,19 @@ import '../data/employee_admin_repository.dart';
 import '../domain/employee_admin_models.dart';
 import 'employee_admin_form_screen.dart';
 
-/// Daftar & pengelolaan data karyawan (ADMIN).
+/// Daftar & pengelolaan data karyawan.
+///
+/// ADMIN melihat seluruh fasilitas dan boleh menambah/menonaktifkan.
+/// SUPERVISOR hanya melihat unit/timnya dan mengubah nama, telepon, jabatan.
 class EmployeeAdminScreen extends StatefulWidget {
-  const EmployeeAdminScreen({super.key, required this.dio});
+  const EmployeeAdminScreen({
+    super.key,
+    required this.dio,
+    this.canManageAll = true,
+  });
 
   final Dio dio;
+  final bool canManageAll;
 
   @override
   State<EmployeeAdminScreen> createState() => _EmployeeAdminScreenState();
@@ -74,7 +82,11 @@ class _EmployeeAdminScreenState extends State<EmployeeAdminScreen> {
   Future<void> _openForm([AdminEmployee? employee]) async {
     final bool? saved = await Navigator.of(context).push<bool>(
       MaterialPageRoute<bool>(
-        builder: (_) => EmployeeAdminFormScreen(dio: widget.dio, employee: employee),
+        builder: (_) => EmployeeAdminFormScreen(
+          dio: widget.dio,
+          employee: employee,
+          canEditAll: widget.canManageAll,
+        ),
       ),
     );
     if (saved == true && mounted) {
@@ -134,7 +146,7 @@ class _EmployeeAdminScreenState extends State<EmployeeAdminScreen> {
                 icon: const Icon(Icons.edit_outlined),
                 label: const Text('Ubah Data'),
               ),
-              if (e.active) ...<Widget>[
+              if (e.active && widget.canManageAll) ...<Widget>[
                 const SizedBox(height: 8),
                 OutlinedButton.icon(
                   onPressed: () => Navigator.of(ctx).pop('deactivate'),
@@ -220,12 +232,14 @@ class _EmployeeAdminScreenState extends State<EmployeeAdminScreen> {
           ),
           const SizedBox(height: 8),
           if (items.isEmpty)
-            const Padding(
-              padding: EdgeInsets.only(top: 32),
+            Padding(
+              padding: const EdgeInsets.only(top: 32),
               child: AdminEmpty(
                 icon: Icons.badge_outlined,
                 title: 'Belum ada karyawan',
-                subtitle: 'Tambahkan karyawan lewat tombol + di bawah.',
+                subtitle: widget.canManageAll
+                    ? 'Tambahkan karyawan lewat tombol + di bawah.'
+                    : 'Belum ada anggota unit/tim yang terdaftar.',
               ),
             )
           else
@@ -257,13 +271,16 @@ class _EmployeeAdminScreenState extends State<EmployeeAdminScreen> {
   Widget build(BuildContext context) {
     return AdminScaffold(
       title: 'Karyawan',
-      subtitle: '${_page?.totalItems ?? 0} karyawan terdaftar',
+      subtitle: widget.canManageAll
+          ? '${_page?.totalItems ?? 0} karyawan terdaftar'
+          : '${_page?.totalItems ?? 0} anggota unit/tim',
       actions: <Widget>[
-        IconButton(
-          tooltip: 'Tambah karyawan',
-          onPressed: () => _openForm(),
-          icon: const Icon(Icons.person_add_alt),
-        ),
+        if (widget.canManageAll)
+          IconButton(
+            tooltip: 'Tambah karyawan',
+            onPressed: () => _openForm(),
+            icon: const Icon(Icons.person_add_alt),
+          ),
       ],
       child: _body(),
     );

@@ -16,7 +16,8 @@ bool isSuperAdmin(List<String> roles) => roles.contains(roleSuperAdmin);
 bool isAdmin(List<String> roles) =>
     roles.contains(roleAdmin) || isSuperAdmin(roles);
 
-/// Supervisor melihat tim, koreksi, cuti, dan laporan.
+/// Supervisor melihat tim, koreksi, cuti, laporan, serta data karyawan/unit
+/// terbatas pada unit/timnya.
 bool isSupervisor(List<String> roles) =>
     roles.contains(roleSupervisor) || isAdmin(roles);
 

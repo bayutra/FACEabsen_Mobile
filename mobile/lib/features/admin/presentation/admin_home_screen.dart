@@ -49,48 +49,61 @@ class AdminHomeScreen extends StatelessWidget {
   }
 
   List<Widget> _sdm(BuildContext context) {
-    if (!isAdmin(roles)) return const <Widget>[];
+    if (!isSupervisor(roles)) return const <Widget>[];
+    final bool admin = isAdmin(roles);
     return <Widget>[
       AdminTile(
         icon: Icons.badge_outlined,
         title: 'Karyawan',
-        subtitle: 'Tambah, ubah, dan nonaktifkan akun karyawan',
+        subtitle: admin
+            ? 'Tambah, ubah, dan nonaktifkan akun karyawan'
+            : 'Ubah data anggota unit/tim Anda',
         onTap: () => Navigator.of(context).push(
           MaterialPageRoute<void>(
-            builder: (_) => EmployeeAdminScreen(dio: dio),
+            builder: (_) => EmployeeAdminScreen(
+              dio: dio,
+              canManageAll: admin,
+            ),
           ),
         ),
       ),
       AdminTile(
         icon: Icons.account_tree_outlined,
         title: 'Unit',
-        subtitle: 'Kelola unit kerja di rumah sakit',
+        subtitle: admin
+            ? 'Kelola unit kerja di rumah sakit'
+            : 'Lihat unit dan anggotanya',
         onTap: () => Navigator.of(context).push(
           MaterialPageRoute<void>(
-            builder: (_) => DepartmentAdminScreen(dio: dio),
+            builder: (_) => DepartmentAdminScreen(
+              dio: dio,
+              canManageAll: admin,
+            ),
           ),
         ),
       ),
-      AdminTile(
-        icon: Icons.schedule,
-        title: 'Shift',
-        subtitle: 'Jam kerja, toleransi keterlambatan, dan lintas hari',
-        onTap: () => Navigator.of(context).push(
-          MaterialPageRoute<void>(
-            builder: (_) => ShiftAdminScreen(dio: dio),
+      if (admin) ...<Widget>[
+        AdminTile(
+          icon: Icons.schedule,
+          title: 'Shift',
+          subtitle: 'Jam kerja, toleransi keterlambatan, dan lintas hari',
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute<void>(
+              builder: (_) => ShiftAdminScreen(dio: dio),
+            ),
           ),
         ),
-      ),
-      AdminTile(
-        icon: Icons.calendar_month_outlined,
-        title: 'Jadwal',
-        subtitle: 'Atur penugasan shift per karyawan per tanggal',
-        onTap: () => Navigator.of(context).push(
-          MaterialPageRoute<void>(
-            builder: (_) => ScheduleAdminScreen(dio: dio),
+        AdminTile(
+          icon: Icons.calendar_month_outlined,
+          title: 'Jadwal',
+          subtitle: 'Atur penugasan shift per karyawan per tanggal',
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute<void>(
+              builder: (_) => ScheduleAdminScreen(dio: dio),
+            ),
           ),
         ),
-      ),
+      ],
     ];
   }
 

@@ -113,8 +113,7 @@ class _UnitMembersScreenState extends State<UnitMembersScreen> {
         children: <Widget>[
           InfoBanner(
             '${items.length} karyawan terdaftar di ${widget.departmentName} '
-            '($active aktif). Pindahkan karyawan lewat menu Karyawan → '
-            'Ubah Data → Unit.',
+            '($active aktif). Ubah data anggota lewat menu Karyawan.',
             tone: InfoBannerTone.info,
             title: 'Kelompok ${widget.departmentName}',
           ),

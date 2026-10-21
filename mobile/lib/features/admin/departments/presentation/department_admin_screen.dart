@@ -7,14 +7,19 @@ import '../../presentation/admin_widgets.dart';
 import '../data/department_admin_repository.dart';
 import 'unit_members_screen.dart';
 
-/// Kelola master data Unit rumah sakit (ADMIN).
+/// Kelola master data Unit rumah sakit.
 ///
-/// Tambah/ubah nama Unit, pilih rumah sakit induk saat membuat baru,
-/// dan hapus dengan peringatan bila masih ada karyawan yang terhubung.
+/// ADMIN dapat menambah/mengubah/menghapus Unit. SUPERVISOR hanya melihat
+/// unitnya sendiri beserta anggotanya (`canManageAll = false`).
 class DepartmentAdminScreen extends StatefulWidget {
-  const DepartmentAdminScreen({super.key, required this.dio});
+  const DepartmentAdminScreen({
+    super.key,
+    required this.dio,
+    this.canManageAll = true,
+  });
 
   final Dio dio;
+  final bool canManageAll;
 
   @override
   State<DepartmentAdminScreen> createState() => _DepartmentAdminScreenState();
@@ -159,17 +164,20 @@ class _DepartmentAdminScreenState extends State<DepartmentAdminScreen> {
               padding: const EdgeInsets.only(top: 24),
               child: Column(
                 children: <Widget>[
-                  const AdminEmpty(
+                  AdminEmpty(
                     icon: Icons.apartment_outlined,
                     title: 'Belum ada Unit',
-                    subtitle: 'Tambahkan unit kerja agar karyawan bisa '
-                        'dikelompokkan.',
+                    subtitle: widget.canManageAll
+                        ? 'Tambahkan unit kerja agar karyawan bisa '
+                            'dikelompokkan.'
+                        : 'Unit Anda belum terdaftar. Hubungi admin.',
                   ),
-                  FilledButton.icon(
-                    onPressed: () => _openForm(),
-                    icon: const Icon(Icons.add),
-                    label: const Text('Tambah Unit'),
-                  ),
+                  if (widget.canManageAll)
+                    FilledButton.icon(
+                      onPressed: () => _openForm(),
+                      icon: const Icon(Icons.add),
+                      label: const Text('Tambah Unit'),
+                    ),
                 ],
               ),
             )
@@ -180,33 +188,35 @@ class _DepartmentAdminScreenState extends State<DepartmentAdminScreen> {
                 title: department.name,
                 subtitle: department.hospitalLabel,
                 onTap: () => _openMembers(department),
-                trailing: PopupMenuButton<String>(
-                  tooltip: 'Aksi Unit',
-                  onSelected: (String value) {
-                    if (value == 'members') {
-                      _openMembers(department);
-                    } else if (value == 'edit') {
-                      _openForm(department);
-                    } else if (value == 'delete') {
-                      _delete(department);
-                    }
-                  },
-                  itemBuilder: (BuildContext ctx) =>
-                      const <PopupMenuEntry<String>>[
-                    PopupMenuItem<String>(
-                      value: 'members',
-                      child: Text('Lihat anggota'),
-                    ),
-                    PopupMenuItem<String>(
-                      value: 'edit',
-                      child: Text('Ubah nama'),
-                    ),
-                    PopupMenuItem<String>(
-                      value: 'delete',
-                      child: Text('Hapus'),
-                    ),
-                  ],
-                ),
+                trailing: widget.canManageAll
+                    ? PopupMenuButton<String>(
+                        tooltip: 'Aksi Unit',
+                        onSelected: (String value) {
+                          if (value == 'members') {
+                            _openMembers(department);
+                          } else if (value == 'edit') {
+                            _openForm(department);
+                          } else if (value == 'delete') {
+                            _delete(department);
+                          }
+                        },
+                        itemBuilder: (BuildContext ctx) =>
+                            const <PopupMenuEntry<String>>[
+                          PopupMenuItem<String>(
+                            value: 'members',
+                            child: Text('Lihat anggota'),
+                          ),
+                          PopupMenuItem<String>(
+                            value: 'edit',
+                            child: Text('Ubah nama'),
+                          ),
+                          PopupMenuItem<String>(
+                            value: 'delete',
+                            child: Text('Hapus'),
+                          ),
+                        ],
+                      )
+                    : const Icon(Icons.chevron_right),
               ),
               const SizedBox(height: 8),
             ],
@@ -225,13 +235,16 @@ class _DepartmentAdminScreenState extends State<DepartmentAdminScreen> {
   Widget build(BuildContext context) {
     return AdminScaffold(
       title: 'Unit',
-      subtitle: 'Unit kerja & rumah sakit induk',
+      subtitle: widget.canManageAll
+          ? 'Unit kerja & rumah sakit induk'
+          : 'Unit Anda & anggotanya',
       actions: <Widget>[
-        IconButton(
-          tooltip: 'Tambah Unit',
-          onPressed: () => _openForm(),
-          icon: const Icon(Icons.add),
-        ),
+        if (widget.canManageAll)
+          IconButton(
+            tooltip: 'Tambah Unit',
+            onPressed: () => _openForm(),
+            icon: const Icon(Icons.add),
+          ),
       ],
       child: _body(),
     );

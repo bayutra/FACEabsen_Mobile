@@ -55,6 +55,10 @@ export const ROLE_PERMISSIONS: Record<RoleName, string[]> = {
     'correction:approve:team',
     'leave:approve:team',
     'report:read:team',
+    // Scoped SDM: service layer limits these to the supervisor's own unit /
+    // direct reports and only allows name, phone, and position updates.
+    'employee:read',
+    'employee:update',
   ],
   ADMIN: [
     'employee:create',

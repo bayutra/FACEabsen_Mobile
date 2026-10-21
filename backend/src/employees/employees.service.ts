@@ -101,6 +101,20 @@ export class EmployeesService {
       }
       AND.push({ department: { hospitalId: scope.hospitalId } });
     }
+    // Supervisor hanya melihat bawahan langsung dan anggota unitnya sendiri.
+    // ADMIN/SUPER_ADMIN tetap melihat seluruh fasilitas.
+    if (!satisfiesRole(roles, 'ADMIN')) {
+      const me = await this.prisma.employee.findUnique({
+        where: { userId },
+        select: { id: true, departmentId: true },
+      });
+      if (!me) {
+        return { data: [], pagination: { page, pageSize, totalItems: 0, totalPages: 0 } };
+      }
+      const scopeOr: Array<Record<string, unknown>> = [{ supervisorId: me.id }];
+      if (me.departmentId) scopeOr.push({ departmentId: me.departmentId });
+      AND.push({ OR: scopeOr });
+    }
     const where = AND.length > 0 ? { AND } : {};
     const [total, rows] = await Promise.all([
       this.prisma.employee.count({ where }),
@@ -130,6 +144,9 @@ export class EmployeesService {
       if (scope.kind !== 'hospital' || employee.department?.hospitalId !== scope.hospitalId) {
         throw new NotFoundException('Employee not found');
       }
+    }
+    if (!satisfiesRole(roles, 'ADMIN')) {
+      await this.assertSupervisorScope(userId, employee);
     }
     return employee;
   }
@@ -219,6 +236,23 @@ export class EmployeesService {
     // staff at all (nor deactivate a SUPER_ADMIN's employee record).
     await this.assertSameFacility(actorId, existing.department?.hospitalId, 'Employee not found');
     await this.assertRankBelow(actorId, existing.userId);
+
+    // Supervisor hanya boleh merapikan data kontak anggota unit/timnya. Unit,
+    // atasan, NIP, email login, dan peran tetap wewenang ADMIN.
+    const actorRoles = await this.getRoles(actorId);
+    const supervisorOnly = !satisfiesRole(actorRoles, 'ADMIN');
+    if (supervisorOnly) {
+      await this.assertSupervisorScope(actorId, existing);
+      const forbidden = (['email', 'departmentId', 'supervisorId'] as const).filter(
+        (key) => dto[key] !== undefined,
+      );
+      if (forbidden.length > 0) {
+        throw new ForbiddenException(
+          `Hanya admin yang dapat mengubah: ${forbidden.join(', ')}`,
+        );
+      }
+    }
+
     if (dto.email && dto.email !== existing.email) {
       await this.assertUnique(id, dto.email, undefined);
     }
@@ -228,10 +262,18 @@ export class EmployeesService {
       await this.assertSupervisorInFacility(dto.supervisorId, actorId);
     }
 
+    const data: UpdateEmployeeDto = supervisorOnly
+      ? {
+          ...(dto.name !== undefined ? { name: dto.name } : {}),
+          ...(dto.phone !== undefined ? { phone: dto.phone } : {}),
+          ...(dto.position !== undefined ? { position: dto.position } : {}),
+        }
+      : dto;
+
     try {
-      const employee = await this.prisma.employee.update({ where: { id }, data: { ...dto } });
-      if (dto.email && existing.userId) {
-        await this.prisma.user.update({ where: { id: existing.userId }, data: { email: dto.email } });
+      const employee = await this.prisma.employee.update({ where: { id }, data: { ...data } });
+      if (data.email && existing.userId) {
+        await this.prisma.user.update({ where: { id: existing.userId }, data: { email: data.email } });
       }
       await this.audit.log({
         actorId,
@@ -239,7 +281,7 @@ export class EmployeesService {
         targetType: 'employee',
         targetId: id,
         ipAddress: meta.ip,
-        metadata: { updated: Object.keys(dto) },
+        metadata: { updated: Object.keys(data) },
       });
       return this.loadOne(employee.id);
     } catch (e) {
@@ -282,8 +324,19 @@ export class EmployeesService {
   // ---------- departments (STEP 14 filter support; full CRUD: admin flows) ----------
 
   async listDepartments(hospitalId: string | undefined, userId: string, roles: string[]) {
-    // Facility scoping: ADMIN callers always list their own hospital, no
-    // matter what hospitalId the query string carries.
+    // Supervisor hanya melihat unitnya sendiri; ADMIN melihat seluruh
+    // fasilitas. Query string hospitalId tidak pernah dipercaya.
+    if (!satisfiesRole(roles, 'ADMIN')) {
+      const me = await this.prisma.employee.findUnique({
+        where: { userId },
+        select: { departmentId: true },
+      });
+      if (!me?.departmentId) return [];
+      return this.prisma.department.findMany({
+        where: { id: me.departmentId },
+        include: { hospital: { select: { id: true, code: true, name: true } } },
+      });
+    }
     if (!satisfiesRole(roles, 'SUPER_ADMIN')) {
       const scope = await resolveHospitalScope(this.prisma, userId, roles);
       if (scope.kind !== 'hospital') return [];
@@ -455,6 +508,26 @@ export class EmployeesService {
   private async ownerOf(userId: string): Promise<string | null> {
     const emp = await this.prisma.employee.findUnique({ where: { userId } });
     return emp?.id ?? null;
+  }
+
+  /**
+   * Supervisor hanya boleh menyentuh bawahan langsungnya atau anggota unit
+   * yang sama. Di luar itu hasilnya 404 agar daftar karyawan tidak bisa
+   * dienumerasi dari luar wewenang.
+   */
+  private async assertSupervisorScope(
+    actorId: string,
+    target: { supervisorId: string | null; departmentId: string | null },
+    message = 'Employee not found',
+  ) {
+    const me = await this.prisma.employee.findUnique({
+      where: { userId: actorId },
+      select: { id: true, departmentId: true },
+    });
+    if (!me) throw new NotFoundException(message);
+    const directReport = target.supervisorId === me.id;
+    const sameUnit = me.departmentId != null && target.departmentId === me.departmentId;
+    if (!directReport && !sameUnit) throw new NotFoundException(message);
   }
 
   /**

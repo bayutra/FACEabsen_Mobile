@@ -32,7 +32,7 @@ export class DepartmentsController {
     return this.employees.listPublicDepartments();
   }
 
-  @Roles('ADMIN')
+  @Roles('SUPERVISOR')
   @RequirePermissions('employee:read')
   @Get()
   list(@Query('hospitalId') hospitalId: string | undefined, @CurrentUser() user: AuthContext) {

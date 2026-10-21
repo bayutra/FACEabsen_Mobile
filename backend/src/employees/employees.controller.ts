@@ -24,7 +24,7 @@ export class EmployeesController {
     return this.employees.create(dto, actor.userId, { ip: req.ip });
   }
 
-  @Roles('ADMIN')
+  @Roles('SUPERVISOR')
   @RequirePermissions('employee:read')
   @Get()
   findAll(@Query() query: ListEmployeesQuery, @CurrentUser() user: AuthContext) {
@@ -46,14 +46,14 @@ export class EmployeesController {
     return this.employees.updateMyProfile(actor.userId, dto, { ip: req.ip });
   }
 
-  @Roles('ADMIN')
+  @Roles('SUPERVISOR')
   @RequirePermissions('employee:read')
   @Get(':id')
   findOne(@Param('id') id: string, @CurrentUser() user: AuthContext) {
     return this.employees.findOne(id, user.userId, user.roles);
   }
 
-  @Roles('ADMIN')
+  @Roles('SUPERVISOR')
   @RequirePermissions('employee:update')
   @Patch(':id')
   update(

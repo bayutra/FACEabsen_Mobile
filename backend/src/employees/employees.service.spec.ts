@@ -306,6 +306,134 @@ describe('EmployeesService facility scoping (ADMIN)', () => {
   });
 });
 
+// Tahap 3 — supervisor scoping: only direct reports and the same unit are
+// visible/editable, and only contact fields may change.
+describe('EmployeesService supervisor scoping', () => {
+  function supervisorPrisma(over: Record<string, Record<string, unknown>> = {}) {
+    return makePrisma({
+      userRole: {
+        findMany: vi.fn(async (a: { where: { userId: string } }) => {
+          if (a.where.userId === 'u-sup') return [{ role: { name: 'SUPERVISOR' } }];
+          if (a.where.userId === 'u-admin') return [{ role: { name: 'ADMIN' } }];
+          return [{ role: { name: 'EMPLOYEE' } }];
+        }),
+      },
+      employee: {
+        findUnique: vi.fn(async (a: { where: Record<string, unknown> }) => {
+          if ('userId' in a.where) {
+            return { id: 'e-sup', departmentId: 'd1', department: { hospitalId: 'h1' } };
+          }
+          if (a.where.id === 'e-emp') {
+            return {
+              ...empRow({ id: 'e-emp', userId: 'u-emp' }),
+              supervisorId: 'e-sup',
+              departmentId: 'd2',
+              department: { hospitalId: 'h1' },
+            };
+          }
+          if (a.where.id === 'e-other') {
+            return {
+              ...empRow({ id: 'e-other', userId: 'u-other' }),
+              supervisorId: null,
+              departmentId: 'd3',
+              department: { hospitalId: 'h1' },
+            };
+          }
+          if (a.where.id === 'e-admin') {
+            return {
+              ...empRow({ id: 'e-admin', userId: 'u-admin' }),
+              supervisorId: null,
+              departmentId: 'd1',
+              department: { hospitalId: 'h1' },
+            };
+          }
+          return null;
+        }),
+        update: vi.fn(async (a: { where: { id: string }; data: object }) => ({
+          ...empRow({ id: a.where.id }),
+          ...a.data,
+        })),
+      },
+      ...over,
+    });
+  }
+
+  it('findAll adds unit/direct-report scope for supervisor', async () => {
+    const findMany = vi.fn(async () => []);
+    const svc = new EmployeesService(
+      supervisorPrisma({
+        employee: {
+          findUnique: vi.fn(async (a: { where: Record<string, unknown> }) =>
+            'userId' in a.where
+              ? { id: 'e-sup', departmentId: 'd1', department: { hospitalId: 'h1' } }
+              : null,
+          ),
+          findMany,
+          count: vi.fn(async () => 0),
+          update: vi.fn(),
+        },
+      }),
+      auditStub,
+    );
+    await svc.findAll({}, 'u-sup', ['SUPERVISOR']);
+    expect(findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          AND: [
+            { department: { hospitalId: 'h1' } },
+            { OR: [{ supervisorId: 'e-sup' }, { departmentId: 'd1' }] },
+          ],
+        },
+      }),
+    );
+  });
+
+  it('findOne / update reject employees outside the unit and direct reports', async () => {
+    const svc = new EmployeesService(supervisorPrisma(), auditStub);
+    await expect(svc.findOne('e-other', 'u-sup', ['SUPERVISOR'])).rejects.toThrow(
+      'Employee not found',
+    );
+    await expect(svc.update('e-other', { name: 'X' }, 'u-sup')).rejects.toThrow(
+      'Employee not found',
+    );
+    await expect(svc.findOne('e-emp', 'u-sup', ['SUPERVISOR'])).resolves.toMatchObject({
+      id: 'e-emp',
+    });
+  });
+
+  it('supervisor may update contact fields but not email/unit/supervisor', async () => {
+    const prisma = supervisorPrisma();
+    const svc = new EmployeesService(prisma, auditStub);
+    await expect(svc.update('e-emp', { email: 'new@rs.test' }, 'u-sup')).rejects.toThrow(
+      'Hanya admin',
+    );
+    await expect(svc.update('e-emp', { departmentId: 'd9' }, 'u-sup')).rejects.toThrow(
+      'Hanya admin',
+    );
+    await expect(
+      svc.update('e-emp', { name: 'Nama Baru', phone: '0812', position: 'Perawat' }, 'u-sup'),
+    ).resolves.toMatchObject({ id: 'e-emp' });
+    const update = prisma.employee.update as ReturnType<typeof vi.fn>;
+    expect(update.mock.calls[0][0].data).toEqual({
+      name: 'Nama Baru',
+      phone: '0812',
+      position: 'Perawat',
+    });
+  });
+
+  it('supervisor sees only their own unit in listDepartments', async () => {
+    const findMany = vi.fn(async () => []);
+    const prisma = supervisorPrisma({
+      department: { findUnique: vi.fn(), findMany },
+    });
+    const svc = new EmployeesService(prisma, auditStub);
+    await svc.listDepartments(undefined, 'u-sup', ['SUPERVISOR']);
+    expect(findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { id: 'd1' } }),
+    );
+  });
+});
+
 // M7 — rank guard: a non-SUPER_ADMIN cannot touch accounts ranked at or above
 // their own, even inside their own facility.
 describe('EmployeesService rank guard (ADMIN vs SUPER_ADMIN)', () => {

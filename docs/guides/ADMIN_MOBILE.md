@@ -12,6 +12,10 @@ tidak ada logika bisnis yang diduplikasi.
 - Karyawan biasa tidak pernah melihat pintasan maupun layar admin.
 - Server tetap menegakkan RBAC per endpoint; UI hanya menyembunyikan menu
   yang tidak berhak diakses.
+- **Supervisor** dapat membuka **Karyawan** dan **Unit** untuk unit/timnya
+  sendiri. Supervisor hanya boleh mengubah nama, telepon, dan jabatan anggota;
+  email login, unit, atasan, NIP, status, dan peran tetap wewenang ADMIN.
+  Daftar karyawan/unit otomatis dibatasi server, bukan hanya disembunyikan di UI.
 
 ## Pendaftaran akun
 
@@ -40,8 +44,8 @@ tidak ada logika bisnis yang diduplikasi.
 
 | Seksi | Modul | Peran | Endpoint |
 |---|---|---|---|
-| SDM | Karyawan | ADMIN | `GET/POST /employees` (`?departmentId=` untuk filter unit), `PATCH /employees/{id}`, `POST /employees/{id}/deactivate` |
-| SDM | Unit Kerja | ADMIN | `GET/POST /departments`, `PATCH/DELETE /departments/{id}`; ketuk unit → anggota (`GET /employees?departmentId={id}`) |
+| SDM | Karyawan | ADMIN penuh; SUPERVISOR hanya unit/tim sendiri | `GET /employees` (otomatis dibatasi untuk supervisor), `GET /employees/{id}`, `PATCH /employees/{id}` (supervisor: nama, telepon, jabatan); `POST` dan `deactivate` ADMIN |
+| SDM | Unit Kerja | ADMIN penuh; SUPERVISOR hanya melihat unitnya | `GET /departments` (otomatis dibatasi untuk supervisor), `GET /employees?departmentId={id}`; tambah/ubah/hapus unit ADMIN |
 | SDM | Shift | ADMIN | `GET/POST /shifts`, `PATCH/DELETE /shifts/{id}` |
 | SDM | Jadwal | ADMIN | `GET/POST /schedules`, `DELETE /schedules/{id}` |
 | Persetujuan | Koreksi Presensi | SUPERVISOR+ | `GET /corrections`, `POST /corrections/{id}/approve\|reject` |
