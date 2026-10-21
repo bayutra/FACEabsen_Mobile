@@ -1,7 +1,7 @@
 import { ArrayMaxSize, ArrayMinSize, IsArray, IsNumber, IsOptional, IsString, Max, MaxLength, Min } from 'class-validator';
 
 export const FACE_DIM = 192;
-export const MIN_QUALITY = 0.7;
+export const MIN_QUALITY = 0.6;
 
 export class RegisterFaceDto {
   /** L2-normalized MobileFaceNet embedding, exactly 192 finite floats. */

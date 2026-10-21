@@ -31,7 +31,7 @@ String faceGateMessage(FaceGate gate) {
 FaceGate decideFaces({required int count, required double relativeWidth}) {
   if (count == 0) return FaceGate.noFace;
   if (count > 1) return FaceGate.multipleFaces;
-  if (relativeWidth < 0.25) return FaceGate.tooSmall;
+  if (relativeWidth < 0.20) return FaceGate.tooSmall;
   return FaceGate.ok;
 }
 
@@ -80,15 +80,15 @@ class QualityResult {
 QualityResult assessQuality({
   required img.Image grayFace,
   required double relativeWidth,
-  double blurThreshold = 100.0,
+  double blurThreshold = 60.0,
 }) {
   final double variance = laplacianVariance(grayFace);
   final double brightness = meanBrightness(grayFace);
   // Lighting first: most actionable for flat frames (which also lack texture).
-  if (brightness < 0.15) {
+  if (brightness < 0.10) {
     return QualityResult(gate: FaceGate.tooDark, score: _score(variance, brightness, relativeWidth, blurThreshold));
   }
-  if (brightness > 0.95) {
+  if (brightness > 0.98) {
     return QualityResult(gate: FaceGate.tooBright, score: _score(variance, brightness, relativeWidth, blurThreshold));
   }
   if (variance < blurThreshold) {
@@ -152,7 +152,7 @@ FacePrepOutcome evaluateFaceCapture({
   required int width,
   required int height,
   required double relativeWidth,
-  double blurThreshold = 100.0,
+  double blurThreshold = 60.0,
 }) {
   final img.Image crop = cropFace(decoded, left: left, top: top, width: width, height: height);
   final img.Image gray = img.grayscale(crop);

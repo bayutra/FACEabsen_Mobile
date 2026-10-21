@@ -175,7 +175,7 @@ class FaceRepository {
       final double? rightOpen = face.rightEyeOpenProbability;
       if (leftOpen != null &&
           rightOpen != null &&
-          (leftOpen < 0.4 || rightOpen < 0.4)) {
+          (leftOpen < 0.25 || rightOpen < 0.25)) {
         return _EvaluatedPicture(
           gate: FaceGate.eyesClosed,
           score: 0,
