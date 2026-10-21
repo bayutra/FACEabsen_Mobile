@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+
+<html class="light" lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>RS Absen - Liveness Challenge Biometrik</title>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Inter Google Font -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Theme Configuration Verbatim -->
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "surface-container-high": "#dce9ff",
+            "surface-container-low": "#eff4ff",
+            "outline-variant": "#bdc9c6",
+            "on-primary-fixed": "#00201d",
+            "on-primary": "#ffffff",
+            "inverse-on-surface": "#eaf1ff",
+            "on-secondary-fixed": "#001e2f",
+            "surface-container-lowest": "#ffffff",
+            "on-tertiary-fixed-variant": "#005049",
+            "primary": "#005c55",
+            "on-secondary-fixed-variant": "#004c6e",
+            "on-background": "#0b1c30",
+            "on-primary-fixed-variant": "#00504a",
+            "surface-variant": "#d3e4fe",
+            "secondary-fixed-dim": "#89ceff",
+            "surface-bright": "#f8f9ff",
+            "error-container": "#ffdad6",
+            "inverse-primary": "#80d5cb",
+            "on-surface": "#0b1c30",
+            "background": "#f8f9ff",
+            "surface": "#f8f9ff",
+            "on-tertiary": "#ffffff",
+            "secondary-fixed": "#c9e6ff",
+            "error": "#ba1a1a",
+            "primary-fixed": "#9cf2e8",
+            "on-surface-variant": "#3e4947",
+            "tertiary-fixed": "#89f5e7",
+            "secondary-container": "#39b8fd",
+            "on-error": "#ffffff",
+            "primary-fixed-dim": "#80d5cb",
+            "surface-container-highest": "#d3e4fe",
+            "tertiary": "#005c54",
+            "surface-tint": "#006a63",
+            "on-secondary": "#ffffff",
+            "outline": "#6e7977",
+            "primary-container": "#0f766e",
+            "on-tertiary-fixed": "#00201d",
+            "on-tertiary-container": "#91fdef",
+            "secondary": "#006591",
+            "on-error-container": "#93000a",
+            "surface-dim": "#cbdbf5",
+            "inverse-surface": "#213145",
+            "tertiary-fixed-dim": "#6bd8cb",
+            "tertiary-container": "#00776d",
+            "surface-container": "#e5eeff",
+            "on-primary-container": "#a3faef",
+            "on-secondary-container": "#004666"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "gutter-sm": "0.75rem",
+            "space-xl": "2rem",
+            "space-sm": "0.5rem",
+            "margin": "1rem",
+            "space-lg": "1.5rem",
+            "space-md": "1rem",
+            "space-xs": "0.25rem",
+            "margin-lg": "1.5rem",
+            "gutter": "1rem"
+          },
+          "fontFamily": {
+            "headline-md": ["Inter"],
+            "body-lg-medium": ["Inter"],
+            "body-md-medium": ["Inter"],
+            "body-lg": ["Inter"],
+            "body-md": ["Inter"],
+            "display-lg-mobile": ["Inter"],
+            "display-lg": ["Inter"],
+            "headline-lg": ["Inter"],
+            "label-sm": ["Inter"],
+            "metric-mono": ["Inter"],
+            "headline-sm": ["Inter"],
+            "label-md": ["Inter"]
+          },
+          "fontSize": {
+            "headline-md": ["20px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "body-lg-medium": ["16px", { "lineHeight": "24px", "fontWeight": "500" }],
+            "body-md-medium": ["14px", { "lineHeight": "20px", "fontWeight": "500" }],
+            "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+            "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+            "display-lg-mobile": ["28px", { "lineHeight": "36px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+            "display-lg": ["36px", { "lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+            "headline-lg": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.015em", "fontWeight": "600" }],
+            "label-sm": ["11px", { "lineHeight": "14px", "letterSpacing": "0.01em", "fontWeight": "500" }],
+            "metric-mono": ["32px", { "lineHeight": "36px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+            "headline-sm": ["18px", { "lineHeight": "24px", "fontWeight": "600" }],
+            "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      display: inline-block;
+      vertical-align: middle;
+      line-height: 1;
+    }
+    
+    @keyframes scan-laser {
+      0%, 100% { transform: translateY(-100%); opacity: 0; }
+      20% { opacity: 0.85; }
+      80% { opacity: 0.85; }
+      100% { transform: translateY(120%); opacity: 0; }
+    }
+    .animate-scan {
+      animation: scan-laser 3s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    }
+
+    @keyframes pulse-ring {
+      0% { transform: scale(0.98); opacity: 0.7; }
+      50% { transform: scale(1.02); opacity: 1; }
+      100% { transform: scale(0.98); opacity: 0.7; }
+    }
+    .animate-guide-pulse {
+      animation: pulse-ring 2.5s ease-in-out infinite;
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface antialiased min-h-screen flex justify-center selection:bg-primary selection:text-on-primary">
+<!-- Mobile Viewport Container (Hospital Presensi Mobile Screen: RS Absen) -->
+<main class="w-full max-w-md min-h-screen flex flex-col bg-inverse-surface text-surface relative overflow-x-hidden shadow-2xl">
+<!-- Top Bar: Task-focused Header (Close / Return to Shift Home) -->
+<header class="w-full z-30 pt-4 pb-3 px-margin flex items-center justify-between border-b border-outline/20 bg-inverse-surface/90 backdrop-blur-md sticky top-0">
+<div class="flex items-center gap-space-sm">
+<a aria-label="Kembali" class="w-10 h-10 rounded-full flex items-center justify-center bg-surface/10 text-surface hover:bg-surface/20 active:scale-[0.98] transition-all duration-200" href="#back">
+<span class="material-symbols-outlined" data-icon="arrow_back">arrow_back</span>
+</a>
+<div class="flex flex-col">
+<h1 class="font-headline-sm text-headline-sm text-surface leading-tight">Verifikasi Kehadiran</h1>
+<p class="font-label-sm text-label-sm text-primary-fixed">Ns. Siti Rahma, S.Kep • Poli Rawat Inap</p>
+</div>
+</div>
+<!-- Step Badge Counter -->
+<div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary-container/60 border border-primary-fixed/40">
+<span class="w-2 h-2 rounded-full bg-tertiary-fixed animate-ping"></span>
+<span class="font-label-sm text-label-sm text-on-primary-container font-medium">Liveness 2/2</span>
+</div>
+</header>
+<!-- Sub-Header Progress & Challenge Context Pill -->
+<section class="px-margin pt-3 pb-2 z-20 flex flex-col gap-space-xs">
+<div class="flex items-center justify-between text-surface-dim">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-tertiary-fixed text-[18px]" data-icon="security_update_good">security_update_good</span>
+<span class="font-label-md text-label-md text-surface-container-high tracking-wide">Tantangan Biometrik (Liveness)</span>
+</div>
+<span class="font-label-md text-label-md text-primary-fixed font-semibold" id="validation-percent-text">Progres: 65%</span>
+</div>
+<!-- Segmented Medical Progress Bar -->
+<div class="w-full bg-surface-dim/20 h-1.5 rounded-full overflow-hidden flex">
+<div class="bg-primary-fixed h-full rounded-full transition-all duration-500 ease-out" style="width: 65%;"></div>
+</div>
+</section>
+<!-- Active Challenge Directive Banner (Clinical Contrast Sheet) -->
+<section class="px-margin my-2 z-20">
+<div class="w-full bg-surface-container-lowest rounded-xl p-space-md text-on-surface shadow-md border-l-4 border-primary flex items-start gap-space-sm relative overflow-hidden">
+<div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-primary shrink-0">
+<span class="material-symbols-outlined text-[26px]" data-icon="visibility" data-weight="fill" style="font-variation-settings: 'FILL' 1;">visibility</span>
+</div>
+<div class="flex-1 pr-2">
+<div class="flex items-center justify-between mb-0.5">
+<span class="font-label-sm text-label-sm text-primary uppercase font-bold tracking-wider">Instruksi Medis Aktif</span>
+<div class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-surface-container-high text-on-secondary-fixed text-[11px] font-semibold">
+<span class="material-symbols-outlined text-[13px]" data-icon="timer">timer</span>
+<span id="countdown-timer">00:04 dtk</span>
+</div>
+</div>
+<h2 class="font-body-lg-medium text-body-lg-medium text-on-surface leading-snug" id="active-challenge-text">
+            Tantangan Aktif: Kedipkan Kedua Mata Perlahan
+          </h2>
+<p class="font-label-sm text-label-sm text-on-surface-variant mt-0.5">
+            Pastikan pencahayaan cukup dan mata terlihat jelas tanpa pantulan kacamata.
+          </p>
+</div>
+</div>
+</section>
+<!-- Interactive Challenge Preset Switcher Pills (Healthcare Testing Mode) -->
+<div class="px-margin py-1 z-20 flex items-center gap-2 overflow-x-auto no-scrollbar">
+<button class="challenge-pill active px-3 py-1.5 rounded-full font-label-md text-label-md border bg-primary text-on-primary border-primary flex items-center gap-1.5 shrink-0 active:scale-[0.98] transition-all" data-challenge="Kedipkan Kedua Mata Perlahan" data-icon-target="visibility" type="button">
+<span class="material-symbols-outlined text-[16px]" data-icon="remove_red_eye">remove_red_eye</span>
+<span>Kedipkan Mata</span>
+</button>
+<button class="challenge-pill px-3 py-1.5 rounded-full font-label-md text-label-md border bg-surface/10 text-surface border-outline/30 hover:bg-surface/20 flex items-center gap-1.5 shrink-0 active:scale-[0.98] transition-all" data-challenge="Tolehkan Kepala Perlahan ke Kiri (15°)" data-icon-target="arrow_back" type="button">
+<span class="material-symbols-outlined text-[16px]" data-icon="turn_left">turn_left</span>
+<span>Lihat ke Kiri</span>
+</button>
+<button class="challenge-pill px-3 py-1.5 rounded-full font-label-md text-label-md border bg-surface/10 text-surface border-outline/30 hover:bg-surface/20 flex items-center gap-1.5 shrink-0 active:scale-[0.98] transition-all" data-challenge="Tolehkan Kepala Perlahan ke Kanan (15°)" data-icon-target="arrow_forward" type="button">
+<span class="material-symbols-outlined text-[16px]" data-icon="turn_right">turn_right</span>
+<span>Lihat ke Kanan</span>
+</button>
+<button class="challenge-pill px-3 py-1.5 rounded-full font-label-md text-label-md border bg-surface/10 text-surface border-outline/30 hover:bg-surface/20 flex items-center gap-1.5 shrink-0 active:scale-[0.98] transition-all" data-challenge="Buka Mulut Sedikit lalu Rapatkan Kembali" data-icon-target="face" type="button">
+<span class="material-symbols-outlined text-[16px]" data-icon="mood">mood</span>
+<span>Buka &amp; Tutup Mulut</span>
+</button>
+</div>
+<!-- Main Clinical Viewport / Face Guide Viewfinder Canvas -->
+<div class="relative flex-1 flex flex-col items-center justify-center px-margin py-3 min-h-[350px]">
+<!-- Video Viewfinder Frame with Employee Subject -->
+<div class="relative w-64 h-80 rounded-[32px] overflow-hidden border-2 border-primary-fixed/40 bg-on-background shadow-2xl flex items-center justify-center">
+<!-- Hospital Staff Camera Image Simulation -->
+<img class="w-full h-full object-cover object-center filter brightness-[0.92] contrast-[1.05]" data-alt="A close-up cinematic portrait of an Indonesian female hospital nurse in standard clinical scrubs and head covering, facing directly into the mobile biometric verification camera in a well-lit medical ward corridor with cool teal hospital ambient lighting and crisp focused facial contours." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA6IA4Dvrxxr6GgC9cpKJ96FTe9lGApLuIiPukLMnTkBN_D8x5UdzT39TggFSu5ygdmDa5a9ke6NO6_qQjpsFv3gDR0vQZLnfY5G18h_YLNF2p2QsqHcxRBQy85NIKiP3CEBfBmqxJmSwcYD_RHwuXOxT3uNix16vVrehaj0whz6wLgih6Oyn1mZ04rwgKOwXYWYUEPLLZBjM79y-2jYbwlQanJayp-DJy1UN_fuvHcGzdeRKvHOmQl"/>
+<!-- Optical Dark Gradient Vignette for Depth -->
+<div class="absolute inset-0 bg-gradient-to-t from-inverse-surface/80 via-transparent to-inverse-surface/60 pointer-events-none"></div>
+<!-- Biometric Mesh Tracking Grid & Landmark Overlay -->
+<svg class="absolute inset-0 w-full h-full pointer-events-none opacity-65" fill="none" viewbox="0 0 256 320" xmlns="http://www.w3.org/2000/svg">
+<!-- Facial Contour Polygons -->
+<ellipse cx="128" cy="155" rx="72" ry="96" stroke="#89f5e7" stroke-dasharray="3 3" stroke-width="1.2"></ellipse>
+<path d="M72 135 C 90 120, 110 120, 128 130 C 146 120, 166 120, 184 135" stroke="#9cf2e8" stroke-dasharray="2 2" stroke-width="1.2"></path>
+<!-- Eye Landmark Tracking Circles -->
+<circle cx="102" cy="142" r="14" stroke="#00d2b7" stroke-width="1.5"></circle>
+<circle cx="102" cy="142" fill="#80d5cb" r="4"></circle>
+<circle cx="154" cy="142" r="14" stroke="#00d2b7" stroke-width="1.5"></circle>
+<circle cx="154" cy="142" fill="#80d5cb" r="4"></circle>
+<!-- Nose Bridge & Lip Landmarks -->
+<path d="M128 135 L 128 180 L 120 188 L 136 188 Z" fill="none" stroke="#89f5e7" stroke-width="1"></path>
+<ellipse cx="128" cy="216" rx="22" ry="9" stroke="#89f5e7" stroke-dasharray="2 2" stroke-width="1.2"></ellipse>
+<line stroke="#00f3d6" stroke-width="1.5" x1="110" x2="146" y1="216" y2="216"></line>
+<!-- 3D Mesh Dots -->
+<circle cx="70" cy="165" fill="#80d5cb" r="2"></circle>
+<circle cx="186" cy="165" fill="#80d5cb" r="2"></circle>
+<circle cx="128" cy="98" fill="#80d5cb" r="2.5"></circle>
+<circle cx="128" cy="254" fill="#80d5cb" r="2.5"></circle>
+<circle cx="95" cy="180" fill="#80d5cb" r="1.5"></circle>
+<circle cx="161" cy="180" fill="#80d5cb" r="1.5"></circle>
+</svg>
+<!-- Dynamic Laser Scanning Line -->
+<div class="absolute inset-x-4 h-1 bg-gradient-to-r from-transparent via-primary-fixed to-transparent shadow-[0_0_15px_#89f5e7] animate-scan pointer-events-none"></div>
+<!-- Corner Medical HUD Brackets (Precision Viewfinder) -->
+<div class="absolute top-4 left-4 w-7 h-7 border-t-2 border-l-2 border-tertiary-fixed rounded-tl-lg pointer-events-none"></div>
+<div class="absolute top-4 right-4 w-7 h-7 border-t-2 border-r-2 border-tertiary-fixed rounded-tr-lg pointer-events-none"></div>
+<div class="absolute bottom-4 left-4 w-6 h-6 border-b-2 border-l-2 border-tertiary-fixed rounded-bl-lg pointer-events-none"></div>
+<div class="absolute bottom-4 right-4 w-6 h-6 border-b-2 border-r-2 border-tertiary-fixed rounded-br-lg pointer-events-none"></div>
+<!-- Center Liveness Crosshair Status Pill -->
+<div class="absolute top-4 inset-x-0 mx-auto w-fit px-3 py-1 rounded-full bg-inverse-surface/85 backdrop-blur-md border border-primary-fixed/40 flex items-center gap-1.5 shadow-sm">
+<span class="w-2 h-2 rounded-full bg-tertiary-fixed"></span>
+<span class="font-label-sm text-label-sm text-surface tracking-wide">Pelacakan Wajah Aktif</span>
+</div>
+<!-- Viewport Bottom Hint Pill -->
+<div class="absolute bottom-4 inset-x-0 mx-auto w-fit px-3 py-1 rounded-full bg-primary-container/90 backdrop-blur-md text-on-primary flex items-center gap-1 shadow-sm">
+<span class="material-symbols-outlined text-[16px]" data-icon="center_focus_strong">center_focus_strong</span>
+<span class="font-label-sm text-label-sm font-medium">Jaga Posisi Tegak Lurus</span>
+</div>
+</div>
+<!-- Real-time Medical Sensory Indicator Array (Elevation 1 Card) -->
+<div class="w-full max-w-sm mt-3 px-3 py-2 bg-inverse-surface/75 border border-outline/30 rounded-xl backdrop-blur-md flex items-center justify-between text-surface-bright">
+<!-- Detector: Deteksi Wajah -->
+<div class="flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-tertiary-fixed"></span>
+<div class="flex flex-col">
+<span class="font-label-sm text-[10px] text-surface-dim uppercase">Wajah</span>
+<span class="font-label-md text-label-md text-tertiary-fixed font-semibold">Optimal</span>
+</div>
+</div>
+<div class="h-6 w-[1px] bg-outline/25"></div>
+<!-- Detector: Pencahayaan Ruangan -->
+<div class="flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-tertiary-fixed"></span>
+<div class="flex flex-col">
+<span class="font-label-sm text-[10px] text-surface-dim uppercase">Cahaya</span>
+<span class="font-label-md text-label-md text-surface font-semibold">Cukup</span>
+</div>
+</div>
+<div class="h-6 w-[1px] bg-outline/25"></div>
+<!-- Detector: Liveness Anti-Spoof Score -->
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-primary-fixed text-[16px]" data-icon="verified_user">verified_user</span>
+<div class="flex flex-col">
+<span class="font-label-sm text-[10px] text-surface-dim uppercase">Liveness</span>
+<span class="font-label-md text-label-md text-primary-fixed font-bold">92% (Tinggi)</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Security & Anti-Spoofing Compliance Badge -->
+<div class="px-margin pt-1 pb-2 flex items-center justify-center gap-1.5 text-center z-20">
+<span class="material-symbols-outlined text-[15px] text-surface-dim" data-icon="lock">lock</span>
+<span class="font-label-sm text-[11px] text-surface-dim leading-none">
+        Enkripsi Biometrik ISO/IEC 30107-3 Liveness Anti-Spoofing
+      </span>
+</div>
+<!-- Action Section: Sticky Bottom Ergonomic Controls -->
+<div class="w-full bg-inverse-surface/95 border-t border-outline/20 p-margin flex flex-col gap-2.5 z-30 sticky bottom-0">
+<!-- Primary Check-in Button (52px Touch-Zone Baseline) -->
+<button class="w-full h-[52px] rounded-2xl bg-primary-container text-on-primary font-body-lg-medium text-body-lg-medium flex items-center justify-center gap-2 shadow-lg shadow-primary-container/20 hover:bg-tertiary active:scale-[0.98] transition-all duration-200" id="btn-confirm-attendance" type="button">
+<span class="material-symbols-outlined text-[22px]" data-icon="photo_camera" data-weight="fill" style="font-variation-settings: 'FILL' 1;">photo_camera</span>
+<span>Ambil Foto Presensi</span>
+</button>
+<!-- Secondary Action: Ganti Tantangan / Mode Pengawas -->
+<button class="w-full h-11 rounded-xl bg-surface/10 hover:bg-surface/15 text-surface font-body-md-medium text-body-md-medium border border-outline/30 flex items-center justify-center gap-2 active:scale-[0.98] transition-all duration-200" id="btn-switch-challenge" type="button">
+<span class="material-symbols-outlined text-[18px]" data-icon="shuffle">shuffle</span>
+<span>Ganti Tantangan Gerakan</span>
+</button>
+<!-- Hospital System Audit Trace Footnote -->
+<div class="flex items-center justify-between px-1 text-[10px] text-surface-dim/70">
+<span>RS Absen Server v4.12 • Node Jakarta-02</span>
+<span>ID Karyawan: NIK-992014</span>
+</div>
+</div>
+<!-- Feedback Toast for Interactive Simulation (Hidden by Default) -->
+<div class="fixed top-20 inset-x-4 max-w-sm mx-auto bg-surface text-on-surface p-3 rounded-xl shadow-2xl border border-primary-fixed hidden transition-all duration-300 z-50 flex items-center gap-3" id="toast-feedback">
+<div class="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[20px]" data-icon="check_circle">check_circle</span>
+</div>
+<div class="flex-1">
+<p class="font-label-md text-label-md font-semibold text-on-surface" id="toast-title">Tantangan Terverifikasi</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant" id="toast-desc">Gerakan mata terdeteksi secara alami oleh sistem.</p>
+</div>
+</div>
+</main>
+<!-- Interactive Logic for Micro-Interactions -->
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const challengePills = document.querySelectorAll('.challenge-pill');
+      const activeChallengeText = document.getElementById('active-challenge-text');
+      const countdownTimer = document.getElementById('countdown-timer');
+      const switchBtn = document.getElementById('btn-switch-challenge');
+      const confirmBtn = document.getElementById('btn-confirm-attendance');
+      const toast = document.getElementById('toast-feedback');
+      const toastTitle = document.getElementById('toast-title');
+      const toastDesc = document.getElementById('toast-desc');
+
+      let currentTimer = 4;
+      let timerInterval;
+
+      // Start countdown simulator
+      function startTimer() {
+        clearInterval(timerInterval);
+        currentTimer = 4;
+        countdownTimer.textContent = `00:0${currentTimer} dtk`;
+        
+        timerInterval = setInterval(() => {
+          currentTimer--;
+          if (currentTimer >= 0) {
+            countdownTimer.textContent = `00:0${currentTimer} dtk`;
+          } else {
+            clearInterval(timerInterval);
+            triggerVerificationSuccess();
+          }
+        }, 1000);
+      }
+
+      function showToast(title, desc) {
+        toastTitle.textContent = title;
+        toastDesc.textContent = desc;
+        toast.classList.remove('hidden');
+        setTimeout(() => {
+          toast.classList.add('hidden');
+        }, 2800);
+      }
+
+      function triggerVerificationSuccess() {
+        showToast("Tantangan Terkonfirmasi!", "Kedipan terverifikasi hidup. Siap merekam presensi.");
+      }
+
+      // Switch Challenge via Pills
+      challengePills.forEach(pill => {
+        pill.addEventListener('click', () => {
+          challengePills.forEach(p => {
+            p.classList.remove('bg-primary', 'text-on-primary', 'border-primary');
+            p.classList.add('bg-surface/10', 'text-surface', 'border-outline/30');
+          });
+
+          pill.classList.remove('bg-surface/10', 'text-surface', 'border-outline/30');
+          pill.classList.add('bg-primary', 'text-on-primary', 'border-primary');
+
+          const challenge = pill.getAttribute('data-challenge');
+          activeChallengeText.textContent = `Tantangan Aktif: ${challenge}`;
+          startTimer();
+        });
+      });
+
+      // Switch Challenge via Secondary Button
+      let currentIndex = 0;
+      switchBtn.addEventListener('click', () => {
+        currentIndex = (currentIndex + 1) % challengePills.length;
+        challengePills[currentIndex].click();
+      });
+
+      // Confirm Capture Action
+      confirmBtn.addEventListener('click', () => {
+        confirmBtn.innerHTML = `
+          <span class="material-symbols-outlined animate-spin text-[20px]" data-icon="progress_activity">progress_activity</span>
+          <span>Menyimpan Presensi Biometrik...</span>
+        `;
+        confirmBtn.disabled = true;
+
+        setTimeout(() => {
+          confirmBtn.innerHTML = `
+            <span class="material-symbols-outlined text-[20px]" data-icon="check_circle">check_circle</span>
+            <span>Presensi Berhasil Diverifikasi!</span>
+          `;
+          confirmBtn.classList.remove('bg-primary-container');
+          confirmBtn.classList.add('bg-tertiary-container');
+          showToast("Presensi Masuk Berhasil", "Stempel waktu: " + new Date().toLocaleTimeString('id-ID') + " WIB");
+        }, 1400);
+      });
+
+      // Initial Timer Start
+      startTimer();
+    });
+  </script>
+</body></html>

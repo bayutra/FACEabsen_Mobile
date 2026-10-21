@@ -230,11 +230,11 @@ class _FaceRegistrationScreenState extends State<FaceRegistrationScreen> with Wi
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             AspectRatio(
-              aspectRatio: 3 / 4,
+              aspectRatio: 4 / 4.2,
               child: Container(
                 decoration: BoxDecoration(
                   color: AppColors.ink,
-                  borderRadius: BorderRadius.circular(AppColors.radiusCard),
+                  borderRadius: BorderRadius.circular(24),
                 ),
                 clipBehavior: Clip.antiAlias,
                 child: _initError != null
@@ -453,19 +453,42 @@ class _OvalGuide extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final Rect oval = Rect.fromCenter(
+    final double d = size.shortestSide * 0.72;
+    final Rect circle = Rect.fromCenter(
       center: size.center(Offset.zero),
-      width: size.width * 0.72,
-      height: size.height * 0.52,
+      width: d,
+      height: d,
     );
+    // dim background outside circle
     canvas.drawPath(
       Path()
-        ..addOval(oval)
+        ..addOval(circle)
         ..addRect(Rect.fromLTWH(0, 0, size.width, size.height))
         ..fillType = PathFillType.evenOdd,
       Paint()..color = const Color(0x730F172A),
     );
-    canvas.drawOval(oval, Paint()..color = AppColors.interactive..style = PaintingStyle.stroke..strokeWidth = 3);
+    canvas.drawOval(circle, Paint()
+      ..color = AppColors.interactive
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2);
+    // corner reticles
+    const double r = 16;
+    final Paint p = Paint()
+      ..color = AppColors.interactive
+      ..strokeWidth = 2
+      ..style = PaintingStyle.stroke;
+    // top-left
+    canvas.drawLine(Offset(circle.left - 2, circle.top - 2), Offset(circle.left - 2 + r, circle.top - 2), p);
+    canvas.drawLine(Offset(circle.left - 2, circle.top - 2), Offset(circle.left - 2, circle.top - 2 + r), p);
+    // top-right
+    canvas.drawLine(Offset(circle.right + 2, circle.top - 2), Offset(circle.right + 2 - r, circle.top - 2), p);
+    canvas.drawLine(Offset(circle.right + 2, circle.top - 2), Offset(circle.right + 2, circle.top - 2 + r), p);
+    // bottom-left
+    canvas.drawLine(Offset(circle.left - 2, circle.bottom + 2), Offset(circle.left - 2 + r, circle.bottom + 2), p);
+    canvas.drawLine(Offset(circle.left - 2, circle.bottom + 2), Offset(circle.left - 2, circle.bottom + 2 - r), p);
+    // bottom-right
+    canvas.drawLine(Offset(circle.right + 2, circle.bottom + 2), Offset(circle.right + 2 - r, circle.bottom + 2), p);
+    canvas.drawLine(Offset(circle.right + 2, circle.bottom + 2), Offset(circle.right + 2, circle.bottom + 2 - r), p);
   }
 
   @override

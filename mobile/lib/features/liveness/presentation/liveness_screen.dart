@@ -767,8 +767,8 @@ class _LivenessScreenState extends State<LivenessScreen>
   }
 
   Widget _viewport(CameraController? controller) => SizedBox(
-        width: 300,
-        height: 400,
+        width: 256,
+        height: 320,
         child: Container(
           decoration: BoxDecoration(
             color: AppColors.ink,
