@@ -73,6 +73,34 @@ Nilai disimpan di secure storage (`api_base_url`), jadi bertahan setelah
 aplikasi ditutup. Bila aplikasi gagal terhubung saat start, layar error juga
 menampilkan tombol server yang sama.
 
+## Sideloadly: "Nothing to export" saat Start
+
+Pesan `Install failed: Guru Meditation … Nothing to export: no changes
+requested. Choose some modifications (or a signing mode) first.` **bukan** tanda
+IPA rusak. Artinya mode instalasi di Sideloadly belum menyuruhnya menandatangani
+apa pun:
+
+- Sideloadly punya beberapa mode: **Apple ID Sideload**, **Normal Install**,
+  **Ad-hoc Sign & Install**, dan **Export**.
+- Mode **Export** hanya mengemas ulang IPA setelah ada tweak/perubahan, jadi
+  dengan IPA polos ia berhenti dengan pesan di atas.
+- Mode **Normal Install** mengharapkan IPA yang sudah bertanda tangan; IPA dari
+  Codemagic masih *unsigned*.
+
+Perbaikan:
+
+1. Di jendela Sideloadly, buka dropdown mode (dekat kolom Apple ID / tombol
+   **Start**) dan pilih **Apple ID Sideload**.
+2. Pastikan Apple ID `bayudark86@gmail.com` terisi, lalu **Start** dan masukkan
+   password + kode 2FA.
+3. Jika dropdown tidak ada, tutup Sideloadly (termasuk ikon tray), hapus folder
+   `%LOCALAPPDATA%\Sideloadly`, lalu pasang ulang versi terbaru dari
+   sideloadly.io — pengaturan mode kembali ke default.
+
+Setelah terpasang: **Settings → General → VPN & Device Management** → percayai
+sertifikat developer, lalu **Settings → Privacy & Security → Developer Mode** →
+aktifkan dan restart iPhone.
+
 ## Sebelum rilis (wajib)
 
 - [ ] **Hapus blok `NSAppTransportSecurity`** dari `Info.plist` — produksi
