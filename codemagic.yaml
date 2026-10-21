@@ -76,3 +76,80 @@ workflows:
       - build/ios/iphoneos/Runner.app
       - mobile/build/ios/iphoneos/FaceAbsen-unsigned.ipa
       - mobile/build/ios/iphoneos/Runner.app
+
+  android-debug:
+    name: Android debug APK (for sideloading)
+    instance_type: linux_x2
+    max_build_duration: 30
+    working_directory: mobile
+    environment:
+      flutter: 3.22.2
+      vars:
+        API_BASE_URL: "http://192.168.120.111:3000/api/v1"
+    triggering:
+      events:
+        - push
+      branch_patterns:
+        - pattern: master
+          include: true
+      cancel_previous_builds: true
+    cache:
+      cache_paths:
+        - $HOME/.pub-cache
+    scripts:
+      - name: Flutter pub get
+        script: |
+          flutter --version
+          flutter pub get
+      - name: Analyze & unit test
+        script: |
+          flutter analyze
+          flutter test
+      - name: Build Android debug APK
+        script: |
+          flutter build apk --debug \
+            --dart-define=API_BASE_URL=$API_BASE_URL
+    artifacts:
+      - build/app/outputs/flutter-apk/app-debug.apk
+      - mobile/build/app/outputs/flutter-apk/app-debug.apk
+
+  android-release:
+    name: Android release AAB (signed)
+    instance_type: linux_x2
+    max_build_duration: 40
+    working_directory: mobile
+    environment:
+      flutter: 3.22.2
+      vars:
+        API_BASE_URL: "http://192.168.120.111:3000/api/v1"
+        # Isi variabel berikut di Codemagic (Environment variables, secure):
+        # CM_KEYSTORE, CM_KEYSTORE_PASSWORD, CM_KEY_ALIAS, CM_KEY_PASSWORD
+        # (base64 dari file keystore). Lihat docs/guides/ANDROID_COMPAT.md.
+    triggering:
+      events:
+        - push
+      branch_patterns:
+        - pattern: master
+          include: true
+      cancel_previous_builds: true
+    cache:
+      cache_paths:
+        - $HOME/.pub-cache
+    scripts:
+      - name: Flutter pub get
+        script: |
+          flutter --version
+          flutter pub get
+      - name: Decode keystore & write key.properties
+        script: |
+          echo "$CM_KEYSTORE" | base64 --decode > $CM_BUILD_DIR/keystore.jks
+          printf 'storePassword=%s\nkeyPassword=%s\nkeyAlias=%s\nstoreFile=%s\n' \
+            "$CM_KEYSTORE_PASSWORD" "$CM_KEY_PASSWORD" "$CM_KEY_ALIAS" "$CM_BUILD_DIR/keystore.jks" \
+            > android/key.properties
+      - name: Build Android release AAB
+        script: |
+          flutter build appbundle --release \
+            --dart-define=API_BASE_URL=$API_BASE_URL
+    artifacts:
+      - build/app/outputs/bundle/release/app-release.aab
+      - mobile/build/app/outputs/bundle/release/app-release.aab
