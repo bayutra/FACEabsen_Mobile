@@ -7,7 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 import 'package:image/image.dart' as img;
 
-import 'package:flutter/foundation.dart' show defaultTargetPlatform, TargetPlatform;
+import 'package:flutter/foundation.dart'
+    show defaultTargetPlatform, TargetPlatform;
 
 import '../../../core/theme/app_colors.dart';
 import '../domain/eye_geometry.dart';
@@ -40,7 +41,8 @@ class PassiveScanScreen extends StatefulWidget {
   State<PassiveScanScreen> createState() => _PassiveScanScreenState();
 }
 
-class _PassiveScanScreenState extends State<PassiveScanScreen> with WidgetsBindingObserver {
+class _PassiveScanScreenState extends State<PassiveScanScreen>
+    with WidgetsBindingObserver {
   CameraController? _controller;
   late final FaceDetectorService _detector;
   late final PassiveLiveness _liveness;
@@ -48,6 +50,7 @@ class _PassiveScanScreenState extends State<PassiveScanScreen> with WidgetsBindi
 
   String? _error;
   String? _hint;
+
   /// Consecutive frames with no usable face before we call it a hardware or
   /// permission problem rather than "the user needs to sit closer".
   static const int _blankLimit = 8;
@@ -98,7 +101,8 @@ class _PassiveScanScreenState extends State<PassiveScanScreen> with WidgetsBindi
     // Backgrounding leaves the session open and resume yields a dead preview
     // whose takePicture throws (swallowed → frozen scan to the 20s timeout).
     // Release the session + frame timer; rebuild and re-arm on resume.
-    if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive) {
       _timer?.cancel();
       _timer = null;
       final CameraController? controller = _controller;
@@ -152,7 +156,8 @@ class _PassiveScanScreenState extends State<PassiveScanScreen> with WidgetsBindi
         return;
       }
       setState(() => _controller = controller);
-      _timer = Timer.periodic(const Duration(milliseconds: 400), (_) => _tick());
+      _timer =
+          Timer.periodic(const Duration(milliseconds: 400), (_) => _tick());
     } on CameraException catch (e) {
       if (!mounted) return;
       setState(() => _error = e.code == 'CameraAccessDenied'
@@ -225,10 +230,12 @@ class _PassiveScanScreenState extends State<PassiveScanScreen> with WidgetsBindi
           yaw: f.headEulerAngleY,
           eyeOpenLeft: hasProbability
               ? leftProb
-              : eyeOpenRatioFromLandmarks(contourOf(f, FaceContourType.leftEye)),
+              : eyeOpenRatioFromLandmarks(
+                  contourOf(f, FaceContourType.leftEye)),
           eyeOpenRight: hasProbability
               ? rightProb
-              : eyeOpenRatioFromLandmarks(contourOf(f, FaceContourType.rightEye)),
+              : eyeOpenRatioFromLandmarks(
+                  contourOf(f, FaceContourType.rightEye)),
           landmarkX: noseX,
           landmarkY: noseY,
         );
@@ -245,10 +252,12 @@ class _PassiveScanScreenState extends State<PassiveScanScreen> with WidgetsBindi
       if (result.verdict == PassiveVerdict.passed) {
         // Embed the same frame that proved liveness while the file still
         // exists; `finally` deletes it right after this block.
-        final FaceCapture? capture = await widget.faces.captureEmbedding(shot.path);
+        final FaceCapture? capture =
+            await widget.faces.captureEmbedding(shot.path);
         if (capture == null) {
           if (mounted) {
-            setState(() => _hint = 'Wajah kurang jelas. Dekatkan sedikit dan coba lagi.');
+            setState(() =>
+                _hint = 'Wajah kurang jelas. Dekatkan sedikit dan coba lagi.');
           }
           _liveness.reset();
           return;
@@ -292,21 +301,23 @@ class _PassiveScanScreenState extends State<PassiveScanScreen> with WidgetsBindi
   /// Varies per run by construction — never a constant.
   double _padScore() {
     final double size = (_relativeFaceWidth / 0.35).clamp(0.0, 1.0);
-    return (_liveness.motionScore * 0.4 + _liveness.depthScore * 0.4 + size * 0.2)
+    return (_liveness.motionScore * 0.4 +
+            _liveness.depthScore * 0.4 +
+            size * 0.2)
         .clamp(0.0, 1.0);
   }
 
   void _retry() {
-      setState(() {
+    setState(() {
       _error = null;
       _hint = null;
       _progress = 0;
       _relativeFaceWidth = 0;
       _embedding = null;
       _blankFrames = 0;
-        _startedAt = DateTime.now();
-        _liveness.reset();
-      });
+      _startedAt = DateTime.now();
+      _liveness.reset();
+    });
   }
 
   @override
@@ -381,7 +392,9 @@ class _PassiveScanScreenState extends State<PassiveScanScreen> with WidgetsBindi
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
                   Text(
-                    _passed ? 'Wajah Terverifikasi' : 'Tahan Ponsel, Lihat Kamera',
+                    _passed
+                        ? 'Wajah Terverifikasi'
+                        : 'Tahan Ponsel, Lihat Kamera',
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 19,
@@ -392,8 +405,9 @@ class _PassiveScanScreenState extends State<PassiveScanScreen> with WidgetsBindi
                   Text(
                     _passed
                         ? 'Lanjut ke verifikasiâ€¦'
-                        : widget.displayName,
-                    style: TextStyle(color: Colors.white.withOpacity(0.75), fontSize: 13),
+                        : '${widget.displayName} · Verifikasi Kehadiran',
+                    style: TextStyle(
+                        color: Colors.white.withOpacity(0.75), fontSize: 13),
                   ),
                 ],
               ),
@@ -439,11 +453,14 @@ class _PassiveScanScreenState extends State<PassiveScanScreen> with WidgetsBindi
                 color: ring.withOpacity(ok ? 0.9 : 0.35),
                 width: 2,
               ),
-              color: ok ? AppColors.success.withOpacity(0.12) : Colors.transparent,
+              color:
+                  ok ? AppColors.success.withOpacity(0.12) : Colors.transparent,
             ),
             child: ok
-                ? const Icon(Icons.check_circle, color: AppColors.success, size: 76)
-                : const Icon(Icons.face_retouching_natural, color: Colors.white24, size: 64),
+                ? const Icon(Icons.check_circle,
+                    color: AppColors.success, size: 76)
+                : const Icon(Icons.face_retouching_natural,
+                    color: Colors.white24, size: 64),
           ),
         ],
       ),
@@ -456,7 +473,8 @@ class _PassiveScanScreenState extends State<PassiveScanScreen> with WidgetsBindi
           children: <Widget>[
             if (_hint != null) ...<Widget>[
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                 decoration: BoxDecoration(
                   color: Colors.black.withOpacity(0.45),
                   borderRadius: BorderRadius.circular(AppColors.radiusFull),
@@ -470,9 +488,12 @@ class _PassiveScanScreenState extends State<PassiveScanScreen> with WidgetsBindi
               const SizedBox(height: 14),
             ],
             Text(
-              _passed ? 'Memprosesâ€¦' : 'Otomatis. Tidak ada perintah yang perlu diikuti.',
+              _passed
+                  ? 'Memproses…'
+                  : 'Pemindaian otomatis. Tatap kamera dan jaga wajah tetap di bingkai.',
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.white.withOpacity(0.72), fontSize: 12),
+              style: TextStyle(
+                  color: Colors.white.withOpacity(0.72), fontSize: 12),
             ),
           ],
         ),
@@ -486,12 +507,14 @@ class _PassiveScanScreenState extends State<PassiveScanScreen> with WidgetsBindi
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
-                const Icon(Icons.person_off_outlined, color: Colors.white54, size: 52),
+                const Icon(Icons.person_off_outlined,
+                    color: Colors.white54, size: 52),
                 const SizedBox(height: 14),
                 Text(
                   _error!,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(color: Colors.white, fontSize: 14, height: 1.45),
+                  style: const TextStyle(
+                      color: Colors.white, fontSize: 14, height: 1.45),
                 ),
                 const SizedBox(height: 22),
                 FilledButton.icon(
@@ -506,7 +529,8 @@ class _PassiveScanScreenState extends State<PassiveScanScreen> with WidgetsBindi
                 const SizedBox(height: 8),
                 TextButton(
                   onPressed: () => Navigator.of(context).maybePop(),
-                  child: const Text('Batal', style: TextStyle(color: Colors.white70)),
+                  child: const Text('Batal',
+                      style: TextStyle(color: Colors.white70)),
                 ),
               ],
             ),
