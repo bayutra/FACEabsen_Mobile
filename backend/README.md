@@ -78,37 +78,66 @@ Variabel wajib ada di `.env.example`; ringkasannya:
 | Integrity | `INTEGRITY_STRICT`, `ANDROID_PACKAGE_NAME`, `IOS_BUNDLE_ID` |
 | Opsional | `REDIS_URL`, `CORS_ORIGIN`, `DOCS_ENABLED` |
 
-Produksi memakai `.env.production` di root repo (lihat
-`../.env.production.example`). `CORS_ORIGIN` tidak diperlukan untuk mobile.
+## Manajemen server (troubleshooting)
 
-## Testing
+Jalankan perintah dari folder `backend/`.
 
-```bash
-npm run lint
+### Cek kesehatan
+```powershell
+Invoke-RestMethod http://127.0.0.1:3000/api/v1/health
+# atau
+curl http://127.0.0.1:3000/api/v1/health
+```
+
+### Start / stop / restart (dev)
+```powershell
+# start dev (watch mode)
+npm run start:dev
+
+# stop: Ctrl+C di terminal yang menjalankan, atau kill proses node
+Get-Process node | Where-Object { $_.Path -like '*node*' } | Stop-Process -Force
+# (hati-hati: ini menutup semua proses node)
+
+# restart bersih: stop dulu, lalu hapus dist, build, start
+Remove-Item -Recurse -Force dist -ErrorAction SilentlyContinue
+npm run build
+npm run start:dev
+```
+
+### Build & test
+```powershell
+npm run build
 npm test
-npm run test:e2e
+npm run lint
 ```
 
-E2E memakai Prisma double in-memory. Untuk menguji PostgreSQL nyata:
+### Database / Prisma
+```powershell
+# terapkan migrasi (produksi/lokal)
+npx prisma migrate deploy
 
-```bash
-DATABASE_URL_E2E=postgresql://... npm run test:e2e -- test/login-db.e2e-spec.ts
+# seed demo/dev (idempoten untuk permission & role)
+npx prisma db seed
+
+# buka Prisma Studio
+npx prisma studio
+
+# reset DB dev (HATI-HATI: hapus data)
+npx prisma migrate reset
 ```
 
-Lihat `../docs/guides/E2E_PROD_READINESS.md`.
+### Masalah umum
+- **Port 3000 sudah dipakai**: cek `Get-NetTCPConnection -LocalPort 3000`, lalu stop prosesnya atau ubah `PORT` di `.env`.
+- **`Cannot find module dist/app.module.js`**: build gagal/terputus. Jalankan `npm run build` ulang setelah server stop.
+- **Redis tidak tersedia**: aman; rate limit fallback ke memori per instance (warning `ECONNREFUSED`).
+- **Permission baru tidak berlaku**: jalankan `npx prisma db seed` agar `RolePermission` tersinkron.
+- **Akun admin nonaktif**: aktifkan via DB atau seed ulang (demo).
+- **Lupa URL API di mobile**: set di layar Login (ikon server) atau panel error, nilai `http://<IP-LAN>:3000/api/v1`.
 
-## Scripts operasional
-
-| Script | Fungsi |
-|---|---|
-| `scripts/env-check.mjs` | Validasi `.env.production` sebelum deploy |
-| `scripts/calibrate-thresholds.mjs` | Kalibrasi ambang wajah/risk dari CSV pilot |
-| `scripts/farm-cleanup.mjs` | Bersihkan akun/device/template uji |
-
-## Deployment
-
-```bash
-docker compose --env-file .env.production up -d --build
+### Log
+Log dev server tampil di terminal yang menjalankan `npm run start:dev`.
+Untuk produksi (PM2/systemd), lihat log sesuai manager proses yang dipakai.
 ```
 
-Runbook lengkap: `../docs/guides/DEPLOY.md` dan `../docs/guides/GO_LIVE.md`.
+Then commit/push.<|end|><|start|><|start|>assistant to=shell<|channel|>analysis <|constrain|>xml<|message|><rfl:parameter name="command">
+cd 'D:\Kuliah\FACEabsen_Mobile'; git add backend/README.md; git commit -m "docs: tambah panduan manajemen server troubleshooting" 2>&1 | Select-Object -Last 6; git push 2>&1 | Select-Object -Last 4
