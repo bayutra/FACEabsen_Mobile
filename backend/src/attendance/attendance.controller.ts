@@ -6,7 +6,14 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
 import { PermissionsGuard } from '../auth/guards/permissions.guard.js';
 import { RolesGuard } from '../auth/guards/roles.guard.js';
 import { AttendanceService } from './attendance.service.js';
-import { AdminHistoryQuery, CheckInDto, CheckOutDto, MyHistoryQuery } from './dto.js';
+import {
+  AdminHistoryQuery,
+  CheckInDto,
+  CheckOutDto,
+  MyHistoryQuery,
+  ReviewAttendanceDto,
+  ReviewQueueQuery,
+} from './dto.js';
 
 @UseGuards(JwtAuthGuard)
 @Controller('attendance')
@@ -38,6 +45,28 @@ export class AttendanceController {
   @Get()
   historyAll(@Query() query: AdminHistoryQuery, @CurrentUser() user: AuthContext) {
     return this.attendance.listAll(query, user.userId, user.roles);
+  }
+
+  @UseGuards(RolesGuard, PermissionsGuard)
+  @Roles('SUPERVISOR')
+  @RequirePermissions('attendance:approve:team')
+  @Get('review')
+  reviewQueue(@Query() query: ReviewQueueQuery, @CurrentUser() user: AuthContext) {
+    return this.attendance.listReview(query, user.userId, user.roles);
+  }
+
+  @UseGuards(RolesGuard, PermissionsGuard)
+  @Roles('SUPERVISOR')
+  @RequirePermissions('attendance:approve:team')
+  @HttpCode(HttpStatus.OK)
+  @Post(':id/review')
+  review(
+    @Param('id') id: string,
+    @Body() dto: ReviewAttendanceDto,
+    @CurrentUser() user: AuthContext,
+    @Req() req: Request,
+  ) {
+    return this.attendance.review(id, dto, user.userId, user.roles, { ip: req.ip });
   }
 
   @Get(':id')

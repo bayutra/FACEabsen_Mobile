@@ -12,6 +12,7 @@ import '../employees/presentation/employee_admin_screen.dart';
 import '../leaves/presentation/leave_admin_screen.dart';
 import '../privacy/presentation/privacy_admin_screen.dart';
 import '../reports/presentation/report_admin_screen.dart';
+import '../reviews/presentation/attendance_review_screen.dart';
 import '../schedules/presentation/schedule_admin_screen.dart';
 import '../shifts/presentation/shift_admin_screen.dart';
 import '../supervisor/presentation/team_admin_screen.dart';
@@ -96,6 +97,16 @@ class AdminHomeScreen extends StatelessWidget {
   List<Widget> _approval(BuildContext context) {
     if (!isSupervisor(roles)) return const <Widget>[];
     return <Widget>[
+      AdminTile(
+        icon: Icons.verified_user_outlined,
+        title: 'Tinjauan Presensi',
+        subtitle: 'Validasi presensi yang ditandai sistem (risiko sedang)',
+        onTap: () => Navigator.of(context).push(
+          MaterialPageRoute<void>(
+            builder: (_) => AttendanceReviewScreen(dio: dio),
+          ),
+        ),
+      ),
       AdminTile(
         icon: Icons.fact_check_outlined,
         title: 'Koreksi Presensi',

@@ -144,3 +144,29 @@ export class AdminHistoryQuery extends MyHistoryQuery {
   @IsBoolean()
   needsReview?: boolean;
 }
+
+/** Antrean tinjauan presensi berisiko (MEDIUM) untuk supervisor/admin. */
+export class ReviewQueueQuery {
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  page?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(100)
+  pageSize?: number;
+}
+
+export class ReviewAttendanceDto {
+  @IsIn(['APPROVE', 'REJECT'])
+  decision!: 'APPROVE' | 'REJECT';
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  note?: string;
+}

@@ -17,7 +17,14 @@ import { PrivacyService } from '../privacy/privacy.service.js';
 import { IntegrityService } from '../integrity/integrity.service.js';
 import { RiskService, type RiskInput } from '../risk/risk.service.js';
 import { evaluateCheckIn, evaluateCheckOut } from '../shifts/shift-time.js';
-import type { AdminHistoryQuery, CheckInDto, CheckOutDto, MyHistoryQuery } from './dto.js';
+import type {
+  AdminHistoryQuery,
+  CheckInDto,
+  CheckOutDto,
+  MyHistoryQuery,
+  ReviewAttendanceDto,
+  ReviewQueueQuery,
+} from './dto.js';
 import {
   assertTimeZone,
   buildSignMessage,
@@ -250,6 +257,128 @@ export class AttendanceService {
       data: rows,
       pagination: { page, pageSize, totalItems: total, totalPages: Math.ceil(total / pageSize) },
     };
+  }
+
+  async listReview(query: ReviewQueueQuery, userId: string, roles: string[]) {
+    const page = query.page ?? 1;
+    const pageSize = query.pageSize ?? 20;
+    const AND: Array<Record<string, unknown>> = [{ needsReview: true }];
+
+    if (!satisfiesRole(roles, 'ADMIN')) {
+      // Supervisor hanya melihat bawahan langsungnya.
+      const me = await this.prisma.employee.findUnique({
+        where: { userId },
+        select: { id: true },
+      });
+      if (!me) return emptyPage(page, pageSize);
+      AND.push({ employee: { supervisorId: me.id } });
+    } else if (!satisfiesRole(roles, 'SUPER_ADMIN')) {
+      // Admin melihat seluruh fasilitasnya.
+      const scope = await resolveHospitalScope(this.prisma, userId, roles);
+      if (scope.kind !== 'hospital') return emptyPage(page, pageSize);
+      AND.push({ employee: { department: { hospitalId: scope.hospitalId } } });
+    }
+
+    const where = { AND };
+    const [total, rows] = await Promise.all([
+      this.prisma.attendance.count({ where }),
+      this.prisma.attendance.findMany({
+        where,
+        orderBy: [{ workDate: 'desc' }, { checkInAt: 'desc' }],
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+        include: {
+          shift: { select: { id: true, name: true, startTime: true, endTime: true } },
+          employee: {
+            select: {
+              id: true,
+              name: true,
+              employeeNo: true,
+              department: { select: { id: true, name: true } },
+            },
+          },
+        },
+      }),
+    ]);
+    return {
+      data: rows,
+      pagination: { page, pageSize, totalItems: total, totalPages: Math.ceil(total / pageSize) },
+    };
+  }
+
+  async review(
+    id: string,
+    dto: ReviewAttendanceDto,
+    userId: string,
+    roles: string[],
+    meta: { ip?: string } = {},
+  ) {
+    const row = await this.requireReviewScope(id, userId, roles);
+    const note = dto.note?.trim();
+    const label = dto.decision === 'APPROVE' ? 'VALIDASI' : 'TOLAK';
+    const notes = note
+      ? `${row.notes ? `${row.notes}\n` : ''}[${label}] ${note}`
+      : row.notes;
+
+    const updated = await this.prisma.attendance.update({
+      where: { id },
+      data: { needsReview: false, notes },
+    });
+    await this.audit.log({
+      actorId: userId,
+      action: 'ATTENDANCE_REVIEWED',
+      targetType: 'attendance',
+      targetId: id,
+      ipAddress: meta.ip,
+      metadata: {
+        decision: dto.decision,
+        note: note ?? null,
+        riskScore: row.riskScore,
+        riskCategory: row.riskCategory,
+        checkInStatus: row.checkInStatus,
+      },
+    });
+    return updated;
+  }
+
+  /**
+   * Supervisor hanya boleh meninjau bawahan langsungnya; admin dibatasi
+   * fasilitasnya; super admin bebas. 404/403 sengaja tidak membocorkan
+   * keberadaan data di luar wewenang.
+   */
+  private async requireReviewScope(id: string, userId: string, roles: string[]) {
+    const row = await this.prisma.attendance.findUnique({
+      where: { id },
+      include: {
+        employee: {
+          select: {
+            id: true,
+            supervisorId: true,
+            department: { select: { hospitalId: true } },
+          },
+        },
+      },
+    });
+    if (!row) throw new NotFoundException('Attendance not found');
+
+    if (satisfiesRole(roles, 'SUPER_ADMIN')) return row;
+    if (satisfiesRole(roles, 'ADMIN')) {
+      const scope = await resolveHospitalScope(this.prisma, userId, roles);
+      if (
+        scope.kind === 'hospital' &&
+        row.employee.department?.hospitalId === scope.hospitalId
+      ) {
+        return row;
+      }
+      throw new ForbiddenException('Not authorized');
+    }
+
+    const me = await this.prisma.employee.findUnique({
+      where: { userId },
+      select: { id: true },
+    });
+    if (me && row.employee.supervisorId === me.id) return row;
+    throw new ForbiddenException('Not authorized');
   }
 
   async listAll(query: AdminHistoryQuery, userId: string, roles: string[]) {
