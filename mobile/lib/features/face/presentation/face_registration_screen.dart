@@ -257,16 +257,91 @@ class _FaceRegistrationScreenState extends State<FaceRegistrationScreen> with Wi
                                 Positioned.fill(
                                   child: Container(color: Colors.white.withOpacity(0.85)),
                                 ),
-                              const Align(
+                              // Badge status registrasi
+                              Align(
                                 alignment: Alignment.topCenter,
                                 child: Padding(
-                                  padding: EdgeInsets.only(top: 16),
+                                  padding: const EdgeInsets.only(top: 12),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 10,
+                                      vertical: 4,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.inverseSurface.withOpacity(0.85),
+                                      borderRadius: BorderRadius.circular(AppColors.radiusFull),
+                                      border: Border.all(
+                                        color: AppColors.primaryFixed.withOpacity(0.4),
+                                      ),
+                                    ),
+                                    child: const Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(Icons.verified_user_outlined,
+                                            size: 12, color: Color(0xFF89F5E7)),
+                                        SizedBox(width: 5),
+                                        Text(
+                                          'Registrasi Wajah',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              // Tombol cahaya layar (flood illuminator analog)
+                              Align(
+                                alignment: Alignment.topRight,
+                                child: Padding(
+                                  padding: const EdgeInsets.only(top: 8, right: 8),
+                                  child: Tooltip(
+                                    message: _useScreenFlash
+                                        ? 'Matikan cahaya layar'
+                                        : 'Nyalakan cahaya layar (mode gelap)',
+                                    child: Material(
+                                      color: _useScreenFlash
+                                          ? AppColors.primaryFixed
+                                          : Colors.black.withOpacity(0.45),
+                                      shape: const CircleBorder(),
+                                      child: InkWell(
+                                        customBorder: const CircleBorder(),
+                                        onTap: _busy
+                                            ? null
+                                            : () => setState(
+                                                  () => _useScreenFlash = !_useScreenFlash,
+                                                ),
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(8),
+                                          child: Icon(
+                                            _useScreenFlash
+                                                ? Icons.flash_on
+                                                : Icons.flash_off,
+                                            size: 18,
+                                            color: _useScreenFlash
+                                                ? AppColors.inverseSurface
+                                                : Colors.white,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const Align(
+                                alignment: Alignment.bottomCenter,
+                                child: Padding(
+                                  padding: EdgeInsets.only(bottom: 12),
                                   child: Text(
-                                    'Posisikan wajah di dalam lingkaran',
+                                    'Posisikan wajah di lingkaran • mata terbuka',
                                     style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w600),
+                                      color: Colors.white,
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w600,
+                                    ),
                                   ),
                                 ),
                               ),
@@ -355,7 +430,7 @@ class _FaceRegistrationScreenState extends State<FaceRegistrationScreen> with Wi
                     ),
             FilledButton(
               onPressed: (controller == null || _busy) ? null : _capture,
-              child: Text(_busy ? 'Memproses…' : 'Ambil & daftarkan'),
+              child: Text(_busy ? 'Memproses…' : 'Ambil & Daftarkan Wajah'),
             ),
             if (_success)
               Padding(
