@@ -137,6 +137,88 @@ npx prisma migrate reset
 ### Log
 Log dev server tampil di terminal yang menjalankan `npm run start:dev`.
 Untuk produksi (PM2/systemd), lihat log sesuai manager proses yang dipakai.
+
+## Tunnel publik (ngrok) — akses dari luar jaringan
+
+Dipakai agar aplikasi mobile di luar Wi-Fi rumah bisa menjangkau backend lokal.
+
+### 1. Install ngrok (Windows)
+```powershell
+# via winget
+winget install ngrok.ngrok
+
+# atau download manual dari https://ngrok.com/download
+# lalu tambahkan folder ngrok ke PATH
+```
+
+### 2. Autentikasi (sekali)
+```powershell
+ngrok config add-authtoken <TOKEN_DARI_DASHBOARD_NGROK>
+```
+
+### 3. Jalankan tunnel ke backend
+```powershell
+# terminal terpisah; biarkan tetap berjalan
+ngrok http 3000
+# atau dengan domain statis (akun berbayar)
+ngrok http --domain=nama-anda.ngrok-free.app 3000
+```
+
+Output akan menampilkan URL publik, mis. `https://abcd-1234.ngrok-free.app`.
+
+### 4. Hubungkan aplikasi mobile
+- Buka aplikasi → Login → ikon server (atau panel error).
+- Isi `Server` dengan `https://abcd-1234.ngrok-free.app/api/v1`.
+- Atau set env build: `--dart-define=API_BASE_URL=https://abcd-1234.ngrok-free.app/api/v1`.
+
+### 5. Perintah ngrok lain yang berguna
+```powershell
+# lihat status tunnel aktif
+ngrok status
+
+# hentikan tunnel: Ctrl+C di terminal ngrok
+
+# inspect request (web UI ngrok)
+# buka http://127.0.0.1:4040 di browser
+
+# jalankan tunnel di background (Windows)
+Start-Process -FilePath "ngrok" -ArgumentList "http","3000" -WindowStyle Hidden
+```
+
+### 6. Troubleshooting ngrok
+- **ERR_NGROK_... / tunnel tidak muncul**: cek authtoken, koneksi internet, dan port 3000 memang listening.
+- **403 / browser warning ngrok-free**: buka URL di browser sekali lalu klik "Visit Site", atau pakai domain statis.
+- **CORS**: backend sudah mengizinkan origin aplikasi; jika perlu, set `CORS_ORIGIN` di `.env`.
+- **Tunnel mati saat laptop sleep**: nonaktifkan sleep atau jalankan di server/VPS.
+- **URL berubah tiap run (free tier)**: update URL di aplikasi (tanpa rebuild) atau pakai domain statis.
+
+## Manajemen proses produksi (opsional)
+
+### PM2 (Node process manager)
+```powershell
+npm install -g pm2
+pm2 start dist/main.js --name face-absen-api
+pm2 status
+pm2 logs face-absen-api
+pm2 restart face-absen-api
+pm2 stop face-absen-api
+pm2 delete face-absen-api
+pm2 save
+pm2 startup
+```
+
+### Nginx (reverse proxy, API only)
+Pastikan nginx mengarahkan `/api/v1/` ke `http://127.0.0.1:3000`.
+Lihat `docs/guides/DEPLOY.md` dan `nginx/` di repo.
+
+### Backup database (PostgreSQL)
+```powershell
+# backup
+pg_dump -U postgres -d face_absen -F c -f backup_face_absen.dump
+
+# restore
+pg_restore -U postgres -d face_absen -c backup_face_absen.dump
+```
 ```
 
 Then commit/push.<|end|><|start|><|start|>assistant to=shell<|channel|>analysis <|constrain|>xml<|message|><rfl:parameter name="command">
