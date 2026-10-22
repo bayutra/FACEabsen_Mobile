@@ -17,7 +17,6 @@ export class LoginDto {
   @MaxLength(256)
   password!: string;
 
-   
   @IsOptional()
   @IsString()
   @MaxLength(64)
@@ -31,7 +30,6 @@ export class RefreshDto {
   refreshToken!: string;
 }
 
- 
 export class RegisterDto {
   @IsString()
   @MinLength(2)
@@ -57,7 +55,6 @@ export class RegisterDto {
   @MaxLength(120)
   position?: string;
 
-   
   @IsOptional()
   @Matches(/^[A-Za-z0-9-]+$/)
   @MaxLength(32)

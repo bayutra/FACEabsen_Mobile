@@ -11,8 +11,10 @@ void main() {
       expect(g.chips, isNotEmpty);
     });
 
-    test('missing employee profile fails (this is a real block, not a warning)', () {
-      expect(evaluateAccount(isActive: true, hasProfile: false).state, GateState.fail);
+    test('missing employee profile fails (this is a real block, not a warning)',
+        () {
+      expect(evaluateAccount(isActive: true, hasProfile: false).state,
+          GateState.fail);
     });
 
     test('deactivated account fails', () {
@@ -23,8 +25,10 @@ void main() {
   });
 
   group('which gates actually block the punch', () {
-    test('account and schedule block; both are real server-side requirements', () {
-      expect(isBlocking(evaluateAccount(isActive: true, hasProfile: true)), isTrue);
+    test('account and schedule block; both are real server-side requirements',
+        () {
+      expect(isBlocking(evaluateAccount(isActive: true, hasProfile: true)),
+          isTrue);
       expect(isBlocking(evaluateSchedule(hasShift: true)), isTrue);
     });
 
@@ -40,8 +44,8 @@ void main() {
 
   group('schedule gate', () {
     test('roster row passes and shows the window', () {
-      final GateResult g =
-          evaluateSchedule(hasShift: true, window: '07:00 → 15:00', name: 'PAGI');
+      final GateResult g = evaluateSchedule(
+          hasShift: true, window: '07:00 → 15:00', name: 'PAGI');
       expect(g.state, GateState.pass);
       expect(g.detail, contains('PAGI'));
       expect(g.detail, contains('07:00'));

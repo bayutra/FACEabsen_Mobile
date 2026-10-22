@@ -1,7 +1,12 @@
-import { ArgumentsHost, Catch, ExceptionFilter, HttpException, Logger } from '@nestjs/common';
+import {
+  ArgumentsHost,
+  Catch,
+  ExceptionFilter,
+  HttpException,
+  Logger,
+} from '@nestjs/common';
 import type { Request, Response } from 'express';
 
- 
 @Catch()
 export class GlobalHttpExceptionFilter implements ExceptionFilter {
   private readonly logger = new Logger(GlobalHttpExceptionFilter.name);
@@ -14,15 +19,15 @@ export class GlobalHttpExceptionFilter implements ExceptionFilter {
     if (exception instanceof HttpException) {
       const status = exception.getStatus();
       const res = exception.getResponse();
-      
-      
+
       const body =
         typeof res === 'object' && res !== null
           ? res
           : {
               statusCode: status,
               message: res,
-              ...(typeof (exception as { errorCode?: unknown }).errorCode !== 'undefined' && {
+              ...(typeof (exception as { errorCode?: unknown }).errorCode !==
+                'undefined' && {
                 errorCode: (exception as { errorCode?: unknown }).errorCode,
               }),
             };
@@ -33,8 +38,12 @@ export class GlobalHttpExceptionFilter implements ExceptionFilter {
     }
 
     const method = request?.method ?? 'UNKNOWN';
-    const url = (request as { originalUrl?: string })?.originalUrl ?? request?.url ?? 'unknown';
-    const stack = exception instanceof Error ? exception.stack : String(exception);
+    const url =
+      (request as { originalUrl?: string })?.originalUrl ??
+      request?.url ??
+      'unknown';
+    const stack =
+      exception instanceof Error ? exception.stack : String(exception);
     this.logger.error(`${method} ${url} — unhandled error`, stack);
 
     const headers = request?.headers ?? {};

@@ -7,10 +7,6 @@ import '../../presentation/admin_widgets.dart';
 import '../data/employee_admin_repository.dart';
 import '../domain/employee_admin_models.dart';
 
-
-
-
-
 class EmployeeAdminFormScreen extends StatefulWidget {
   const EmployeeAdminFormScreen({
     super.key,
@@ -24,11 +20,13 @@ class EmployeeAdminFormScreen extends StatefulWidget {
   final bool canEditAll;
 
   @override
-  State<EmployeeAdminFormScreen> createState() => _EmployeeAdminFormScreenState();
+  State<EmployeeAdminFormScreen> createState() =>
+      _EmployeeAdminFormScreenState();
 }
 
 class _EmployeeAdminFormScreenState extends State<EmployeeAdminFormScreen> {
-  late final EmployeeAdminRepository _repo = EmployeeAdminRepository(dio: widget.dio);
+  late final EmployeeAdminRepository _repo =
+      EmployeeAdminRepository(dio: widget.dio);
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   final TextEditingController _no = TextEditingController();
@@ -64,9 +62,7 @@ class _EmployeeAdminFormScreenState extends State<EmployeeAdminFormScreen> {
     try {
       final List<AdminDepartment> list = await _repo.departments();
       if (mounted) setState(() => _departments = list);
-    } catch (_) {
-      
-    }
+    } catch (_) {}
   }
 
   @override
@@ -173,7 +169,9 @@ class _EmployeeAdminFormScreenState extends State<EmployeeAdminFormScreen> {
               validator: (String? v) {
                 final String s = (v ?? '').trim();
                 if (s.isEmpty) return 'Wajib diisi.';
-                if (!s.contains('@') || !s.contains('.')) return 'Format email tidak valid.';
+                if (!s.contains('@') || !s.contains('.')) {
+                  return 'Format email tidak valid.';
+                }
                 return null;
               },
             ),
@@ -181,21 +179,22 @@ class _EmployeeAdminFormScreenState extends State<EmployeeAdminFormScreen> {
             TextFormField(
               controller: _phone,
               keyboardType: TextInputType.phone,
-              decoration: const InputDecoration(labelText: 'Telepon (opsional)'),
+              decoration:
+                  const InputDecoration(labelText: 'Telepon (opsional)'),
             ),
             const SizedBox(height: 12),
             TextFormField(
               controller: _position,
-              decoration: const InputDecoration(labelText: 'Jabatan (opsional)'),
+              decoration:
+                  const InputDecoration(labelText: 'Jabatan (opsional)'),
             ),
             const SizedBox(height: 12),
             DropdownButtonFormField<String>(
               value: _departmentId,
               decoration: InputDecoration(
                 labelText: 'Unit',
-                helperText: widget.canEditAll
-                    ? null
-                    : 'Unit hanya dapat diubah admin.',
+                helperText:
+                    widget.canEditAll ? null : 'Unit hanya dapat diubah admin.',
               ),
               items: <DropdownMenuItem<String>>[
                 const DropdownMenuItem<String>(value: null, child: Text('â€”')),

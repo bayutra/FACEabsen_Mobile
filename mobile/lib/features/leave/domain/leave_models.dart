@@ -1,4 +1,3 @@
-
 const Map<String, String> leaveTypes = {
   'CUTI': 'Cuti Tahunan',
   'SAKIT': 'Cuti Sakit',
@@ -14,13 +13,11 @@ const Map<String, String> leaveStatusLabels = {
   'CANCELLED': 'Dibatalkan',
 };
 
-
 String toDateKey(DateTime d) =>
     '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
 
-
-bool validLeaveRange(String startKey, String endKey) => endKey.compareTo(startKey) >= 0;
-
+bool validLeaveRange(String startKey, String endKey) =>
+    endKey.compareTo(startKey) >= 0;
 
 int leaveDays(String startKey, String endKey) {
   final DateTime s = DateTime.parse(startKey);
@@ -48,7 +45,8 @@ class LeaveItem {
   final String? reviewNote;
 
   factory LeaveItem.fromJson(Map<String, dynamic> json) {
-    String key(Object? v) => v is String && v.length >= 10 ? v.substring(0, 10) : '';
+    String key(Object? v) =>
+        v is String && v.length >= 10 ? v.substring(0, 10) : '';
     return LeaveItem(
       id: json['id'] as String,
       status: json['status'] as String? ?? '',

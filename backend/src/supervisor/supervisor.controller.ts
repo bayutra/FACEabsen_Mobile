@@ -1,6 +1,11 @@
 import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
 import { IsOptional, IsString, Matches } from 'class-validator';
-import { RequirePermissions, Roles, CurrentUser, type AuthContext } from '../auth/decorators.js';
+import {
+  RequirePermissions,
+  Roles,
+  CurrentUser,
+  type AuthContext,
+} from '../auth/decorators.js';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
 import { PermissionsGuard } from '../auth/guards/permissions.guard.js';
 import { RolesGuard } from '../auth/guards/roles.guard.js';
@@ -44,10 +49,7 @@ export class SupervisorController {
 
   @RequirePermissions('attendance:read:team')
   @Get('team/:id')
-  member(
-    @Param('id') id: string,
-    @CurrentUser() user: AuthContext,
-  ) {
+  member(@Param('id') id: string, @CurrentUser() user: AuthContext) {
     return this.supervisor.memberDetail(id, user.userId, user.roles);
   }
 
@@ -62,10 +64,12 @@ export class SupervisorController {
 
   @RequirePermissions('report:read:team')
   @Get('summary')
-  summary(
-    @CurrentUser() user: AuthContext,
-    @Query() query: SummaryQuery,
-  ) {
-    return this.supervisor.summary(user.userId, user.roles, query.from, query.to);
+  summary(@CurrentUser() user: AuthContext, @Query() query: SummaryQuery) {
+    return this.supervisor.summary(
+      user.userId,
+      user.roles,
+      query.from,
+      query.to,
+    );
   }
 }

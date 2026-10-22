@@ -5,7 +5,6 @@ import 'package:face_absen_mobile/features/device/data/device_repository.dart';
 import 'package:face_absen_mobile/features/device/domain/device_models.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-
 class FakeFlutterSecureStorage extends FlutterSecureStorage {
   final Map<String, String> box = {};
 
@@ -72,8 +71,6 @@ class FakeAuthRepository extends AuthRepository {
   final bool failTotp;
   final bool failRegister;
 
-  
-  
   List<RegistrationUnit> units = const <RegistrationUnit>[
     RegistrationUnit(
       id: 'dept-1',
@@ -82,10 +79,8 @@ class FakeAuthRepository extends AuthRepository {
     ),
   ];
 
-  
   String? lastRegisterUnit;
 
-  
   bool? lastRememberMe;
 
   DioException _unauthorized(String path) => DioException(
@@ -114,9 +109,14 @@ class FakeAuthRepository extends AuthRepository {
       throw _unauthorized('/auth/login');
     }
     if (challengeTotp) {
-      throw TotpChallengeException(totpToken: 'totp-token-test', expiresIn: 300);
+      throw TotpChallengeException(
+          totpToken: 'totp-token-test', expiresIn: 300);
     }
-    return {'id': 'u1', 'email': email, 'roles': ['EMPLOYEE']};
+    return {
+      'id': 'u1',
+      'email': email,
+      'roles': ['EMPLOYEE']
+    };
   }
 
   @override
@@ -127,7 +127,11 @@ class FakeAuthRepository extends AuthRepository {
   }) async {
     lastRememberMe = rememberMe;
     if (failTotp) throw _unauthorized('/auth/totp/verify');
-    return {'id': 'u1', 'email': 'karyawan@rs.test', 'roles': ['EMPLOYEE']};
+    return {
+      'id': 'u1',
+      'email': 'karyawan@rs.test',
+      'roles': ['EMPLOYEE']
+    };
   }
 
   @override
@@ -138,7 +142,11 @@ class FakeAuthRepository extends AuthRepository {
   }) async {
     lastRememberMe = rememberMe;
     if (failTotp) throw _unauthorized('/auth/totp/recover');
-    return {'id': 'u1', 'email': 'karyawan@rs.test', 'roles': ['EMPLOYEE']};
+    return {
+      'id': 'u1',
+      'email': 'karyawan@rs.test',
+      'roles': ['EMPLOYEE']
+    };
   }
 
   @override
@@ -195,11 +203,11 @@ class FakeDeviceRepository extends DeviceRepository {
       );
     }
     return BoundDevice(
-        id: 'd1',
-        installationId: 'install-test',
-        platform: 'ANDROID',
-        status: DeviceStatus.active,
-      );
+      id: 'd1',
+      installationId: 'install-test',
+      platform: 'ANDROID',
+      status: DeviceStatus.active,
+    );
   }
 
   @override

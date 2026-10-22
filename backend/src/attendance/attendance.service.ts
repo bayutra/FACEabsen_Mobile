@@ -33,7 +33,6 @@ import {
   verifyDeviceSignature,
 } from './helpers.js';
 
- 
 @Injectable()
 export class AttendanceService {
   private readonly faceThreshold: number;
@@ -66,20 +65,36 @@ export class AttendanceService {
     await this.claimRequest(dto, now, userId, meta, risk);
     await this.requireConsent(employee.id, userId, meta, risk);
 
-    const device = await this.requireDevice(employee.id, dto.deviceId, userId, meta, risk);
+    const device = await this.requireDevice(
+      employee.id,
+      dto.deviceId,
+      userId,
+      meta,
+      risk,
+    );
     risk.deviceOk = true;
     await this.requireSignature(device, dto, userId, meta, risk);
     risk.signatureOk = true;
     this.applyIntegrity(dto, device.platform, userId, meta, risk);
     await this.rejectIfBadIntegrity(userId, meta, risk);
 
-    const { key: workKey, date: workDate } = hospitalWorkDate(now, this.hospitalTz);
+    const { key: workKey, date: workDate } = hospitalWorkDate(
+      now,
+      this.hospitalTz,
+    );
     const schedule = await this.prisma.employeeSchedule.findUnique({
       where: { employeeId_workDate: { employeeId: employee.id, workDate } },
       include: { shift: true },
     });
     if (!schedule) {
-      return this.reject(userId, 'NO_SCHEDULE', 'Tidak ada jadwal hari ini', meta, risk, { workDate: workKey });
+      return this.reject(
+        userId,
+        'NO_SCHEDULE',
+        'Tidak ada jadwal hari ini',
+        meta,
+        risk,
+        { workDate: workKey },
+      );
     }
 
     const open = await this.prisma.attendance.findFirst({
@@ -87,24 +102,49 @@ export class AttendanceService {
       orderBy: { checkInAt: 'desc' },
     });
     if (open) {
-      return this.reject(userId, 'ALREADY_CHECKED_IN', 'Sudah check-in, selesaikan check-out dulu', meta, risk, { openId: open.id });
+      return this.reject(
+        userId,
+        'ALREADY_CHECKED_IN',
+        'Sudah check-in, selesaikan check-out dulu',
+        meta,
+        risk,
+        { openId: open.id },
+      );
     }
 
     const live = validateLiveness(dto.liveness, now, this.livenessMaxAgeMin);
     if (!live.ok) {
-      return this.reject(userId, live.reason, 'Bukti liveness tidak valid', meta, risk);
+      return this.reject(
+        userId,
+        live.reason,
+        'Bukti liveness tidak valid',
+        meta,
+        risk,
+      );
     }
     risk.livenessOk = true;
 
     const match = await this.matchFace(employee.id, dto.faceEmbedding);
     risk.faceScore = match.score < 0 ? 0 : match.score;
     if (!match.matched) {
-      return this.reject(userId, match.reason, 'Verifikasi wajah gagal', meta, risk, { score: match.score });
+      return this.reject(
+        userId,
+        match.reason,
+        'Verifikasi wajah gagal',
+        meta,
+        risk,
+        { score: match.score },
+      );
     }
 
     const verdict = this.risk.score(risk);
     const flagged = this.risk.needsReview(verdict.category);
-    const evalIn = evaluateCheckIn(now, workKey, schedule.shift, this.hospitalTz);
+    const evalIn = evaluateCheckIn(
+      now,
+      workKey,
+      schedule.shift,
+      this.hospitalTz,
+    );
     const row = await this.prisma.attendance.create({
       data: {
         employeeId: employee.id,
@@ -126,16 +166,29 @@ export class AttendanceService {
       targetId: row.id,
       ipAddress: meta.ip,
       deviceId: device.id,
-      metadata: { status: evalIn.status, lateMinutes: evalIn.lateMinutes, matchScore: match.score, riskScore: verdict.score, riskCategory: verdict.category },
+      metadata: {
+        status: evalIn.status,
+        lateMinutes: evalIn.lateMinutes,
+        matchScore: match.score,
+        riskScore: verdict.score,
+        riskCategory: verdict.category,
+      },
     });
     return {
       id: row.id,
       workDate: workKey,
       checkInAt: row.checkInAt,
       checkInStatus: row.checkInStatus,
-      shift: { name: schedule.shift.name, window: `${schedule.shift.startTime} → ${schedule.shift.endTime}` },
+      shift: {
+        name: schedule.shift.name,
+        window: `${schedule.shift.startTime} → ${schedule.shift.endTime}`,
+      },
       faceMatch: { score: match.score, matched: true },
-      risk: { score: verdict.score, category: verdict.category, needsReview: flagged },
+      risk: {
+        score: verdict.score,
+        category: verdict.category,
+        needsReview: flagged,
+      },
     };
   }
 
@@ -146,7 +199,13 @@ export class AttendanceService {
     await this.claimRequest(dto, now, userId, meta, risk);
     await this.requireConsent(employee.id, userId, meta, risk);
 
-    const device = await this.requireDevice(employee.id, dto.deviceId, userId, meta, risk);
+    const device = await this.requireDevice(
+      employee.id,
+      dto.deviceId,
+      userId,
+      meta,
+      risk,
+    );
     risk.deviceOk = true;
     await this.requireSignature(device, dto, userId, meta, risk);
     risk.signatureOk = true;
@@ -159,28 +218,45 @@ export class AttendanceService {
       include: { shift: true },
     });
     if (!open) {
-      return this.reject(userId, 'NO_OPEN_ATTENDANCE', 'Belum check-in', meta, risk);
+      return this.reject(
+        userId,
+        'NO_OPEN_ATTENDANCE',
+        'Belum check-in',
+        meta,
+        risk,
+      );
     }
 
     const live = validateLiveness(dto.liveness, now, this.livenessMaxAgeMin);
     if (!live.ok) {
-      return this.reject(userId, live.reason, 'Bukti liveness tidak valid', meta, risk);
+      return this.reject(
+        userId,
+        live.reason,
+        'Bukti liveness tidak valid',
+        meta,
+        risk,
+      );
     }
     risk.livenessOk = true;
 
     const match = await this.matchFace(employee.id, dto.faceEmbedding);
     risk.faceScore = match.score < 0 ? 0 : match.score;
     if (!match.matched) {
-      return this.reject(userId, match.reason, 'Verifikasi wajah gagal', meta, risk, { score: match.score });
+      return this.reject(
+        userId,
+        match.reason,
+        'Verifikasi wajah gagal',
+        meta,
+        risk,
+        { score: match.score },
+      );
     }
 
     const verdict = this.risk.score(risk);
     const flaggedOut = this.risk.needsReview(verdict.category);
     const workKey = open.workDate.toISOString().slice(0, 10);
     const evalOut = evaluateCheckOut(now, workKey, open.shift, this.hospitalTz);
-    
-    
-    
+
     const score = Math.max(open.riskScore ?? 0, verdict.score);
     const category = worseCategory(open.riskCategory, verdict.category);
     const flagged = (open.needsReview ?? false) || flaggedOut;
@@ -201,7 +277,13 @@ export class AttendanceService {
       targetId: row.id,
       ipAddress: meta.ip,
       deviceId: device.id,
-      metadata: { status: evalOut.status, earlyMinutes: evalOut.earlyMinutes, matchScore: match.score, riskScore: score, riskCategory: category },
+      metadata: {
+        status: evalOut.status,
+        earlyMinutes: evalOut.earlyMinutes,
+        matchScore: match.score,
+        riskScore: score,
+        riskCategory: category,
+      },
     });
     return {
       id: row.id,
@@ -214,8 +296,6 @@ export class AttendanceService {
       risk: { score, category, needsReview: flagged },
     };
   }
-
-  
 
   async listMine(userId: string, query: MyHistoryQuery) {
     const employee = await this.requireEmployee(userId);
@@ -243,13 +323,26 @@ export class AttendanceService {
           riskScore: true,
           riskCategory: true,
           needsReview: true,
-          shift: { select: { id: true, name: true, startTime: true, endTime: true, overnight: true } },
+          shift: {
+            select: {
+              id: true,
+              name: true,
+              startTime: true,
+              endTime: true,
+              overnight: true,
+            },
+          },
         },
       }),
     ]);
     return {
       data: rows,
-      pagination: { page, pageSize, totalItems: total, totalPages: Math.ceil(total / pageSize) },
+      pagination: {
+        page,
+        pageSize,
+        totalItems: total,
+        totalPages: Math.ceil(total / pageSize),
+      },
     };
   }
 
@@ -259,7 +352,6 @@ export class AttendanceService {
     const AND: Array<Record<string, unknown>> = [{ needsReview: true }];
 
     if (!satisfiesRole(roles, 'ADMIN')) {
-      
       const me = await this.prisma.employee.findUnique({
         where: { userId },
         select: { id: true },
@@ -267,7 +359,6 @@ export class AttendanceService {
       if (!me) return emptyPage(page, pageSize);
       AND.push({ employee: { supervisorId: me.id } });
     } else if (!satisfiesRole(roles, 'SUPER_ADMIN')) {
-      
       const scope = await resolveHospitalScope(this.prisma, userId, roles);
       if (scope.kind !== 'hospital') return emptyPage(page, pageSize);
       AND.push({ employee: { department: { hospitalId: scope.hospitalId } } });
@@ -282,7 +373,9 @@ export class AttendanceService {
         skip: (page - 1) * pageSize,
         take: pageSize,
         include: {
-          shift: { select: { id: true, name: true, startTime: true, endTime: true } },
+          shift: {
+            select: { id: true, name: true, startTime: true, endTime: true },
+          },
           employee: {
             select: {
               id: true,
@@ -296,7 +389,12 @@ export class AttendanceService {
     ]);
     return {
       data: rows,
-      pagination: { page, pageSize, totalItems: total, totalPages: Math.ceil(total / pageSize) },
+      pagination: {
+        page,
+        pageSize,
+        totalItems: total,
+        totalPages: Math.ceil(total / pageSize),
+      },
     };
   }
 
@@ -335,8 +433,11 @@ export class AttendanceService {
     return updated;
   }
 
-   
-  private async requireReviewScope(id: string, userId: string, roles: string[]) {
+  private async requireReviewScope(
+    id: string,
+    userId: string,
+    roles: string[],
+  ) {
     const row = await this.prisma.attendance.findUnique({
       where: { id },
       include: {
@@ -375,9 +476,7 @@ export class AttendanceService {
     const page = query.page ?? 1;
     const pageSize = query.pageSize ?? 20;
     const AND: Array<Record<string, unknown>> = [];
-    
-    
-    
+
     if (!satisfiesRole(roles, 'SUPER_ADMIN')) {
       const scope = await resolveHospitalScope(this.prisma, userId, roles);
       if (scope.kind !== 'hospital') return emptyPage(page, pageSize);
@@ -386,20 +485,25 @@ export class AttendanceService {
           where: { id: query.departmentId },
           select: { hospitalId: true },
         });
-        if (!dept || dept.hospitalId !== scope.hospitalId) return emptyPage(page, pageSize);
+        if (!dept || dept.hospitalId !== scope.hospitalId)
+          return emptyPage(page, pageSize);
       }
       AND.push({ employee: { department: { hospitalId: scope.hospitalId } } });
     }
     if (query.employeeId) AND.push({ employeeId: query.employeeId });
-    if (query.departmentId) AND.push({ employee: { departmentId: query.departmentId } });
+    if (query.departmentId)
+      AND.push({ employee: { departmentId: query.departmentId } });
     if (query.from) AND.push({ workDate: { gte: new Date(query.from) } });
     if (query.to) AND.push({ workDate: { lte: new Date(query.to) } });
     if (query.checkInStatus) AND.push({ checkInStatus: query.checkInStatus });
     if (query.riskCategory) AND.push({ riskCategory: query.riskCategory });
-    if (query.needsReview !== undefined) AND.push({ needsReview: query.needsReview });
+    if (query.needsReview !== undefined)
+      AND.push({ needsReview: query.needsReview });
     if (query.search) {
       const contains = { contains: query.search, mode: 'insensitive' as const };
-      AND.push({ employee: { OR: [{ name: contains }, { employeeNo: contains }] } });
+      AND.push({
+        employee: { OR: [{ name: contains }, { employeeNo: contains }] },
+      });
     }
     const where = AND.length > 0 ? { AND } : {};
     const [total, rows] = await Promise.all([
@@ -410,7 +514,9 @@ export class AttendanceService {
         skip: (page - 1) * pageSize,
         take: pageSize,
         include: {
-          shift: { select: { id: true, name: true, startTime: true, endTime: true } },
+          shift: {
+            select: { id: true, name: true, startTime: true, endTime: true },
+          },
           employee: {
             select: {
               id: true,
@@ -424,7 +530,12 @@ export class AttendanceService {
     ]);
     return {
       data: rows,
-      pagination: { page, pageSize, totalItems: total, totalPages: Math.ceil(total / pageSize) },
+      pagination: {
+        page,
+        pageSize,
+        totalItems: total,
+        totalPages: Math.ceil(total / pageSize),
+      },
     };
   }
 
@@ -448,28 +559,43 @@ export class AttendanceService {
     if (!row) throw new NotFoundException('Attendance not found');
     const owner = row.employee.userId === userId;
     if (owner || satisfiesRole(roles, 'SUPER_ADMIN')) return row;
-    
-    
+
     if (satisfiesRole(roles, 'ADMIN')) {
       const scope = await resolveHospitalScope(this.prisma, userId, roles);
-      if (scope.kind === 'hospital' && row.employee?.department?.hospitalId === scope.hospitalId) {
+      if (
+        scope.kind === 'hospital' &&
+        row.employee?.department?.hospitalId === scope.hospitalId
+      ) {
         return row;
       }
     }
     throw new NotFoundException('Attendance not found');
   }
 
-  
-
   private async requireEmployee(userId: string) {
-    const employee = await this.prisma.employee.findUnique({ where: { userId } });
-    if (!employee) throw new NotFoundException('No employee profile for this account');
+    const employee = await this.prisma.employee.findUnique({
+      where: { userId },
+    });
+    if (!employee)
+      throw new NotFoundException('No employee profile for this account');
     return employee;
   }
 
-  private async requireConsent(employeeId: string, userId: string, meta: { ip?: string }, risk: RiskInput) {
-    if (await this.privacy.hasActiveConsent(employeeId, 'BIOMETRIC_ATTENDANCE')) return;
-    return this.reject(userId, 'NO_CONSENT', 'Persetujuan biometrik diperlukan', meta, risk);
+  private async requireConsent(
+    employeeId: string,
+    userId: string,
+    meta: { ip?: string },
+    risk: RiskInput,
+  ) {
+    if (await this.privacy.hasActiveConsent(employeeId, 'BIOMETRIC_ATTENDANCE'))
+      return;
+    return this.reject(
+      userId,
+      'NO_CONSENT',
+      'Persetujuan biometrik diperlukan',
+      meta,
+      risk,
+    );
   }
 
   private async claimRequest(
@@ -480,8 +606,17 @@ export class AttendanceService {
     risk: RiskInput,
   ) {
     const ts = new Date(dto.requestTimestamp);
-    if (Number.isNaN(ts.getTime()) || Math.abs(now.getTime() - ts.getTime()) > this.requestSkewMin * 60_000) {
-      return this.reject(userId, 'STALE_REQUEST', 'Request kedaluwarsa', meta, risk);
+    if (
+      Number.isNaN(ts.getTime()) ||
+      Math.abs(now.getTime() - ts.getTime()) > this.requestSkewMin * 60_000
+    ) {
+      return this.reject(
+        userId,
+        'STALE_REQUEST',
+        'Request kedaluwarsa',
+        meta,
+        risk,
+      );
     }
     await this.prisma.idempotencyKey.deleteMany({
       where: { createdAt: { lt: new Date(now.getTime() - 60 * 60_1000) } },
@@ -489,9 +624,18 @@ export class AttendanceService {
     try {
       await this.prisma.idempotencyKey.create({ data: { key: dto.requestId } });
     } catch (e) {
-      if (typeof e === 'object' && e !== null && (e as { code?: string }).code === 'P2002') {
-        await this.denyAudit(userId, 'DUPLICATE_REQUEST', meta, risk, { requestId: dto.requestId });
-        throw new ConflictException({ reason: 'DUPLICATE_REQUEST', message: 'Request sudah diproses' });
+      if (
+        typeof e === 'object' &&
+        e !== null &&
+        (e as { code?: string }).code === 'P2002'
+      ) {
+        await this.denyAudit(userId, 'DUPLICATE_REQUEST', meta, risk, {
+          requestId: dto.requestId,
+        });
+        throw new ConflictException({
+          reason: 'DUPLICATE_REQUEST',
+          message: 'Request sudah diproses',
+        });
       }
       throw e;
     }
@@ -507,16 +651,29 @@ export class AttendanceService {
     const check = await this.devices.validateDeviceFor(employeeId, deviceId);
     if (!check.ok) {
       if (check.reason === 'UNKNOWN_DEVICE') {
-        await this.denyAudit(userId, 'UNKNOWN_DEVICE', meta, risk, { deviceId });
+        await this.denyAudit(userId, 'UNKNOWN_DEVICE', meta, risk, {
+          deviceId,
+        });
         throw new NotFoundException('Device tidak dikenal');
       }
       if (check.reason === 'WRONG_OWNER') {
-        await this.denyAudit(userId, 'WRONG_OWNER_DEVICE', meta, risk, { deviceId });
+        await this.denyAudit(userId, 'WRONG_OWNER_DEVICE', meta, risk, {
+          deviceId,
+        });
         throw new ForbiddenException('Device bukan milik akun ini');
       }
-      return this.reject(userId, 'DEVICE_NOT_ACTIVE', 'Device tidak aktif', meta, risk, { deviceId });
+      return this.reject(
+        userId,
+        'DEVICE_NOT_ACTIVE',
+        'Device tidak aktif',
+        meta,
+        risk,
+        { deviceId },
+      );
     }
-    const device = await this.prisma.device.findUnique({ where: { id: deviceId } });
+    const device = await this.prisma.device.findUnique({
+      where: { id: deviceId },
+    });
     if (!device) {
       await this.denyAudit(userId, 'UNKNOWN_DEVICE', meta, risk, { deviceId });
       throw new NotFoundException('Device tidak dikenal');
@@ -537,7 +694,13 @@ export class AttendanceService {
       dto.signature,
     );
     if (!ok) {
-      return this.reject(userId, 'INVALID_SIGNATURE', 'Tanda tangan device tidak valid', meta, risk);
+      return this.reject(
+        userId,
+        'INVALID_SIGNATURE',
+        'Tanda tangan device tidak valid',
+        meta,
+        risk,
+      );
     }
   }
 
@@ -549,9 +712,9 @@ export class AttendanceService {
     risk: RiskInput,
   ) {
     if (!this.integrity) {
-      
       risk.integrityOk = !dto.deviceCompromised;
-      (risk as unknown as Record<string, unknown>).__integrityReason = dto.deviceCompromised ? 'MISSING_TOKEN' : undefined;
+      (risk as unknown as Record<string, unknown>).__integrityReason =
+        dto.deviceCompromised ? 'MISSING_TOKEN' : undefined;
       return;
     }
     const resolved = this.integrity.resolveSignal({
@@ -561,7 +724,9 @@ export class AttendanceService {
     });
     risk.integrityOk = resolved.ok;
     (risk as unknown as Record<string, unknown>).__integrityReason =
-      resolved.verdict && !resolved.verdict.ok ? resolved.verdict.reason : undefined;
+      resolved.verdict && !resolved.verdict.ok
+        ? resolved.verdict.reason
+        : undefined;
   }
 
   private async rejectIfBadIntegrity(
@@ -571,18 +736,29 @@ export class AttendanceService {
   ): Promise<void> {
     if (risk.integrityOk) return;
     const strict = this.integrity?.strictMode ?? false;
-    const reason = (risk as unknown as Record<string, unknown>).__integrityReason as string | undefined;
+    const reason = (risk as unknown as Record<string, unknown>)
+      .__integrityReason as string | undefined;
     if (reason === 'MISSING_TOKEN' && !strict) {
-      
-      
-      return this.reject(userId, 'DEVICE_COMPROMISED', 'Perangkat terindikasi kompromi', meta, risk);
+      return this.reject(
+        userId,
+        'DEVICE_COMPROMISED',
+        'Perangkat terindikasi kompromi',
+        meta,
+        risk,
+      );
     }
-    return this.reject(userId, 'INTEGRITY_FAILED', 'Verifikasi integritas perangkat gagal', meta, risk, {
-      integrityReason: reason ?? 'UNTRUSTED',
-    });
+    return this.reject(
+      userId,
+      'INTEGRITY_FAILED',
+      'Verifikasi integritas perangkat gagal',
+      meta,
+      risk,
+      {
+        integrityReason: reason ?? 'UNTRUSTED',
+      },
+    );
   }
 
-   
   private async denyAudit(
     userId: string,
     reason: string,
@@ -596,19 +772,32 @@ export class AttendanceService {
       action: 'ATTENDANCE_REJECTED',
       ipAddress: meta.ip,
       result: 'DENIED',
-      metadata: { reason, riskScore: verdict.score, riskCategory: verdict.category, ...extra },
+      metadata: {
+        reason,
+        riskScore: verdict.score,
+        riskCategory: verdict.category,
+        ...extra,
+      },
     });
   }
 
   private async matchFace(
     employeeId: string,
     live: number[],
-  ): Promise<{ matched: true; score: number } | { matched: false; reason: 'NO_FACE_TEMPLATE' | 'FACE_MISMATCH'; score: number }> {
+  ): Promise<
+    | { matched: true; score: number }
+    | {
+        matched: false;
+        reason: 'NO_FACE_TEMPLATE' | 'FACE_MISMATCH';
+        score: number;
+      }
+  > {
     if (!live.every((v) => Number.isFinite(v))) {
       return { matched: false, reason: 'FACE_MISMATCH', score: -1 };
     }
     const score = await this.face.matchScore(employeeId, live);
-    if (score === null) return { matched: false, reason: 'NO_FACE_TEMPLATE', score: -1 };
+    if (score === null)
+      return { matched: false, reason: 'NO_FACE_TEMPLATE', score: -1 };
     return score >= this.faceThreshold
       ? { matched: true, score: round3(score) }
       : { matched: false, reason: 'FACE_MISMATCH', score: round3(score) };
@@ -628,17 +817,29 @@ export class AttendanceService {
       action: 'ATTENDANCE_REJECTED',
       ipAddress: meta.ip,
       result: 'DENIED',
-      metadata: { reason, riskScore: verdict.score, riskCategory: verdict.category, ...extra },
+      metadata: {
+        reason,
+        riskScore: verdict.score,
+        riskCategory: verdict.category,
+        ...extra,
+      },
     });
-    throw new UnprocessableEntityException({ reason, message, riskScore: verdict.score, riskCategory: verdict.category });
+    throw new UnprocessableEntityException({
+      reason,
+      message,
+      riskScore: verdict.score,
+      riskCategory: verdict.category,
+    });
   }
 }
 
 function emptyPage(page: number, pageSize: number) {
-  return { data: [], pagination: { page, pageSize, totalItems: 0, totalPages: 0 } };
+  return {
+    data: [],
+    pagination: { page, pageSize, totalItems: 0, totalPages: 0 },
+  };
 }
 
- 
 function worseCategory(
   a: string | null | undefined,
   b: 'LOW' | 'MEDIUM' | 'HIGH',

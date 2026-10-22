@@ -2,10 +2,6 @@ import 'package:dio/dio.dart';
 
 import '../domain/user_admin_models.dart';
 
-
-
-
-
 class UserAdminRepository {
   UserAdminRepository({required Dio dio}) : _dio = dio;
 
@@ -28,14 +24,16 @@ class UserAdminRepository {
         'pageSize': pageSize,
       },
     );
-    final Map<String, dynamic> body = Map<String, dynamic>.from(res.data as Map);
+    final Map<String, dynamic> body =
+        Map<String, dynamic>.from(res.data as Map);
     final List<dynamic> data = (body['data'] as List?) ?? const <dynamic>[];
     final Map<String, dynamic> pagination =
         (body['pagination'] as Map?)?.cast<String, dynamic>() ??
             const <String, dynamic>{};
     return AdminUserPage(
       items: data
-          .map((dynamic e) => AdminUser.fromJson(Map<String, dynamic>.from(e as Map)))
+          .map((dynamic e) =>
+              AdminUser.fromJson(Map<String, dynamic>.from(e as Map)))
           .toList(),
       page: pagination['page'] as int? ?? page,
       totalPages: pagination['totalPages'] as int? ?? 1,
@@ -58,7 +56,6 @@ class UserAdminRepository {
     );
   }
 
-  
   Future<void> update(
     String id, {
     List<String>? roles,

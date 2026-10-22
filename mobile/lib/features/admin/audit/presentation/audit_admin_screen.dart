@@ -9,8 +9,6 @@ import '../../presentation/admin_widgets.dart';
 import '../data/audit_admin_repository.dart';
 import '../domain/audit_admin_models.dart';
 
-
-
 class AuditAdminScreen extends StatefulWidget {
   const AuditAdminScreen({super.key, required this.dio});
 
@@ -46,8 +44,6 @@ class _AuditAdminScreenState extends State<AuditAdminScreen> {
       if (!mounted) return;
       setState(() => _actions = list.isEmpty ? null : list);
     } catch (_) {
-      
-      
       if (mounted) setState(() => _actions = null);
     }
   }

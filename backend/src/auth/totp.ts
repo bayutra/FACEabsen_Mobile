@@ -1,22 +1,17 @@
-
-
-
-
 import { createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
 
 export const TOTP_PERIOD_SEC = 30;
 export const TOTP_DIGITS = 6;
 export const TOTP_ALGORITHM = 'SHA1';
- 
+
 export const TOTP_WINDOW_STEPS = 1;
 export const TOTP_SECRET_BYTES = 20;
- 
+
 export const TOTP_TOKEN_TTL_SEC = 300;
 export const TOTP_TOKEN_PURPOSE = 'totp';
 
 const BASE32_ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
 
- 
 export function generateTotpSecret(bytes: number = TOTP_SECRET_BYTES): string {
   return base32Encode(randomBytes(bytes));
 }
@@ -37,11 +32,14 @@ export function base32Encode(data: Uint8Array): string {
   return out;
 }
 
- 
 export function base32Decode(input: string): Buffer {
   const clean = input.replace(/=+$/, '').replace(/\s+/g, '').toUpperCase();
   if (clean.length === 0) throw new Error('Invalid base32 secret: empty');
-  if (clean.length % 8 === 1 || clean.length % 8 === 3 || clean.length % 8 === 6) {
+  if (
+    clean.length % 8 === 1 ||
+    clean.length % 8 === 3 ||
+    clean.length % 8 === 6
+  ) {
     throw new Error('Invalid base32 secret: bad length');
   }
   for (const ch of clean) {
@@ -63,8 +61,11 @@ export function base32Decode(input: string): Buffer {
   return Buffer.from(out);
 }
 
- 
-export function hotp(secret: Uint8Array, counter: number | bigint, digits: number = TOTP_DIGITS): string {
+export function hotp(
+  secret: Uint8Array,
+  counter: number | bigint,
+  digits: number = TOTP_DIGITS,
+): string {
   const msg = Buffer.alloc(8);
   msg.writeBigUInt64BE(BigInt(counter));
   const mac = createHmac('sha1', Buffer.from(secret)).update(msg).digest();
@@ -77,7 +78,6 @@ export function hotp(secret: Uint8Array, counter: number | bigint, digits: numbe
   return (code % 10 ** digits).toString().padStart(digits, '0');
 }
 
- 
 export function totp(
   secretBase32: string,
   atMs: number = Date.now(),
@@ -88,7 +88,6 @@ export function totp(
   return hotp(base32Decode(secretBase32), counter, digits);
 }
 
- 
 export function verifyTotp(
   secretBase32: string,
   code: string,
@@ -111,7 +110,6 @@ export function verifyTotp(
   return ok;
 }
 
- 
 export function safeEqual(a: string, b: string): boolean {
   const ba = Buffer.from(a, 'utf8');
   const bb = Buffer.from(b, 'utf8');
@@ -123,8 +121,11 @@ export function safeEqual(a: string, b: string): boolean {
   return timingSafeEqual(pa, pb) && ba.length === bb.length;
 }
 
- 
-export function buildOtpauthUri(issuer: string, email: string, secret: string): string {
+export function buildOtpauthUri(
+  issuer: string,
+  email: string,
+  secret: string,
+): string {
   return (
     `otpauth://totp/${issuer}:${email}` +
     `?secret=${secret}&issuer=${issuer}&algorithm=${TOTP_ALGORITHM}` +

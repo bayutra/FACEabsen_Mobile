@@ -7,8 +7,6 @@ import '../domain/face_quality.dart';
 import 'face_guidance_card.dart';
 import 'face_scan_issue_screen.dart';
 
-
-
 class FaceCaptureScreen extends StatefulWidget {
   const FaceCaptureScreen({super.key, required this.faces});
 
@@ -24,8 +22,6 @@ class _FaceCaptureScreenState extends State<FaceCaptureScreen>
   String? _error;
   bool _busy = false;
 
-  
-  
   FaceGate? _failGate;
 
   @override
@@ -37,8 +33,6 @@ class _FaceCaptureScreenState extends State<FaceCaptureScreen>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    
-    
     if (state == AppLifecycleState.paused ||
         state == AppLifecycleState.inactive) {
       final CameraController? controller = _controller;
@@ -70,12 +64,10 @@ class _FaceCaptureScreenState extends State<FaceCaptureScreen>
         enableAudio: false,
       );
       await controller.initialize();
-      
+
       try {
         await controller.setFlashMode(FlashMode.off);
-      } on CameraException {
-        
-      }
+      } on CameraException {}
       if (mounted) setState(() => _controller = controller);
     } on CameraException catch (e) {
       if (!mounted) return;
@@ -121,9 +113,6 @@ class _FaceCaptureScreenState extends State<FaceCaptureScreen>
     }
   }
 
-  
-  
-  
   Future<void> _openIssueGuide(FaceGate gate) async {
     final bool? retry = await Navigator.of(context).push<bool>(
       MaterialPageRoute(

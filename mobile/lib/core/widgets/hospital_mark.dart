@@ -1,9 +1,5 @@
 import 'package:flutter/material.dart';
 
-
-
-
-
 class HospitalMark extends StatelessWidget {
   const HospitalMark({super.key, this.size = 48});
 

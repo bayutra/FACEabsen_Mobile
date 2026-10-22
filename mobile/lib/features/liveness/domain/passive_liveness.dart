@@ -1,29 +1,5 @@
 import 'dart:math' as math;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 class PassiveFrame {
   const PassiveFrame({
     required this.faceCount,
@@ -37,15 +13,12 @@ class PassiveFrame {
 
   final int faceCount;
 
-  
   final double relativeWidth;
 
   final double? yaw;
   final double? eyeOpenLeft;
   final double? eyeOpenRight;
 
-  
-  
   final double? landmarkX;
   final double? landmarkY;
 }
@@ -70,11 +43,8 @@ class PassiveLivenessResult {
   final double progress;
   final PassiveRejection? rejection;
 
-  
-  
   final String? hint;
 }
-
 
 class PassivePolicy {
   const PassivePolicy({
@@ -93,19 +63,13 @@ class PassivePolicy {
   final double eyeClosedBelow;
   final double eyeOpenAbove;
 
-  
-  
   final double microMotionMin;
   final double microMotionMax;
 
-  
-  
-  
   final double depthChangeMin;
 
   final int requiredGoodFrames;
 }
-
 
 class PassiveLiveness {
   PassiveLiveness({this.policy = const PassivePolicy()});
@@ -116,8 +80,6 @@ class PassiveLiveness {
   double? _lastY;
   bool _sawMotion = false;
 
-  
-  
   double _pathLength = 0;
 
   double? _minWidth;
@@ -126,15 +88,11 @@ class PassiveLiveness {
 
   double get progress => (_goodRun / policy.requiredGoodFrames).clamp(0.0, 1.0);
 
-  
   double get depthProgress {
     if (_minWidth == null || _maxWidth == null) return 0;
     return ((_maxWidth! - _minWidth!) / policy.depthChangeMin).clamp(0.0, 1.0);
   }
 
-  
-  
-  
   double get motionScore => (_pathLength / 12.0).clamp(0.0, 1.0);
   double get depthScore => depthProgress;
 
@@ -153,15 +111,15 @@ class PassiveLiveness {
     final PassiveRejection? hard = _hardReject(frame);
     if (hard != null) {
       _goodRun = 0;
-      return PassiveLivenessResult(verdict: PassiveVerdict.rejected, rejection: hard);
+      return PassiveLivenessResult(
+          verdict: PassiveVerdict.rejected, rejection: hard);
     }
 
-    
-    
     final double? x = frame.landmarkX;
     final double? y = frame.landmarkY;
     if (x != null && y != null && _lastX != null && _lastY != null) {
-      final double delta = math.sqrt(math.pow(x - _lastX!, 2) + math.pow(y - _lastY!, 2));
+      final double delta =
+          math.sqrt(math.pow(x - _lastX!, 2) + math.pow(y - _lastY!, 2));
       _pathLength += delta;
       if (delta >= policy.microMotionMin && delta <= policy.microMotionMax) {
         _sawMotion = true;
@@ -172,7 +130,6 @@ class PassiveLiveness {
       _lastY = y;
     }
 
-    
     final double w = frame.relativeWidth;
     if (w > 0) {
       _minWidth = _minWidth == null ? w : math.min(_minWidth!, w);
@@ -194,36 +151,42 @@ class PassiveLiveness {
 
     _goodRun++;
     if (_goodRun >= policy.requiredGoodFrames) {
-      return const PassiveLivenessResult(verdict: PassiveVerdict.passed, progress: 1);
+      return const PassiveLivenessResult(
+          verdict: PassiveVerdict.passed, progress: 1);
     }
-    return PassiveLivenessResult(verdict: PassiveVerdict.scanning, progress: progress);
+    return PassiveLivenessResult(
+        verdict: PassiveVerdict.scanning, progress: progress);
   }
 
   PassiveRejection? _hardReject(PassiveFrame frame) {
     if (frame.faceCount == 0) {
-      return const PassiveRejection('NO_FACE', 'Wajah tidak terdeteksi. Posisikan wajah di dalam lingkaran.');
+      return const PassiveRejection('NO_FACE',
+          'Wajah tidak terdeteksi. Posisikan wajah di dalam lingkaran.');
     }
     if (frame.faceCount > 1) {
-      return const PassiveRejection('MULTIPLE_FACES', 'Lebih dari satu wajah terdeteksi. Pastikan hanya Anda.');
+      return const PassiveRejection('MULTIPLE_FACES',
+          'Lebih dari satu wajah terdeteksi. Pastikan hanya Anda.');
     }
     if (frame.relativeWidth < policy.minWidth) {
-      return const PassiveRejection('FACE_TOO_SMALL', 'Wajah terlalu jauh. Dekatkan ke kamera.');
+      return const PassiveRejection(
+          'FACE_TOO_SMALL', 'Wajah terlalu jauh. Dekatkan ke kamera.');
     }
     final double? yaw = frame.yaw;
     if (yaw == null || yaw.abs() > policy.maxYaw) {
-      return const PassiveRejection('NOT_FRONTAIN', 'Hadapkan wajah lurus ke kamera.');
+      return const PassiveRejection(
+          'NOT_FRONTAIN', 'Hadapkan wajah lurus ke kamera.');
     }
     final double? l = frame.eyeOpenLeft;
     final double? r = frame.eyeOpenRight;
     if (l == null || r == null) {
-      return const PassiveRejection('EYES_UNKNOWN', 'Mata tidak terbaca. Cari cahaya yang cukup.');
+      return const PassiveRejection(
+          'EYES_UNKNOWN', 'Mata tidak terbaca. Cari cahaya yang cukup.');
     }
     if (l < policy.eyeClosedBelow && r < policy.eyeClosedBelow) {
-      return const PassiveRejection('EYES_CLOSED', 'Mata tertutup. Buka kedua mata.');
+      return const PassiveRejection(
+          'EYES_CLOSED', 'Mata tertutup. Buka kedua mata.');
     }
-    
-    
-    
+
     return null;
   }
 }

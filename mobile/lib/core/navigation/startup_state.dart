@@ -1,7 +1,5 @@
 import 'package:flutter/widgets.dart';
 
-
-
 enum StartupState { loading, authenticated, login, error }
 
 StartupState resolveStartupState(AsyncSnapshot<bool> snap) {

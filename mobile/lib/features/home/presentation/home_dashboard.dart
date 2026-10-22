@@ -6,8 +6,6 @@ import '../../attendance/data/attendance_repository.dart';
 import '../../attendance/domain/attendance_models.dart';
 import '../../schedule/data/schedule_repository.dart';
 
-
-
 class HomeDashboard extends StatefulWidget {
   const HomeDashboard({
     super.key,
@@ -37,9 +35,6 @@ class HomeDashboard extends StatefulWidget {
   final VoidCallback onOpenProfile;
   final VoidCallback? onOpenHistory;
 
-  
-  
-  
   final VoidCallback? onOpenAdmin;
 
   @override
@@ -110,9 +105,6 @@ class _HomeDashboardState extends State<HomeDashboard> {
         );
       }
     } catch (_) {
-      
-      
-      
     } finally {
       if (mounted) setState(() => _consentBusy = false);
     }
@@ -138,8 +130,6 @@ class _HomeDashboardState extends State<HomeDashboard> {
     return 'Selamat Malam,';
   }
 
-  
-  
   Widget _adminBanner() {
     return Material(
       color: Colors.transparent,
@@ -247,10 +237,13 @@ class _HomeDashboardState extends State<HomeDashboard> {
                       children: [
                         Text(
                           _greeting(),
-                          style: AppText.labelSm.copyWith(color: AppColors.inkSecondary),
+                          style: AppText.labelSm
+                              .copyWith(color: AppColors.inkSecondary),
                         ),
                         Text(
-                          widget.displayName.isEmpty ? 'Karyawan' : widget.displayName,
+                          widget.displayName.isEmpty
+                              ? 'Karyawan'
+                              : widget.displayName,
                           style: AppText.headlineSm.copyWith(
                             color: AppColors.primary,
                             fontSize: 16,
@@ -266,13 +259,15 @@ class _HomeDashboardState extends State<HomeDashboard> {
                     onPressed: () {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
-                          content: Text('Operan Jaga Bangsal Melati terjadwal pukul 14:45 WIB.'),
+                          content: Text(
+                              'Operan Jaga Bangsal Melati terjadwal pukul 14:45 WIB.'),
                         ),
                       );
                     },
                     icon: Stack(
                       children: [
-                        const Icon(Icons.notifications_none, color: AppColors.primary, size: 24),
+                        const Icon(Icons.notifications_none,
+                            color: AppColors.primary, size: 24),
                         Positioned(
                           right: 2,
                           top: 2,
@@ -303,10 +298,10 @@ class _HomeDashboardState extends State<HomeDashboard> {
               _adminBanner(),
               const SizedBox(height: 12),
             ],
-            
             Row(
               children: [
-                const Icon(Icons.local_hospital, size: 18, color: AppColors.primary),
+                const Icon(Icons.local_hospital,
+                    size: 18, color: AppColors.primary),
                 const SizedBox(width: 6),
                 Expanded(
                   child: Text(
@@ -320,11 +315,11 @@ class _HomeDashboardState extends State<HomeDashboard> {
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
                     color: AppColors.secondaryFixed,
-                    borderRadius:
-                        BorderRadius.circular(AppColors.radiusFull),
+                    borderRadius: BorderRadius.circular(AppColors.radiusFull),
                     border: Border.all(color: AppColors.secondaryFixedDim),
                   ),
                   child: Text(
@@ -338,29 +333,19 @@ class _HomeDashboardState extends State<HomeDashboard> {
               ],
             ),
             const SizedBox(height: 14),
-
             if (_busy)
               const LoadingState(label: 'Memuat penugasan hari ini')
             else if (_error != null)
               _errorBox()
             else ...[
-              
               _shiftCard(),
               const SizedBox(height: 14),
-
-              
               _statusCard(),
               const SizedBox(height: 14),
-
-              
               _biometricConsentCard(),
               const SizedBox(height: 14),
-
-              
               _quickMenuGrid(),
               const SizedBox(height: 14),
-
-              
               _handoverAnnouncement(),
             ],
           ],
@@ -380,16 +365,16 @@ class _HomeDashboardState extends State<HomeDashboard> {
           children: [
             Text(_error!, style: const TextStyle(color: AppColors.errorText)),
             const SizedBox(height: 8),
-            FilledButton.tonal(onPressed: _load, child: const Text('Coba lagi')),
+            FilledButton.tonal(
+                onPressed: _load, child: const Text('Coba lagi')),
           ],
         ),
       );
 
   Widget _shiftCard() {
     final ScheduleEntry? shift = _todayShift;
-    final String shiftTitle = shift != null
-        ? '${shift.shiftName} (Aktif)'
-        : 'Shift Pagi (Aktif)';
+    final String shiftTitle =
+        shift != null ? '${shift.shiftName} (Aktif)' : 'Shift Pagi (Aktif)';
     final String shiftHours = shift != null
         ? '${shift.startTime} - ${shift.endTime} WIB'
         : '07:00 - 15:00 WIB';
@@ -409,7 +394,8 @@ class _HomeDashboardState extends State<HomeDashboard> {
                 children: [
                   Text(
                     'Penugasan Hari Ini',
-                    style: AppText.labelMd.copyWith(color: AppColors.inkSecondary),
+                    style:
+                        AppText.labelMd.copyWith(color: AppColors.inkSecondary),
                   ),
                   const SizedBox(height: 2),
                   Text(
@@ -419,7 +405,8 @@ class _HomeDashboardState extends State<HomeDashboard> {
                 ],
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
                   color: AppColors.surfaceContainer,
                   borderRadius: BorderRadius.circular(AppColors.radiusFull),
@@ -450,8 +437,6 @@ class _HomeDashboardState extends State<HomeDashboard> {
             ],
           ),
           const SizedBox(height: 12),
-
-          
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
@@ -465,7 +450,8 @@ class _HomeDashboardState extends State<HomeDashboard> {
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Icon(Icons.meeting_room, size: 20, color: AppColors.primary),
+                    const Icon(Icons.meeting_room,
+                        size: 20, color: AppColors.primary),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Column(
@@ -473,12 +459,14 @@ class _HomeDashboardState extends State<HomeDashboard> {
                         children: [
                           Text(
                             'Ruang Rawat Inap Melati Lt. 3',
-                            style: AppText.bodyMdMedium.copyWith(color: AppColors.ink),
+                            style: AppText.bodyMdMedium
+                                .copyWith(color: AppColors.ink),
                           ),
                           const SizedBox(height: 2),
                           Text(
                             'Kamar Rawat: Bed 301 - 308 (Isolasi & Perawatan)',
-                            style: AppText.labelSm.copyWith(color: AppColors.inkSecondary),
+                            style: AppText.labelSm
+                                .copyWith(color: AppColors.inkSecondary),
                           ),
                         ],
                       ),
@@ -494,7 +482,8 @@ class _HomeDashboardState extends State<HomeDashboard> {
                   children: [
                     Row(
                       children: [
-                        const Icon(Icons.schedule, size: 16, color: AppColors.primary),
+                        const Icon(Icons.schedule,
+                            size: 16, color: AppColors.primary),
                         const SizedBox(width: 4),
                         Text(
                           'Toleransi ${shift?.gracePeriodMin ?? 15} mnt',
@@ -507,11 +496,13 @@ class _HomeDashboardState extends State<HomeDashboard> {
                     ),
                     Row(
                       children: [
-                        const Icon(Icons.timer_outlined, size: 14, color: AppColors.inkSecondary),
+                        const Icon(Icons.timer_outlined,
+                            size: 14, color: AppColors.inkSecondary),
                         const SizedBox(width: 4),
                         Text(
                           'Ambang telat ${shift?.lateThresholdMin ?? 30} mnt',
-                          style: AppText.labelSm.copyWith(color: AppColors.inkSecondary),
+                          style: AppText.labelSm
+                              .copyWith(color: AppColors.inkSecondary),
                         ),
                       ],
                     ),
@@ -545,7 +536,8 @@ class _HomeDashboardState extends State<HomeDashboard> {
             children: [
               Row(
                 children: [
-                  const Icon(Icons.timer_outlined, size: 20, color: AppColors.primary),
+                  const Icon(Icons.timer_outlined,
+                      size: 20, color: AppColors.primary),
                   const SizedBox(width: 6),
                   Text(
                     'Status Presensi',
@@ -554,7 +546,8 @@ class _HomeDashboardState extends State<HomeDashboard> {
                 ],
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
                 decoration: BoxDecoration(
                   color: AppColors.surfaceLowest,
                   borderRadius: BorderRadius.circular(AppColors.radiusFull),
@@ -576,7 +569,8 @@ class _HomeDashboardState extends State<HomeDashboard> {
                               : checkInStatusLabel(row!.checkInStatus))
                           : 'Belum Absen',
                       style: AppText.labelMd.copyWith(
-                        color: hasIn ? AppColors.primary : AppColors.inkSecondary,
+                        color:
+                            hasIn ? AppColors.primary : AppColors.inkSecondary,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -586,8 +580,6 @@ class _HomeDashboardState extends State<HomeDashboard> {
             ],
           ),
           const SizedBox(height: 14),
-
-          
           Row(
             children: [
               Expanded(
@@ -606,9 +598,11 @@ class _HomeDashboardState extends State<HomeDashboard> {
                         children: [
                           Text(
                             'Absen Masuk',
-                            style: AppText.labelSm.copyWith(color: AppColors.inkSecondary),
+                            style: AppText.labelSm
+                                .copyWith(color: AppColors.inkSecondary),
                           ),
-                          const Icon(Icons.login, size: 18, color: AppColors.primary),
+                          const Icon(Icons.login,
+                              size: 18, color: AppColors.primary),
                         ],
                       ),
                       const SizedBox(height: 4),
@@ -621,13 +615,16 @@ class _HomeDashboardState extends State<HomeDashboard> {
                             style: AppText.headlineMd.copyWith(
                               color: AppColors.primary,
                               fontWeight: FontWeight.w700,
-                              fontFeatures: const [FontFeature.tabularFigures()],
+                              fontFeatures: const [
+                                FontFeature.tabularFigures()
+                              ],
                             ),
                           ),
                           const SizedBox(width: 4),
                           Text(
                             'WIB',
-                            style: AppText.labelMd.copyWith(color: AppColors.inkSecondary),
+                            style: AppText.labelMd
+                                .copyWith(color: AppColors.inkSecondary),
                           ),
                         ],
                       ),
@@ -637,14 +634,19 @@ class _HomeDashboardState extends State<HomeDashboard> {
                           Icon(
                             hasIn ? Icons.task_alt : Icons.schedule,
                             size: 13,
-                            color: hasIn ? AppColors.primary : AppColors.outline,
+                            color:
+                                hasIn ? AppColors.primary : AppColors.outline,
                           ),
                           const SizedBox(width: 3),
                           Expanded(
                             child: Text(
-                              hasIn ? 'Terverifikasi Wajah' : 'Belum ada presensi',
+                              hasIn
+                                  ? 'Terverifikasi Wajah'
+                                  : 'Belum ada presensi',
                               style: AppText.labelSm.copyWith(
-                                color: hasIn ? AppColors.primary : AppColors.inkSecondary,
+                                color: hasIn
+                                    ? AppColors.primary
+                                    : AppColors.inkSecondary,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
@@ -672,9 +674,11 @@ class _HomeDashboardState extends State<HomeDashboard> {
                         children: [
                           Text(
                             'Absen Pulang',
-                            style: AppText.labelSm.copyWith(color: AppColors.inkSecondary),
+                            style: AppText.labelSm
+                                .copyWith(color: AppColors.inkSecondary),
                           ),
-                          const Icon(Icons.logout, size: 18, color: AppColors.outline),
+                          const Icon(Icons.logout,
+                              size: 18, color: AppColors.outline),
                         ],
                       ),
                       const SizedBox(height: 4),
@@ -685,27 +689,36 @@ class _HomeDashboardState extends State<HomeDashboard> {
                           Text(
                             outTime,
                             style: AppText.headlineMd.copyWith(
-                              color: hasOut ? AppColors.primary : AppColors.outline,
+                              color: hasOut
+                                  ? AppColors.primary
+                                  : AppColors.outline,
                               fontWeight: FontWeight.w700,
-                              fontFeatures: const [FontFeature.tabularFigures()],
+                              fontFeatures: const [
+                                FontFeature.tabularFigures()
+                              ],
                             ),
                           ),
                           const SizedBox(width: 4),
                           Text(
                             'WIB',
-                            style: AppText.labelMd.copyWith(color: AppColors.inkSecondary),
+                            style: AppText.labelMd
+                                .copyWith(color: AppColors.inkSecondary),
                           ),
                         ],
                       ),
                       const SizedBox(height: 4),
                       Row(
                         children: [
-                          const Icon(Icons.schedule, size: 13, color: AppColors.outline),
+                          const Icon(Icons.schedule,
+                              size: 13, color: AppColors.outline),
                           const SizedBox(width: 3),
                           Expanded(
                             child: Text(
-                              hasOut ? 'Terverifikasi Pulang' : 'Belum Absen Pulang',
-                              style: AppText.labelSm.copyWith(color: AppColors.inkSecondary),
+                              hasOut
+                                  ? 'Terverifikasi Pulang'
+                                  : 'Belum Absen Pulang',
+                              style: AppText.labelSm
+                                  .copyWith(color: AppColors.inkSecondary),
                             ),
                           ),
                         ],
@@ -717,8 +730,6 @@ class _HomeDashboardState extends State<HomeDashboard> {
             ],
           ),
           const SizedBox(height: 12),
-
-          
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
@@ -730,11 +741,13 @@ class _HomeDashboardState extends State<HomeDashboard> {
               children: [
                 Row(
                   children: [
-                    const Icon(Icons.masks_outlined, size: 18, color: AppColors.primary),
+                    const Icon(Icons.masks_outlined,
+                        size: 18, color: AppColors.primary),
                     const SizedBox(width: 6),
                     Text(
                       'APD & Protokol Masker',
-                      style: AppText.labelSm.copyWith(color: AppColors.inkSecondary),
+                      style: AppText.labelSm
+                          .copyWith(color: AppColors.inkSecondary),
                     ),
                   ],
                 ),
@@ -756,8 +769,6 @@ class _HomeDashboardState extends State<HomeDashboard> {
             ),
           ),
           const SizedBox(height: 12),
-
-          
           SizedBox(
             height: AppColors.buttonHeight,
             child: FilledButton(
@@ -793,7 +804,8 @@ class _HomeDashboardState extends State<HomeDashboard> {
                 Flexible(
                   child: Text(
                     'Tekan untuk beralih atau validasi pembaruan Absen Pulang',
-                    style: AppText.labelSm.copyWith(color: AppColors.inkSecondary),
+                    style:
+                        AppText.labelSm.copyWith(color: AppColors.inkSecondary),
                     textAlign: TextAlign.center,
                   ),
                 ),
@@ -809,7 +821,8 @@ class _HomeDashboardState extends State<HomeDashboard> {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         child: Row(
           children: [
-            const Icon(Icons.face_retouching_natural, color: AppColors.primary, size: 24),
+            const Icon(Icons.face_retouching_natural,
+                color: AppColors.primary, size: 24),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
@@ -822,7 +835,8 @@ class _HomeDashboardState extends State<HomeDashboard> {
                   const SizedBox(height: 2),
                   Text(
                     'Presensi diverifikasi secara langsung dengan sensor kamera & AI.',
-                    style: AppText.labelSm.copyWith(color: AppColors.inkSecondary),
+                    style:
+                        AppText.labelSm.copyWith(color: AppColors.inkSecondary),
                   ),
                 ],
               ),
@@ -952,13 +966,15 @@ class _HomeDashboardState extends State<HomeDashboard> {
                     const SizedBox(width: 8),
                     Text(
                       'Operan Jaga Bangsal Melati',
-                      style: AppText.bodyMdMedium.copyWith(color: AppColors.ink),
+                      style:
+                          AppText.bodyMdMedium.copyWith(color: AppColors.ink),
                     ),
                   ],
                 ),
                 Text(
                   '14:45 WIB',
-                  style: AppText.labelSm.copyWith(color: AppColors.inkSecondary),
+                  style:
+                      AppText.labelSm.copyWith(color: AppColors.inkSecondary),
                 ),
               ],
             ),
@@ -972,7 +988,8 @@ class _HomeDashboardState extends State<HomeDashboard> {
               ),
               child: Text(
                 'Pukul 14:45 WIB mohon berkumpul di Nurse Station 3 untuk serah terima laporan SBAR pasien bed 304 (Post-Op Apendiktomi) dan ronde dokter spesialis anak.',
-                style: AppText.bodyMd.copyWith(color: AppColors.inkSecondary, fontSize: 13),
+                style: AppText.bodyMd
+                    .copyWith(color: AppColors.inkSecondary, fontSize: 13),
               ),
             ),
             const SizedBox(height: 10),
@@ -985,7 +1002,8 @@ class _HomeDashboardState extends State<HomeDashboard> {
                     const SizedBox(width: 4),
                     Text(
                       'Penanggung Jawab: Ns. Hendra, S.Kep',
-                      style: AppText.labelSm.copyWith(color: AppColors.inkSecondary),
+                      style: AppText.labelSm
+                          .copyWith(color: AppColors.inkSecondary),
                     ),
                   ],
                 ),
@@ -993,7 +1011,8 @@ class _HomeDashboardState extends State<HomeDashboard> {
                   onPressed: () {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                        content: Text('Membuka catatan operan shift bangsal...'),
+                        content:
+                            Text('Membuka catatan operan shift bangsal...'),
                       ),
                     );
                   },
@@ -1011,7 +1030,9 @@ class _HomeDashboardState extends State<HomeDashboard> {
   static String _avatarInitials(String name) {
     if (name.isEmpty || name == '—') return '—';
     final parts = name.trim().split(' ');
-    if (parts.length == 1) return parts[0].substring(0, parts[0].length >= 2 ? 2 : 1).toUpperCase();
+    if (parts.length == 1) {
+      return parts[0].substring(0, parts[0].length >= 2 ? 2 : 1).toUpperCase();
+    }
     return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
   }
 

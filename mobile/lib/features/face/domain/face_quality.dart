@@ -2,9 +2,16 @@ import 'dart:math';
 
 import 'package:image/image.dart' as img;
 
-
-
-enum FaceGate { ok, noFace, multipleFaces, tooSmall, tooBlurry, tooDark, tooBright, eyesClosed }
+enum FaceGate {
+  ok,
+  noFace,
+  multipleFaces,
+  tooSmall,
+  tooBlurry,
+  tooDark,
+  tooBright,
+  eyesClosed
+}
 
 String faceGateMessage(FaceGate gate) {
   switch (gate) {
@@ -27,14 +34,12 @@ String faceGateMessage(FaceGate gate) {
   }
 }
 
-
 FaceGate decideFaces({required int count, required double relativeWidth}) {
   if (count == 0) return FaceGate.noFace;
   if (count > 1) return FaceGate.multipleFaces;
   if (relativeWidth < 0.10) return FaceGate.tooSmall;
   return FaceGate.ok;
 }
-
 
 double meanBrightness(img.Image gray) {
   double sum = 0;
@@ -45,8 +50,6 @@ double meanBrightness(img.Image gray) {
   }
   return sum / (gray.width * gray.height * 255.0);
 }
-
-
 
 double laplacianVariance(img.Image gray) {
   double sum = 0;
@@ -73,9 +76,8 @@ double laplacianVariance(img.Image gray) {
 class QualityResult {
   QualityResult({required this.gate, required this.score});
   final FaceGate gate;
-  final double score; 
+  final double score;
 }
-
 
 QualityResult assessQuality({
   required img.Image grayFace,
@@ -84,28 +86,43 @@ QualityResult assessQuality({
 }) {
   final double variance = laplacianVariance(grayFace);
   final double brightness = meanBrightness(grayFace);
-  
+
   if (brightness < 0.05) {
-    return QualityResult(gate: FaceGate.tooDark, score: _score(variance, brightness, relativeWidth, blurThreshold));
+    return QualityResult(
+        gate: FaceGate.tooDark,
+        score: _score(variance, brightness, relativeWidth, blurThreshold));
   }
   if (brightness > 0.99) {
-    return QualityResult(gate: FaceGate.tooBright, score: _score(variance, brightness, relativeWidth, blurThreshold));
+    return QualityResult(
+        gate: FaceGate.tooBright,
+        score: _score(variance, brightness, relativeWidth, blurThreshold));
   }
   if (variance < blurThreshold) {
-    return QualityResult(gate: FaceGate.tooBlurry, score: _score(variance, brightness, relativeWidth, blurThreshold));
+    return QualityResult(
+        gate: FaceGate.tooBlurry,
+        score: _score(variance, brightness, relativeWidth, blurThreshold));
   }
-  return QualityResult(gate: FaceGate.ok, score: _score(variance, brightness, relativeWidth, blurThreshold));
+  return QualityResult(
+      gate: FaceGate.ok,
+      score: _score(variance, brightness, relativeWidth, blurThreshold));
 }
 
-double _score(double variance, double brightness, double relativeWidth, double blurThreshold) {
+double _score(double variance, double brightness, double relativeWidth,
+    double blurThreshold) {
   final double sharp = (variance / (blurThreshold * 4)).clamp(0.0, 1.0);
-  final double bright = brightness < 0.5 ? (brightness / 0.5).clamp(0.0, 1.0) : ((1 - brightness) / 0.5).clamp(0.0, 1.0);
+  final double bright = brightness < 0.5
+      ? (brightness / 0.5).clamp(0.0, 1.0)
+      : ((1 - brightness) / 0.5).clamp(0.0, 1.0);
   final double size = ((relativeWidth - 0.25) / 0.5).clamp(0.0, 1.0);
   return (sharp + bright + size) / 3.0;
 }
 
-
-img.Image cropFace(img.Image src, {required int left, required int top, required int width, required int height, double margin = 0.2}) {
+img.Image cropFace(img.Image src,
+    {required int left,
+    required int top,
+    required int width,
+    required int height,
+    double margin = 0.2}) {
   final int mx = (width * margin).round();
   final int my = (height * margin).round();
   final int x = max(0, left - mx);
@@ -114,8 +131,6 @@ img.Image cropFace(img.Image src, {required int left, required int top, required
   final int h = min(src.height - y, height + 2 * my);
   return img.copyCrop(src, x: x, y: y, width: w, height: h);
 }
-
-
 
 List<double> preprocess112(img.Image faceCrop) {
   final img.Image resized = img.copyResize(faceCrop, width: 112, height: 112);
@@ -132,18 +147,15 @@ List<double> preprocess112(img.Image faceCrop) {
   return out;
 }
 
-
-
-
 class FacePrepOutcome {
-  FacePrepOutcome.rejected({required this.gate, required this.score}) : modelInput = null;
-  FacePrepOutcome.accepted({required this.score, required this.modelInput}) : gate = FaceGate.ok;
+  FacePrepOutcome.rejected({required this.gate, required this.score})
+      : modelInput = null;
+  FacePrepOutcome.accepted({required this.score, required this.modelInput})
+      : gate = FaceGate.ok;
   final FaceGate gate;
   final double score;
-  final List<double>? modelInput; 
+  final List<double>? modelInput;
 }
-
-
 
 FacePrepOutcome evaluateFaceCapture({
   required img.Image decoded,
@@ -154,7 +166,8 @@ FacePrepOutcome evaluateFaceCapture({
   required double relativeWidth,
   double blurThreshold = 30.0,
 }) {
-  final img.Image crop = cropFace(decoded, left: left, top: top, width: width, height: height);
+  final img.Image crop =
+      cropFace(decoded, left: left, top: top, width: width, height: height);
   final img.Image gray = img.grayscale(crop);
   final QualityResult quality = assessQuality(
     grayFace: gray,
@@ -164,9 +177,9 @@ FacePrepOutcome evaluateFaceCapture({
   if (quality.gate != FaceGate.ok) {
     return FacePrepOutcome.rejected(gate: quality.gate, score: quality.score);
   }
-  return FacePrepOutcome.accepted(score: quality.score, modelInput: preprocess112(crop));
+  return FacePrepOutcome.accepted(
+      score: quality.score, modelInput: preprocess112(crop));
 }
-
 
 List<double> l2normalize(List<double> v) {
   double sum = 0;

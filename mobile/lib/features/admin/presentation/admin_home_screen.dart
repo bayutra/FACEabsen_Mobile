@@ -19,11 +19,6 @@ import '../supervisor/presentation/team_admin_screen.dart';
 import '../users/presentation/user_admin_screen.dart';
 import 'admin_widgets.dart';
 
-
-
-
-
-
 class AdminHomeScreen extends StatelessWidget {
   const AdminHomeScreen({super.key, required this.dio, required this.roles});
 
@@ -36,7 +31,8 @@ class AdminHomeScreen extends StatelessWidget {
     return 'Supervisor';
   }
 
-  List<Widget> _buildSection(BuildContext context, String title, List<Widget> tiles) {
+  List<Widget> _buildSection(
+      BuildContext context, String title, List<Widget> tiles) {
     if (tiles.isEmpty) return const <Widget>[];
     return <Widget>[
       SectionHeader(title),

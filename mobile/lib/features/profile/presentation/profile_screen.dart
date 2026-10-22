@@ -8,9 +8,6 @@ import '../../../core/theme/app_colors.dart';
 import '../data/profile_repository.dart';
 import 'edit_profile_screen.dart';
 
-
-
-
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({
     super.key,
@@ -28,8 +25,6 @@ class ProfileScreen extends StatefulWidget {
   final VoidCallback onLogout;
   final VoidCallback onChangePassword;
 
-  
-  
   final VoidCallback? onOpenAdmin;
 
   @override
@@ -41,7 +36,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   bool _busy = true;
   String? _error;
 
-  
   bool _notifShift = true;
 
   late final Future<String> _appVersion = _loadVersion();
@@ -243,7 +237,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.qr_code_2_rounded, color: AppColors.inkSecondary),
+            icon: const Icon(Icons.qr_code_2_rounded,
+                color: AppColors.inkSecondary),
             tooltip: 'ID Barcode / QR',
             onPressed: () {
               ScaffoldMessenger.of(context).showSnackBar(
@@ -258,7 +253,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
             icon: Stack(
               clipBehavior: Clip.none,
               children: [
-                const Icon(Icons.notifications_outlined, color: AppColors.inkSecondary),
+                const Icon(Icons.notifications_outlined,
+                    color: AppColors.inkSecondary),
                 Positioned(
                   top: 2,
                   right: 2,
@@ -399,7 +395,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            
             Container(
               height: 5,
               color: AppColors.primaryContainer,
@@ -409,7 +404,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -534,7 +528,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ],
                   ),
                   const SizedBox(height: 14),
-                  
                   Container(
                     padding: const EdgeInsets.only(top: 12),
                     decoration: const BoxDecoration(
@@ -592,7 +585,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ],
                     ),
                   ),
-                  
                   Container(
                     margin: const EdgeInsets.only(top: 14),
                     padding: const EdgeInsets.symmetric(
@@ -659,7 +651,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ),
                           decoration: BoxDecoration(
                             color: Colors.white,
-                            borderRadius: BorderRadius.circular(AppColors.radiusFull),
+                            borderRadius:
+                                BorderRadius.circular(AppColors.radiusFull),
                             border: Border.all(
                               color: d.faceRegistered
                                   ? AppColors.inversePrimary
@@ -708,7 +701,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
           clipBehavior: Clip.antiAlias,
           child: Column(
             children: [
-              
               _buildSecurityTile(
                 icon: Icons.face_retouching_natural,
                 iconColor: AppColors.primary,
@@ -731,8 +723,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   icon: d.faceRegistered ? Icons.check : Icons.close,
                 ),
               ),
-              const Divider(height: 1, thickness: 1, color: AppColors.surfaceLow),
-              
+              const Divider(
+                  height: 1, thickness: 1, color: AppColors.surfaceLow),
               _buildSecurityTile(
                 icon: Icons.privacy_tip_outlined,
                 iconColor: AppColors.secondary,
@@ -757,8 +749,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       : Icons.warning_amber_rounded,
                 ),
               ),
-              const Divider(height: 1, thickness: 1, color: AppColors.surfaceLow),
-              
+              const Divider(
+                  height: 1, thickness: 1, color: AppColors.surfaceLow),
               _buildSecurityTile(
                 icon: Icons.devices_other_outlined,
                 iconColor: AppColors.primary,
@@ -904,7 +896,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  
   Widget _adminEntry() => Container(
         decoration: BoxDecoration(
           color: Colors.white,
@@ -988,7 +979,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
             clipBehavior: Clip.antiAlias,
             child: Column(
               children: [
-                
                 Padding(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 14,
@@ -1050,7 +1040,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   thickness: 1,
                   color: AppColors.surfaceLow,
                 ),
-                
                 InkWell(
                   onTap: () {
                     ScaffoldMessenger.of(context).showSnackBar(
@@ -1140,7 +1129,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   thickness: 1,
                   color: AppColors.surfaceLow,
                 ),
-                
                 InkWell(
                   onTap: () => showHelpdeskSheet(context),
                   child: Padding(
@@ -1362,7 +1350,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ),
           const SizedBox(height: 14),
-          
           Material(
             color: Colors.white,
             borderRadius: BorderRadius.circular(16),

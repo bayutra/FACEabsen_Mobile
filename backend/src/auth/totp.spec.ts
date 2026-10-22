@@ -1,4 +1,3 @@
-
 import { describe, expect, it } from 'vitest';
 import {
   base32Decode,
@@ -9,15 +8,13 @@ import {
   verifyTotp,
 } from './totp.js';
 
-
-
 const RFC_SECRET = base32Encode(Buffer.from('12345678901234567890', 'ascii'));
 const RFC_VECTORS: Array<[number, string]> = [
-  [59, '287082'], 
-  [1111111109, '081804'], 
-  [1111111111, '050471'], 
-  [1234567890, '005924'], 
-  [2000000000, '279037'], 
+  [59, '287082'],
+  [1111111109, '081804'],
+  [1111111111, '050471'],
+  [1234567890, '005924'],
+  [2000000000, '279037'],
 ];
 
 describe('totp RFC 6238 Appendix B (SHA-1, 6-digit truncation)', () => {
@@ -27,10 +24,14 @@ describe('totp RFC 6238 Appendix B (SHA-1, 6-digit truncation)', () => {
 
   it('hotp counter 0..4 matches the RFC 4226 Appendix D sequence tail', () => {
     const secret = Buffer.from('12345678901234567890', 'ascii');
-    
-    expect(
-      [0, 1, 2, 3, 4].map((c) => hotp(secret, c)),
-    ).toEqual(['755224', '287082', '359152', '969429', '338314']);
+
+    expect([0, 1, 2, 3, 4].map((c) => hotp(secret, c))).toEqual([
+      '755224',
+      '287082',
+      '359152',
+      '969429',
+      '338314',
+    ]);
   });
 });
 
@@ -84,7 +85,7 @@ describe('base32', () => {
     for (const bad of ['ABC$EFGH', 'hello!', '12345679', 'mzxw6===!']) {
       expect(() => base32Decode(bad)).toThrow();
     }
-    expect(() => base32Decode('A')).toThrow(); 
+    expect(() => base32Decode('A')).toThrow();
     expect(() => base32Decode('')).toThrow();
   });
 });

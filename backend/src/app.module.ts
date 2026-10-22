@@ -34,11 +34,7 @@ import { UsersModule } from './users/users.module.js';
         return env;
       },
     }),
-    
-    
-    
-    
-    
+
     ThrottlerModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => {
@@ -46,7 +42,10 @@ import { UsersModule } from './users/users.module.js';
         if (!redisUrl) {
           return [{ name: 'default', ttl: 60_000, limit: 600 }];
         }
-        const client = new IORedis(redisUrl, { maxRetriesPerRequest: 2, lazyConnect: false });
+        const client = new IORedis(redisUrl, {
+          maxRetriesPerRequest: 2,
+          lazyConnect: false,
+        });
         client.on('error', (e: Error) => console.warn(`[redis] ${e.message}`));
         return {
           throttlers: [{ name: 'default', ttl: 60_000, limit: 600 }],

@@ -1,4 +1,3 @@
-
 class AdminDevice {
   const AdminDevice({
     required this.id,
@@ -29,8 +28,9 @@ class AdminDevice {
   bool get pending => status == 'PENDING';
 
   factory AdminDevice.fromJson(Map<String, dynamic> json) {
-    final Map<String, dynamic>? employee =
-        json['employee'] is Map ? Map<String, dynamic>.from(json['employee'] as Map) : null;
+    final Map<String, dynamic>? employee = json['employee'] is Map
+        ? Map<String, dynamic>.from(json['employee'] as Map)
+        : null;
     return AdminDevice(
       id: json['id'] as String,
       status: json['status'] as String? ?? 'UNKNOWN',

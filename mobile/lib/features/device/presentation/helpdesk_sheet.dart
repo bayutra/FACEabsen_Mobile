@@ -2,13 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_colors.dart';
 
-
-
-
-
-
-
-
 Future<void> showHelpdeskSheet(BuildContext context) {
   return showModalBottomSheet<void>(
     context: context,
@@ -33,7 +26,8 @@ Future<void> showHelpdeskSheet(BuildContext context) {
           const Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              Icon(Icons.phone_in_talk, size: 18, color: AppColors.inkSecondary),
+              Icon(Icons.phone_in_talk,
+                  size: 18, color: AppColors.inkSecondary),
               SizedBox(width: 10),
               Expanded(
                 child: Text(

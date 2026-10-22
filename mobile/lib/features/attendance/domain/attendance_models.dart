@@ -1,4 +1,3 @@
-
 class AttendanceResult {
   AttendanceResult({
     required this.id,
@@ -40,7 +39,8 @@ class AttendanceResult {
       workDate: json['workDate'] as String,
       checkInAt: json['checkInAt'] as String?,
       checkInStatus: json['checkInStatus'] as String?,
-      shiftLabel: shift == null ? null : '${shift['name']} · ${shift['window']}',
+      shiftLabel:
+          shift == null ? null : '${shift['name']} · ${shift['window']}',
       faceScore: (face?['score'] as num?)?.toDouble(),
       riskScore: (risk?['score'] as num?)?.toInt(),
       riskCategory: risk?['category'] as String?,
@@ -78,7 +78,6 @@ String riskCategoryLabel(String? category) {
       return '—';
   }
 }
-
 
 class AttendanceHistoryItem {
   AttendanceHistoryItem({
@@ -121,7 +120,8 @@ class AttendanceHistoryItem {
       shiftWindow: shift == null
           ? null
           : '${shift['startTime']} → ${shift['endTime']}${shift['overnight'] == true ? ' (+1)' : ''}',
-      riskScore: (json['riskScore'] as num?)?.toInt() ?? (risk?['score'] as num?)?.toInt(),
+      riskScore: (json['riskScore'] as num?)?.toInt() ??
+          (risk?['score'] as num?)?.toInt(),
       riskCategory:
           (json['riskCategory'] as String?) ?? (risk?['category'] as String?),
       needsReview: (json['needsReview'] as bool?) ?? false,
@@ -130,7 +130,11 @@ class AttendanceHistoryItem {
 }
 
 class AttendanceHistoryPage {
-  AttendanceHistoryPage({required this.items, required this.page, required this.totalPages, required this.totalItems});
+  AttendanceHistoryPage(
+      {required this.items,
+      required this.page,
+      required this.totalPages,
+      required this.totalItems});
 
   final List<AttendanceHistoryItem> items;
   final int page;
@@ -141,7 +145,10 @@ class AttendanceHistoryPage {
     final List list = (json['data'] as List?) ?? [];
     final Map pagination = (json['pagination'] as Map?) ?? {};
     return AttendanceHistoryPage(
-      items: list.map((e) => AttendanceHistoryItem.fromJson(Map<String, dynamic>.from(e as Map))).toList(),
+      items: list
+          .map((e) => AttendanceHistoryItem.fromJson(
+              Map<String, dynamic>.from(e as Map)))
+          .toList(),
       page: (pagination['page'] as num?)?.toInt() ?? 1,
       totalPages: (pagination['totalPages'] as num?)?.toInt() ?? 1,
       totalItems: (pagination['totalItems'] as num?)?.toInt() ?? 0,
@@ -149,11 +156,13 @@ class AttendanceHistoryPage {
   }
 }
 
-
-String toHistoryQueryString({int page = 1, String? checkInStatus, String? from, String? to}) {
+String toHistoryQueryString(
+    {int page = 1, String? checkInStatus, String? from, String? to}) {
   final params = <String, String>{};
   if (page > 1) params['page'] = '$page';
-  if (checkInStatus?.isNotEmpty == true) params['checkInStatus'] = checkInStatus!;
+  if (checkInStatus?.isNotEmpty == true) {
+    params['checkInStatus'] = checkInStatus!;
+  }
   if (from?.isNotEmpty == true) params['from'] = from!;
   if (to?.isNotEmpty == true) params['to'] = to!;
   if (params.isEmpty) return '';
@@ -183,7 +192,6 @@ String checkOutStatusLabel(String? status) {
       return status ?? '—';
   }
 }
-
 
 String attendanceRejectMessage(String? reason) {
   switch (reason) {

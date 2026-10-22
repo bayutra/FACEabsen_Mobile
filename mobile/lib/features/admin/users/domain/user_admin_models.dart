@@ -1,11 +1,9 @@
-
 const List<String> kAdminRoles = <String>[
   'EMPLOYEE',
   'SUPERVISOR',
   'ADMIN',
   'SUPER_ADMIN',
 ];
-
 
 class AdminUser {
   const AdminUser({
@@ -34,18 +32,18 @@ class AdminUser {
   final String? employeeStatus;
   final String? departmentName;
 
-  
   bool get locked =>
       lockedUntil != null && lockedUntil!.isAfter(DateTime.now());
 
   factory AdminUser.fromJson(Map<String, dynamic> json) {
-    final Map<String, dynamic>? emp =
-        json['employee'] is Map ? Map<String, dynamic>.from(json['employee'] as Map) : null;
-    final Map<String, dynamic>? dept =
-        emp?['department'] is Map
-            ? Map<String, dynamic>.from(emp!['department'] as Map)
-            : null;
-    final List<dynamic> rawRoles = (json['roles'] as List?) ?? const <dynamic>[];
+    final Map<String, dynamic>? emp = json['employee'] is Map
+        ? Map<String, dynamic>.from(json['employee'] as Map)
+        : null;
+    final Map<String, dynamic>? dept = emp?['department'] is Map
+        ? Map<String, dynamic>.from(emp!['department'] as Map)
+        : null;
+    final List<dynamic> rawRoles =
+        (json['roles'] as List?) ?? const <dynamic>[];
     return AdminUser(
       id: json['id'] as String,
       email: json['email'] as String? ?? '—',

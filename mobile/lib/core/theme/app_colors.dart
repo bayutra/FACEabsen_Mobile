@@ -1,17 +1,8 @@
 import 'package:flutter/material.dart';
 
-
-
-
-
-
-
-
-
 class AppColors {
   AppColors._();
 
-  
   static const Color primary = Color(0xFF005C55);
   static const Color primaryContainer = Color(0xFF0F766E);
   static const Color primaryFixed = Color(0xFF9CF2E8);
@@ -21,8 +12,6 @@ class AppColors {
 
   static const Color secondary = Color(0xFF006591);
 
-  
-  
   static const Color interactive = Color(0xFF0EA5E9);
   static const Color secondaryContainer = Color(0xFF39B8FD);
   static const Color secondaryFixed = Color(0xFFC9E6FF);
@@ -33,7 +22,6 @@ class AppColors {
   static const Color tertiary = Color(0xFF005C54);
   static const Color tertiaryContainer = Color(0xFF00776D);
 
-  
   static const Color canvas = Color(0xFFF8F9FF);
   static const Color surface = Color(0xFFF8F9FF);
   static const Color surfaceLowest = Color(0xFFFFFFFF);
@@ -52,7 +40,6 @@ class AppColors {
   static const Color borderStrong = Color(0xFF6E7977);
   static const Color hairline = Color(0xFFEFF4FF);
 
-  
   static const Color ink = Color(0xFF0B1C30);
   static const Color inkSecondary = Color(0xFF3E4947);
   static const Color onSurfaceVariant = Color(0xFF3E4947);
@@ -60,7 +47,6 @@ class AppColors {
   static const Color inverseSurface = Color(0xFF213145);
   static const Color onInverseSurface = Color(0xFFEAF1FF);
 
-  
   static const Color success = Color(0xFF10B981);
   static const Color successTint = Color(0xFFECFDF5);
   static const Color successText = Color(0xFF047857);
@@ -80,25 +66,18 @@ class AppColors {
   static const Color infoTint = Color(0xFFF0F9FF);
   static const Color infoBorder = Color(0xFFBAE6FD);
 
-  
-  
-  
   static const Color roseTint = Color(0xFFFEF2F2);
   static const Color roseText = Color(0xFFB91C1C);
   static const Color roseTextDark = Color(0xFF991B1B);
   static const Color roseBorder = Color(0xFFFECACA);
   static const Color roseFill = Color(0xFFEF4444);
 
-  
   static const Color scanner = Color(0xFF0EA5E9);
 
-  
   static const Color tealBadgeBg = Color(0xFFCCFBF1);
   static const Color tealBadgeText = Color(0xFF0F766E);
   static const Color tealBadgeBorder = Color(0xFF99F6E4);
 
-  
-  
   static const double radiusInput = 12;
   static const double radiusButton = 16;
   static const double radiusCard = 16;
@@ -108,8 +87,6 @@ class AppColors {
   static const double radiusViewport = 32;
   static const double radiusFull = 9999;
 
-  
-  
   static const double touchTarget = 48;
   static const double buttonHeight = 52;
   static const double ghostHeight = 48;
@@ -117,30 +94,24 @@ class AppColors {
   static const double pageMargin = 16;
   static const double headerPy = 8;
 
-  
   static const Color primaryActive = Color(0xFF0D9488);
   static const double pressScale = 0.98;
 
-  
   static const List<BoxShadow> shadow1 = <BoxShadow>[
     BoxShadow(color: Color(0x0D0F172A), blurRadius: 3, offset: Offset(0, 1)),
     BoxShadow(color: Color(0x080F172A), blurRadius: 2, offset: Offset(0, 1)),
   ];
 
-  
   static const List<BoxShadow> shadow2 = <BoxShadow>[
     BoxShadow(color: Color(0x120F172A), blurRadius: 6, offset: Offset(0, 4)),
     BoxShadow(color: Color(0x0A0F172A), blurRadius: 4, offset: Offset(0, 2)),
   ];
 
-  
   static const List<BoxShadow> shadow3 = <BoxShadow>[
     BoxShadow(color: Color(0x1A0F172A), blurRadius: 25, offset: Offset(0, 20)),
     BoxShadow(color: Color(0x0D0F172A), blurRadius: 10, offset: Offset(0, 8)),
   ];
 }
-
-
 
 class AppText {
   AppText._();
@@ -210,7 +181,6 @@ class AppText {
     letterSpacing: 0.11,
   );
 
-  
   static const TextStyle metric = TextStyle(
     fontSize: 32,
     height: 36 / 32,
@@ -219,15 +189,12 @@ class AppText {
     fontFeatures: _tabular,
   );
 
-  
   static TextStyle metricSmall({double size = 14}) => TextStyle(
         fontSize: size,
         fontWeight: FontWeight.w600,
         fontFeatures: _tabular,
       );
 
-  
-  
   static TextTheme textTheme(Color ink, Color inkSecondary) => TextTheme(
         displayLarge: displayLg.copyWith(color: ink),
         displayMedium: displayMobile.copyWith(color: ink),

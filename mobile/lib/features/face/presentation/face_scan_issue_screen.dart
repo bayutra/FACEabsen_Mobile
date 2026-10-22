@@ -5,9 +5,6 @@ import '../../../core/widgets/stitch.dart';
 import '../domain/face_quality.dart';
 import 'face_guidance_card.dart';
 
-
-
-
 class FaceScanIssueScreen extends StatefulWidget {
   const FaceScanIssueScreen(
       {super.key,
@@ -20,13 +17,10 @@ class FaceScanIssueScreen extends StatefulWidget {
   final VoidCallback? onRetry;
   final VoidCallback? onHelp;
 
-  
   final int initialTab;
   final FaceGate? gate;
   final String? message;
 
-  
-  
   static int tabForGate(FaceGate gate) => switch (gate) {
         FaceGate.multipleFaces => 1,
         FaceGate.noFace => 2,

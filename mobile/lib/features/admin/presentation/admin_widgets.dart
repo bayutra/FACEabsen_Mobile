@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/stitch.dart';
 
-
 String adminErrorText(Object error) {
   if (error is DioException) {
     final Object? data = error.response?.data;
@@ -22,7 +21,8 @@ String adminErrorText(Object error) {
   return s.length <= 160 ? s : '${s.substring(0, 157)}...';
 }
 
-void showAdminSnack(BuildContext context, String message, {bool error = false}) {
+void showAdminSnack(BuildContext context, String message,
+    {bool error = false}) {
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(
       content: Text(message),
@@ -30,7 +30,6 @@ void showAdminSnack(BuildContext context, String message, {bool error = false}) 
     ),
   );
 }
-
 
 Future<bool> confirmAdminAction(
   BuildContext context, {
@@ -62,7 +61,6 @@ Future<bool> confirmAdminAction(
   return ok == true;
 }
 
-
 class AdminScaffold extends StatelessWidget {
   const AdminScaffold({
     super.key,
@@ -93,7 +91,6 @@ class AdminScaffold extends StatelessWidget {
     );
   }
 }
-
 
 class AdminTile extends StatelessWidget {
   const AdminTile({
@@ -147,8 +144,8 @@ class AdminTile extends StatelessWidget {
                   const SizedBox(height: 2),
                   Text(
                     subtitle!,
-                    style: AppText.labelSm
-                        .copyWith(color: AppColors.inkSecondary),
+                    style:
+                        AppText.labelSm.copyWith(color: AppColors.inkSecondary),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -166,7 +163,6 @@ class AdminTile extends StatelessWidget {
   }
 }
 
-
 class AdminFilterChips extends StatelessWidget {
   const AdminFilterChips({
     super.key,
@@ -176,7 +172,6 @@ class AdminFilterChips extends StatelessWidget {
     this.labels = const <String, String>{},
   });
 
-  
   final List<String?> values;
   final String? selected;
   final ValueChanged<String?> onChanged;
@@ -283,7 +278,6 @@ class AdminPager extends StatelessWidget {
   }
 }
 
-
 class AdminEmpty extends StatelessWidget {
   const AdminEmpty({
     super.key,
@@ -301,7 +295,6 @@ class AdminEmpty extends StatelessWidget {
     return EmptyState(icon: icon, title: title, subtitle: subtitle);
   }
 }
-
 
 class AdminError extends StatelessWidget {
   const AdminError({super.key, required this.message, required this.onRetry});
@@ -333,18 +326,25 @@ class AdminError extends StatelessWidget {
   }
 }
 
-
-String adminDate(DateTime d) =>
-    '${d.year.toString().padLeft(4, '0')}-'
+String adminDate(DateTime d) => '${d.year.toString().padLeft(4, '0')}-'
     '${d.month.toString().padLeft(2, '0')}-'
     '${d.day.toString().padLeft(2, '0')}';
-
 
 String adminShortDate(DateTime? dt) {
   if (dt == null) return '—';
   const List<String> months = <String>[
-    'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
-    'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des',
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'Mei',
+    'Jun',
+    'Jul',
+    'Agu',
+    'Sep',
+    'Okt',
+    'Nov',
+    'Des',
   ];
   final DateTime l = dt.toLocal();
   return '${l.day} ${months[l.month - 1]} ${l.year}';

@@ -1,8 +1,16 @@
 import { Type } from 'class-transformer';
-import { IsIn, IsInt, IsOptional, IsString, Max, MaxLength, Min, MinLength } from 'class-validator';
+import {
+  IsIn,
+  IsInt,
+  IsOptional,
+  IsString,
+  Max,
+  MaxLength,
+  Min,
+  MinLength,
+} from 'class-validator';
 
 export class RegisterDeviceDto {
-   
   @IsString()
   @MinLength(8)
   @MaxLength(128)
@@ -21,19 +29,16 @@ export class RegisterDeviceDto {
   @MaxLength(32)
   appVersion?: string;
 
-   
   @IsString()
   @MinLength(32)
   @MaxLength(256)
   devicePublicKey!: string;
 
-   
   @IsString()
   @MinLength(8)
   @MaxLength(2048)
   nonce!: string;
 
-   
   @IsString()
   @MinLength(32)
   @MaxLength(256)
@@ -74,9 +79,7 @@ export class RevokeDeviceDto {
   reason?: string;
 }
 
- 
 export class ActivateDeviceDto {
-   
   @IsOptional()
   @IsString()
   @MaxLength(500)

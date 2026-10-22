@@ -18,7 +18,6 @@ const PAGI: ShiftLike = {
   earlyCheckoutThresholdMin: 15,
 };
 
-
 const MALAM: ShiftLike = {
   startTime: '23:00',
   endTime: '07:00',
@@ -58,39 +57,60 @@ describe('shiftWindow', () => {
 
 describe('evaluateCheckIn (night shift)', () => {
   it('22:50 check-in for 23:00 shift is ON_TIME (early arrival)', () => {
-    const r = evaluateCheckIn(new Date('2026-09-23T22:50:00.000Z'), '2026-09-23', MALAM);
+    const r = evaluateCheckIn(
+      new Date('2026-09-23T22:50:00.000Z'),
+      '2026-09-23',
+      MALAM,
+    );
     expect(r).toEqual({ status: 'ON_TIME', lateMinutes: 0 });
   });
 
   it('grace boundary 23:10 ON_TIME, 23:20 LATE, 23:45 VERY_LATE', () => {
-    expect(evaluateCheckIn(new Date('2026-09-23T23:10:00Z'), '2026-09-23', MALAM).status).toBe('ON_TIME');
-    expect(evaluateCheckIn(new Date('2026-09-23T23:20:00Z'), '2026-09-23', MALAM)).toEqual({
+    expect(
+      evaluateCheckIn(new Date('2026-09-23T23:10:00Z'), '2026-09-23', MALAM)
+        .status,
+    ).toBe('ON_TIME');
+    expect(
+      evaluateCheckIn(new Date('2026-09-23T23:20:00Z'), '2026-09-23', MALAM),
+    ).toEqual({
       status: 'LATE',
       lateMinutes: 20,
     });
-    expect(evaluateCheckIn(new Date('2026-09-23T23:45:00Z'), '2026-09-23', MALAM).status).toBe('VERY_LATE');
+    expect(
+      evaluateCheckIn(new Date('2026-09-23T23:45:00Z'), '2026-09-23', MALAM)
+        .status,
+    ).toBe('VERY_LATE');
   });
 });
 
 describe('evaluateCheckOut (night shift)', () => {
   it('07:05 next-day checkout is NORMAL, 06:30 is EARLY', () => {
-    const normal = evaluateCheckOut(new Date('2026-09-24T07:05:00.000Z'), '2026-09-23', MALAM);
+    const normal = evaluateCheckOut(
+      new Date('2026-09-24T07:05:00.000Z'),
+      '2026-09-23',
+      MALAM,
+    );
     expect(normal).toEqual({ status: 'NORMAL_CHECKOUT', earlyMinutes: 0 });
-    
-    const early = evaluateCheckOut(new Date('2026-09-24T06:30:00.000Z'), '2026-09-23', MALAM);
+
+    const early = evaluateCheckOut(
+      new Date('2026-09-24T06:30:00.000Z'),
+      '2026-09-23',
+      MALAM,
+    );
     expect(early).toEqual({ status: 'EARLY_CHECKOUT', earlyMinutes: 30 });
   });
 });
-
-
 
 describe('hospital timezone (Asia/Jakarta)', () => {
   const TZ = 'Asia/Jakarta';
 
   it('workDateKeyIn resolves the local calendar day', () => {
-    
-    expect(workDateKeyIn(new Date('2026-10-12T23:30:00.000Z'), TZ)).toBe('2026-10-13');
-    expect(workDateKeyIn(new Date('2026-10-12T16:59:00.000Z'), TZ)).toBe('2026-10-12');
+    expect(workDateKeyIn(new Date('2026-10-12T23:30:00.000Z'), TZ)).toBe(
+      '2026-10-13',
+    );
+    expect(workDateKeyIn(new Date('2026-10-12T16:59:00.000Z'), TZ)).toBe(
+      '2026-10-12',
+    );
   });
 
   it('day shift anchors at 07:00 local (00:00Z)', () => {
@@ -100,16 +120,35 @@ describe('hospital timezone (Asia/Jakarta)', () => {
   });
 
   it('06:55 WIB arrival is ON_TIME for the 07:00 shift (not NO_SCHEDULE)', () => {
-    const r = evaluateCheckIn(new Date('2026-10-12T23:55:00.000Z'), '2026-10-13', PAGI, TZ);
+    const r = evaluateCheckIn(
+      new Date('2026-10-12T23:55:00.000Z'),
+      '2026-10-13',
+      PAGI,
+      TZ,
+    );
     expect(r).toEqual({ status: 'ON_TIME', lateMinutes: 0 });
   });
 
   it('07:10 WIB is ON_TIME (grace), 07:20 WIB is LATE — not shifted by 7h', () => {
-    expect(evaluateCheckIn(new Date('2026-10-13T00:10:00.000Z'), '2026-10-13', PAGI, TZ)).toEqual({
+    expect(
+      evaluateCheckIn(
+        new Date('2026-10-13T00:10:00.000Z'),
+        '2026-10-13',
+        PAGI,
+        TZ,
+      ),
+    ).toEqual({
       status: 'ON_TIME',
       lateMinutes: 10,
     });
-    expect(evaluateCheckIn(new Date('2026-10-13T00:20:00.000Z'), '2026-10-13', PAGI, TZ)).toEqual({
+    expect(
+      evaluateCheckIn(
+        new Date('2026-10-13T00:20:00.000Z'),
+        '2026-10-13',
+        PAGI,
+        TZ,
+      ),
+    ).toEqual({
       status: 'LATE',
       lateMinutes: 20,
     });
@@ -119,13 +158,34 @@ describe('hospital timezone (Asia/Jakarta)', () => {
     const w = shiftWindow('2026-10-13', MALAM, TZ);
     expect(w.start.toISOString()).toBe('2026-10-13T16:00:00.000Z');
     expect(w.end.toISOString()).toBe('2026-10-14T00:00:00.000Z');
-    
-    expect(evaluateCheckIn(new Date('2026-10-13T16:10:00.000Z'), '2026-10-13', MALAM, TZ)).toEqual({
+
+    expect(
+      evaluateCheckIn(
+        new Date('2026-10-13T16:10:00.000Z'),
+        '2026-10-13',
+        MALAM,
+        TZ,
+      ),
+    ).toEqual({
       status: 'ON_TIME',
       lateMinutes: 10,
     });
-    expect(evaluateCheckIn(new Date('2026-10-13T16:30:00.000Z'), '2026-10-13', MALAM, TZ).status).toBe('LATE');
-    expect(evaluateCheckOut(new Date('2026-10-13T23:55:00.000Z'), '2026-10-13', MALAM, TZ)).toEqual({
+    expect(
+      evaluateCheckIn(
+        new Date('2026-10-13T16:30:00.000Z'),
+        '2026-10-13',
+        MALAM,
+        TZ,
+      ).status,
+    ).toBe('LATE');
+    expect(
+      evaluateCheckOut(
+        new Date('2026-10-13T23:55:00.000Z'),
+        '2026-10-13',
+        MALAM,
+        TZ,
+      ),
+    ).toEqual({
       status: 'NORMAL_CHECKOUT',
       earlyMinutes: 5,
     });

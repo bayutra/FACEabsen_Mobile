@@ -11,15 +11,13 @@ interface ScopePrisma {
   };
 }
 
- 
 export async function resolveHospitalScope(
   prisma: ScopePrisma,
   userId: string,
   roles: string[],
 ): Promise<HospitalScope> {
   if (satisfiesRole(roles, 'SUPER_ADMIN')) return { kind: 'global' };
-  
-  
+
   const me = await prisma.employee.findUnique({
     where: { userId },
     include: { department: { select: { hospitalId: true } } },

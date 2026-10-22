@@ -44,13 +44,11 @@ export class CreateEmployeeDto {
   @IsString()
   supervisorId?: string;
 
-   
   @IsString()
   @MinLength(8)
   @MaxLength(256)
   password!: string;
 
-   
   @IsOptional()
   @IsString({ each: true })
   roles?: string[];
@@ -87,7 +85,6 @@ export class UpdateEmployeeDto {
   supervisorId?: string;
 }
 
- 
 export class UpdateMyProfileDto {
   @IsOptional()
   @IsString()

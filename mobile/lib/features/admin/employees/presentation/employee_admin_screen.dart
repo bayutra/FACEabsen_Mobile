@@ -8,10 +8,6 @@ import '../data/employee_admin_repository.dart';
 import '../domain/employee_admin_models.dart';
 import 'employee_admin_form_screen.dart';
 
-
-
-
-
 class EmployeeAdminScreen extends StatefulWidget {
   const EmployeeAdminScreen({
     super.key,
@@ -27,7 +23,8 @@ class EmployeeAdminScreen extends StatefulWidget {
 }
 
 class _EmployeeAdminScreenState extends State<EmployeeAdminScreen> {
-  late final EmployeeAdminRepository _repo = EmployeeAdminRepository(dio: widget.dio);
+  late final EmployeeAdminRepository _repo =
+      EmployeeAdminRepository(dio: widget.dio);
 
   AdminEmployeePage? _page;
   String? _error;
@@ -50,9 +47,7 @@ class _EmployeeAdminScreenState extends State<EmployeeAdminScreen> {
     try {
       final List<AdminDepartment> units = await _repo.departments();
       if (mounted) setState(() => _units = units);
-    } catch (_) {
-      
-    }
+    } catch (_) {}
   }
 
   Future<void> _load() async {
@@ -90,7 +85,8 @@ class _EmployeeAdminScreenState extends State<EmployeeAdminScreen> {
       ),
     );
     if (saved == true && mounted) {
-      showAdminSnack(context, employee == null ? 'Karyawan ditambahkan.' : 'Data diperbarui.');
+      showAdminSnack(context,
+          employee == null ? 'Karyawan ditambahkan.' : 'Data diperbarui.');
       await _load();
     }
   }

@@ -25,10 +25,6 @@ import '../../features/preflight/presentation/preflight_screen.dart';
 import '../../features/schedule/data/schedule_repository.dart';
 import '../../features/schedule/presentation/schedule_screen.dart';
 
-
-
-
-
 class HomeShell extends StatefulWidget {
   const HomeShell({
     super.key,
@@ -45,7 +41,6 @@ class HomeShell extends StatefulWidget {
     required this.dio,
   });
 
-  
   final Dio dio;
 
   final AuthRepository auth;
@@ -72,8 +67,6 @@ class _HomeShellState extends State<HomeShell> {
 
   void _go(int i) => setState(() => _index = i);
 
-  
-  
   Future<void> _showChangePassword() async {
     final TextEditingController current = TextEditingController();
     final TextEditingController next = TextEditingController();
@@ -92,7 +85,8 @@ class _HomeShellState extends State<HomeShell> {
               TextFormField(
                 controller: current,
                 obscureText: true,
-                decoration: const InputDecoration(labelText: 'Password saat ini'),
+                decoration:
+                    const InputDecoration(labelText: 'Password saat ini'),
                 validator: validateCurrentPassword,
               ),
               TextFormField(
@@ -107,7 +101,8 @@ class _HomeShellState extends State<HomeShell> {
               TextFormField(
                 controller: confirm,
                 obscureText: true,
-                decoration: const InputDecoration(labelText: 'Ulangi password baru'),
+                decoration:
+                    const InputDecoration(labelText: 'Ulangi password baru'),
                 validator: (String? v) =>
                     validatePasswordConfirmation(v, next.text),
               ),
@@ -167,11 +162,6 @@ class _HomeShellState extends State<HomeShell> {
     }
   }
 
-  
-  
-  
-  
-  
   Future<void> _logout() async {
     final bool? confirmed = await showDialog<bool>(
       context: context,
@@ -197,13 +187,10 @@ class _HomeShellState extends State<HomeShell> {
     if (confirmed != true) return;
     try {
       await widget.auth.logout();
-    } catch (_) {
-      
-    }
+    } catch (_) {}
     if (mounted) widget.onLogout();
   }
 
-  
   Future<void> _syncConsent() async {
     try {
       final ProfileSnapshot snap = await widget.profiles.load();
@@ -215,16 +202,9 @@ class _HomeShellState extends State<HomeShell> {
           _roles = snap.roles;
         });
       }
-    } catch (_) {
-      
-    }
+    } catch (_) {}
   }
 
-  
-  
-  
-  
-  
   Future<void> _toggleBiometric(bool granted) async {
     final bool previous = _biometricConsent;
     setState(() => _biometricConsent = granted);
@@ -244,7 +224,8 @@ class _HomeShellState extends State<HomeShell> {
   }
 
   Future<void> _push(Widget page) async {
-    await Navigator.of(context).push<void>(MaterialPageRoute(builder: (_) => page));
+    await Navigator.of(context)
+        .push<void>(MaterialPageRoute(builder: (_) => page));
     if (mounted) setState(() {});
   }
 
@@ -276,7 +257,6 @@ class _HomeShellState extends State<HomeShell> {
         displayName: _displayName,
         biometricConsent: _biometricConsent,
         onToggleBiometric: _toggleBiometric,
-        
         onStartAttendance: () => _push(_preflight()),
         onOpenCorrections: () => _push(CorrectionListScreen(
           corrections: widget.corrections,
@@ -296,8 +276,6 @@ class _HomeShellState extends State<HomeShell> {
             ? () => _push(AdminHomeScreen(dio: widget.dio, roles: _roles))
             : null,
       ),
-      
-      
       HistoryScreen(
         attendance: widget.attendance,
         corrections: widget.corrections,
@@ -340,8 +318,7 @@ class _HomeShellState extends State<HomeShell> {
           ),
           NavigationDestination(
             icon: Icon(Icons.calendar_month_outlined),
-            selectedIcon:
-                Icon(Icons.calendar_month, color: Colors.white),
+            selectedIcon: Icon(Icons.calendar_month, color: Colors.white),
             label: 'Jadwal',
           ),
           NavigationDestination(
@@ -351,8 +328,7 @@ class _HomeShellState extends State<HomeShell> {
           ),
           NavigationDestination(
             icon: Icon(Icons.account_circle_outlined),
-            selectedIcon:
-                Icon(Icons.account_circle, color: Colors.white),
+            selectedIcon: Icon(Icons.account_circle, color: Colors.white),
             label: 'Profil',
           ),
         ],

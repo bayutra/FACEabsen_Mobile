@@ -1,4 +1,3 @@
-
 class AdminEmployee {
   const AdminEmployee({
     required this.id,
@@ -29,10 +28,12 @@ class AdminEmployee {
   bool get active => status == 'ACTIVE';
 
   factory AdminEmployee.fromJson(Map<String, dynamic> json) {
-    final Map<String, dynamic>? dept =
-        json['department'] is Map ? Map<String, dynamic>.from(json['department'] as Map) : null;
-    final Map<String, dynamic>? sup =
-        json['supervisor'] is Map ? Map<String, dynamic>.from(json['supervisor'] as Map) : null;
+    final Map<String, dynamic>? dept = json['department'] is Map
+        ? Map<String, dynamic>.from(json['department'] as Map)
+        : null;
+    final Map<String, dynamic>? sup = json['supervisor'] is Map
+        ? Map<String, dynamic>.from(json['supervisor'] as Map)
+        : null;
     return AdminEmployee(
       id: json['id'] as String,
       userId: json['userId'] as String?,
@@ -63,15 +64,16 @@ class AdminEmployeePage {
   final int totalItems;
 }
 
-
 class AdminDepartment {
-  const AdminDepartment({required this.id, required this.name, this.hospitalId});
+  const AdminDepartment(
+      {required this.id, required this.name, this.hospitalId});
 
   final String id;
   final String name;
   final String? hospitalId;
 
-  factory AdminDepartment.fromJson(Map<String, dynamic> json) => AdminDepartment(
+  factory AdminDepartment.fromJson(Map<String, dynamic> json) =>
+      AdminDepartment(
         id: json['id'] as String,
         name: json['name'] as String? ?? 'â€”',
         hospitalId: json['hospitalId'] as String?,

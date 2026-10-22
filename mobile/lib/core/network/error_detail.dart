@@ -2,9 +2,6 @@ import 'dart:async';
 
 import 'package:dio/dio.dart';
 
-
-
-
 String describeError(Object e) {
   if (e is TimeoutException) return 'timeout';
   if (e is DioException) {

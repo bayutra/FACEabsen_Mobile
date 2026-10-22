@@ -1,6 +1,22 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, Query, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Post,
+  Query,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import type { Request } from 'express';
-import { RequirePermissions, Roles, CurrentUser, type AuthContext } from '../auth/decorators.js';
+import {
+  RequirePermissions,
+  Roles,
+  CurrentUser,
+  type AuthContext,
+} from '../auth/decorators.js';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
 import { PermissionsGuard } from '../auth/guards/permissions.guard.js';
 import { RolesGuard } from '../auth/guards/roles.guard.js';
@@ -13,7 +29,11 @@ export class LeavesController {
   constructor(private readonly leaves: LeavesService) {}
 
   @Post()
-  create(@Body() dto: CreateLeaveDto, @CurrentUser() user: AuthContext, @Req() req: Request) {
+  create(
+    @Body() dto: CreateLeaveDto,
+    @CurrentUser() user: AuthContext,
+    @Req() req: Request,
+  ) {
     return this.leaves.create(dto, user.userId, { ip: req.ip });
   }
 
@@ -41,7 +61,9 @@ export class LeavesController {
     @CurrentUser() user: AuthContext,
     @Req() req: Request,
   ) {
-    return this.leaves.approve(id, user.userId, user.roles, dto.reviewNote, { ip: req.ip });
+    return this.leaves.approve(id, user.userId, user.roles, dto.reviewNote, {
+      ip: req.ip,
+    });
   }
 
   @UseGuards(RolesGuard, PermissionsGuard)
@@ -55,7 +77,9 @@ export class LeavesController {
     @CurrentUser() user: AuthContext,
     @Req() req: Request,
   ) {
-    return this.leaves.reject(id, user.userId, user.roles, dto.reviewNote, { ip: req.ip });
+    return this.leaves.reject(id, user.userId, user.roles, dto.reviewNote, {
+      ip: req.ip,
+    });
   }
 
   @HttpCode(HttpStatus.OK)

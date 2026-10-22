@@ -9,17 +9,23 @@ export class AppService {
     return 'Hello World!';
   }
 
-   
   async health(): Promise<{ status: string; db: string; uptimeSec: number }> {
     try {
       await this.prisma.$queryRaw`SELECT 1`;
-      return { status: 'ok', db: 'up', uptimeSec: Math.floor(process.uptime()) };
+      return {
+        status: 'ok',
+        db: 'up',
+        uptimeSec: Math.floor(process.uptime()),
+      };
     } catch {
-      return { status: 'degraded', db: 'down', uptimeSec: Math.floor(process.uptime()) };
+      return {
+        status: 'degraded',
+        db: 'down',
+        uptimeSec: Math.floor(process.uptime()),
+      };
     }
   }
 
-   
   live(): { status: string } {
     return { status: 'ok' };
   }

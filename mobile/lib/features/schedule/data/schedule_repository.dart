@@ -2,20 +2,20 @@ import 'package:dio/dio.dart';
 
 import '../domain/shift_status.dart';
 
-
-
 class ScheduleRepository {
   ScheduleRepository({required Dio dio}) : _dio = dio;
 
   final Dio _dio;
 
-  Future<List<ScheduleEntry>> mySchedule({required DateTime from, required DateTime to}) async {
+  Future<List<ScheduleEntry>> mySchedule(
+      {required DateTime from, required DateTime to}) async {
     final String fromKey = dateKey(from);
     final String toKey = dateKey(to);
     final Response res = await _dio.get(
       '/schedules/me?from=$fromKey&to=$toKey&pageSize=100',
     );
-    final Map<String, dynamic> body = Map<String, dynamic>.from(res.data as Map);
+    final Map<String, dynamic> body =
+        Map<String, dynamic>.from(res.data as Map);
     final List list = (body['data'] as List?) ?? const [];
     return list
         .map((e) => ScheduleEntry.fromJson(Map<String, dynamic>.from(e as Map)))
@@ -25,7 +25,6 @@ class ScheduleRepository {
   static String dateKey(DateTime d) =>
       '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
 }
-
 
 class ScheduleEntry {
   ScheduleEntry({
@@ -47,15 +46,12 @@ class ScheduleEntry {
   final String endTime;
   final bool overnight;
 
-  
-  
   final int gracePeriodMin;
   final int lateThresholdMin;
   final int earlyCheckoutThresholdMin;
 
   factory ScheduleEntry.fromJson(Map<String, dynamic> json) {
-    final Map<String, dynamic>? shift =
-        json['shift'] as Map<String, dynamic>?;
+    final Map<String, dynamic>? shift = json['shift'] as Map<String, dynamic>?;
     return ScheduleEntry(
       id: json['id'] as String? ?? '',
       workDate: DateTime.parse(json['workDate'] as String),
@@ -65,7 +61,8 @@ class ScheduleEntry {
       overnight: shift?['overnight'] == true,
       gracePeriodMin: _intOr(shift?['gracePeriodMin'], 15),
       lateThresholdMin: _intOr(shift?['lateThresholdMin'], 30),
-      earlyCheckoutThresholdMin: _intOr(shift?['earlyCheckoutThresholdMin'], 15),
+      earlyCheckoutThresholdMin:
+          _intOr(shift?['earlyCheckoutThresholdMin'], 15),
     );
   }
 
@@ -74,7 +71,6 @@ class ScheduleEntry {
 
   String get window => '$startTime → $endTime';
 
-  
   ShiftVerdict checkInStatusAt(DateTime now) => evaluateCheckInStatus(
         now: now,
         workDate: workDate,
@@ -83,7 +79,6 @@ class ScheduleEntry {
         lateThresholdMin: lateThresholdMin,
       );
 
-  
   ShiftVerdict checkOutStatusAt(DateTime now) => evaluateCheckOutStatus(
         now: now,
         workDate: workDate,
@@ -93,8 +88,6 @@ class ScheduleEntry {
         overnight: overnight,
       );
 
-  
-  
   int? get durationHours {
     final int? start = _minutes(startTime);
     final int? end = _minutes(endTime);
@@ -104,9 +97,6 @@ class ScheduleEntry {
     return mins ~/ 60;
   }
 
-  
-  
-  
   ShiftKind get kind {
     final int? start = _minutes(startTime);
     final int? end = _minutes(endTime);
@@ -121,7 +111,9 @@ class ScheduleEntry {
     if (parts.length < 2) return null;
     final int? h = int.tryParse(parts[0]);
     final int? m = int.tryParse(parts[1]);
-    if (h == null || m == null || h < 0 || h > 23 || m < 0 || m > 59) return null;
+    if (h == null || m == null || h < 0 || h > 23 || m < 0 || m > 59) {
+      return null;
+    }
     return h * 60 + m;
   }
 }

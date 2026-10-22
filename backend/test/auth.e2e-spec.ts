@@ -22,14 +22,25 @@ import { RolesGuard } from '../src/auth/guards/roles.guard.js';
 import { PrismaService } from '../src/prisma/prisma.service.js';
 
 const PERMS: Record<string, string[]> = {
-  EMPLOYEE: ['attendance:create:self', 'attendance:read:self', 'correction:create:self', 'leave:create:self'],
-  SUPERVISOR: ['attendance:read:team', 'attendance:approve:team', 'report:read:team'],
+  EMPLOYEE: [
+    'attendance:create:self',
+    'attendance:read:self',
+    'correction:create:self',
+    'leave:create:self',
+  ],
+  SUPERVISOR: [
+    'attendance:read:team',
+    'attendance:approve:team',
+    'report:read:team',
+  ],
   ADMIN: ['employee:read', 'device:revoke', 'audit:read'],
   SUPER_ADMIN: ['role:manage', 'security:manage'],
 };
 const RANK = ['EMPLOYEE', 'SUPERVISOR', 'ADMIN', 'SUPER_ADMIN'];
 const permsFor = (role: string) =>
-  RANK.filter((r) => RANK.indexOf(r) <= RANK.indexOf(role)).flatMap((r) => PERMS[r] ?? []);
+  RANK.filter((r) => RANK.indexOf(r) <= RANK.indexOf(role)).flatMap(
+    (r) => PERMS[r] ?? [],
+  );
 
 function makeFake() {
   const users = new Map<string, any>();
@@ -44,7 +55,11 @@ function makeFake() {
           ? [...users.values()].find((x) => x.email === where.email)
           : users.get(where.id);
         if (!u) return null;
-        if (include?.userRoles) return { ...u, userRoles: u.roles.map((r: string) => ({ role: { name: r } })) };
+        if (include?.userRoles)
+          return {
+            ...u,
+            userRoles: u.roles.map((r: string) => ({ role: { name: r } })),
+          };
         return { ...u };
       },
       update: async ({ where, data }: any) => {
@@ -61,7 +76,9 @@ function makeFake() {
           return roles.map((r) => ({
             role: {
               name: r,
-              rolePermissions: permsFor(r).map((key) => ({ permission: { key } })),
+              rolePermissions: permsFor(r).map((key) => ({
+                permission: { key },
+              })),
             },
           }));
         }
@@ -70,18 +87,31 @@ function makeFake() {
     },
     session: {
       create: async ({ data }: any) => {
-        const s = { id: `s${++seq}`, createdAt: new Date(), revokedAt: null, ...data };
+        const s = {
+          id: `s${++seq}`,
+          createdAt: new Date(),
+          revokedAt: null,
+          ...data,
+        };
         sessions.set(s.id, s);
         return { ...s };
       },
       findUnique: async ({ where, include }: any) => {
         const s = where.id
-          ? sessions.get(where.id) ?? null
-          : ([...sessions.values()].find((x) => x.refreshTokenHash === where.refreshTokenHash) ?? null);
+          ? (sessions.get(where.id) ?? null)
+          : ([...sessions.values()].find(
+              (x) => x.refreshTokenHash === where.refreshTokenHash,
+            ) ?? null);
         if (!s) return null;
         if (include?.user) {
           const u = users.get(s.userId);
-          return { ...s, user: { ...u, userRoles: u.roles.map((r: string) => ({ role: { name: r } })) } };
+          return {
+            ...s,
+            user: {
+              ...u,
+              userRoles: u.roles.map((r: string) => ({ role: { name: r } })),
+            },
+          };
         }
         return { ...s };
       },
@@ -137,7 +167,9 @@ let app: INestApplication;
 let fake: ReturnType<typeof makeFake>;
 
 async function loginAs(email: string, password = 'Password123!') {
-  const res = await request(app.getHttpServer()).post('/auth/login').send({ email, password });
+  const res = await request(app.getHttpServer())
+    .post('/auth/login')
+    .send({ email, password });
   expect(res.status).toBe(200);
   return res.body.accessToken as string;
 }
@@ -153,12 +185,27 @@ beforeAll(async () => {
   ] as const;
   for (const [id, email, roles] of seed) {
     fake.users.set(id, {
-      id, email, passwordHash: hash, isActive: true, failedLoginAttempts: 0, lockedUntil: null, roles: [...roles],
+      id,
+      email,
+      passwordHash: hash,
+      isActive: true,
+      failedLoginAttempts: 0,
+      lockedUntil: null,
+      roles: [...roles],
     });
   }
 
   const module = await Test.createTestingModule({
-    imports: [JwtModule.register({ secret: 'e2e-secret', signOptions: { algorithm: 'HS256', issuer: 'face-absen', expiresIn: 900 } })],
+    imports: [
+      JwtModule.register({
+        secret: 'e2e-secret',
+        signOptions: {
+          algorithm: 'HS256',
+          issuer: 'face-absen',
+          expiresIn: 900,
+        },
+      }),
+    ],
     controllers: [AuthController, ProbeController],
     providers: [
       AuthService,
@@ -166,14 +213,21 @@ beforeAll(async () => {
       RolesGuard,
       PermissionsGuard,
       { provide: PrismaService, useValue: fake },
-      { provide: ConfigService, useValue: { get: (_k: string, d: unknown) => d } },
+      {
+        provide: ConfigService,
+        useValue: { get: (_k: string, d: unknown) => d },
+      },
       { provide: AuditService, useValue: { log: async () => undefined } },
     ],
   }).compile();
 
   app = module.createNestApplication();
   app.useGlobalPipes(
-    new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, transform: true }),
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+    }),
   );
   await app.init();
 });
@@ -197,9 +251,13 @@ describe('auth flow over HTTP', () => {
     expect(me.status).toBe(200);
     expect(me.body.roles).toEqual(['EMPLOYEE']);
 
-    const r1 = await request(server).post('/auth/refresh').send({ refreshToken: login.body.refreshToken });
+    const r1 = await request(server)
+      .post('/auth/refresh')
+      .send({ refreshToken: login.body.refreshToken });
     expect(r1.status).toBe(200);
-    const stale = await request(server).post('/auth/refresh').send({ refreshToken: login.body.refreshToken });
+    const stale = await request(server)
+      .post('/auth/refresh')
+      .send({ refreshToken: login.body.refreshToken });
     expect(stale.status).toBe(401);
 
     const out = await request(server)
@@ -214,7 +272,9 @@ describe('auth flow over HTTP', () => {
 
   it('validation rejects bad input; unknown user is 401', async () => {
     const server = app.getHttpServer();
-    const bad = await request(server).post('/auth/login').send({ email: 'not-an-email', password: 'x' });
+    const bad = await request(server)
+      .post('/auth/login')
+      .send({ email: 'not-an-email', password: 'x' });
     expect(bad.status).toBe(400);
     const unknown = await request(server)
       .post('/auth/login')
@@ -238,16 +298,24 @@ describe('auth flow over HTTP', () => {
 
   it('password change kills other sessions', async () => {
     const server = app.getHttpServer();
-    const a = await request(server).post('/auth/login').send({ email: 'admin@rs.test', password: 'Password123!' });
-    const b = await request(server).post('/auth/login').send({ email: 'admin@rs.test', password: 'Password123!' });
+    const a = await request(server)
+      .post('/auth/login')
+      .send({ email: 'admin@rs.test', password: 'Password123!' });
+    const b = await request(server)
+      .post('/auth/login')
+      .send({ email: 'admin@rs.test', password: 'Password123!' });
     const ch = await request(server)
       .post('/auth/change-password')
       .set('Authorization', `Bearer ${a.body.accessToken}`)
       .send({ currentPassword: 'Password123!', newPassword: 'NewStrong123!' });
     expect(ch.status).toBe(200);
-    const killed = await request(server).get('/auth/me').set('Authorization', `Bearer ${b.body.accessToken}`);
+    const killed = await request(server)
+      .get('/auth/me')
+      .set('Authorization', `Bearer ${b.body.accessToken}`);
     expect(killed.status).toBe(401);
-    const alive = await request(server).get('/auth/me').set('Authorization', `Bearer ${a.body.accessToken}`);
+    const alive = await request(server)
+      .get('/auth/me')
+      .set('Authorization', `Bearer ${a.body.accessToken}`);
     expect(alive.status).toBe(200);
   });
 });
@@ -256,8 +324,20 @@ describe('RBAC acceptance over HTTP (PRD §48)', () => {
   it('EMPLOYEE cannot open ADMIN or SUPER_ADMIN APIs', async () => {
     const token = await loginAs('employee@rs.test');
     const server = app.getHttpServer();
-    expect((await request(server).get('/probe/admin').set('Authorization', `Bearer ${token}`)).status).toBe(403);
-    expect((await request(server).get('/probe/super').set('Authorization', `Bearer ${token}`)).status).toBe(403);
+    expect(
+      (
+        await request(server)
+          .get('/probe/admin')
+          .set('Authorization', `Bearer ${token}`)
+      ).status,
+    ).toBe(403);
+    expect(
+      (
+        await request(server)
+          .get('/probe/super')
+          .set('Authorization', `Bearer ${token}`)
+      ).status,
+    ).toBe(403);
   });
 
   it('SUPERVISOR cannot open SUPER_ADMIN API', async () => {
@@ -267,22 +347,52 @@ describe('RBAC acceptance over HTTP (PRD §48)', () => {
     u.lockedUntil = null;
     const token = await loginAs('supervisor@rs.test');
     const server = app.getHttpServer();
-    expect((await request(server).get('/probe/super').set('Authorization', `Bearer ${token}`)).status).toBe(403);
-    expect((await request(server).get('/probe/admin').set('Authorization', `Bearer ${token}`)).status).toBe(403);
+    expect(
+      (
+        await request(server)
+          .get('/probe/super')
+          .set('Authorization', `Bearer ${token}`)
+      ).status,
+    ).toBe(403);
+    expect(
+      (
+        await request(server)
+          .get('/probe/admin')
+          .set('Authorization', `Bearer ${token}`)
+      ).status,
+    ).toBe(403);
   });
 
   it('ADMIN cannot touch SUPER_ADMIN-only permission (role:manage)', async () => {
     const token = await loginAs('admin@rs.test', 'NewStrong123!');
     const server = app.getHttpServer();
-    expect((await request(server).get('/probe/rolemanage').set('Authorization', `Bearer ${token}`)).status).toBe(403);
-    expect((await request(server).get('/probe/admin').set('Authorization', `Bearer ${token}`)).status).toBe(200);
+    expect(
+      (
+        await request(server)
+          .get('/probe/rolemanage')
+          .set('Authorization', `Bearer ${token}`)
+      ).status,
+    ).toBe(403);
+    expect(
+      (
+        await request(server)
+          .get('/probe/admin')
+          .set('Authorization', `Bearer ${token}`)
+      ).status,
+    ).toBe(200);
   });
 
   it('SUPER_ADMIN passes everything; anonymous gets 401', async () => {
     const token = await loginAs('superadmin@rs.test');
     const server = app.getHttpServer();
     for (const p of ['admin', 'super', 'rolemanage']) {
-      expect((await request(server).get(`/probe/${p}`).set('Authorization', `Bearer ${token}`)).status).toBe(200);
+      expect(
+        (
+          await request(server)
+            .get(`/probe/${p}`)
+            .set('Authorization', `Bearer ${token}`)
+        ).status,
+      ).toBe(200);
     }
     expect((await request(server).get('/probe/admin')).status).toBe(401);
   });
@@ -293,23 +403,41 @@ describe('JWT strictness over HTTP (STEP 22)', () => {
     const server = app.getHttpServer();
     const good = await loginAs('employee@rs.test');
     const [, payloadB64] = good.split('.');
-    const payload = JSON.parse(Buffer.from(payloadB64, 'base64url').toString('utf8'));
+    const payload = JSON.parse(
+      Buffer.from(payloadB64, 'base64url').toString('utf8'),
+    );
 
     const signHS256 = (header: object, body: object) => {
       const h = Buffer.from(JSON.stringify(header)).toString('base64url');
       const b = Buffer.from(JSON.stringify(body)).toString('base64url');
-      const sig = createHmac('sha256', 'e2e-secret').update(`${h}.${b}`).digest('base64url');
+      const sig = createHmac('sha256', 'e2e-secret')
+        .update(`${h}.${b}`)
+        .digest('base64url');
       return `${h}.${b}.${sig}`;
     };
     // same secret + sid, but issuer stripped
     const { iss: _dropped, ...noIss } = payload as Record<string, unknown>;
     const stripped = signHS256({ alg: 'HS256', typ: 'JWT' }, noIss);
-    expect((await request(server).get('/auth/me').set('Authorization', `Bearer ${stripped}`)).status).toBe(401);
+    expect(
+      (
+        await request(server)
+          .get('/auth/me')
+          .set('Authorization', `Bearer ${stripped}`)
+      ).status,
+    ).toBe(401);
 
     // unsigned alg=none forgery
-    const noneHeader = Buffer.from(JSON.stringify({ alg: 'none', typ: 'JWT' })).toString('base64url');
+    const noneHeader = Buffer.from(
+      JSON.stringify({ alg: 'none', typ: 'JWT' }),
+    ).toString('base64url');
     const forged = `${noneHeader}.${payloadB64}.`;
-    expect((await request(server).get('/auth/me').set('Authorization', `Bearer ${forged}`)).status).toBe(401);
+    expect(
+      (
+        await request(server)
+          .get('/auth/me')
+          .set('Authorization', `Bearer ${forged}`)
+      ).status,
+    ).toBe(401);
   });
 });
 
@@ -323,7 +451,9 @@ describe('rate limiting', () => {
       }
     }
     const mod = await Test.createTestingModule({
-      imports: [ThrottlerModule.forRoot([{ name: 'default', ttl: 60_000, limit: 2 }])],
+      imports: [
+        ThrottlerModule.forRoot([{ name: 'default', ttl: 60_000, limit: 2 }]),
+      ],
       controllers: [RlController],
       providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
     }).compile();

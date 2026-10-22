@@ -1,11 +1,3 @@
-
-
-
-
-
-
-
-
 class TeamMember {
   const TeamMember({
     required this.id,
@@ -22,13 +14,10 @@ class TeamMember {
   final String? position;
   final String departmentName;
 
-  
-  
   final Map<String, String> days;
 
   String get subtitle {
-    final String dept =
-        departmentName.isEmpty ? 'Tanpa Unit' : departmentName;
+    final String dept = departmentName.isEmpty ? 'Tanpa Unit' : departmentName;
     if (employeeNo.isEmpty) return dept;
     return '$employeeNo Â· $dept';
   }
@@ -42,7 +31,6 @@ class TeamMember {
   int get onLeaveCount => _count('ON_LEAVE');
   int get offCount => _count('OFF');
 
-  
   String get daySummary {
     if (days.isEmpty) return '';
     return 'Hadir $presentCount Â· Terlambat $lateCount Â· Absen '
@@ -73,7 +61,6 @@ class TeamMember {
   }
 }
 
-
 class TeamTotals {
   const TeamTotals({
     required this.members,
@@ -97,7 +84,6 @@ class TeamTotals {
         onLeave: _intOf(json?['onLeave']),
       );
 }
-
 
 class TeamSummary {
   const TeamSummary({
@@ -130,7 +116,6 @@ class TeamSummary {
     );
   }
 }
-
 
 class TeamAttendance {
   const TeamAttendance({
@@ -172,7 +157,6 @@ class TeamAttendance {
     );
   }
 }
-
 
 class TeamMemberDetail {
   const TeamMemberDetail({required this.member, required this.recent});

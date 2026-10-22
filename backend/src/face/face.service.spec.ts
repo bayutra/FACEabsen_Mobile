@@ -7,7 +7,10 @@ import { FaceService } from './face.service.js';
 const privacyStub = { hasActiveConsent: async () => true };
 
 const KEY = randomBytes(32).toString('base64');
-const configStub = { get: (_k: string, d: unknown) => (typeof d === 'string' && d === '' ? KEY : d) } as never;
+const configStub = {
+  get: (_k: string, d: unknown) =>
+    typeof d === 'string' && d === '' ? KEY : d,
+} as never;
 const auditStub = { log: vi.fn(async () => undefined) } as never;
 const crypto = new TemplateCryptoService(configStub);
 
@@ -15,11 +18,22 @@ const tpl = () => Array.from({ length: 192 }, (_, i) => Math.sin(i) / 2);
 
 function makePrisma(over: Record<string, Record<string, unknown>> = {}) {
   return {
-    employee: { findUnique: vi.fn(async () => ({ id: 'e1' })), ...over.employee },
+    employee: {
+      findUnique: vi.fn(async () => ({ id: 'e1' })),
+      ...over.employee,
+    },
     faceTemplate: {
       findUnique: vi.fn(async () => null),
-      create: vi.fn(async (a: { data: Record<string, unknown> }) => ({ id: 'f1', version: 1, updatedAt: new Date(), ...a.data })),
-      update: vi.fn(async (a: { data: Record<string, unknown> }) => ({ id: 'f1', ...a.data })),
+      create: vi.fn(async (a: { data: Record<string, unknown> }) => ({
+        id: 'f1',
+        version: 1,
+        updatedAt: new Date(),
+        ...a.data,
+      })),
+      update: vi.fn(async (a: { data: Record<string, unknown> }) => ({
+        id: 'f1',
+        ...a.data,
+      })),
       ...over.faceTemplate,
     },
   } as unknown as PrismaService;
@@ -49,21 +63,29 @@ describe('TemplateCryptoService', () => {
     const key = Buffer.from(KEY, 'base64');
     const iv = randomBytes(12);
     const cipher = createCipheriv('aes-256-gcm', key, iv);
-    const ct = Buffer.concat([cipher.update(Buffer.from('legacy-bytes')), cipher.final()]);
+    const ct = Buffer.concat([
+      cipher.update(Buffer.from('legacy-bytes')),
+      cipher.final(),
+    ]);
     const tag = cipher.getAuthTag();
-    const legacy = Buffer.concat([iv, tag, ct]); 
+    const legacy = Buffer.concat([iv, tag, ct]);
     expect(crypto.decrypt(legacy, 'e1').toString()).toBe('legacy-bytes');
-    
-    expect(crypto.decrypt(legacy, 'someone-else').toString()).toBe('legacy-bytes');
+
+    expect(crypto.decrypt(legacy, 'someone-else').toString()).toBe(
+      'legacy-bytes',
+    );
   });
 
   it('legacy blob whose IV starts with 0x01 still decrypts (no row is orphaned)', async () => {
     const { createCipheriv } = await import('node:crypto');
     const key = Buffer.from(KEY, 'base64');
-    
+
     const iv = Buffer.concat([Buffer.from([0x01]), randomBytes(11)]);
     const cipher = createCipheriv('aes-256-gcm', key, iv);
-    const ct = Buffer.concat([cipher.update(Buffer.from('legacy-bytes')), cipher.final()]);
+    const ct = Buffer.concat([
+      cipher.update(Buffer.from('legacy-bytes')),
+      cipher.final(),
+    ]);
     const tag = cipher.getAuthTag();
     const legacy = Buffer.concat([iv, tag, ct]);
     expect(legacy[0]).toBe(0x01);
@@ -80,22 +102,30 @@ describe('TemplateCryptoService', () => {
 describe('FaceService.register', () => {
   it('stores encrypted template, versions re-registration, never leaks bytes', async () => {
     const create = vi.fn(async (a: { data: Record<string, unknown> }) => ({
-      id: 'f1', version: 1, updatedAt: new Date(), ...a.data,
+      id: 'f1',
+      version: 1,
+      updatedAt: new Date(),
+      ...a.data,
     }));
     const prisma = makePrisma({ faceTemplate: { create } });
     const svc = new FaceService(prisma, crypto, privacyStub, auditStub);
 
-    const out = (await svc.register({ template: tpl(), qualityScore: 0.9 }, 'u1')) as { version: number };
+    const out = (await svc.register(
+      { template: tpl(), qualityScore: 0.9 },
+      'u1',
+    )) as { version: number };
     expect(out.version).toBe(1);
     expect(out).not.toHaveProperty('templateCipher');
     const stored = create.mock.calls[0][0].data.templateCipher as Uint8Array;
     expect(Buffer.from(stored).toString()).not.toContain('NaN');
-    
+
     const plain = crypto.decrypt(Buffer.from(stored), 'e1');
-    expect(new Float32Array(plain.buffer, plain.byteOffset, 48 * 4)[0]).toBeCloseTo(Math.sin(0) / 2, 5);
+    expect(
+      new Float32Array(plain.buffer, plain.byteOffset, 48 * 4)[0],
+    ).toBeCloseTo(Math.sin(0) / 2, 5);
 
     const fp = createHash('sha256').update(Buffer.from(stored)).digest('hex');
-    expect(fp).toHaveLength(64); 
+    expect(fp).toHaveLength(64);
   });
 
   it('rejects: no profile, non-finite, low quality', async () => {
@@ -105,13 +135,19 @@ describe('FaceService.register', () => {
       privacyStub,
       auditStub,
     );
-    await expect(svc.register({ template: tpl(), qualityScore: 0.9 }, 'ghost')).rejects.toThrow('No employee profile');
+    await expect(
+      svc.register({ template: tpl(), qualityScore: 0.9 }, 'ghost'),
+    ).rejects.toThrow('No employee profile');
 
     const svc2 = new FaceService(makePrisma(), crypto, privacyStub, auditStub);
     const bad = tpl();
     bad[0] = Number.NaN;
-    await expect(svc2.register({ template: bad, qualityScore: 0.9 }, 'u1')).rejects.toThrow('finite');
-    await expect(svc2.register({ template: tpl(), qualityScore: 0.3 }, 'u1')).rejects.toThrow('Quality too low');
+    await expect(
+      svc2.register({ template: bad, qualityScore: 0.9 }, 'u1'),
+    ).rejects.toThrow('finite');
+    await expect(
+      svc2.register({ template: tpl(), qualityScore: 0.3 }, 'u1'),
+    ).rejects.toThrow('Quality too low');
   });
 
   it('requires active biometric consent (STEP 21)', async () => {
@@ -121,7 +157,9 @@ describe('FaceService.register', () => {
       { hasActiveConsent: async () => false },
       auditStub,
     );
-    await expect(svc.register({ template: tpl(), qualityScore: 0.9 }, 'u1')).rejects.toMatchObject({
+    await expect(
+      svc.register({ template: tpl(), qualityScore: 0.9 }, 'u1'),
+    ).rejects.toMatchObject({
       response: { reason: 'NO_CONSENT' },
     });
   });
@@ -129,7 +167,13 @@ describe('FaceService.register', () => {
   it('status hides template bytes', async () => {
     const prisma = makePrisma({
       faceTemplate: {
-        findUnique: vi.fn(async () => ({ id: 'f1', version: 2, algorithm: 'MobileFaceNet_v1', updatedAt: new Date(), templateCipher: new Uint8Array([1, 2, 3]) })),
+        findUnique: vi.fn(async () => ({
+          id: 'f1',
+          version: 2,
+          algorithm: 'MobileFaceNet_v1',
+          updatedAt: new Date(),
+          templateCipher: new Uint8Array([1, 2, 3]),
+        })),
       },
     });
     const svc = new FaceService(prisma, crypto, privacyStub, auditStub);
@@ -147,12 +191,13 @@ describe('FaceService.matchScore (STEP 23 coverage)', () => {
     const svc = new FaceService(makePrisma(), crypto, privacyStub, auditStub);
     expect(await svc.matchScore('ghost', [0.5])).toBeNull();
 
-    
     const created: { templateCipher?: Uint8Array }[] = [];
     const prisma = makePrisma({
       faceTemplate: {
         findUnique: vi.fn(async (a: { where: { employeeId: string } }) =>
-          a.where.employeeId === 'e1' && created.length > 0 ? { templateCipher: created[0].templateCipher } : null,
+          a.where.employeeId === 'e1' && created.length > 0
+            ? { templateCipher: created[0].templateCipher }
+            : null,
         ),
         create: vi.fn(async (a: { data: { templateCipher: Uint8Array } }) => {
           created.push({ templateCipher: a.data.templateCipher });

@@ -17,14 +17,6 @@ import '../../face/data/face_detector.dart';
 import '../../face/data/face_repository.dart';
 import 'liveness_screen.dart' show contourOf;
 
-
-
-
-
-
-
-
-
 class PassiveScanScreen extends StatefulWidget {
   const PassiveScanScreen({
     super.key,
@@ -32,8 +24,6 @@ class PassiveScanScreen extends StatefulWidget {
     this.displayName = 'Karyawan',
   });
 
-  
-  
   final FaceRepository faces;
   final String displayName;
 
@@ -51,8 +41,6 @@ class _PassiveScanScreenState extends State<PassiveScanScreen>
   String? _error;
   String? _hint;
 
-  
-  
   static const int _blankLimit = 8;
 
   bool _processing = false;
@@ -62,7 +50,6 @@ class _PassiveScanScreenState extends State<PassiveScanScreen>
   double _progress = 0;
   double _relativeFaceWidth = 0;
 
-  
   static const Duration _timeout = Duration(seconds: 20);
   DateTime _startedAt = DateTime.now();
 
@@ -70,9 +57,7 @@ class _PassiveScanScreenState extends State<PassiveScanScreen>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    
-    
-    
+
     final bool needsContours = defaultTargetPlatform == TargetPlatform.iOS;
     _detector = FaceDetectorService(
       classification: true,
@@ -87,10 +72,6 @@ class _PassiveScanScreenState extends State<PassiveScanScreen>
     _initCamera();
   }
 
-  
-  
-  
-  
   void _onDetectorError(String message) {
     _timer?.cancel();
     if (mounted) setState(() => _error = message);
@@ -98,9 +79,6 @@ class _PassiveScanScreenState extends State<PassiveScanScreen>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    
-    
-    
     if (state == AppLifecycleState.paused ||
         state == AppLifecycleState.inactive) {
       _timer?.cancel();
@@ -145,12 +123,10 @@ class _PassiveScanScreenState extends State<PassiveScanScreen>
         imageFormatGroup: ImageFormatGroup.nv21,
       );
       await controller.initialize();
-      
+
       try {
         await controller.setFlashMode(FlashMode.off);
-      } on CameraException {
-        
-      }
+      } on CameraException {}
       if (!mounted) {
         await controller.dispose();
         return;
@@ -172,8 +148,6 @@ class _PassiveScanScreenState extends State<PassiveScanScreen>
     final CameraController? controller = _controller;
     if (controller == null || _processing || _passed) return;
     if (DateTime.now().difference(_startedAt) > _timeout) {
-      
-      
       _timer?.cancel();
       if (mounted) {
         setState(() => _error =
@@ -192,9 +166,7 @@ class _PassiveScanScreenState extends State<PassiveScanScreen>
       PassiveFrame frame;
       if (faces.length != 1) {
         frame = PassiveFrame(faceCount: faces.length, relativeWidth: 0);
-        
-        
-        
+
         _blankFrames++;
         if (_blankFrames == _blankLimit) {
           _onDetectorError(
@@ -206,7 +178,7 @@ class _PassiveScanScreenState extends State<PassiveScanScreen>
         }
       } else {
         final Face f = faces.single;
-        
+
         final Uint8List bytes = await File(shot.path).readAsBytes();
         if (!mounted) return;
         final img.Decoder? decoder = img.findDecoderForData(bytes);
@@ -217,8 +189,7 @@ class _PassiveScanScreenState extends State<PassiveScanScreen>
         final double? leftProb = f.leftEyeOpenProbability;
         final double? rightProb = f.rightEyeOpenProbability;
         final bool hasProbability = leftProb != null && rightProb != null;
-        
-        
+
         final FaceLandmark? nose = f.landmarks[FaceLandmarkType.noseBase];
         final double? noseX = nose?.position.x.toDouble();
         final double? noseY = nose?.position.y.toDouble();
@@ -250,8 +221,6 @@ class _PassiveScanScreenState extends State<PassiveScanScreen>
       });
 
       if (result.verdict == PassiveVerdict.passed) {
-        
-        
         final FaceCapture? capture =
             await widget.faces.captureEmbedding(shot.path);
         if (capture == null) {
@@ -266,7 +235,6 @@ class _PassiveScanScreenState extends State<PassiveScanScreen>
         await _finish();
       }
     } catch (_) {
-      
     } finally {
       _processing = false;
       if (shotPath != null) {
@@ -284,8 +252,7 @@ class _PassiveScanScreenState extends State<PassiveScanScreen>
     _timer?.cancel();
     await Future<void>.delayed(const Duration(milliseconds: 450));
     if (!mounted) return;
-    
-    
+
     Navigator.of(context).pop(<String, Object>{
       'passed': true,
       'mode': 'passive',
@@ -296,9 +263,6 @@ class _PassiveScanScreenState extends State<PassiveScanScreen>
     });
   }
 
-  
-  
-  
   double _padScore() {
     final double size = (_relativeFaceWidth / 0.35).clamp(0.0, 1.0);
     return (_liveness.motionScore * 0.4 +

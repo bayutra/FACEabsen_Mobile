@@ -1,10 +1,34 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Patch,
+  Post,
+  Query,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import type { Request } from 'express';
-import { RequirePermissions, Roles, CurrentUser, type AuthContext } from '../auth/decorators.js';
+import {
+  RequirePermissions,
+  Roles,
+  CurrentUser,
+  type AuthContext,
+} from '../auth/decorators.js';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
 import { PermissionsGuard } from '../auth/guards/permissions.guard.js';
 import { RolesGuard } from '../auth/guards/roles.guard.js';
-import { CreateScheduleDto, CreateShiftDto, ListSchedulesQuery, ListShiftsQuery, UpdateShiftDto } from './dto.js';
+import {
+  CreateScheduleDto,
+  CreateShiftDto,
+  ListSchedulesQuery,
+  ListShiftsQuery,
+  UpdateShiftDto,
+} from './dto.js';
 import { ShiftsService } from './shifts.service.js';
 
 @UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
@@ -15,14 +39,21 @@ export class ShiftsController {
   @Roles('ADMIN')
   @RequirePermissions('shift:manage')
   @Post('shifts')
-  createShift(@Body() dto: CreateShiftDto, @CurrentUser() actor: AuthContext, @Req() req: Request) {
+  createShift(
+    @Body() dto: CreateShiftDto,
+    @CurrentUser() actor: AuthContext,
+    @Req() req: Request,
+  ) {
     return this.shifts.createShift(dto, actor.userId, { ip: req.ip });
   }
 
   @Roles('ADMIN')
   @RequirePermissions('shift:manage')
   @Get('shifts')
-  listShifts(@Query() query: ListShiftsQuery, @CurrentUser() user: AuthContext) {
+  listShifts(
+    @Query() query: ListShiftsQuery,
+    @CurrentUser() user: AuthContext,
+  ) {
     return this.shifts.listShifts(query, user.userId, user.roles);
   }
 
@@ -49,29 +80,40 @@ export class ShiftsController {
   @RequirePermissions('shift:manage')
   @HttpCode(HttpStatus.OK)
   @Delete('shifts/:id')
-  removeShift(@Param('id') id: string, @CurrentUser() actor: AuthContext, @Req() req: Request) {
+  removeShift(
+    @Param('id') id: string,
+    @CurrentUser() actor: AuthContext,
+    @Req() req: Request,
+  ) {
     return this.shifts.deleteShift(id, actor.userId, { ip: req.ip });
   }
 
   @Roles('ADMIN')
   @RequirePermissions('schedule:manage')
   @Post('schedules')
-  assign(@Body() dto: CreateScheduleDto, @CurrentUser() actor: AuthContext, @Req() req: Request) {
+  assign(
+    @Body() dto: CreateScheduleDto,
+    @CurrentUser() actor: AuthContext,
+    @Req() req: Request,
+  ) {
     return this.shifts.assignSchedule(dto, actor.userId, { ip: req.ip });
   }
 
   @Roles('ADMIN')
   @RequirePermissions('schedule:manage')
   @Get('schedules')
-  listSchedules(@Query() query: ListSchedulesQuery, @CurrentUser() user: AuthContext) {
+  listSchedules(
+    @Query() query: ListSchedulesQuery,
+    @CurrentUser() user: AuthContext,
+  ) {
     return this.shifts.listSchedules(query, user.userId, user.roles);
   }
 
-  
-  
-  
   @Get('schedules/me')
-  mySchedules(@Query() query: ListSchedulesQuery, @CurrentUser() user: AuthContext) {
+  mySchedules(
+    @Query() query: ListSchedulesQuery,
+    @CurrentUser() user: AuthContext,
+  ) {
     return this.shifts.listMineFor(user.userId, query);
   }
 
@@ -86,7 +128,11 @@ export class ShiftsController {
   @RequirePermissions('schedule:manage')
   @HttpCode(HttpStatus.OK)
   @Delete('schedules/:id')
-  unassign(@Param('id') id: string, @CurrentUser() actor: AuthContext, @Req() req: Request) {
+  unassign(
+    @Param('id') id: string,
+    @CurrentUser() actor: AuthContext,
+    @Req() req: Request,
+  ) {
     return this.shifts.unassignSchedule(id, actor.userId, { ip: req.ip });
   }
 }

@@ -6,7 +6,6 @@ import '../../../../core/widgets/stitch.dart';
 import '../../presentation/admin_widgets.dart';
 import '../data/schedule_admin_repository.dart';
 
-
 class ScheduleAdminScreen extends StatefulWidget {
   const ScheduleAdminScreen({super.key, required this.dio});
 

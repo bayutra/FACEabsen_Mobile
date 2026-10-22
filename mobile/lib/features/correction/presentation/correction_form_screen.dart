@@ -5,10 +5,6 @@ import '../data/correction_repository.dart';
 import '../domain/correction_models.dart';
 import '../../../core/theme/app_colors.dart';
 
-
-
-
-
 class CorrectionFormScreen extends StatefulWidget {
   const CorrectionFormScreen({
     super.key,
@@ -29,16 +25,31 @@ class CorrectionFormScreen extends StatefulWidget {
   State<CorrectionFormScreen> createState() => _CorrectionFormScreenState();
 }
 
-
 String _formatWorkDate(String ymd) {
   final DateTime? d = DateTime.tryParse(ymd);
   if (d == null) return ymd;
   const List<String> hari = [
-    'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'
+    'Senin',
+    'Selasa',
+    'Rabu',
+    'Kamis',
+    'Jumat',
+    'Sabtu',
+    'Minggu'
   ];
   const List<String> bulan = [
-    'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
-    'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des',
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'Mei',
+    'Jun',
+    'Jul',
+    'Agu',
+    'Sep',
+    'Okt',
+    'Nov',
+    'Des',
   ];
   return '${hari[d.weekday - 1]}, ${d.day} ${bulan[d.month - 1]} ${d.year}';
 }
@@ -68,7 +79,8 @@ class _CorrectionFormScreenState extends State<CorrectionFormScreen> {
       return;
     }
     if (reqIn == null && reqOut == null) {
-      setState(() => _error = 'Isi jam masuk dan/atau jam pulang yang dikoreksi.');
+      setState(
+          () => _error = 'Isi jam masuk dan/atau jam pulang yang dikoreksi.');
       return;
     }
     if (_reason.text.trim().isEmpty) {
@@ -113,7 +125,8 @@ class _CorrectionFormScreenState extends State<CorrectionFormScreen> {
         title: const Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Pengajuan Koreksi', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+            Text('Pengajuan Koreksi',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
             Text('Formulir Perbaikan Data Absensi SIMRS',
                 style: TextStyle(fontSize: 11, fontWeight: FontWeight.w400)),
           ],
@@ -127,7 +140,6 @@ class _CorrectionFormScreenState extends State<CorrectionFormScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
@@ -138,7 +150,8 @@ class _CorrectionFormScreenState extends State<CorrectionFormScreen> {
               child: const Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(Icons.info_outline, color: AppColors.secondary, size: 20),
+                  Icon(Icons.info_outline,
+                      color: AppColors.secondary, size: 20),
                   SizedBox(width: 10),
                   Expanded(
                     child: Column(
@@ -155,7 +168,10 @@ class _CorrectionFormScreenState extends State<CorrectionFormScreen> {
                         SizedBox(height: 2),
                         Text(
                           'Koreksi hanya dapat diajukan maksimal 3x24 jam setelah jadwal shift berakhir. Pengajuan memerlukan persetujuan Kepala Ruangan & Kepegawaian.',
-                          style: TextStyle(fontSize: 11.5, color: AppColors.inkSecondary, height: 1.35),
+                          style: TextStyle(
+                              fontSize: 11.5,
+                              color: AppColors.inkSecondary,
+                              height: 1.35),
                         ),
                       ],
                     ),
@@ -163,10 +179,7 @@ class _CorrectionFormScreenState extends State<CorrectionFormScreen> {
                 ],
               ),
             ),
-
             const SizedBox(height: 14),
-
-            
             Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
@@ -192,7 +205,8 @@ class _CorrectionFormScreenState extends State<CorrectionFormScreen> {
                           color: AppColors.primaryContainer.withOpacity(0.12),
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: const Icon(Icons.assignment_outlined, color: AppColors.primary, size: 24),
+                        child: const Icon(Icons.assignment_outlined,
+                            color: AppColors.primary, size: 24),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
@@ -214,7 +228,9 @@ class _CorrectionFormScreenState extends State<CorrectionFormScreen> {
                               ],
                             ),
                             const SizedBox(height: 2),
-                            Text('NIP: ${widget.employeeNo}', style: const TextStyle(fontSize: 11, color: AppColors.outline)),
+                            Text('NIP: ${widget.employeeNo}',
+                                style: const TextStyle(
+                                    fontSize: 11, color: AppColors.outline)),
                           ],
                         ),
                       ),
@@ -228,17 +244,23 @@ class _CorrectionFormScreenState extends State<CorrectionFormScreen> {
                     children: [
                       const Text(
                         'Sisa Kuota Koreksi Bulan Ini:',
-                        style: TextStyle(fontSize: 11.5, color: AppColors.outline),
+                        style:
+                            TextStyle(fontSize: 11.5, color: AppColors.outline),
                       ),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 2),
                         decoration: BoxDecoration(
                           color: AppColors.surfaceLow,
-                          borderRadius: BorderRadius.circular(AppColors.radiusFull),
+                          borderRadius:
+                              BorderRadius.circular(AppColors.radiusFull),
                         ),
                         child: const Text(
                           'Mengikuti ketentuan SIMRS',
-                          style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.primary),
+                          style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.primary),
                         ),
                       ),
                     ],
@@ -246,10 +268,7 @@ class _CorrectionFormScreenState extends State<CorrectionFormScreen> {
                 ],
               ),
             ),
-
             const SizedBox(height: 16),
-
-            
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
@@ -266,7 +285,8 @@ class _CorrectionFormScreenState extends State<CorrectionFormScreen> {
                       color: AppColors.surfaceLow,
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child: const Icon(Icons.calendar_month, color: AppColors.primary, size: 20),
+                    child: const Icon(Icons.calendar_month,
+                        color: AppColors.primary, size: 20),
                   ),
                   const SizedBox(width: 10),
                   Expanded(
@@ -275,17 +295,24 @@ class _CorrectionFormScreenState extends State<CorrectionFormScreen> {
                       children: [
                         Text(
                           'Tanggal Presensi: ${_formatWorkDate(widget.workDate)}',
-                          style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w700, color: AppColors.ink),
+                          style: const TextStyle(
+                              fontSize: 13.5,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.ink),
                         ),
                         const SizedBox(height: 2),
                         const Row(
                           children: [
-                            CircleAvatar(radius: 3, backgroundColor: AppColors.primary),
+                            CircleAvatar(
+                                radius: 3, backgroundColor: AppColors.primary),
                             SizedBox(width: 5),
                             Expanded(
                               child: Text(
                                 'Jadwal shift mengikuti roster dinas aktif',
-                                style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: AppColors.primary),
+                                style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w500,
+                                    color: AppColors.primary),
                               ),
                             ),
                           ],
@@ -296,16 +323,16 @@ class _CorrectionFormScreenState extends State<CorrectionFormScreen> {
                 ],
               ),
             ),
-
             const SizedBox(height: 16),
-
-            
             const Text(
               'JENIS KOREKSI PRESENSI',
-              style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 0.6, color: AppColors.inkSecondary),
+              style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.6,
+                  color: AppColors.inkSecondary),
             ),
             const SizedBox(height: 8),
-
             GridView.count(
               crossAxisCount: 2,
               shrinkWrap: true,
@@ -340,10 +367,7 @@ class _CorrectionFormScreenState extends State<CorrectionFormScreen> {
                 ),
               ],
             ),
-
             const SizedBox(height: 16),
-
-            
             Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
@@ -356,7 +380,11 @@ class _CorrectionFormScreenState extends State<CorrectionFormScreen> {
                 children: [
                   const Text(
                     'WAKTU SEBENARNYA (RILL)',
-                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 0.6, color: AppColors.inkSecondary),
+                    style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.6,
+                        color: AppColors.inkSecondary),
                   ),
                   const SizedBox(height: 10),
                   Row(
@@ -370,7 +398,8 @@ class _CorrectionFormScreenState extends State<CorrectionFormScreen> {
                             hintText: 'Contoh: 07:00',
                             prefixIcon: const Icon(Icons.login, size: 18),
                             contentPadding: const EdgeInsets.all(12),
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                            border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12)),
                           ),
                         ),
                       ),
@@ -384,7 +413,8 @@ class _CorrectionFormScreenState extends State<CorrectionFormScreen> {
                             hintText: 'Contoh: 14:15',
                             prefixIcon: const Icon(Icons.logout, size: 18),
                             contentPadding: const EdgeInsets.all(12),
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                            border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12)),
                           ),
                         ),
                       ),
@@ -393,10 +423,7 @@ class _CorrectionFormScreenState extends State<CorrectionFormScreen> {
                 ],
               ),
             ),
-
             const SizedBox(height: 16),
-
-            
             Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
@@ -409,27 +436,34 @@ class _CorrectionFormScreenState extends State<CorrectionFormScreen> {
                 children: [
                   const Text(
                     'ALASAN / JUSTIFIKASI KLINIS',
-                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 0.6, color: AppColors.inkSecondary),
+                    style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.6,
+                        color: AppColors.inkSecondary),
                   ),
                   const SizedBox(height: 8),
                   TextField(
                     controller: _reason,
                     maxLines: 3,
                     decoration: InputDecoration(
-                      hintText: 'Jelaskan alasan kendala presensi (contoh: HP lowbat, darurat tindakan pasien code blue, dsb)...',
-                      hintStyle: const TextStyle(fontSize: 12, color: AppColors.outline),
+                      hintText:
+                          'Jelaskan alasan kendala presensi (contoh: HP lowbat, darurat tindakan pasien code blue, dsb)...',
+                      hintStyle: const TextStyle(
+                          fontSize: 12, color: AppColors.outline),
                       contentPadding: const EdgeInsets.all(12),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12)),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+                        borderSide: const BorderSide(
+                            color: AppColors.primary, width: 1.5),
                       ),
                     ),
                   ),
                 ],
               ),
             ),
-
             if (_error != null) ...[
               const SizedBox(height: 12),
               Container(
@@ -439,13 +473,12 @@ class _CorrectionFormScreenState extends State<CorrectionFormScreen> {
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(color: AppColors.error),
                 ),
-                child: Text(_error!, style: const TextStyle(color: AppColors.errorText, fontSize: 12)),
+                child: Text(_error!,
+                    style: const TextStyle(
+                        color: AppColors.errorText, fontSize: 12)),
               ),
             ],
-
             const SizedBox(height: 20),
-
-            
             SizedBox(
               height: 52,
               child: ElevatedButton.icon(
@@ -453,13 +486,15 @@ class _CorrectionFormScreenState extends State<CorrectionFormScreen> {
                   backgroundColor: AppColors.primaryContainer,
                   foregroundColor: Colors.white,
                   elevation: 2,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14)),
                 ),
                 onPressed: _busy ? null : _submit,
                 icon: const Icon(Icons.send, size: 18),
                 label: Text(
                   _busy ? 'Mengirim Pengajuan...' : 'Ajukan Koreksi Presensi',
-                  style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                  style: const TextStyle(
+                      fontSize: 15, fontWeight: FontWeight.w600),
                 ),
               ),
             ),
@@ -486,7 +521,9 @@ class _CorrectionFormScreenState extends State<CorrectionFormScreen> {
           color: isSelected ? AppColors.surfaceLow : Colors.white,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: isSelected ? AppColors.primaryContainer : AppColors.border.withOpacity(0.6),
+            color: isSelected
+                ? AppColors.primaryContainer
+                : AppColors.border.withOpacity(0.6),
             width: isSelected ? 2 : 1,
           ),
           boxShadow: [
@@ -504,9 +541,14 @@ class _CorrectionFormScreenState extends State<CorrectionFormScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Icon(icon, color: isSelected ? AppColors.primaryContainer : AppColors.inkSecondary, size: 20),
+                Icon(icon,
+                    color: isSelected
+                        ? AppColors.primaryContainer
+                        : AppColors.inkSecondary,
+                    size: 20),
                 if (isSelected)
-                  const Icon(Icons.check_circle, color: AppColors.primaryContainer, size: 16)
+                  const Icon(Icons.check_circle,
+                      color: AppColors.primaryContainer, size: 16)
                 else
                   Container(
                     width: 14,

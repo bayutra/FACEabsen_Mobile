@@ -14,8 +14,7 @@ export interface TabularReport {
 const cell = (v: string | number | null | undefined): string => {
   if (v === null || v === undefined) return '';
   let s = String(v);
-  
-  
+
   if (/^[=+\-@\t\r]/.test(s)) s = `'${s}`;
   return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
 };
@@ -41,7 +40,8 @@ export async function toXLSX(report: TabularReport): Promise<Buffer> {
   ws.addRow([]);
   const header = ws.addRow(report.headers);
   header.font = { bold: true };
-  for (const row of report.rows) ws.addRow(row.map((v) => (v === null || v === undefined ? '' : v)));
+  for (const row of report.rows)
+    ws.addRow(row.map((v) => (v === null || v === undefined ? '' : v)));
   ws.columns.forEach((col) => {
     col.width = 22;
   });
@@ -65,7 +65,11 @@ export function toPDF(report: TabularReport): Promise<Buffer> {
     const width = 18;
     const line = (cells: Array<string | number | null>) =>
       cells
-        .map((c) => String(c ?? '').slice(0, width).padEnd(width))
+        .map((c) =>
+          String(c ?? '')
+            .slice(0, width)
+            .padEnd(width),
+        )
         .join(' | ');
     doc.text(line(report.headers));
     doc.text('-'.repeat(report.headers.length * (width + 3)));

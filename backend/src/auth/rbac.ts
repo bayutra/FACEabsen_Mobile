@@ -19,26 +19,31 @@ export function roleRank(role: string): number {
   return (RANK as Record<string, number>)[role] ?? 0;
 }
 
- 
 export function highestRoleRank(roles: string[]): number {
   return maxRank(roles);
 }
 
- 
-export function satisfiesRole(actorRoles: string[], requiredRole: string): boolean {
+export function satisfiesRole(
+  actorRoles: string[],
+  requiredRole: string,
+): boolean {
   const actor = maxRank(actorRoles);
   const need = roleRank(requiredRole);
   return need > 0 && actor >= need;
 }
 
- 
-export function canAssignRole(actorRoles: string[], targetRole: string): boolean {
+export function canAssignRole(
+  actorRoles: string[],
+  targetRole: string,
+): boolean {
   if (!(ROLES as readonly string[]).includes(targetRole)) return false;
   if (actorRoles.includes('SUPER_ADMIN')) return true;
   return RANK[targetRole as RoleName] < maxRank(actorRoles);
 }
 
- 
-export function hasAllPermissions(userPermissions: string[], required: string[]): boolean {
+export function hasAllPermissions(
+  userPermissions: string[],
+  required: string[],
+): boolean {
   return required.every((p) => userPermissions.includes(p));
 }

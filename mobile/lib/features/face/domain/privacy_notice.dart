@@ -1,6 +1,3 @@
-
-
-
 class PrivacyNotice {
   const PrivacyNotice({
     required this.version,

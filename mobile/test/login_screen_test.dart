@@ -4,9 +4,9 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'fakes.dart';
 
-
 void main() {
-  testWidgets('successful login registers device and calls onDone', (tester) async {
+  testWidgets('successful login registers device and calls onDone',
+      (tester) async {
     var done = false;
     await tester.pumpWidget(
       MaterialApp(
@@ -26,7 +26,8 @@ void main() {
     expect(done, isTrue);
   });
 
-  testWidgets('device registration failure still opens dashboard', (tester) async {
+  testWidgets('device registration failure still opens dashboard',
+      (tester) async {
     var done = false;
     await tester.pumpWidget(
       MaterialApp(
@@ -47,7 +48,6 @@ void main() {
   });
 
   testWidgets('tapping Daftar opens the registration screen', (tester) async {
-    
     tester.view.physicalSize = const Size(1080, 2400);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.reset);
@@ -85,10 +85,12 @@ void main() {
     await tester.tap(find.text('Masuk'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Kredensial atau kata sandi tidak sesuai.'), findsOneWidget);
+    expect(
+        find.text('Kredensial atau kata sandi tidak sesuai.'), findsOneWidget);
   });
 
-  testWidgets('offline server shows connection error (PRD offline)', (tester) async {
+  testWidgets('offline server shows connection error (PRD offline)',
+      (tester) async {
     await tester.pumpWidget(
       MaterialApp(
         home: LoginScreen(
@@ -107,7 +109,8 @@ void main() {
     expect(find.textContaining('tidak terjangkau'), findsOneWidget);
   });
 
-  testWidgets('TOTP challenge swaps to code step and completes login', (tester) async {
+  testWidgets('TOTP challenge swaps to code step and completes login',
+      (tester) async {
     var done = false;
     final devices = FakeDeviceRepository();
     await tester.pumpWidget(
@@ -125,7 +128,6 @@ void main() {
     await tester.tap(find.text('Masuk'));
     await tester.pumpAndSettle();
 
-    
     expect(find.text('Verifikasi Dua Langkah'), findsOneWidget);
     expect(find.text('ID Karyawan / Email / NIP *'), findsNothing);
     expect(done, isFalse);
@@ -138,7 +140,8 @@ void main() {
     expect(devices.registerCalls, 1);
   });
 
-  testWidgets('wrong TOTP code shows error and stays on code step', (tester) async {
+  testWidgets('wrong TOTP code shows error and stays on code step',
+      (tester) async {
     var done = false;
     await tester.pumpWidget(
       MaterialApp(
@@ -159,7 +162,8 @@ void main() {
     await tester.tap(find.text('Verifikasi'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Kredensial atau kata sandi tidak sesuai.'), findsOneWidget);
+    expect(
+        find.text('Kredensial atau kata sandi tidak sesuai.'), findsOneWidget);
     expect(find.text('Verifikasi Dua Langkah'), findsOneWidget);
     expect(done, isFalse);
   });

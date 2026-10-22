@@ -5,7 +5,6 @@ import { PermissionsGuard } from '../auth/guards/permissions.guard.js';
 import { RolesGuard } from '../auth/guards/roles.guard.js';
 import { EmployeesService } from './employees.service.js';
 
- 
 @UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
 @Controller('hospitals')
 export class HospitalsController {

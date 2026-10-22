@@ -1,4 +1,3 @@
-
 const Map<String, String> correctionTypes = {
   'MISSED_CHECK_IN': 'Lupa Check-in',
   'MISSED_CHECK_OUT': 'Lupa check-out',
@@ -12,8 +11,6 @@ const Map<String, String> correctionStatusLabels = {
   'REJECTED': 'Ditolak',
   'CANCELLED': 'Dibatalkan',
 };
-
-
 
 String? combineWorkDateTime(String workDate, String hhmm) {
   final String t = hhmm.trim();

@@ -1,4 +1,3 @@
-
 import { JwtService } from '@nestjs/jwt';
 import * as argon2 from 'argon2';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
@@ -26,7 +25,6 @@ function userRow(over: Record<string, unknown> = {}) {
   };
 }
 
- 
 function makeDb() {
   const users = new Map<string, any>();
   const codes = new Map<string, any>();
@@ -50,7 +48,11 @@ function makeDb() {
     totpRecoveryCode: {
       findMany: vi.fn(async ({ where }: any) =>
         [...codes.values()]
-          .filter((c) => (!where?.userId || c.userId === where.userId) && (where?.usedAt !== null || c.usedAt == null))
+          .filter(
+            (c) =>
+              (!where?.userId || c.userId === where.userId) &&
+              (where?.usedAt !== null || c.usedAt == null),
+          )
           .map((c) => ({ ...c })),
       ),
       deleteMany: vi.fn(async ({ where }: any) => {
@@ -120,7 +122,9 @@ describe('TotpService.setup/enable', () => {
 
   it('setup for an unknown user is 404', async () => {
     const { prisma } = makeDb();
-    await expect(service(prisma).setup('ghost')).rejects.toThrow('User not found');
+    await expect(service(prisma).setup('ghost')).rejects.toThrow(
+      'User not found',
+    );
   });
 
   it('enable with the correct code activates TOTP and mints 8 readable codes', async () => {
@@ -135,13 +139,15 @@ describe('TotpService.setup/enable', () => {
     }
     expect(new Set(out.recoveryCodes).size).toBe(8);
     expect(users.get('u1').totpEnabled).toBe(true);
-    
+
     expect(codes.size).toBe(8);
     for (const row of codes.values()) {
       expect(row.codeHash).toMatch(/^[0-9a-f]{64}$/);
       expect(JSON.stringify(row)).not.toContain(out.recoveryCodes[0]);
     }
-    expect(auditStub.log).toHaveBeenCalledWith(expect.objectContaining({ action: 'TOTP_ENABLED' }));
+    expect(auditStub.log).toHaveBeenCalledWith(
+      expect.objectContaining({ action: 'TOTP_ENABLED' }),
+    );
   });
 
   it('enable with a wrong code is 401, stays disabled, and audits TOTP_FAILED', async () => {
@@ -160,17 +166,27 @@ describe('TotpService.setup/enable', () => {
 
   it('enable rejects re-enrollment (409) and enabling without setup (400)', async () => {
     const { users, prisma } = makeDb();
-    users.set('u1', userRow({ totpEnabled: true, totpSecret: 'JBSWY3DPEHPK3PXP' }));
-    await expect(service(prisma).enable('u1', '123456')).rejects.toThrow('already enabled');
+    users.set(
+      'u1',
+      userRow({ totpEnabled: true, totpSecret: 'JBSWY3DPEHPK3PXP' }),
+    );
+    await expect(service(prisma).enable('u1', '123456')).rejects.toThrow(
+      'already enabled',
+    );
     users.set('u2', userRow({ id: 'u2' }));
-    await expect(service(prisma).enable('u2', '123456')).rejects.toThrow('not been started');
+    await expect(service(prisma).enable('u2', '123456')).rejects.toThrow(
+      'not been started',
+    );
   });
 });
 
 describe('TotpService.disable', () => {
   it('wrong password is 401 and keeps TOTP on', async () => {
     const { users, prisma } = makeDb();
-    users.set('u1', userRow({ totpEnabled: true, totpSecret: 'JBSWY3DPEHPK3PXP' }));
+    users.set(
+      'u1',
+      userRow({ totpEnabled: true, totpSecret: 'JBSWY3DPEHPK3PXP' }),
+    );
     await expect(service(prisma).disable('u1', 'Wrong123!')).rejects.toThrow(
       'Current password is incorrect',
     );
@@ -179,13 +195,28 @@ describe('TotpService.disable', () => {
 
   it('correct password clears secret, codes, and flag', async () => {
     const { users, codes, prisma } = makeDb();
-    users.set('u1', userRow({ totpEnabled: true, totpSecret: 'JBSWY3DPEHPK3PXP' }));
-    codes.set('c1', { id: 'c1', userId: 'u1', codeHash: 'ab'.repeat(32), usedAt: null });
-    const out = await service(prisma).disable('u1', PASSWORD, { ip: '1.2.3.4' });
+    users.set(
+      'u1',
+      userRow({ totpEnabled: true, totpSecret: 'JBSWY3DPEHPK3PXP' }),
+    );
+    codes.set('c1', {
+      id: 'c1',
+      userId: 'u1',
+      codeHash: 'ab'.repeat(32),
+      usedAt: null,
+    });
+    const out = await service(prisma).disable('u1', PASSWORD, {
+      ip: '1.2.3.4',
+    });
     expect(out).toEqual({ disabled: true });
-    expect(users.get('u1')).toMatchObject({ totpSecret: null, totpEnabled: false });
+    expect(users.get('u1')).toMatchObject({
+      totpSecret: null,
+      totpEnabled: false,
+    });
     expect(codes.size).toBe(0);
-    expect(auditStub.log).toHaveBeenCalledWith(expect.objectContaining({ action: 'TOTP_DISABLED' }));
+    expect(auditStub.log).toHaveBeenCalledWith(
+      expect.objectContaining({ action: 'TOTP_DISABLED' }),
+    );
   });
 });
 
@@ -204,19 +235,27 @@ describe('TotpService challenge tokens', () => {
       { sub: 'u1', purpose: 'totp' },
       { algorithm: 'HS256', issuer: 'face-absen', expiresIn: -10 },
     );
-    await expect(svc.verifyTotpToken(expired)).rejects.toThrow('Invalid or expired token');
-    await expect(svc.verifyTotpToken('not-a-jwt')).rejects.toThrow('Invalid or expired token');
+    await expect(svc.verifyTotpToken(expired)).rejects.toThrow(
+      'Invalid or expired token',
+    );
+    await expect(svc.verifyTotpToken('not-a-jwt')).rejects.toThrow(
+      'Invalid or expired token',
+    );
     const foreign = await new JwtService({ secret: 'other-secret' }).signAsync(
       { sub: 'u1', purpose: 'totp' },
       { algorithm: 'HS256', issuer: 'face-absen', expiresIn: 300 },
     );
-    await expect(svc.verifyTotpToken(foreign)).rejects.toThrow('Invalid or expired token');
-    
+    await expect(svc.verifyTotpToken(foreign)).rejects.toThrow(
+      'Invalid or expired token',
+    );
+
     const accessLike = await jwt.signAsync(
       { sub: 'u1', email: 'e@rs.test', roles: [], sid: 's1' },
       { algorithm: 'HS256', issuer: 'face-absen', expiresIn: 900 },
     );
-    await expect(svc.verifyTotpToken(accessLike)).rejects.toThrow('Invalid or expired token');
+    await expect(svc.verifyTotpToken(accessLike)).rejects.toThrow(
+      'Invalid or expired token',
+    );
   });
 });
 
@@ -237,7 +276,11 @@ describe('TotpService.verify', () => {
     expect(out.accessToken).toBeTruthy();
     expect(out.refreshToken).toBeTruthy();
     expect(out.expiresIn).toBe(15 * 60);
-    expect(out.user).toMatchObject({ id: 'u1', email: 'employee@rs.test', roles: ['EMPLOYEE'] });
+    expect(out.user).toMatchObject({
+      id: 'u1',
+      email: 'employee@rs.test',
+      roles: ['EMPLOYEE'],
+    });
     expect(auditStub.log).toHaveBeenCalledWith(
       expect.objectContaining({ action: 'LOGIN_SUCCESS', actorId: 'u1' }),
     );
@@ -260,7 +303,9 @@ describe('TotpService.verify', () => {
       { sub: 'u1', purpose: 'totp' },
       { algorithm: 'HS256', issuer: 'face-absen', expiresIn: -10 },
     );
-    await expect(svc.verify(expired, '123456', {})).rejects.toThrow('Invalid or expired token');
+    await expect(svc.verify(expired, '123456', {})).rejects.toThrow(
+      'Invalid or expired token',
+    );
   });
 });
 
@@ -285,7 +330,9 @@ describe('TotpService.recover', () => {
     );
     const used = [...codes.values()].filter((c) => c.usedAt != null);
     expect(used).toHaveLength(1);
-    await expect(svc.recover(token, recoveryCodes[0], {})).rejects.toThrow('Invalid recovery code');
+    await expect(svc.recover(token, recoveryCodes[0], {})).rejects.toThrow(
+      'Invalid recovery code',
+    );
   });
 
   it('codes are case- and hyphen-insensitive', async () => {

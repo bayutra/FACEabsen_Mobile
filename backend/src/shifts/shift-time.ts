@@ -1,8 +1,6 @@
- 
-
 export interface ShiftLike {
-  startTime: string; 
-  endTime: string; 
+  startTime: string;
+  endTime: string;
   overnight: boolean;
   gracePeriodMin: number;
   lateThresholdMin: number;
@@ -15,17 +13,16 @@ export function parseHHmm(value: string): number {
   return Number(m[1]) * 60 + Number(m[2]);
 }
 
- 
 export function isOvernightRange(startTime: string, endTime: string): boolean {
   return parseHHmm(endTime) <= parseHHmm(startTime);
 }
 
 function dayAnchor(workDate: string, timeZone = 'UTC'): number {
   const utcMidnight = Date.parse(`${workDate}T00:00:00.000Z`);
-  if (Number.isNaN(utcMidnight)) throw new Error(`Invalid workDate: ${workDate}`);
+  if (Number.isNaN(utcMidnight))
+    throw new Error(`Invalid workDate: ${workDate}`);
   if (timeZone === 'UTC') return utcMidnight;
-  
-  
+
   let guess = utcMidnight;
   for (let i = 0; i < 2; i++) {
     guess = utcMidnight - tzOffsetMs(timeZone, new Date(guess));
@@ -33,7 +30,6 @@ function dayAnchor(workDate: string, timeZone = 'UTC'): number {
   return guess;
 }
 
- 
 function tzOffsetMs(timeZone: string, date: Date): number {
   const dtf = new Intl.DateTimeFormat('en-US', {
     timeZone,
@@ -47,7 +43,7 @@ function tzOffsetMs(timeZone: string, date: Date): number {
   });
   const parts: Record<string, string> = {};
   for (const p of dtf.formatToParts(date)) parts[p.type] = p.value;
-  
+
   const hour = parts.hour === '24' ? '00' : parts.hour;
   const asUTC = Date.parse(
     `${parts.year}-${parts.month}-${parts.day}T${hour}:${parts.minute}:${parts.second}Z`,
@@ -56,7 +52,6 @@ function tzOffsetMs(timeZone: string, date: Date): number {
   return asUTC - date.getTime();
 }
 
- 
 export function workDateKeyIn(now: Date, timeZone = 'UTC'): string {
   return new Intl.DateTimeFormat('en-CA', {
     timeZone,
@@ -66,13 +61,20 @@ export function workDateKeyIn(now: Date, timeZone = 'UTC'): string {
   }).format(now);
 }
 
- 
-export function shiftWindow(workDate: string, shift: ShiftLike, timeZone = 'UTC'): { start: Date; end: Date } {
+export function shiftWindow(
+  workDate: string,
+  shift: ShiftLike,
+  timeZone = 'UTC',
+): { start: Date; end: Date } {
   const startMin = parseHHmm(shift.startTime);
   const endMin = parseHHmm(shift.endTime);
   const overnight = shift.overnight || endMin <= startMin;
   const start = new Date(dayAnchor(workDate, timeZone) + startMin * 60_000);
-  const end = new Date(dayAnchor(workDate, timeZone) + endMin * 60_000 + (overnight ? 24 * 60 * 60_000 : 0));
+  const end = new Date(
+    dayAnchor(workDate, timeZone) +
+      endMin * 60_000 +
+      (overnight ? 24 * 60 * 60_000 : 0),
+  );
   return { start, end };
 }
 
@@ -85,9 +87,14 @@ export function evaluateCheckIn(
   timeZone = 'UTC',
 ): { status: CheckInStatus; lateMinutes: number } {
   const { start } = shiftWindow(workDate, shift, timeZone);
-  const lateMinutes = Math.max(0, Math.round((checkInAt.getTime() - start.getTime()) / 60_000));
-  if (lateMinutes <= shift.gracePeriodMin) return { status: 'ON_TIME', lateMinutes };
-  if (lateMinutes <= shift.lateThresholdMin) return { status: 'LATE', lateMinutes };
+  const lateMinutes = Math.max(
+    0,
+    Math.round((checkInAt.getTime() - start.getTime()) / 60_000),
+  );
+  if (lateMinutes <= shift.gracePeriodMin)
+    return { status: 'ON_TIME', lateMinutes };
+  if (lateMinutes <= shift.lateThresholdMin)
+    return { status: 'LATE', lateMinutes };
   return { status: 'VERY_LATE', lateMinutes };
 }
 
@@ -100,7 +107,10 @@ export function evaluateCheckOut(
   timeZone = 'UTC',
 ): { status: CheckOutStatus; earlyMinutes: number } {
   const { end } = shiftWindow(workDate, shift, timeZone);
-  const earlyMinutes = Math.max(0, Math.round((end.getTime() - checkOutAt.getTime()) / 60_000));
+  const earlyMinutes = Math.max(
+    0,
+    Math.round((end.getTime() - checkOutAt.getTime()) / 60_000),
+  );
   if (earlyMinutes <= shift.earlyCheckoutThresholdMin) {
     return { status: 'NORMAL_CHECKOUT', earlyMinutes };
   }

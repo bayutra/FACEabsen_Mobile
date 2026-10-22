@@ -31,34 +31,81 @@ function makeFake(hash: string) {
   const sessions = new Map<string, any>();
   const userRoles: Array<{ userId: string; role: string }> = [];
   const employees = new Map<string, any>([
-    ['e-emp', { id: 'e-emp', userId: 'u-emp', employeeNo: 'EMP-001', name: 'Karyawan', email: 'employee@rs.test', departmentId: 'd1', status: 'ACTIVE', createdAt: new Date() }],
+    [
+      'e-emp',
+      {
+        id: 'e-emp',
+        userId: 'u-emp',
+        employeeNo: 'EMP-001',
+        name: 'Karyawan',
+        email: 'employee@rs.test',
+        departmentId: 'd1',
+        status: 'ACTIVE',
+        createdAt: new Date(),
+      },
+    ],
     // Tahap 2 tenant scoping: the ADMIN actor belongs to the same facility as
     // every fixture. A facility-less admin would correctly see nothing.
-    ['e-adm', { id: 'e-adm', userId: 'u-adm', employeeNo: 'EMP-000', name: 'Admin', email: 'admin@rs.test', departmentId: 'd1', status: 'ACTIVE', createdAt: new Date() }],
+    [
+      'e-adm',
+      {
+        id: 'e-adm',
+        userId: 'u-adm',
+        employeeNo: 'EMP-000',
+        name: 'Admin',
+        email: 'admin@rs.test',
+        departmentId: 'd1',
+        status: 'ACTIVE',
+        createdAt: new Date(),
+      },
+    ],
   ]);
-  const departments = new Map<string, any>([['d1', { id: 'd1', name: 'IGD', hospitalId: 'h1' }]]);
+  const departments = new Map<string, any>([
+    ['d1', { id: 'd1', name: 'IGD', hospitalId: 'h1' }],
+  ]);
   const devices = new Map<string, any>();
   const changeReqs = new Map<string, any>();
   const audits: any[] = [];
   let seq = 100;
 
   const fake: any = {
-    users, sessions, employees, devices, changeReqs, audits, userRoles,
+    users,
+    sessions,
+    employees,
+    devices,
+    changeReqs,
+    audits,
+    userRoles,
     user: {
       findUnique: async ({ where, include }: any) => {
-        const u = [...users.values()].find((x) => x.email === where.email) ?? users.get(where.id) ?? null;
+        const u =
+          [...users.values()].find((x) => x.email === where.email) ??
+          users.get(where.id) ??
+          null;
         if (!u) return null;
         return include?.userRoles
-          ? { ...u, userRoles: userRoles.filter((r) => r.userId === u.id).map((r) => ({ role: { name: r.role } })) }
+          ? {
+              ...u,
+              userRoles: userRoles
+                .filter((r) => r.userId === u.id)
+                .map((r) => ({ role: { name: r.role } })),
+            }
           : { ...u };
       },
     },
     userRole: {
       findMany: async ({ where, include }: any) => {
-        const roles = userRoles.filter((r) => r.userId === where.userId).map((r) => r.role);
+        const roles = userRoles
+          .filter((r) => r.userId === where.userId)
+          .map((r) => r.role);
         if (include?.role?.include?.rolePermissions) {
           return roles.map((r) => ({
-            role: { name: r, rolePermissions: (ROLE_PERMS[r] ?? []).map((key) => ({ permission: { key } })) },
+            role: {
+              name: r,
+              rolePermissions: (ROLE_PERMS[r] ?? []).map((key) => ({
+                permission: { key },
+              })),
+            },
           }));
         }
         return roles.map((r) => ({ role: { name: r } }));
@@ -68,10 +115,16 @@ function makeFake(hash: string) {
       findUnique: async ({ where, include }: any) => {
         let e = null;
         if (where.id) e = employees.get(where.id) ?? null;
-        else if ('userId' in where) e = [...employees.values()].find((x) => x.userId === where.userId) ?? null;
+        else if ('userId' in where)
+          e =
+            [...employees.values()].find((x) => x.userId === where.userId) ??
+            null;
         if (!e) return null;
         const out: any = { ...e };
-        if (include?.department) out.department = e.departmentId ? departments.get(e.departmentId) ?? null : null;
+        if (include?.department)
+          out.department = e.departmentId
+            ? (departments.get(e.departmentId) ?? null)
+            : null;
         if (include?.user) out.user = users.get(e.userId) ?? null;
         return out;
       },
@@ -80,26 +133,55 @@ function makeFake(hash: string) {
       findFirst: async ({ where }: any) => {
         const rows = [...devices.values()];
         if (where.OR) {
-          return rows.find((d) => where.OR.some((c: any) => Object.entries(c).every(([k, v]) => d[k] === v))) ?? null;
+          return (
+            rows.find((d) =>
+              where.OR.some((c: any) =>
+                Object.entries(c).every(([k, v]) => d[k] === v),
+              ),
+            ) ?? null
+          );
         }
-        return rows.find((d) => Object.entries(where).every(([k, v]) => d[k] === v)) ?? null;
+        return (
+          rows.find((d) =>
+            Object.entries(where).every(([k, v]) => d[k] === v),
+          ) ?? null
+        );
       },
       findUnique: async ({ where, include }: any) => {
         const d = devices.get(where.id) ?? null;
         if (!d) return null;
         if (include?.employee) {
           const e = employees.get(d.employeeId);
-          return { ...d, employee: e ? { id: e.id, userId: e.userId, name: e.name, employeeNo: e.employeeNo, department: e.departmentId ? departments.get(e.departmentId) ?? null : null } : null };
+          return {
+            ...d,
+            employee: e
+              ? {
+                  id: e.id,
+                  userId: e.userId,
+                  name: e.name,
+                  employeeNo: e.employeeNo,
+                  department: e.departmentId
+                    ? (departments.get(e.departmentId) ?? null)
+                    : null,
+                }
+              : null,
+          };
         }
         return { ...d };
       },
       findMany: async ({ where }: any) => {
         let rows = [...devices.values()];
-        if (where?.employeeId) rows = rows.filter((d) => d.employeeId === where.employeeId);
+        if (where?.employeeId)
+          rows = rows.filter((d) => d.employeeId === where.employeeId);
         return rows.map((d) => ({ ...d }));
       },
       create: async ({ data }: any) => {
-        const d = { id: `d${++seq}`, registeredAt: new Date(), lastSeenAt: null, ...data };
+        const d = {
+          id: `d${++seq}`,
+          registeredAt: new Date(),
+          lastSeenAt: null,
+          ...data,
+        };
         devices.set(d.id, d);
         return { ...d };
       },
@@ -111,7 +193,9 @@ function makeFake(hash: string) {
     },
     deviceChangeRequest: {
       findFirst: async ({ where }: any) =>
-        [...changeReqs.values()].find((r) => Object.entries(where).every(([k, v]) => r[k] === v)) ?? null,
+        [...changeReqs.values()].find((r) =>
+          Object.entries(where).every(([k, v]) => r[k] === v),
+        ) ?? null,
       findMany: async ({ where, include }: any) => {
         let rows = [...changeReqs.values()].filter((r) => matchReq(r, where));
         return rows.map((r) => ({ ...r, ...(include ? viewReq(r) : {}) }));
@@ -122,7 +206,12 @@ function makeFake(hash: string) {
         return { ...r, ...(include ? viewReq(r) : {}) };
       },
       create: async ({ data, include }: any) => {
-        const r = { id: `r${++seq}`, status: 'PENDING', requestedAt: new Date(), ...data };
+        const r = {
+          id: `r${++seq}`,
+          status: 'PENDING',
+          requestedAt: new Date(),
+          ...data,
+        };
         changeReqs.set(r.id, r);
         return { ...r, ...(include ? viewReq(r) : {}) };
       },
@@ -134,7 +223,12 @@ function makeFake(hash: string) {
     },
     session: {
       create: async ({ data }: any) => {
-        const s = { id: `s${++seq}`, createdAt: new Date(), revokedAt: null, ...data };
+        const s = {
+          id: `s${++seq}`,
+          createdAt: new Date(),
+          revokedAt: null,
+          ...data,
+        };
         sessions.set(s.id, s);
         return { ...s };
       },
@@ -160,7 +254,14 @@ function makeFake(hash: string) {
       oldDevice: devices.get(r.oldDeviceId) ?? null,
       newDevice: devices.get(r.newDeviceId) ?? null,
       employee: e
-        ? { id: e.id, name: e.name, employeeNo: e.employeeNo, department: e.departmentId ? departments.get(e.departmentId) ?? null : null }
+        ? {
+            id: e.id,
+            name: e.name,
+            employeeNo: e.employeeNo,
+            department: e.departmentId
+              ? (departments.get(e.departmentId) ?? null)
+              : null,
+          }
         : undefined,
     };
   }
@@ -175,7 +276,9 @@ function makeFake(hash: string) {
       if (!e) return false;
       const pred = where.employee;
       if (pred.department?.hospitalId) {
-        const dep = e.departmentId ? departments.get(e.departmentId) ?? null : null;
+        const dep = e.departmentId
+          ? (departments.get(e.departmentId) ?? null)
+          : null;
         if (!dep || dep.hospitalId !== pred.department.hospitalId) return false;
       }
       for (const [k, v] of Object.entries(pred) as Array<[string, any]>) {
@@ -187,10 +290,29 @@ function makeFake(hash: string) {
     return Object.entries(where).every(([k, v]) => (r as any)[k] === v);
   }
 
-  users.set('u-emp', { id: 'u-emp', email: 'employee@rs.test', passwordHash: hash, isActive: true });
-  users.set('u-adm', { id: 'u-adm', email: 'admin@rs.test', passwordHash: hash, isActive: true });
-  users.set('u-sa', { id: 'u-sa', email: 'sa@rs.test', passwordHash: hash, isActive: true });
-  userRoles.push({ userId: 'u-emp', role: 'EMPLOYEE' }, { userId: 'u-adm', role: 'ADMIN' }, { userId: 'u-sa', role: 'SUPER_ADMIN' });
+  users.set('u-emp', {
+    id: 'u-emp',
+    email: 'employee@rs.test',
+    passwordHash: hash,
+    isActive: true,
+  });
+  users.set('u-adm', {
+    id: 'u-adm',
+    email: 'admin@rs.test',
+    passwordHash: hash,
+    isActive: true,
+  });
+  users.set('u-sa', {
+    id: 'u-sa',
+    email: 'sa@rs.test',
+    passwordHash: hash,
+    isActive: true,
+  });
+  userRoles.push(
+    { userId: 'u-emp', role: 'EMPLOYEE' },
+    { userId: 'u-adm', role: 'ADMIN' },
+    { userId: 'u-sa', role: 'SUPER_ADMIN' },
+  );
   return fake;
 }
 
@@ -200,22 +322,40 @@ let jwt: JwtService;
 
 async function tokenFor(userId: string, roles: string[], email: string) {
   const s = await fake.session.create({
-    data: { userId, refreshTokenHash: 'h', expiresAt: new Date(Date.now() + 86_400_000) },
+    data: {
+      userId,
+      refreshTokenHash: 'h',
+      expiresAt: new Date(Date.now() + 86_400_000),
+    },
   });
   return jwt.signAsync({ sub: userId, email, roles, sid: s.id });
 }
 
-const reg = async (server: unknown, token: string, installationId: string, kp: Keypair) => {
-  const ch = await request(server as never).get('/devices/register-challenge').set('Authorization', `Bearer ${token}`);
+const reg = async (
+  server: unknown,
+  token: string,
+  installationId: string,
+  kp: Keypair,
+) => {
+  const ch = await request(server as never)
+    .get('/devices/register-challenge')
+    .set('Authorization', `Bearer ${token}`);
   expect(ch.status).toBe(200);
   const nonce = ch.body.nonce as string;
-  return request(server as never).post('/devices/register').set('Authorization', `Bearer ${token}`).send({
-    installationId,
-    platform: 'ANDROID',
-    devicePublicKey: kp.pubB64,
-    nonce,
-    nonceSignature: sign(null, Buffer.from(nonce, 'utf8'), kp.privateKey).toString('base64'),
-  });
+  return request(server as never)
+    .post('/devices/register')
+    .set('Authorization', `Bearer ${token}`)
+    .send({
+      installationId,
+      platform: 'ANDROID',
+      devicePublicKey: kp.pubB64,
+      nonce,
+      nonceSignature: sign(
+        null,
+        Buffer.from(nonce, 'utf8'),
+        kp.privateKey,
+      ).toString('base64'),
+    });
 };
 
 interface Keypair {
@@ -225,7 +365,9 @@ interface Keypair {
 
 function makeKeypair(): Keypair {
   const { publicKey, privateKey } = generateKeyPairSync('ed25519');
-  const raw = (publicKey.export({ format: 'der', type: 'spki' }) as Buffer).subarray(-32).toString('base64');
+  const raw = (publicKey.export({ format: 'der', type: 'spki' }) as Buffer)
+    .subarray(-32)
+    .toString('base64');
   return { privateKey, pubB64: raw };
 }
 
@@ -234,7 +376,16 @@ beforeAll(async () => {
   fake = makeFake(hash);
 
   const module = await Test.createTestingModule({
-    imports: [JwtModule.register({ secret: 'e2e-chg', signOptions: { algorithm: 'HS256', issuer: 'face-absen', expiresIn: 900 } })],
+    imports: [
+      JwtModule.register({
+        secret: 'e2e-chg',
+        signOptions: {
+          algorithm: 'HS256',
+          issuer: 'face-absen',
+          expiresIn: 900,
+        },
+      }),
+    ],
     controllers: [DevicesController, DeviceChangeController],
     providers: [
       DevicesService,
@@ -244,14 +395,24 @@ beforeAll(async () => {
       RolesGuard,
       PermissionsGuard,
       { provide: PrismaService, useValue: fake },
-      { provide: ConfigService, useValue: { get: (_k: string, d: unknown) => d } },
-      { provide: AuditService, useValue: { log: async (e: unknown) => void fake.audits.push(e) } },
+      {
+        provide: ConfigService,
+        useValue: { get: (_k: string, d: unknown) => d },
+      },
+      {
+        provide: AuditService,
+        useValue: { log: async (e: unknown) => void fake.audits.push(e) },
+      },
     ],
   }).compile();
 
   app = module.createNestApplication();
   app.useGlobalPipes(
-    new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, transform: true }),
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+    }),
   );
   await app.init();
   jwt = app.get(JwtService);
@@ -282,28 +443,62 @@ describe('replacement lifecycle (broken-device case)', () => {
     const reqId = req.body.id as string;
 
     // employee AND admin cannot approve; wrong password rejected; duplicate rejected
-    expect((await request(server).post(`/device-change/${reqId}/approve`).set('Authorization', `Bearer ${emp}`).send({})).status).toBe(403);
-    expect((await request(server).post(`/device-change/${reqId}/approve`).set('Authorization', `Bearer ${adm}`).send({})).status).toBe(403);
     expect(
       (
-        await request(server).post('/device-change').set('Authorization', `Bearer ${emp}`).send({ newDeviceId: d2.id, reason: 'LOST', password: 'Wrong123!' })
+        await request(server)
+          .post(`/device-change/${reqId}/approve`)
+          .set('Authorization', `Bearer ${emp}`)
+          .send({})
+      ).status,
+    ).toBe(403);
+    expect(
+      (
+        await request(server)
+          .post(`/device-change/${reqId}/approve`)
+          .set('Authorization', `Bearer ${adm}`)
+          .send({})
+      ).status,
+    ).toBe(403);
+    expect(
+      (
+        await request(server)
+          .post('/device-change')
+          .set('Authorization', `Bearer ${emp}`)
+          .send({ newDeviceId: d2.id, reason: 'LOST', password: 'Wrong123!' })
       ).status,
     ).toBe(401);
 
-    const mine = await request(server).get('/device-change/me').set('Authorization', `Bearer ${emp}`);
+    const mine = await request(server)
+      .get('/device-change/me')
+      .set('Authorization', `Bearer ${emp}`);
     expect(mine.body).toHaveLength(1);
 
-    const queue = await request(server).get('/device-change?status=PENDING').set('Authorization', `Bearer ${sa}`);
+    const queue = await request(server)
+      .get('/device-change?status=PENDING')
+      .set('Authorization', `Bearer ${sa}`);
     expect(queue.status).toBe(200);
     expect(queue.body).toHaveLength(1);
-    expect((await request(server).get('/device-change?status=PENDING').set('Authorization', `Bearer ${adm}`)).status).toBe(403);
+    expect(
+      (
+        await request(server)
+          .get('/device-change?status=PENDING')
+          .set('Authorization', `Bearer ${adm}`)
+      ).status,
+    ).toBe(403);
 
-    const ok = await request(server).post(`/device-change/${reqId}/approve`).set('Authorization', `Bearer ${sa}`).send({ reviewNote: 'HP rusak, nota terlampir' });
+    const ok = await request(server)
+      .post(`/device-change/${reqId}/approve`)
+      .set('Authorization', `Bearer ${sa}`)
+      .send({ reviewNote: 'HP rusak, nota terlampir' });
     expect(ok.status).toBe(200);
     expect(ok.body.status).toBe('APPROVED');
 
-    const mine2 = await request(server).get('/devices/me').set('Authorization', `Bearer ${emp}`);
-    const byId = Object.fromEntries(mine2.body.map((d: any) => [d.id, d.status]));
+    const mine2 = await request(server)
+      .get('/devices/me')
+      .set('Authorization', `Bearer ${emp}`);
+    const byId = Object.fromEntries(
+      mine2.body.map((d: any) => [d.id, d.status]),
+    );
     expect(byId[d1.id]).toBe('REVOKED');
     expect(byId[d2.id]).toBe('ACTIVE');
 
@@ -324,19 +519,38 @@ describe('replacement lifecycle (broken-device case)', () => {
       .post('/device-change')
       .set('Authorization', `Bearer ${emp}`)
       .send({ newDeviceId: d3.id, reason: 'LOST', password: 'Password123!' });
-    expect((await request(server).post(`/device-change/${r2.body.id}/reject`).set('Authorization', `Bearer ${adm}`).send({ reviewNote: 'x' })).status).toBe(403);
-    const rej = await request(server).post(`/device-change/${r2.body.id}/reject`).set('Authorization', `Bearer ${sa}`).send({ reviewNote: 'bukti kurang' });
+    expect(
+      (
+        await request(server)
+          .post(`/device-change/${r2.body.id}/reject`)
+          .set('Authorization', `Bearer ${adm}`)
+          .send({ reviewNote: 'x' })
+      ).status,
+    ).toBe(403);
+    const rej = await request(server)
+      .post(`/device-change/${r2.body.id}/reject`)
+      .set('Authorization', `Bearer ${sa}`)
+      .send({ reviewNote: 'bukti kurang' });
     expect(rej.status).toBe(200);
     expect(rej.body.status).toBe('REJECTED');
 
-    const again = await request(server).post(`/device-change/${r2.body.id}/approve`).set('Authorization', `Bearer ${sa}`).send({});
+    const again = await request(server)
+      .post(`/device-change/${r2.body.id}/approve`)
+      .set('Authorization', `Bearer ${sa}`)
+      .send({});
     expect(again.status).toBe(409);
 
     const r3 = await request(server)
       .post('/device-change')
       .set('Authorization', `Bearer ${emp}`)
-      .send({ newDeviceId: d3.id, reason: 'UPGRADE', password: 'Password123!' });
-    const cancel = await request(server).post(`/device-change/${r3.body.id}/cancel`).set('Authorization', `Bearer ${emp}`);
+      .send({
+        newDeviceId: d3.id,
+        reason: 'UPGRADE',
+        password: 'Password123!',
+      });
+    const cancel = await request(server)
+      .post(`/device-change/${r3.body.id}/cancel`)
+      .set('Authorization', `Bearer ${emp}`);
     expect(cancel.status).toBe(200);
     expect(cancel.body.status).toBe('CANCELLED');
 

@@ -7,8 +7,6 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'fakes.dart';
 
-
-
 class RefreshFakeAdapter implements HttpClientAdapter {
   RefreshFakeAdapter({
     this.failRefresh = false,
@@ -41,7 +39,8 @@ class RefreshFakeAdapter implements HttpClientAdapter {
         );
       }
       return ResponseBody.fromString(
-        jsonEncode({'accessToken': 'new-access', 'refreshToken': 'new-refresh'}),
+        jsonEncode(
+            {'accessToken': 'new-access', 'refreshToken': 'new-refresh'}),
         200,
         headers: _json,
       );
@@ -85,7 +84,8 @@ void main() {
         expect((r.data as Map)['ok'], isTrue);
       }
       expect(fake.refreshCount, 1,
-          reason: 'rotation invalidates the old refresh; N calls must share one');
+          reason:
+              'rotation invalidates the old refresh; N calls must share one');
       expect(fake.successfulAuthHeaders, hasLength(5));
       for (final String? h in fake.successfulAuthHeaders) {
         expect(h, 'Bearer new-access');

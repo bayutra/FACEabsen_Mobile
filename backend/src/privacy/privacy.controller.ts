@@ -1,6 +1,22 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Post, Query, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Post,
+  Query,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import type { Request } from 'express';
-import { RequirePermissions, Roles, CurrentUser, type AuthContext } from '../auth/decorators.js';
+import {
+  RequirePermissions,
+  Roles,
+  CurrentUser,
+  type AuthContext,
+} from '../auth/decorators.js';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
 import { PermissionsGuard } from '../auth/guards/permissions.guard.js';
 import { RolesGuard } from '../auth/guards/roles.guard.js';
@@ -19,8 +35,18 @@ export class PrivacyController {
 
   @HttpCode(HttpStatus.OK)
   @Post('consent')
-  consent(@Body() dto: ConsentDto, @CurrentUser() user: AuthContext, @Req() req: Request) {
-    return this.privacy.grantOrRevoke(user.userId, dto.purpose, dto.granted, { ip: req.ip }, dto.version);
+  consent(
+    @Body() dto: ConsentDto,
+    @CurrentUser() user: AuthContext,
+    @Req() req: Request,
+  ) {
+    return this.privacy.grantOrRevoke(
+      user.userId,
+      dto.purpose,
+      dto.granted,
+      { ip: req.ip },
+      dto.version,
+    );
   }
 
   @Get('consents/me')

@@ -3,19 +3,17 @@ import * as argon2 from 'argon2';
 import type { PrismaService } from '../prisma/prisma.service.js';
 import { UsersService } from './users.service.js';
 
-
-
-
 vi.mock('argon2', () => ({
   hash: vi.fn(async (password: string) => `hashed::${password}`),
-  verify: vi.fn(async (hash: string, password: string) => hash === `hashed::${password}`),
+  verify: vi.fn(
+    async (hash: string, password: string) => hash === `hashed::${password}`,
+  ),
 }));
 
 const HASH = 'hashed::Password123!';
 
 const auditStub = { log: vi.fn(async () => undefined) } as never;
 
- 
 function makePrisma(
   rolesByUserId: Record<string, string[]> = {},
   over: Record<string, Record<string, unknown>> = {},
@@ -35,7 +33,9 @@ function makePrisma(
     },
     userRole: {
       findMany: vi.fn(async (a: { where: { userId: string } }) =>
-        (rolesByUserId[a.where.userId] ?? []).map((name) => ({ role: { name } })),
+        (rolesByUserId[a.where.userId] ?? []).map((name) => ({
+          role: { name },
+        })),
       ),
       create: vi.fn(async () => ({})),
       deleteMany: vi.fn(async () => ({ count: 0 })),
@@ -49,13 +49,14 @@ function makePrisma(
       ...over.role,
     },
     session: { updateMany: vi.fn(async () => ({ count: 0 })), ...over.session },
-    
-    
+
     employee: { findUnique: vi.fn(async () => null), ...over.employee },
   };
   return {
     ...base,
-    $transaction: vi.fn(async (fn: (tx: unknown) => Promise<unknown>) => fn(base)),
+    $transaction: vi.fn(async (fn: (tx: unknown) => Promise<unknown>) =>
+      fn(base),
+    ),
   } as unknown as PrismaService;
 }
 
@@ -87,7 +88,11 @@ describe('UsersService.createUser', () => {
 
     await expect(
       svc(prisma).createUser(
-        { email: 'y@rs.test', password: 'Password123!', roles: ['SUPER_ADMIN'] },
+        {
+          email: 'y@rs.test',
+          password: 'Password123!',
+          roles: ['SUPER_ADMIN'],
+        },
         'actor-admin',
       ),
     ).rejects.toThrow('Not allowed to grant role SUPER_ADMIN');
@@ -96,18 +101,30 @@ describe('UsersService.createUser', () => {
   it('lets a SUPER_ADMIN mint any role', async () => {
     const prisma = makePrisma({ 'actor-sa': ['SUPER_ADMIN'] });
     const out = await svc(prisma).createUser(
-      { email: 'boss@rs.test', password: 'Password123!', roles: ['SUPER_ADMIN'] },
+      {
+        email: 'boss@rs.test',
+        password: 'Password123!',
+        roles: ['SUPER_ADMIN'],
+      },
       'actor-sa',
     );
     expect(out.roles).toEqual(['EMPLOYEE', 'SUPER_ADMIN']);
   });
 
   it('rejects a duplicate email and a weak password', async () => {
-    const dup = makePrisma({ a: ['ADMIN'] }, {
-      user: { findUnique: vi.fn(async () => ({ id: 'u1', email: 'it@rs.test' })) },
-    });
+    const dup = makePrisma(
+      { a: ['ADMIN'] },
+      {
+        user: {
+          findUnique: vi.fn(async () => ({ id: 'u1', email: 'it@rs.test' })),
+        },
+      },
+    );
     await expect(
-      svc(dup).createUser({ email: 'it@rs.test', password: 'Password123!' }, 'a'),
+      svc(dup).createUser(
+        { email: 'it@rs.test', password: 'Password123!' },
+        'a',
+      ),
     ).rejects.toThrow('Email already in use');
 
     const weak = makePrisma({ a: ['ADMIN'] });
@@ -117,16 +134,25 @@ describe('UsersService.createUser', () => {
   });
 
   it('maps a P2002 race to a conflict', async () => {
-    const prisma = makePrisma({ a: ['ADMIN'] }, {
-      user: {
-        findUnique: vi.fn(async () => null),
-        create: vi.fn(async () => {
-          throw Object.assign(new Error('unique'), { code: 'P2002', meta: { target: ['email'] } });
-        }),
+    const prisma = makePrisma(
+      { a: ['ADMIN'] },
+      {
+        user: {
+          findUnique: vi.fn(async () => null),
+          create: vi.fn(async () => {
+            throw Object.assign(new Error('unique'), {
+              code: 'P2002',
+              meta: { target: ['email'] },
+            });
+          }),
+        },
       },
-    });
+    );
     await expect(
-      svc(prisma).createUser({ email: 'dup@rs.test', password: 'Password123!' }, 'a'),
+      svc(prisma).createUser(
+        { email: 'dup@rs.test', password: 'Password123!' },
+        'a',
+      ),
     ).rejects.toThrow('Email already in use');
   });
 });
@@ -135,17 +161,37 @@ describe('UsersService.updateUser rank guard', () => {
   it('lets an ADMIN edit an EMPLOYEE account', async () => {
     const prisma = makePrisma(
       { 'actor-admin': ['ADMIN'], 'u-emp': ['EMPLOYEE'] },
-      { user: { findUnique: vi.fn(async () => ({ id: 'u-emp', email: 'e@rs.test', isActive: true })) } },
+      {
+        user: {
+          findUnique: vi.fn(async () => ({
+            id: 'u-emp',
+            email: 'e@rs.test',
+            isActive: true,
+          })),
+        },
+      },
     );
 
-    const out = await svc(prisma).updateUser('u-emp', { roles: ['SUPERVISOR'] }, 'actor-admin');
+    const out = await svc(prisma).updateUser(
+      'u-emp',
+      { roles: ['SUPERVISOR'] },
+      'actor-admin',
+    );
     expect(out.roles).toEqual(['SUPERVISOR']);
   });
 
   it('blocks an ADMIN from touching a peer ADMIN or the SUPER_ADMIN', async () => {
     const peer = makePrisma(
       { 'actor-admin': ['ADMIN'], 'u-admin': ['ADMIN'] },
-      { user: { findUnique: vi.fn(async () => ({ id: 'u-admin', email: 'a2@rs.test', isActive: true })) } },
+      {
+        user: {
+          findUnique: vi.fn(async () => ({
+            id: 'u-admin',
+            email: 'a2@rs.test',
+            isActive: true,
+          })),
+        },
+      },
     );
     await expect(
       svc(peer).updateUser('u-admin', { isActive: false }, 'actor-admin'),
@@ -153,7 +199,15 @@ describe('UsersService.updateUser rank guard', () => {
 
     const boss = makePrisma(
       { 'actor-admin': ['ADMIN'], 'u-sa': ['SUPER_ADMIN'] },
-      { user: { findUnique: vi.fn(async () => ({ id: 'u-sa', email: 'sa@rs.test', isActive: true })) } },
+      {
+        user: {
+          findUnique: vi.fn(async () => ({
+            id: 'u-sa',
+            email: 'sa@rs.test',
+            isActive: true,
+          })),
+        },
+      },
     );
     await expect(
       svc(boss).updateUser('u-sa', { isActive: false }, 'actor-admin'),
@@ -163,15 +217,33 @@ describe('UsersService.updateUser rank guard', () => {
   it('lets a SUPER_ADMIN administer peers', async () => {
     const prisma = makePrisma(
       { 'actor-sa': ['SUPER_ADMIN'], 'u-admin': ['ADMIN'] },
-      { user: { findUnique: vi.fn(async () => ({ id: 'u-admin', email: 'a@rs.test', isActive: true })) } },
+      {
+        user: {
+          findUnique: vi.fn(async () => ({
+            id: 'u-admin',
+            email: 'a@rs.test',
+            isActive: true,
+          })),
+        },
+      },
     );
-    await expect(svc(prisma).updateUser('u-admin', { isActive: false }, 'actor-sa')).resolves.toBeTruthy();
+    await expect(
+      svc(prisma).updateUser('u-admin', { isActive: false }, 'actor-sa'),
+    ).resolves.toBeTruthy();
   });
 
   it('refuses self-deactivation and self role edits', async () => {
     const selfDeactivate = makePrisma(
       { me: ['ADMIN'] },
-      { user: { findUnique: vi.fn(async () => ({ id: 'me', email: 'me@rs.test', isActive: true })) } },
+      {
+        user: {
+          findUnique: vi.fn(async () => ({
+            id: 'me',
+            email: 'me@rs.test',
+            isActive: true,
+          })),
+        },
+      },
     );
     await expect(
       svc(selfDeactivate).updateUser('me', { isActive: false }, 'me'),
@@ -179,7 +251,15 @@ describe('UsersService.updateUser rank guard', () => {
 
     const selfRoles = makePrisma(
       { me: ['ADMIN'] },
-      { user: { findUnique: vi.fn(async () => ({ id: 'me', email: 'me@rs.test', isActive: true })) } },
+      {
+        user: {
+          findUnique: vi.fn(async () => ({
+            id: 'me',
+            email: 'me@rs.test',
+            isActive: true,
+          })),
+        },
+      },
     );
     await expect(
       svc(selfRoles).updateUser('me', { roles: ['SUPERVISOR'] }, 'me'),
@@ -188,9 +268,9 @@ describe('UsersService.updateUser rank guard', () => {
 
   it('404s on an unknown id', async () => {
     const prisma = makePrisma({ a: ['ADMIN'] });
-    await expect(svc(prisma).updateUser('nope', { isActive: true }, 'a')).rejects.toThrow(
-      'User not found',
-    );
+    await expect(
+      svc(prisma).updateUser('nope', { isActive: true }, 'a'),
+    ).rejects.toThrow('User not found');
   });
 
   it('revokes live sessions and clears the lockout when re-enabling', async () => {
@@ -200,7 +280,11 @@ describe('UsersService.updateUser rank guard', () => {
       { 'actor-sa': ['SUPER_ADMIN'], 'u-emp': ['EMPLOYEE'] },
       {
         user: {
-          findUnique: vi.fn(async () => ({ id: 'u-emp', email: 'e@rs.test', isActive: false })),
+          findUnique: vi.fn(async () => ({
+            id: 'u-emp',
+            email: 'e@rs.test',
+            isActive: false,
+          })),
           update,
         },
         session: { updateMany: sessionUpdate },
@@ -214,7 +298,7 @@ describe('UsersService.updateUser rank guard', () => {
         data: { isActive: true, failedLoginAttempts: 0, lockedUntil: null },
       }),
     );
-    
+
     expect(sessionUpdate).not.toHaveBeenCalled();
   });
 
@@ -224,7 +308,11 @@ describe('UsersService.updateUser rank guard', () => {
       { 'actor-sa': ['SUPER_ADMIN'], 'u-emp': ['EMPLOYEE'] },
       {
         user: {
-          findUnique: vi.fn(async () => ({ id: 'u-emp', email: 'e@rs.test', isActive: true })),
+          findUnique: vi.fn(async () => ({
+            id: 'u-emp',
+            email: 'e@rs.test',
+            isActive: true,
+          })),
           update: vi.fn(async () => ({})),
         },
         session: { updateMany: sessionUpdate },
@@ -246,7 +334,11 @@ describe('UsersService.resetPassword', () => {
       { 'actor-sa': ['SUPER_ADMIN'], 'u-emp': ['EMPLOYEE'] },
       {
         user: {
-          findUnique: vi.fn(async () => ({ id: 'u-emp', email: 'e@rs.test', isActive: true })),
+          findUnique: vi.fn(async () => ({
+            id: 'u-emp',
+            email: 'e@rs.test',
+            isActive: true,
+          })),
           update,
         },
         session: { updateMany: sessionUpdate },
@@ -254,14 +346,24 @@ describe('UsersService.resetPassword', () => {
     );
 
     await expect(
-      svc(prisma).resetPassword('u-emp', { password: 'Password123!' }, 'actor-sa'),
+      svc(prisma).resetPassword(
+        'u-emp',
+        { password: 'Password123!' },
+        'actor-sa',
+      ),
     ).resolves.toEqual({ reset: true });
 
-    const data = (update.mock.calls[0]?.[0] as { data: { passwordHash: string; lockedUntil: null } }).data;
-    
+    const data = (
+      update.mock.calls[0]?.[0] as {
+        data: { passwordHash: string; lockedUntil: null };
+      }
+    ).data;
+
     expect(data.passwordHash).toBe(HASH);
     expect(data.passwordHash).not.toBe('Password123!');
-    await expect(argon2.verify(data.passwordHash, 'Password123!')).resolves.toBe(true);
+    await expect(
+      argon2.verify(data.passwordHash, 'Password123!'),
+    ).resolves.toBe(true);
     expect(data.lockedUntil).toBeNull();
     expect(sessionUpdate).toHaveBeenCalled();
     expect(auditStub.log).toHaveBeenCalledWith(
@@ -273,7 +375,15 @@ describe('UsersService.resetPassword', () => {
   it('rejects a weak password and enforces the rank guard', async () => {
     const weak = makePrisma(
       { 'actor-sa': ['SUPER_ADMIN'], 'u-emp': ['EMPLOYEE'] },
-      { user: { findUnique: vi.fn(async () => ({ id: 'u-emp', email: 'e@rs.test', isActive: true })) } },
+      {
+        user: {
+          findUnique: vi.fn(async () => ({
+            id: 'u-emp',
+            email: 'e@rs.test',
+            isActive: true,
+          })),
+        },
+      },
     );
     await expect(
       svc(weak).resetPassword('u-emp', { password: 'abc' }, 'actor-sa'),
@@ -281,46 +391,78 @@ describe('UsersService.resetPassword', () => {
 
     const blocked = makePrisma(
       { 'actor-admin': ['ADMIN'], 'u-sa': ['SUPER_ADMIN'] },
-      { user: { findUnique: vi.fn(async () => ({ id: 'u-sa', email: 'sa@rs.test', isActive: true })) } },
+      {
+        user: {
+          findUnique: vi.fn(async () => ({
+            id: 'u-sa',
+            email: 'sa@rs.test',
+            isActive: true,
+          })),
+        },
+      },
     );
     await expect(
-      svc(blocked).resetPassword('u-sa', { password: 'Password123!' }, 'actor-admin'),
+      svc(blocked).resetPassword(
+        'u-sa',
+        { password: 'Password123!' },
+        'actor-admin',
+      ),
     ).rejects.toThrow('at or above your own rank');
   });
 });
 
 describe('UsersService.listUsers', () => {
   it('flattens roles and paginates', async () => {
-    const prisma = makePrisma({}, {
-      user: {
-        count: vi.fn(async () => 1),
-        findMany: vi.fn(async () => [
-          {
-            id: 'u1',
-            email: 'e@rs.test',
-            isActive: true,
-            failedLoginAttempts: 0,
-            lockedUntil: null,
-            createdAt: new Date(),
-            userRoles: [{ role: { name: 'EMPLOYEE' } }, { role: { name: 'SUPERVISOR' } }],
-            employee: null,
-          },
-        ]),
+    const prisma = makePrisma(
+      {},
+      {
+        user: {
+          count: vi.fn(async () => 1),
+          findMany: vi.fn(async () => [
+            {
+              id: 'u1',
+              email: 'e@rs.test',
+              isActive: true,
+              failedLoginAttempts: 0,
+              lockedUntil: null,
+              createdAt: new Date(),
+              userRoles: [
+                { role: { name: 'EMPLOYEE' } },
+                { role: { name: 'SUPERVISOR' } },
+              ],
+              employee: null,
+            },
+          ]),
+        },
       },
-    });
+    );
 
     const out = await svc(prisma).listUsers({}, 'u', ['SUPER_ADMIN']);
     expect(out.data[0].roles).toEqual(['EMPLOYEE', 'SUPERVISOR']);
     expect(out.data[0].userRoles).toBeUndefined();
-    expect(out.pagination).toMatchObject({ page: 1, pageSize: 25, totalItems: 1, totalPages: 1 });
+    expect(out.pagination).toMatchObject({
+      page: 1,
+      pageSize: 25,
+      totalItems: 1,
+      totalPages: 1,
+    });
   });
 
   it('builds a role filter and an inactive filter', async () => {
     const findMany = vi.fn(async () => []);
-    const prisma = makePrisma({}, { user: { count: vi.fn(async () => 0), findMany } });
+    const prisma = makePrisma(
+      {},
+      { user: { count: vi.fn(async () => 0), findMany } },
+    );
 
-    await svc(prisma).listUsers({ role: 'SUPERVISOR', isActive: false, search: 'bayu' }, 'u', ['SUPER_ADMIN']);
-    const args = findMany.mock.calls[0]?.[0] as { where: { AND: Record<string, unknown>[] } };
+    await svc(prisma).listUsers(
+      { role: 'SUPERVISOR', isActive: false, search: 'bayu' },
+      'u',
+      ['SUPER_ADMIN'],
+    );
+    const args = findMany.mock.calls[0]?.[0] as {
+      where: { AND: Record<string, unknown>[] };
+    };
     expect(args.where.AND).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ isActive: false }),
@@ -331,18 +473,24 @@ describe('UsersService.listUsers', () => {
   });
 });
 
-
-
 describe('UsersService facility scoping (ADMIN)', () => {
   it('foreign employee-linked account reads as 404 on update', async () => {
     const prisma = makePrisma(
       { 'u-adm': ['ADMIN'], 'u-far': ['EMPLOYEE'] },
       {
-        user: { findUnique: vi.fn(async () => ({ id: 'u-far', email: 'f@rs.test', isActive: true })) },
+        user: {
+          findUnique: vi.fn(async () => ({
+            id: 'u-far',
+            email: 'f@rs.test',
+            isActive: true,
+          })),
+        },
         employee: {
           findUnique: vi.fn(async (a: { where: { userId: string } }) => {
-            if (a.where.userId === 'u-adm') return { department: { hospitalId: 'h1' } };
-            if (a.where.userId === 'u-far') return { department: { hospitalId: 'h2' } };
+            if (a.where.userId === 'u-adm')
+              return { department: { hospitalId: 'h1' } };
+            if (a.where.userId === 'u-far')
+              return { department: { hospitalId: 'h2' } };
             return null;
           }),
         },
@@ -361,16 +509,22 @@ describe('UsersService facility scoping (ADMIN)', () => {
         user: {
           count: vi.fn(async () => 0),
           findMany,
-          findUnique: vi.fn(async () => ({ id: 'u-desk', email: 'd@rs.test', isActive: true })),
+          findUnique: vi.fn(async () => ({
+            id: 'u-desk',
+            email: 'd@rs.test',
+            isActive: true,
+          })),
         },
         employee: {
           findUnique: vi.fn(async (a: { where: { userId: string } }) =>
-            a.where.userId === 'u-adm' ? { department: { hospitalId: 'h1' } } : null,
+            a.where.userId === 'u-adm'
+              ? { department: { hospitalId: 'h1' } }
+              : null,
           ),
         },
       },
     );
-    
+
     await expect(
       svc(prisma).updateUser('u-desk', { isActive: false }, 'u-adm'),
     ).resolves.toBeDefined();

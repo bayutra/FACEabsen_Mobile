@@ -12,9 +12,16 @@ function makePrisma(consentRow: unknown = null) {
       findUnique: vi.fn(async () => consentRow),
       findMany: vi.fn(async () => []),
       create: vi.fn(async (a: { data: object }) => ({ id: 'c1', ...a.data })),
-      update: vi.fn(async (a: { where: { id: string }; data: object }) => ({ id: a.where.id, ...a.data })),
+      update: vi.fn(async (a: { where: { id: string }; data: object }) => ({
+        id: a.where.id,
+        ...a.data,
+      })),
     },
-    device: { findMany: vi.fn(async () => [{ id: 'd1', devicePublicKey: 'secret-key-material' }]) },
+    device: {
+      findMany: vi.fn(async () => [
+        { id: 'd1', devicePublicKey: 'secret-key-material' },
+      ]),
+    },
     attendance: { findMany: vi.fn(async () => []) },
     faceTemplate: {
       findUnique: vi.fn(async () => null),
@@ -32,18 +39,31 @@ describe('PrivacyService consent', () => {
     const prisma = makePrisma();
     const svc = new PrivacyService(prisma, auditStub, configStub);
 
-    const g = (await svc.grantOrRevoke('u1', 'BIOMETRIC_ATTENDANCE', true)) as { granted: boolean };
+    const g = (await svc.grantOrRevoke('u1', 'BIOMETRIC_ATTENDANCE', true)) as {
+      granted: boolean;
+    };
     expect(g.granted).toBe(true);
-    expect(auditStub.log).toHaveBeenCalledWith(expect.objectContaining({ action: 'CONSENT_GRANTED' }));
+    expect(auditStub.log).toHaveBeenCalledWith(
+      expect.objectContaining({ action: 'CONSENT_GRANTED' }),
+    );
 
-    expect(await svc.hasActiveConsent('e1', 'BIOMETRIC_ATTENDANCE')).toBe(false); 
+    expect(await svc.hasActiveConsent('e1', 'BIOMETRIC_ATTENDANCE')).toBe(
+      false,
+    );
 
     const prisma2 = makePrisma({ id: 'c1', revokedAt: null });
     const svc2 = new PrivacyService(prisma2, auditStub, configStub);
-    expect(await svc2.hasActiveConsent('e1', 'BIOMETRIC_ATTENDANCE')).toBe(true);
+    expect(await svc2.hasActiveConsent('e1', 'BIOMETRIC_ATTENDANCE')).toBe(
+      true,
+    );
 
     const prisma3 = makePrisma({ id: 'c1', revokedAt: new Date() });
-    expect(await new PrivacyService(prisma3, auditStub, configStub).hasActiveConsent('e1', 'BIOMETRIC_ATTENDANCE')).toBe(false);
+    expect(
+      await new PrivacyService(prisma3, auditStub, configStub).hasActiveConsent(
+        'e1',
+        'BIOMETRIC_ATTENDANCE',
+      ),
+    ).toBe(false);
   });
 
   it('notice is versioned', () => {
@@ -64,7 +84,9 @@ describe('PrivacyService export/erase/retention', () => {
     expect(out.devices[0].devicePublicKey).toBe('[redacted]');
     expect(out.faceRegistered).toBe(false);
     expect(out).not.toHaveProperty('templateCipher');
-    expect(auditStub.log).toHaveBeenCalledWith(expect.objectContaining({ action: 'DATA_EXPORTED' }));
+    expect(auditStub.log).toHaveBeenCalledWith(
+      expect.objectContaining({ action: 'DATA_EXPORTED' }),
+    );
   });
 
   it('eraseFace deletes + audits', async () => {
@@ -74,7 +96,9 @@ describe('PrivacyService export/erase/retention', () => {
     const svc = new PrivacyService(prisma, auditStub, configStub);
     await expect(svc.eraseFace('u1')).resolves.toEqual({ deleted: true });
     expect(del).toHaveBeenCalled();
-    expect(auditStub.log).toHaveBeenCalledWith(expect.objectContaining({ action: 'FACE_DELETED' }));
+    expect(auditStub.log).toHaveBeenCalledWith(
+      expect.objectContaining({ action: 'FACE_DELETED' }),
+    );
   });
 
   it('retention purges expired sessions/keys/stale inactive faces + audits', async () => {
@@ -86,6 +110,8 @@ describe('PrivacyService export/erase/retention', () => {
     const out = await svc.runRetention('admin');
     expect(out).toEqual({ sessions: 2, idempotencyKeys: 5, faceTemplates: 1 });
     expect(faceDel).toHaveBeenCalledWith({ where: { id: 'f-old' } });
-    expect(auditStub.log).toHaveBeenCalledWith(expect.objectContaining({ action: 'RETENTION_RUN' }));
+    expect(auditStub.log).toHaveBeenCalledWith(
+      expect.objectContaining({ action: 'RETENTION_RUN' }),
+    );
   });
 });

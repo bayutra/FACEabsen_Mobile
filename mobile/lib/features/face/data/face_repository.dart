@@ -18,18 +18,24 @@ class FaceCapture {
   final double qualityScore;
 }
 
-
-
-
-
 class FaceResult {
-  FaceResult._({required this.ok, required this.message, this.score, this.version, this.gate});
+  FaceResult._(
+      {required this.ok,
+      required this.message,
+      this.score,
+      this.version,
+      this.gate});
 
   factory FaceResult.success({required double score, required int version}) =>
-      FaceResult._(ok: true, message: 'Wajah berhasil didaftarkan.', score: score, version: version, gate: FaceGate.ok);
+      FaceResult._(
+          ok: true,
+          message: 'Wajah berhasil didaftarkan.',
+          score: score,
+          version: version,
+          gate: FaceGate.ok);
 
-  factory FaceResult.rejected(FaceGate gate, {double? score}) =>
-      FaceResult._(ok: false, message: faceGateMessage(gate), score: score, gate: gate);
+  factory FaceResult.rejected(FaceGate gate, {double? score}) => FaceResult._(
+      ok: false, message: faceGateMessage(gate), score: score, gate: gate);
 
   factory FaceResult.failed(String message, {FaceGate? gate}) =>
       FaceResult._(ok: false, message: message, gate: gate);
@@ -41,14 +47,11 @@ class FaceResult {
   final FaceGate? gate;
 }
 
-
-
-
-
-
-
 class FaceRepository {
-  FaceRepository({required Dio dio, required FaceDetectorService detector, required FaceEmbedder embedder})
+  FaceRepository(
+      {required Dio dio,
+      required FaceDetectorService detector,
+      required FaceEmbedder embedder})
       : _dio = dio,
         _detector = detector,
         _embedder = embedder;
@@ -57,10 +60,6 @@ class FaceRepository {
   final FaceDetectorService _detector;
   final FaceEmbedder _embedder;
 
-  
-  
-  
-  
   String? _lastRejectionPath;
   String? _lastRejectionMessage;
   FaceGate? _lastRejectionGate;
@@ -76,12 +75,11 @@ class FaceRepository {
     }
   }
 
-  Future<FaceResult> registerFromFile(String path, {String? noticeVersion}) async {
+  Future<FaceResult> registerFromFile(String path,
+      {String? noticeVersion}) async {
     await ensureConsent(noticeVersion: noticeVersion);
     final FaceCapture? capture = await captureEmbedding(path);
     if (capture == null) {
-      
-      
       final String m = await rejectionMessage(path);
       final FaceGate? g = await rejectionGate(path);
       return FaceResult.failed(m, gate: g);
@@ -89,22 +87,25 @@ class FaceRepository {
     try {
       final Response res = await _dio.post(
         '/face/register',
-        data: {'template': capture.embedding, 'qualityScore': capture.qualityScore, 'algorithm': 'MobileFaceNet_v1'},
+        data: {
+          'template': capture.embedding,
+          'qualityScore': capture.qualityScore,
+          'algorithm': 'MobileFaceNet_v1'
+        },
       );
       final Map body = res.data as Map;
-      return FaceResult.success(score: capture.qualityScore, version: (body['version'] as num).toInt());
+      return FaceResult.success(
+          score: capture.qualityScore,
+          version: (body['version'] as num).toInt());
     } on DioException catch (e) {
       if (e.response?.statusCode == 400) {
-        return FaceResult.failed('Server menolak template (kualitas rendah). Coba lagi.');
+        return FaceResult.failed(
+            'Server menolak template (kualitas rendah). Coba lagi.');
       }
       rethrow;
     }
   }
 
-  
-  
-  
-  
   Future<FaceCapture?> captureEmbedding(String path) async {
     final _EvaluatedPicture eval = await _evaluatePicture(path);
     if (eval.gate != FaceGate.ok || eval.modelInput == null) {
@@ -121,9 +122,6 @@ class FaceRepository {
     return FaceCapture(embedding: embedding, qualityScore: eval.score);
   }
 
-  
-  
-  
   Future<String> rejectionMessage(String path) async {
     if (_lastRejectionPath == path && _lastRejectionMessage != null) {
       return _lastRejectionMessage!;
@@ -135,10 +133,6 @@ class FaceRepository {
     return eval.message;
   }
 
-  
-  
-  
-  
   Future<FaceGate?> rejectionGate(String path) async {
     if (_lastRejectionPath == path && _lastRejectionGate != null) {
       return _lastRejectionGate;
@@ -150,12 +144,9 @@ class FaceRepository {
     return eval.gate;
   }
 
-  
-  
   Future<_EvaluatedPicture> _evaluatePicture(String path) async {
     final Uint8List jpeg = await File(path).readAsBytes();
-    
-    
+
     final img.Decoder? decoder = img.findDecoderForData(jpeg);
     final img.DecodeInfo? info = decoder?.startDecode(jpeg);
     if (info == null || info.width <= 0) {
@@ -166,9 +157,7 @@ class FaceRepository {
       );
     }
     final faces = await _detector.detect(path);
-    
-    
-    
+
     if (faces.isNotEmpty) {
       final Face face = faces.first;
       final double? leftOpen = face.leftEyeOpenProbability;
@@ -219,21 +208,18 @@ class FaceRepository {
     );
   }
 
-  
-  
-  
   Future<void> ensureConsent({String? noticeVersion}) async {
     await _dio.post(
       '/privacy/consent',
       data: {
         'purpose': 'BIOMETRIC_ATTENDANCE',
         'granted': true,
-        if (noticeVersion != null && noticeVersion.isNotEmpty) 'version': noticeVersion,
+        if (noticeVersion != null && noticeVersion.isNotEmpty)
+          'version': noticeVersion,
       },
     );
   }
 
-  
   Future<PrivacyNotice> fetchNotice() async {
     try {
       final Response res = await _dio.get('/privacy/notice');
@@ -243,7 +229,6 @@ class FaceRepository {
     }
   }
 }
-
 
 class _EvaluatedPicture {
   _EvaluatedPicture({
@@ -257,8 +242,6 @@ class _EvaluatedPicture {
   final String message;
   final List<double>? modelInput;
 }
-
-
 
 class _PrepJob {
   _PrepJob({
@@ -279,17 +262,17 @@ class _PrepJob {
   final double boxWidth;
 }
 
-
-
 class _PrepWire {
-  _PrepWire({required this.gateIndex, required this.score, required this.message, this.modelInputBytes});
+  _PrepWire(
+      {required this.gateIndex,
+      required this.score,
+      required this.message,
+      this.modelInputBytes});
   final int gateIndex;
   final double score;
   final String message;
   final TransferableTypedData? modelInputBytes;
 }
-
-
 
 _PrepWire _decodeGatePreprocess(_PrepJob job) {
   final Uint8List bytes = job.jpeg.materialize().asUint8List();
@@ -301,15 +284,15 @@ _PrepWire _decodeGatePreprocess(_PrepJob job) {
       message: faceGateMessage(FaceGate.noFace),
     );
   }
-  
-  
+
   final double relativeWidth =
       job.boxWidth > 0 && raw.width > 0 ? job.boxWidth / raw.width : 0.0;
   img.Image decoded = raw;
   if (decoded.width > 480) {
     decoded = img.copyResize(decoded, width: 480);
   }
-  final FaceGate countGate = decideFaces(count: job.count, relativeWidth: relativeWidth);
+  final FaceGate countGate =
+      decideFaces(count: job.count, relativeWidth: relativeWidth);
   if (countGate != FaceGate.ok) {
     return _PrepWire(
       gateIndex: countGate.index,
@@ -330,7 +313,8 @@ _PrepWire _decodeGatePreprocess(_PrepJob job) {
     return _PrepWire(
       gateIndex: outcome.gate.index,
       score: outcome.score,
-      message: '${base.substring(0, base.length - 1)} (skor ${(outcome.score * 100).round()}%).',
+      message:
+          '${base.substring(0, base.length - 1)} (skor ${(outcome.score * 100).round()}%).',
     );
   }
   final Float64List vec = Float64List.fromList(outcome.modelInput!);
@@ -338,6 +322,7 @@ _PrepWire _decodeGatePreprocess(_PrepJob job) {
     gateIndex: FaceGate.ok.index,
     score: outcome.score,
     message: '',
-    modelInputBytes: TransferableTypedData.fromList(<Uint8List>[vec.buffer.asUint8List()]),
+    modelInputBytes:
+        TransferableTypedData.fromList(<Uint8List>[vec.buffer.asUint8List()]),
   );
 }

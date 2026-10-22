@@ -1,12 +1,33 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, Query, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Post,
+  Query,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import type { Request } from 'express';
-import { RequirePermissions, Roles, CurrentUser, type AuthContext } from '../auth/decorators.js';
+import {
+  RequirePermissions,
+  Roles,
+  CurrentUser,
+  type AuthContext,
+} from '../auth/decorators.js';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
 import { PermissionsGuard } from '../auth/guards/permissions.guard.js';
 import { RolesGuard } from '../auth/guards/roles.guard.js';
 import { DevicesService } from './devices.service.js';
-import { ActivateDeviceDto, ListDevicesQuery, RegisterDeviceDto, RevokeDeviceDto } from './dto.js';
+import {
+  ActivateDeviceDto,
+  ListDevicesQuery,
+  RegisterDeviceDto,
+  RevokeDeviceDto,
+} from './dto.js';
 
 const registerThrottle = {
   default: { limit: 10, ttl: 60_000 },
@@ -19,11 +40,14 @@ export class DevicesController {
 
   @Throttle(registerThrottle)
   @Post('register')
-  register(@Body() dto: RegisterDeviceDto, @CurrentUser() user: AuthContext, @Req() req: Request) {
+  register(
+    @Body() dto: RegisterDeviceDto,
+    @CurrentUser() user: AuthContext,
+    @Req() req: Request,
+  ) {
     return this.devices.register(dto, user.userId, { ip: req.ip });
   }
 
-   
   @Throttle(registerThrottle)
   @Get('register-challenge')
   registerChallenge(@CurrentUser() user: AuthContext) {
@@ -65,10 +89,11 @@ export class DevicesController {
     @CurrentUser() user: AuthContext,
     @Req() req: Request,
   ) {
-    return this.devices.revoke(id, user.userId, user.roles, dto.reason, { ip: req.ip });
+    return this.devices.revoke(id, user.userId, user.roles, dto.reason, {
+      ip: req.ip,
+    });
   }
 
-   
   @UseGuards(RolesGuard, PermissionsGuard)
   @Roles('SUPER_ADMIN', 'ADMIN')
   @RequirePermissions('device:approve-replacement')
@@ -80,12 +105,18 @@ export class DevicesController {
     @CurrentUser() user: AuthContext,
     @Req() req: Request,
   ) {
-    return this.devices.activate(id, user.userId, user.roles, dto.note, { ip: req.ip });
+    return this.devices.activate(id, user.userId, user.roles, dto.note, {
+      ip: req.ip,
+    });
   }
 
   @HttpCode(HttpStatus.OK)
   @Post(':id/mark-lost')
-  markLost(@Param('id') id: string, @CurrentUser() user: AuthContext, @Req() req: Request) {
+  markLost(
+    @Param('id') id: string,
+    @CurrentUser() user: AuthContext,
+    @Req() req: Request,
+  ) {
     return this.devices.markLost(id, user.userId, user.roles, { ip: req.ip });
   }
 }

@@ -20,7 +20,8 @@ void main() {
                 onPressed: () async {
                   final bool? result = await Navigator.of(context).push<bool>(
                     MaterialPageRoute(
-                      builder: (_) => RegisterScreen(auth: auth, devices: devices),
+                      builder: (_) =>
+                          RegisterScreen(auth: auth, devices: devices),
                     ),
                   );
                   onResult?.call(result);
@@ -47,7 +48,8 @@ void main() {
   }
 
   testWidgets('pendaftaran sukses menutup layar dan mengembalikan true',
-      (tester) async {    bool? result;
+      (tester) async {
+    bool? result;
     final auth = FakeAuthRepository();
     final devices = FakeDeviceRepository();
     await openRegister(
@@ -59,10 +61,8 @@ void main() {
 
     expect(find.text('Daftar Akun'), findsOneWidget);
 
-    
     await selectUnit(tester);
 
-    
     await tester.enterText(find.byType(TextField).at(0), 'Budi Baru');
     await tester.enterText(find.byType(TextField).at(1), 'budi@rs.test');
     await tester.enterText(find.byType(TextField).at(4), 'Password123!');

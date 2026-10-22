@@ -5,10 +5,6 @@ import '../../../core/widgets/stitch.dart';
 import '../data/device_repository.dart';
 import 'device_sections.dart';
 
-
-
-
-
 class DeviceScreen extends StatefulWidget {
   const DeviceScreen({
     super.key,
@@ -58,8 +54,7 @@ class _DeviceScreenState extends State<DeviceScreen> {
               icon: const Icon(Icons.help_outline,
                   size: 22, color: AppColors.inkSecondary),
               onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                    content: Text('Hubungi Helpdesk IT Ext. 204.')),
+                const SnackBar(content: Text('Hubungi Helpdesk IT Ext. 204.')),
               ),
             ),
             IconButton(

@@ -14,7 +14,9 @@ function makePrisma(overrides: Record<string, Record<string, unknown>> = {}) {
   return {
     user: {
       findUnique: vi.fn(async () => null),
-      update: vi.fn(async (a: { where: { id: string } }) => ({ id: a.where.id })),
+      update: vi.fn(async (a: { where: { id: string } }) => ({
+        id: a.where.id,
+      })),
       ...overrides.user,
     },
     userRole: { findMany: vi.fn(async () => []), ...overrides.userRole },
@@ -63,7 +65,10 @@ describe('AuthService.login', () => {
       },
     });
     const svc = new AuthService(prisma, jwt, configStub, auditStub);
-    const out = await svc.login({ email: 'employee@rs.test', password: PASSWORD }, { ip: '1.2.3.4' });
+    const out = await svc.login(
+      { email: 'employee@rs.test', password: PASSWORD },
+      { ip: '1.2.3.4' },
+    );
     expect(out.accessToken).toBeTruthy();
     expect(out.refreshToken).toBeTruthy();
     expect(out.user.roles).toEqual(['EMPLOYEE']);
@@ -82,7 +87,9 @@ describe('AuthService.login', () => {
       svc.login({ email: 'employee@rs.test', password: 'Wrong123!' }, {}),
     ).rejects.toThrow('Invalid credentials');
     expect(update).toHaveBeenCalledWith(
-      expect.objectContaining({ data: expect.objectContaining({ failedLoginAttempts: 1 }) }),
+      expect.objectContaining({
+        data: expect.objectContaining({ failedLoginAttempts: 1 }),
+      }),
     );
     expect(auditStub.log).toHaveBeenCalledWith(
       expect.objectContaining({ action: 'LOGIN_FAILED' }),
@@ -92,54 +99,63 @@ describe('AuthService.login', () => {
   it('5th failure locks the account; locked account gets 403', async () => {
     const update = vi.fn(async () => ({}));
     const prisma = makePrisma({
-      user: { findUnique: vi.fn(async () => userRow({ failedLoginAttempts: 4 })), update },
+      user: {
+        findUnique: vi.fn(async () => userRow({ failedLoginAttempts: 4 })),
+        update,
+      },
     });
     const svc = new AuthService(prisma, jwt, configStub, auditStub);
-    await expect(svc.login({ email: 'e', password: 'Wrong123!' }, {})).rejects.toThrow();
+    await expect(
+      svc.login({ email: 'e', password: 'Wrong123!' }, {}),
+    ).rejects.toThrow();
     const data = update.mock.calls[0][0].data;
     expect(data.failedLoginAttempts).toBe(5);
     expect(data.lockedUntil).toBeInstanceOf(Date);
 
     const prisma2 = makePrisma({
       user: {
-        findUnique: vi.fn(async () => userRow({ lockedUntil: new Date(Date.now() + 60_000) })),
+        findUnique: vi.fn(async () =>
+          userRow({ lockedUntil: new Date(Date.now() + 60_000) }),
+        ),
       },
     });
     const svc2 = new AuthService(prisma2, jwt, configStub, auditStub);
-    await expect(svc2.login({ email: 'e', password: PASSWORD }, {})).rejects.toThrow(
-      'temporarily locked',
-    );
+    await expect(
+      svc2.login({ email: 'e', password: PASSWORD }, {}),
+    ).rejects.toThrow('temporarily locked');
   });
 
   it('unknown email and inactive account both return generic 401', async () => {
     const svc = new AuthService(makePrisma(), jwt, configStub, auditStub);
-    await expect(svc.login({ email: 'no@rs.test', password: PASSWORD }, {})).rejects.toThrow(
-      'Invalid credentials',
-    );
+    await expect(
+      svc.login({ email: 'no@rs.test', password: PASSWORD }, {}),
+    ).rejects.toThrow('Invalid credentials');
     const prisma = makePrisma({
       user: { findUnique: vi.fn(async () => userRow({ isActive: false })) },
     });
     const svc2 = new AuthService(prisma, jwt, configStub, auditStub);
-    await expect(svc2.login({ email: 'e', password: PASSWORD }, {})).rejects.toThrow(
-      'Invalid credentials',
-    );
+    await expect(
+      svc2.login({ email: 'e', password: PASSWORD }, {}),
+    ).rejects.toThrow('Invalid credentials');
   });
 
   it('totp-enabled user gets a challenge token and no session yet', async () => {
     const sessionCreate = vi.fn(async () => ({ id: 's9' }));
     const prisma = makePrisma({
       user: {
-        findUnique: vi.fn(async () => userRow({ totpEnabled: true, totpSecret: 'JBSWY3DPEHPK3PXP' })),
+        findUnique: vi.fn(async () =>
+          userRow({ totpEnabled: true, totpSecret: 'JBSWY3DPEHPK3PXP' }),
+        ),
         update: vi.fn(async () => ({})),
       },
       session: { create: sessionCreate },
     });
     const svc = new AuthService(prisma, jwt, configStub, auditStub);
     auditStub.log.mockClear();
-    const out = (await svc.login({ email: 'employee@rs.test', password: PASSWORD }, {})) as Record<
-      string,
-      unknown
-    >;
+    const out = (await svc.login(
+      { email: 'employee@rs.test', password: PASSWORD },
+      {},
+    )) as Record<string, unknown>;
     expect(out.totpRequired).toBe(true);
     expect(out.totpToken).toBeTruthy();
     expect((out.totpToken as string).split('.')).toHaveLength(3);
@@ -173,25 +189,31 @@ describe('AuthService.refresh/logout', () => {
         findUnique: vi.fn(async (a: { where: { refreshTokenHash: string } }) =>
           a.where.refreshTokenHash === storedHash ? sessionRow() : null,
         ),
-        
-        
-        updateMany: vi.fn(async (a: { where: { refreshTokenHash: string }; data: { refreshTokenHash: string } }) => {
-          if (a.where.refreshTokenHash !== storedHash) return { count: 0 };
-          storedHash = a.data.refreshTokenHash;
-          return { count: 1 };
-        }),
+
+        updateMany: vi.fn(
+          async (a: {
+            where: { refreshTokenHash: string };
+            data: { refreshTokenHash: string };
+          }) => {
+            if (a.where.refreshTokenHash !== storedHash) return { count: 0 };
+            storedHash = a.data.refreshTokenHash;
+            return { count: 1 };
+          },
+        ),
       },
       user: { findUnique: vi.fn(), update: vi.fn() },
     });
     const svc = new AuthService(prisma, jwt, configStub, auditStub);
-    
+
     const { createHash, randomBytes } = await import('node:crypto');
     const first = randomBytes(48).toString('base64url');
     storedHash = createHash('sha256').update(first).digest('hex');
 
     const r1 = await svc.refresh(first, {});
     expect(r1.refreshToken).not.toBe(first);
-    await expect(svc.refresh(first, {})).rejects.toThrow('Invalid refresh token');
+    await expect(svc.refresh(first, {})).rejects.toThrow(
+      'Invalid refresh token',
+    );
     const r2 = await svc.refresh(r1.refreshToken, {});
     expect(r2.accessToken).toBeTruthy();
   });
@@ -203,11 +225,16 @@ describe('AuthService.refresh/logout', () => {
         findUnique: vi.fn(async (a: { where: { refreshTokenHash: string } }) =>
           a.where.refreshTokenHash === storedHash ? sessionRow() : null,
         ),
-        updateMany: vi.fn(async (a: { where: { refreshTokenHash: string }; data: { refreshTokenHash: string } }) => {
-          if (a.where.refreshTokenHash !== storedHash) return { count: 0 };
-          storedHash = a.data.refreshTokenHash;
-          return { count: 1 };
-        }),
+        updateMany: vi.fn(
+          async (a: {
+            where: { refreshTokenHash: string };
+            data: { refreshTokenHash: string };
+          }) => {
+            if (a.where.refreshTokenHash !== storedHash) return { count: 0 };
+            storedHash = a.data.refreshTokenHash;
+            return { count: 1 };
+          },
+        ),
       },
       user: { findUnique: vi.fn(), update: vi.fn() },
     });
@@ -216,13 +243,22 @@ describe('AuthService.refresh/logout', () => {
     const first = randomBytes(48).toString('base64url');
     storedHash = createHash('sha256').update(first).digest('hex');
 
-    const [a, b] = await Promise.allSettled([svc.refresh(first, {}), svc.refresh(first, {})]);
+    const [a, b] = await Promise.allSettled([
+      svc.refresh(first, {}),
+      svc.refresh(first, {}),
+    ]);
     expect([a.status, b.status].sort()).toEqual(['fulfilled', 'rejected']);
-    const winner = (a.status === 'fulfilled' ? a.value : (b as PromiseFulfilledResult<{ refreshToken: string }>).value) as {
+    const winner = (
+      a.status === 'fulfilled'
+        ? a.value
+        : (b as PromiseFulfilledResult<{ refreshToken: string }>).value
+    ) as {
       refreshToken: string;
     };
-    
-    await expect(svc.refresh(first, {})).rejects.toThrow('Invalid refresh token');
+
+    await expect(svc.refresh(first, {})).rejects.toThrow(
+      'Invalid refresh token',
+    );
     await expect(svc.refresh(winner.refreshToken, {})).resolves.toBeDefined();
   });
 
@@ -234,10 +270,14 @@ describe('AuthService.refresh/logout', () => {
       },
     });
     const svc = new AuthService(prisma, jwt, configStub, auditStub);
-    await expect(svc.refresh('anything-valid-length-0123456789abcdef', {})).rejects.toThrow();
+    await expect(
+      svc.refresh('anything-valid-length-0123456789abcdef', {}),
+    ).rejects.toThrow();
     const out = await svc.logout('u1', 's1', { ip: '1.1.1.1' });
     expect(out).toEqual({ loggedOut: true });
-    expect(auditStub.log).toHaveBeenCalledWith(expect.objectContaining({ action: 'LOGOUT' }));
+    expect(auditStub.log).toHaveBeenCalledWith(
+      expect.objectContaining({ action: 'LOGOUT' }),
+    );
   });
 });
 
@@ -248,10 +288,20 @@ describe('AuthService.changePassword/sessions', () => {
     });
     const svc = new AuthService(prisma, jwt, configStub, auditStub);
     await expect(
-      svc.changePassword('u1', 's1', { currentPassword: 'Nope1234!', newPassword: 'Strong123!' }, {}),
+      svc.changePassword(
+        'u1',
+        's1',
+        { currentPassword: 'Nope1234!', newPassword: 'Strong123!' },
+        {},
+      ),
     ).rejects.toThrow('Current password is incorrect');
     await expect(
-      svc.changePassword('u1', 's1', { currentPassword: PASSWORD, newPassword: 'weak' }, {}),
+      svc.changePassword(
+        'u1',
+        's1',
+        { currentPassword: PASSWORD, newPassword: 'weak' },
+        {},
+      ),
     ).rejects.toThrow('Weak password');
   });
 
@@ -272,16 +322,22 @@ describe('AuthService.changePassword/sessions', () => {
     expect(out).toEqual({ changed: true });
     expect(userUpdate.mock.calls[0][0].data.passwordHash).not.toBe(HASH);
     expect(sessUpdateMany).toHaveBeenCalledWith(
-      expect.objectContaining({ where: expect.objectContaining({ NOT: { id: 's1' } }) }),
+      expect.objectContaining({
+        where: expect.objectContaining({ NOT: { id: 's1' } }),
+      }),
     );
   });
 
-  it('cannot revoke another user\'s session', async () => {
+  it("cannot revoke another user's session", async () => {
     const prisma = makePrisma({
-      session: { findUnique: vi.fn(async () => ({ id: 'sx', userId: 'other' })) },
+      session: {
+        findUnique: vi.fn(async () => ({ id: 'sx', userId: 'other' })),
+      },
     });
     const svc = new AuthService(prisma, jwt, configStub, auditStub);
-    await expect(svc.revokeSession('u1', 'sx')).rejects.toThrow('Session not found');
+    await expect(svc.revokeSession('u1', 'sx')).rejects.toThrow(
+      'Session not found',
+    );
   });
 });
 
@@ -290,17 +346,29 @@ describe('AuthService.register (pendaftaran mandiri)', () => {
     const prisma = {
       user: {
         findUnique: vi.fn(async () => null),
-        create: vi.fn(async (a: { data: Record<string, unknown> }) => ({ id: 'u-new', ...a.data })),
+        create: vi.fn(async (a: { data: Record<string, unknown> }) => ({
+          id: 'u-new',
+          ...a.data,
+        })),
         ...over.user,
       },
       employee: {
         findUnique: vi.fn(async () => null),
         count: vi.fn(async () => 0),
-        create: vi.fn(async (a: { data: Record<string, unknown> }) => ({ id: 'e-new', ...a.data })),
+        create: vi.fn(async (a: { data: Record<string, unknown> }) => ({
+          id: 'e-new',
+          ...a.data,
+        })),
         ...over.employee,
       },
-      department: { findUnique: vi.fn(async () => ({ id: 'dept-1' })), ...over.department },
-      role: { findUnique: vi.fn(async () => ({ id: 'r-emp', name: 'EMPLOYEE' })), ...over.role },
+      department: {
+        findUnique: vi.fn(async () => ({ id: 'dept-1' })),
+        ...over.department,
+      },
+      role: {
+        findUnique: vi.fn(async () => ({ id: 'r-emp', name: 'EMPLOYEE' })),
+        ...over.role,
+      },
       userRole: { create: vi.fn(async () => ({})), ...over.userRole },
       session: {
         create: vi.fn(async (a: { data: Record<string, unknown> }) => ({
@@ -332,18 +400,28 @@ describe('AuthService.register (pendaftaran mandiri)', () => {
       employeeNo: 'EMP-001',
     });
     expect(
-      (prisma as unknown as { userRole: { create: ReturnType<typeof vi.fn> } }).userRole.create,
+      (prisma as unknown as { userRole: { create: ReturnType<typeof vi.fn> } })
+        .userRole.create,
     ).toHaveBeenCalledWith({ data: { userId: 'u-new', roleId: 'r-emp' } });
     expect(auditStub.log).toHaveBeenCalledWith(
-      expect.objectContaining({ action: 'ACCOUNT_REGISTERED', targetId: 'u-new' }),
+      expect.objectContaining({
+        action: 'ACCOUNT_REGISTERED',
+        targetId: 'u-new',
+      }),
     );
   });
 
   it('email yang sudah terdaftar ditolak', async () => {
-    const prisma = registerPrisma({ user: { findUnique: vi.fn(async () => ({ id: 'u1' })) } });
+    const prisma = registerPrisma({
+      user: { findUnique: vi.fn(async () => ({ id: 'u1' })) },
+    });
     const svc = new AuthService(prisma, jwt, configStub, auditStub);
     await expect(
-      svc.register({ name: 'Budi', email: 'employee@rs.test', password: PASSWORD }),
+      svc.register({
+        name: 'Budi',
+        email: 'employee@rs.test',
+        password: PASSWORD,
+      }),
     ).rejects.toThrow('Email sudah terdaftar');
   });
 
@@ -351,7 +429,11 @@ describe('AuthService.register (pendaftaran mandiri)', () => {
     const prisma = registerPrisma();
     const svc = new AuthService(prisma, jwt, configStub, auditStub);
     await expect(
-      svc.register({ name: 'Budi', email: 'lemah@rs.test', password: 'pendek' }),
+      svc.register({
+        name: 'Budi',
+        email: 'lemah@rs.test',
+        password: 'pendek',
+      }),
     ).rejects.toThrow('Weak password');
   });
 });

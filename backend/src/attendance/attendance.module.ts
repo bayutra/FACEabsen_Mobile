@@ -11,7 +11,16 @@ import { AttendanceController } from './attendance.controller.js';
 import { AttendanceService } from './attendance.service.js';
 
 @Module({
-  imports: [PrismaModule, AuditModule, AuthModule, DevicesModule, FaceModule, IntegrityModule, PrivacyModule, RiskModule],
+  imports: [
+    PrismaModule,
+    AuditModule,
+    AuthModule,
+    DevicesModule,
+    FaceModule,
+    IntegrityModule,
+    PrivacyModule,
+    RiskModule,
+  ],
   controllers: [AttendanceController],
   providers: [AttendanceService],
   exports: [AttendanceService],

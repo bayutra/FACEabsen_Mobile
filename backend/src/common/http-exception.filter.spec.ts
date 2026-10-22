@@ -1,9 +1,19 @@
 import type { ArgumentsHost } from '@nestjs/common';
-import { HttpException, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
+import {
+  HttpException,
+  NotFoundException,
+  UnprocessableEntityException,
+} from '@nestjs/common';
 import { describe, expect, it, vi } from 'vitest';
 import { GlobalHttpExceptionFilter } from './http-exception.filter.js';
 
-function mockHost(opts: { method?: string; url?: string; headers?: Record<string, string> } = {}) {
+function mockHost(
+  opts: {
+    method?: string;
+    url?: string;
+    headers?: Record<string, string>;
+  } = {},
+) {
   const json = vi.fn();
   const status = vi.fn(() => ({ json }));
   const response = { status, headersSent: false };
@@ -13,7 +23,10 @@ function mockHost(opts: { method?: string; url?: string; headers?: Record<string
     headers: opts.headers ?? {},
   };
   const host = {
-    switchToHttp: () => ({ getResponse: () => response, getRequest: () => request }),
+    switchToHttp: () => ({
+      getResponse: () => response,
+      getRequest: () => request,
+    }),
   } as unknown as ArgumentsHost;
   return { host, status, json };
 }
@@ -23,14 +36,15 @@ describe('GlobalHttpExceptionFilter', () => {
     const filter = new GlobalHttpExceptionFilter();
     const { host, status, json } = mockHost();
 
-    
-    const body = { reason: 'DUPLICATE_REQUEST', message: 'Request sudah diproses' };
+    const body = {
+      reason: 'DUPLICATE_REQUEST',
+      message: 'Request sudah diproses',
+    };
     filter.catch(new UnprocessableEntityException(body), host);
     expect(status).toHaveBeenCalledWith(422);
     expect(json).toHaveBeenCalledWith(body);
     expect(json.mock.calls[0][0]).toBe(body);
 
-    
     const { host: h2, status: s2, json: j2 } = mockHost();
     filter.catch(new NotFoundException('Attendance not found'), h2);
     expect(s2).toHaveBeenCalledWith(404);
@@ -76,6 +90,8 @@ describe('GlobalHttpExceptionFilter', () => {
     const { host, status, json } = mockHost();
     filter.catch('string failure', host);
     expect(status).toHaveBeenCalledWith(500);
-    expect((json.mock.calls[0][0] as Record<string, unknown>).statusCode).toBe(500);
+    expect((json.mock.calls[0][0] as Record<string, unknown>).statusCode).toBe(
+      500,
+    );
   });
 });

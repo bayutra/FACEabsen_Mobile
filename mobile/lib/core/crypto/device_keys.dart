@@ -3,8 +3,6 @@ import 'dart:typed_data';
 
 import 'package:cryptography/cryptography.dart';
 
-
-
 class DeviceKeys {
   static final Ed25519 _algo = Ed25519();
 

@@ -36,8 +36,10 @@ void main() {
     expect(changeRequestStatusFrom('REJECTED'), ChangeRequestStatus.rejected);
     expect(changeRequestStatusFrom('CANCELLED'), ChangeRequestStatus.cancelled);
     expect(changeRequestStatusFrom('X'), ChangeRequestStatus.unknown);
-    expect(changeRequestStatusLabel(ChangeRequestStatus.pending), 'Menunggu admin');
-    final r = ChangeRequest.fromJson({'id': 'r1', 'status': 'PENDING', 'reason': 'BROKEN'});
+    expect(changeRequestStatusLabel(ChangeRequestStatus.pending),
+        'Menunggu admin');
+    final r = ChangeRequest.fromJson(
+        {'id': 'r1', 'status': 'PENDING', 'reason': 'BROKEN'});
     expect(r.id, 'r1');
     expect(r.reason, 'BROKEN');
   });

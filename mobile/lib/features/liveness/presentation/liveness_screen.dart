@@ -13,8 +13,6 @@ import '../domain/liveness_engine.dart';
 import '../../face/data/face_detector.dart';
 import '../../../core/theme/app_colors.dart';
 
-
-
 List<EyePoint> contourOf(Face face, FaceContourType type) {
   final FaceContour? contour = face.contours[type];
   if (contour == null) return const [];
@@ -22,9 +20,6 @@ List<EyePoint> contourOf(Face face, FaceContourType type) {
       .map((p) => EyePoint(p.x.toDouble(), p.y.toDouble()))
       .toList();
 }
-
-
-
 
 class LivenessScreen extends StatefulWidget {
   const LivenessScreen(
@@ -55,7 +50,6 @@ class _LivenessScreenState extends State<LivenessScreen>
   )..repeat(reverse: true);
   Timer? _timer;
 
-  
   int _faceCount = 0;
   double _relativeFaceWidth = 0;
 
@@ -63,8 +57,7 @@ class _LivenessScreenState extends State<LivenessScreen>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    
-    
+
     final bool needsContours = defaultTargetPlatform == TargetPlatform.iOS;
     _detector = FaceDetectorService(
       classification: true,
@@ -72,8 +65,6 @@ class _LivenessScreenState extends State<LivenessScreen>
       performanceMode: FaceDetectorMode.fast,
       minFaceSize: 0.05,
       onError: (String message) {
-        
-        
         _timer?.cancel();
         if (mounted) setState(() => _error = message);
       },
@@ -86,9 +77,6 @@ class _LivenessScreenState extends State<LivenessScreen>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    
-    
-    
     if (state == AppLifecycleState.paused ||
         state == AppLifecycleState.inactive) {
       _timer?.cancel();
@@ -132,15 +120,10 @@ class _LivenessScreenState extends State<LivenessScreen>
         enableAudio: false,
       );
       await controller.initialize();
-      
-      
-      
-      
+
       try {
         await controller.setFlashMode(FlashMode.off);
-      } on CameraException {
-        
-      }
+      } on CameraException {}
       if (!mounted) return;
       setState(() {
         _controller = controller;
@@ -177,8 +160,6 @@ class _LivenessScreenState extends State<LivenessScreen>
       if (!mounted) return;
       LivenessStatus status;
       if (faces.length != 1) {
-        
-        
         setState(() => _faceCount = faces.length);
         status = _session.process(FrameObservation(
           eyeOpenLeft: null,
@@ -187,8 +168,7 @@ class _LivenessScreenState extends State<LivenessScreen>
         ));
       } else {
         final Face f = faces.single;
-        
-        
+
         final Uint8List bytes = await File(shot.path).readAsBytes();
         if (!mounted) return;
         final img.Decoder? decoder = img.findDecoderForData(bytes);
@@ -196,8 +176,6 @@ class _LivenessScreenState extends State<LivenessScreen>
         if (info == null || info.width <= 0) return;
         final double rel = f.boundingBox.width / info.width;
 
-        
-        
         final double? leftProb = f.leftEyeOpenProbability;
         final double? rightProb = f.rightEyeOpenProbability;
         final bool hasProbability = leftProb != null && rightProb != null;
@@ -235,7 +213,6 @@ class _LivenessScreenState extends State<LivenessScreen>
         }
       });
     } catch (_) {
-      
     } finally {
       _processing = false;
       if (shotPath != null) {
@@ -246,9 +223,6 @@ class _LivenessScreenState extends State<LivenessScreen>
     }
   }
 
-  
-  
-  
   Future<void> _toggleFlash() async {
     final CameraController? controller = _controller;
     if (controller == null || !controller.value.isInitialized) return;
@@ -333,7 +307,6 @@ class _LivenessScreenState extends State<LivenessScreen>
     final double progress = _session.progress;
     final bool finished = _doneMessage != null;
 
-    
     const Color inverseSurface = AppColors.inverseSurface;
     const Color primaryFixed = AppColors.primaryFixed;
     const Color tertiaryFixed = Color(0xFF89F5E7);
@@ -343,7 +316,6 @@ class _LivenessScreenState extends State<LivenessScreen>
       body: SafeArea(
         child: Column(
           children: [
-            
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
@@ -428,8 +400,6 @@ class _LivenessScreenState extends State<LivenessScreen>
                 ],
               ),
             ),
-
-            
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 10, 16, 6),
               child: Column(
@@ -478,16 +448,12 @@ class _LivenessScreenState extends State<LivenessScreen>
                 ],
               ),
             ),
-
-            
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Column(
                   children: [
                     const SizedBox(height: 8),
-
-                    
                     Container(
                       width: double.infinity,
                       padding: const EdgeInsets.all(12),
@@ -594,10 +560,7 @@ class _LivenessScreenState extends State<LivenessScreen>
                         ],
                       ),
                     ),
-
                     const SizedBox(height: 10),
-
-                    
                     SizedBox(
                       height: 36,
                       child: ListView.separated(
@@ -660,20 +623,11 @@ class _LivenessScreenState extends State<LivenessScreen>
                         },
                       ),
                     ),
-
                     const SizedBox(height: 12),
-
-                    
                     _viewport(controller),
-
                     const SizedBox(height: 10),
-
-                    
                     _signalTiles(progress),
-
                     const SizedBox(height: 8),
-
-                    
                     const Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -687,7 +641,6 @@ class _LivenessScreenState extends State<LivenessScreen>
                         ),
                       ],
                     ),
-
                     if (_error != null || _doneMessage != null) ...[
                       const SizedBox(height: 10),
                       Container(
@@ -717,14 +670,11 @@ class _LivenessScreenState extends State<LivenessScreen>
                         ),
                       ),
                     ],
-
                     const SizedBox(height: 16),
                   ],
                 ),
               ),
             ),
-
-            
             Container(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
               decoration: BoxDecoration(
@@ -810,7 +760,6 @@ class _LivenessScreenState extends State<LivenessScreen>
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 420),
           child: AspectRatio(
-            
             aspectRatio: 0.8,
             child: Container(
               decoration: BoxDecoration(
@@ -847,7 +796,6 @@ class _LivenessScreenState extends State<LivenessScreen>
                           fit: StackFit.expand,
                           children: [
                             CameraPreview(controller),
-                            
                             DecoratedBox(
                               decoration: BoxDecoration(
                                 gradient: LinearGradient(
@@ -861,10 +809,7 @@ class _LivenessScreenState extends State<LivenessScreen>
                                 ),
                               ),
                             ),
-                            
                             const CustomPaint(painter: _BiometricHudPainter()),
-                            
-                            
                             Positioned.fill(
                               child: IgnorePointer(
                                 child: AnimatedBuilder(
@@ -903,7 +848,6 @@ class _LivenessScreenState extends State<LivenessScreen>
                                 ),
                               ),
                             ),
-                            
                             Align(
                               alignment: Alignment.topRight,
                               child: Padding(
@@ -938,7 +882,6 @@ class _LivenessScreenState extends State<LivenessScreen>
                                 ),
                               ),
                             ),
-                            
                             Align(
                               alignment: Alignment.topCenter,
                               child: Padding(
@@ -980,7 +923,6 @@ class _LivenessScreenState extends State<LivenessScreen>
                                 ),
                               ),
                             ),
-                            
                             Align(
                               alignment: Alignment.bottomCenter,
                               child: Padding(
@@ -1125,13 +1067,11 @@ class _LivenessScreenState extends State<LivenessScreen>
   }
 }
 
-
 class _BiometricHudPainter extends CustomPainter {
   const _BiometricHudPainter();
 
   @override
   void paint(Canvas canvas, Size size) {
-    
     final Rect oval = Rect.fromCenter(
       center: Offset(size.width / 2, size.height * 0.48),
       width: size.width * 0.56,
@@ -1143,7 +1083,6 @@ class _BiometricHudPainter extends CustomPainter {
       ..strokeWidth = 1.3;
     canvas.drawOval(oval, ovalPaint);
 
-    
     final Paint eyePaint = Paint()
       ..color = const Color(0xFF00D2B7).withOpacity(0.65)
       ..style = PaintingStyle.stroke
@@ -1159,7 +1098,6 @@ class _BiometricHudPainter extends CustomPainter {
     canvas.drawCircle(rightEye, 12, eyePaint);
     canvas.drawCircle(rightEye, 3.5, eyeDotPaint);
 
-    
     final Paint mouthPaint = Paint()
       ..color = const Color(0xFF89F5E7).withOpacity(0.55)
       ..style = PaintingStyle.stroke
@@ -1170,7 +1108,6 @@ class _BiometricHudPainter extends CustomPainter {
       mouthPaint,
     );
 
-    
     final Paint bracketPaint = Paint()
       ..color = const Color(0xFF89F5E7)
       ..style = PaintingStyle.stroke
@@ -1180,25 +1117,21 @@ class _BiometricHudPainter extends CustomPainter {
     const double bracketSize = 18;
     const double pad = 12;
 
-    
     canvas.drawLine(const Offset(pad, pad),
         const Offset(pad + bracketSize, pad), bracketPaint);
     canvas.drawLine(const Offset(pad, pad),
         const Offset(pad, pad + bracketSize), bracketPaint);
 
-    
     canvas.drawLine(Offset(size.width - pad, pad),
         Offset(size.width - pad - bracketSize, pad), bracketPaint);
     canvas.drawLine(Offset(size.width - pad, pad),
         Offset(size.width - pad, pad + bracketSize), bracketPaint);
 
-    
     canvas.drawLine(Offset(pad, size.height - pad),
         Offset(pad + bracketSize, size.height - pad), bracketPaint);
     canvas.drawLine(Offset(pad, size.height - pad),
         Offset(pad, size.height - pad - bracketSize), bracketPaint);
 
-    
     canvas.drawLine(
         Offset(size.width - pad, size.height - pad),
         Offset(size.width - pad - bracketSize, size.height - pad),

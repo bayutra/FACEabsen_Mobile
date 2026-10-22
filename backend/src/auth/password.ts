@@ -1,7 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 import { AUTH_POLICY } from './constants.js';
 
- 
 export function validatePasswordPolicy(password: string): void {
   const problems: string[] = [];
   if (password.length < AUTH_POLICY.password.minLength) {

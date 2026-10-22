@@ -7,7 +7,11 @@ import { HospitalsController } from './hospitals.controller.js';
 
 @Module({
   imports: [AuthModule],
-  controllers: [EmployeesController, DepartmentsController, HospitalsController],
+  controllers: [
+    EmployeesController,
+    DepartmentsController,
+    HospitalsController,
+  ],
   providers: [EmployeesService],
   exports: [EmployeesService],
 })

@@ -1,24 +1,16 @@
 import 'package:dio/dio.dart';
 
-
-
 class ProfileRepository {
   ProfileRepository({required Dio dio}) : _dio = dio;
 
   final Dio _dio;
 
-  
-  
-  
-  
-  
   Future<ProfileSnapshot> load() async {
     final List<Object?> results = await Future.wait([
       _try(() => _dio.get('/auth/me')),
       _try(() => _dio.get('/employees/me')),
       _try(() => _dio.get('/face/status')),
       _try(() => _dio.get('/devices/me')),
-      
       _try(() => _dio.get('/privacy/consents/me')),
     ]);
 
@@ -29,11 +21,11 @@ class ProfileRepository {
     final List<dynamic>? consents = _list(results[4]);
 
     if (me == null) {
-      
       throw const ProfileUnavailable();
     }
 
-    final Map<String, dynamic>? department = employee?['department'] as Map<String, dynamic>?;
+    final Map<String, dynamic>? department =
+        employee?['department'] as Map<String, dynamic>?;
     final List<dynamic> deviceList = devices ?? const [];
 
     return ProfileSnapshot(
@@ -52,14 +44,13 @@ class ProfileRepository {
       totalDevices: deviceList.length,
       biometricConsent: consents?.any(
             (c) =>
-                (c as Map)['purpose'] == 'BIOMETRIC_ATTENDANCE' && c['revokedAt'] == null,
+                (c as Map)['purpose'] == 'BIOMETRIC_ATTENDANCE' &&
+                c['revokedAt'] == null,
           ) ??
           false,
     );
   }
 
-  
-  
   Future<Object?> _try(Future<Response> Function() call) async {
     try {
       return await call();
@@ -76,11 +67,12 @@ class ProfileRepository {
   }
 
   List<dynamic>? _list(Object? result) {
-    if (result is Response && result.data is List) return result.data as List<dynamic>;
+    if (result is Response && result.data is List) {
+      return result.data as List<dynamic>;
+    }
     return null;
   }
 
-  
   Future<void> setBiometricConsent(bool granted) async {
     await _dio.post(
       '/privacy/consent',
@@ -88,7 +80,6 @@ class ProfileRepository {
     );
   }
 
-  
   Future<String> displayName() async {
     final Response res = await _dio.get('/employees/me');
     if (res.data == null) return 'Karyawan';
@@ -98,8 +89,6 @@ class ProfileRepository {
     return position == null || position.isEmpty ? name : '$name, $position';
   }
 
-  
-  
   Future<void> updateProfile({
     required String name,
     required String email,
@@ -112,7 +101,6 @@ class ProfileRepository {
     });
   }
 }
-
 
 class ProfileUnavailable implements Exception {
   const ProfileUnavailable();

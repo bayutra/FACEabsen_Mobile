@@ -3,9 +3,8 @@ import { ConfigService } from '@nestjs/config';
 
 export type RiskCategory = 'LOW' | 'MEDIUM' | 'HIGH';
 
- 
 export interface RiskInput {
-  faceScore: number | null; 
+  faceScore: number | null;
   livenessOk: boolean;
   deviceOk: boolean;
   integrityOk: boolean;
@@ -20,7 +19,6 @@ export interface RiskWeights {
   signature: number;
 }
 
- 
 @Injectable()
 export class RiskService {
   readonly weights: RiskWeights;
@@ -39,7 +37,9 @@ export class RiskService {
     };
     this.lowMin = num('RISK_LOW_MIN', 90);
     this.mediumMin = num('RISK_MEDIUM_MIN', 70);
-    this.mediumReview = String(config.get('RISK_MEDIUM_REVIEW', 'true')).toLowerCase() !== 'false';
+    this.mediumReview =
+      String(config.get('RISK_MEDIUM_REVIEW', 'true')).toLowerCase() !==
+      'false';
     if (!(this.lowMin > this.mediumMin)) {
       throw new Error('RISK_LOW_MIN must be greater than RISK_MEDIUM_MIN');
     }
@@ -56,11 +56,14 @@ export class RiskService {
       (input.signatureOk ? w.signature : 0);
     const score = Math.round(total);
     const category: RiskCategory =
-      score >= this.lowMin ? 'LOW' : score >= this.mediumMin ? 'MEDIUM' : 'HIGH';
+      score >= this.lowMin
+        ? 'LOW'
+        : score >= this.mediumMin
+          ? 'MEDIUM'
+          : 'HIGH';
     return { score, category };
   }
 
-   
   needsReview(category: RiskCategory): boolean {
     return category === 'MEDIUM' && this.mediumReview;
   }

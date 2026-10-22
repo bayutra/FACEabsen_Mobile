@@ -2,13 +2,6 @@ import 'dart:convert';
 
 import '../../../core/storage/secure_store.dart';
 
-
-
-
-
-
-
-
 enum PunchKind { checkIn, checkOut }
 
 class OutboxEntry {
@@ -41,7 +34,6 @@ class OutboxEntry {
         'queuedAt': queuedAt.toUtc().toIso8601String(),
       };
 
-  
   static OutboxEntry? fromJson(Map<String, dynamic> json) {
     try {
       final Object? kindRaw = json['kind'];
@@ -58,8 +50,8 @@ class OutboxEntry {
 
       final Object? liveRaw = json['liveness'];
       if (liveRaw is! Map) return null;
-      final Map<String, Object> liveness =
-          Map<String, dynamic>.from(liveRaw).map((k, v) => MapEntry(k, v as Object));
+      final Map<String, Object> liveness = Map<String, dynamic>.from(liveRaw)
+          .map((k, v) => MapEntry(k, v as Object));
       if (liveness['passed'] is! bool) return null;
 
       final Object? deviceRaw = json['deviceId'];
@@ -85,8 +77,6 @@ class OutboxEntry {
     }
   }
 
-  
-  
   static Object? _jsonSafe(Object? value) {
     if (value == null || value is String || value is num || value is bool) {
       return value;
@@ -108,8 +98,6 @@ class OutboxRepository {
 
   final SecureStore _store;
 
-  
-  
   static const int maxEntries = 10;
 
   Future<List<OutboxEntry>> load() async {
@@ -134,12 +122,9 @@ class OutboxRepository {
         }
       }
       if (dropped > 0) {
-        
         try {
           await replaceAll(entries);
-        } catch (_) {
-          
-        }
+        } catch (_) {}
       }
       return entries;
     } catch (_) {

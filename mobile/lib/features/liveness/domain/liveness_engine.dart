@@ -4,14 +4,6 @@ import 'eye_geometry.dart';
 
 export 'eye_geometry.dart';
 
-
-
-
-
-
-
-
-
 enum ChallengeType { blink, turnLeft, turnRight }
 
 String challengeInstruction(ChallengeType type) {
@@ -25,14 +17,11 @@ String challengeInstruction(ChallengeType type) {
   }
 }
 
-
-
 List<ChallengeType> generateChallenges({int count = 3, Random? random}) {
-  final pool = List<ChallengeType>.of(ChallengeType.values)..shuffle(random ?? Random.secure());
+  final pool = List<ChallengeType>.of(ChallengeType.values)
+    ..shuffle(random ?? Random.secure());
   return pool.take(count.clamp(1, ChallengeType.values.length)).toList();
 }
-
-
 
 class FrameObservation {
   FrameObservation({
@@ -47,8 +36,6 @@ class FrameObservation {
   final double? eyeOpenRight;
   final double? yaw;
 
-  
-  
   final EyeSignalSource eyeSource;
 
   final DateTime at;
@@ -111,8 +98,6 @@ class LivenessSession {
     }
   }
 
-  
-  
   bool _blinkDone(FrameObservation obs) {
     final double? l = obs.eyeOpenLeft;
     final double? r = obs.eyeOpenRight;
@@ -131,7 +116,6 @@ class LivenessSession {
     return open;
   }
 
-  
   Map<String, Object> toAttestation() {
     if (completedAt == null) throw StateError('Session not complete');
     return {

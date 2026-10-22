@@ -7,9 +7,6 @@ import '../../presentation/admin_widgets.dart';
 import '../data/report_admin_repository.dart';
 import '../domain/report_admin_models.dart';
 
-
-
-
 class ReportAdminScreen extends StatefulWidget {
   const ReportAdminScreen({super.key, required this.dio});
 
@@ -432,7 +429,6 @@ String _monthLabel(DateTime d) => '${_monthNames[d.month - 1]} ${d.year}';
 String _monthKey(DateTime d) =>
     '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}';
 
-
 class _DateField extends StatelessWidget {
   const _DateField({
     required this.label,
@@ -483,7 +479,6 @@ class _DateField extends StatelessWidget {
     );
   }
 }
-
 
 class _MonthPickerDialog extends StatefulWidget {
   const _MonthPickerDialog({required this.year, required this.month});
@@ -551,7 +546,6 @@ class _MonthPickerDialogState extends State<_MonthPickerDialog> {
     );
   }
 }
-
 
 class _ReportTable extends StatelessWidget {
   const _ReportTable({required this.headers, required this.rows});

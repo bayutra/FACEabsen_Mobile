@@ -1,4 +1,13 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import type { Request } from 'express';
 import { CurrentUser, type AuthContext } from '../auth/decorators.js';
@@ -11,10 +20,14 @@ import { FaceService } from './face.service.js';
 export class FaceController {
   constructor(private readonly face: FaceService) {}
 
-  @Throttle({ default: { limit: 10, ttl: 60_000 } }) 
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
   @HttpCode(HttpStatus.OK)
   @Post('register')
-  register(@Body() dto: RegisterFaceDto, @CurrentUser() user: AuthContext, @Req() req: Request) {
+  register(
+    @Body() dto: RegisterFaceDto,
+    @CurrentUser() user: AuthContext,
+    @Req() req: Request,
+  ) {
     return this.face.register(dto, user.userId, { ip: req.ip });
   }
 

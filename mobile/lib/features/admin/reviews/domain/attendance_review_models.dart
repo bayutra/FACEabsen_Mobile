@@ -1,22 +1,18 @@
-
-
-
-
 library;
 
 String attendanceCheckInLabel(String? status) => switch (status) {
-  'ON_TIME' => 'Tepat waktu',
-  'LATE' => 'Terlambat',
-  'VERY_LATE' => 'Sangat terlambat',
-  _ => '—',
-};
+      'ON_TIME' => 'Tepat waktu',
+      'LATE' => 'Terlambat',
+      'VERY_LATE' => 'Sangat terlambat',
+      _ => '—',
+    };
 
 String riskCategoryLabel(String? category) => switch (category) {
-  'LOW' => 'Risiko rendah',
-  'MEDIUM' => 'Risiko sedang',
-  'HIGH' => 'Risiko tinggi',
-  _ => '—',
-};
+      'LOW' => 'Risiko rendah',
+      'MEDIUM' => 'Risiko sedang',
+      'HIGH' => 'Risiko tinggi',
+      _ => '—',
+    };
 
 class AttendanceReviewItem {
   const AttendanceReviewItem({
@@ -72,9 +68,8 @@ class AttendanceReviewItem {
       checkInAt: _date(json['checkInAt']),
       checkOutAt: _date(json['checkOutAt']),
       checkInStatus: _textOrNull(json['checkInStatus']),
-      riskScore: json['riskScore'] is num
-          ? (json['riskScore'] as num).toInt()
-          : null,
+      riskScore:
+          json['riskScore'] is num ? (json['riskScore'] as num).toInt() : null,
       riskCategory: _textOrNull(json['riskCategory']),
       shiftName: _textOrNull(shift?['name']),
       shiftWindow: start != null && end != null ? '$start–$end' : null,

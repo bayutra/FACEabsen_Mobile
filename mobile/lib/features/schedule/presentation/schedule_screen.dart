@@ -4,10 +4,9 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/stitch.dart';
 import '../data/schedule_repository.dart';
 
-
-
 class ScheduleScreen extends StatefulWidget {
-  const ScheduleScreen({super.key, required this.schedules, this.onRequestLeave});
+  const ScheduleScreen(
+      {super.key, required this.schedules, this.onRequestLeave});
 
   final ScheduleRepository schedules;
   final VoidCallback? onRequestLeave;
@@ -64,19 +63,20 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
   ScheduleEntry? _entryFor(DateTime day) {
     for (final ScheduleEntry e in _entries) {
       final DateTime d = e.workDate;
-      if (d.year == day.year && d.month == day.month && d.day == day.day) return e;
+      if (d.year == day.year && d.month == day.month && d.day == day.day) {
+        return e;
+      }
     }
     return null;
   }
 
   @override
   Widget build(BuildContext context) {
-    
     final int dutyDays = _entries.length;
     final int offDays = (7 - dutyDays).clamp(0, 7);
-    final int nightShifts = _entries.where((e) => e.overnight || e.kind == ShiftKind.malam).length;
-    
-    
+    final int nightShifts =
+        _entries.where((e) => e.overnight || e.kind == ShiftKind.malam).length;
+
     final List<int> knownHours =
         _entries.map((e) => e.durationHours).whereType<int>().toList();
     final int totalHours = knownHours.fold(0, (sum, h) => sum + h);
@@ -87,8 +87,13 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
         title: const Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('RS Absen', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.primary)),
-            Text('Roster Dinas & Kehadiran', style: TextStyle(fontSize: 11, color: AppColors.inkSecondary)),
+            Text('RS Absen',
+                style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.primary)),
+            Text('Roster Dinas & Kehadiran',
+                style: TextStyle(fontSize: 11, color: AppColors.inkSecondary)),
           ],
         ),
         backgroundColor: Colors.white,
@@ -97,7 +102,8 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
         actions: [
           IconButton(
             tooltip: 'Sinkronisasi Roster',
-            icon: const Icon(Icons.sync, size: 20, color: AppColors.inkSecondary),
+            icon:
+                const Icon(Icons.sync, size: 20, color: AppColors.inkSecondary),
             onPressed: _load,
           ),
           IconButton(
@@ -105,11 +111,13 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
             icon: const Stack(
               clipBehavior: Clip.none,
               children: [
-                Icon(Icons.notifications_outlined, size: 22, color: AppColors.inkSecondary),
+                Icon(Icons.notifications_outlined,
+                    size: 22, color: AppColors.inkSecondary),
                 Positioned(
                   top: -2,
                   right: -2,
-                  child: CircleAvatar(radius: 4, backgroundColor: AppColors.error),
+                  child:
+                      CircleAvatar(radius: 4, backgroundColor: AppColors.error),
                 ),
               ],
             ),
@@ -123,7 +131,6 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -132,7 +139,8 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                   children: [
                     Row(
                       children: [
-                        Icon(Icons.calendar_month, color: AppColors.primary, size: 20),
+                        Icon(Icons.calendar_month,
+                            color: AppColors.primary, size: 20),
                         SizedBox(width: 6),
                         Text(
                           'Jadwal Dinas & Shift',
@@ -147,12 +155,14 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                     SizedBox(height: 2),
                     Text(
                       'Roster Kerja Ruang Rawat Inap Melati',
-                      style: TextStyle(fontSize: 12, color: AppColors.inkSecondary),
+                      style: TextStyle(
+                          fontSize: 12, color: AppColors.inkSecondary),
                     ),
                   ],
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
                     color: AppColors.surfaceLow,
                     borderRadius: BorderRadius.circular(AppColors.radiusFull),
@@ -161,7 +171,8 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                   child: const Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.edit_calendar, size: 14, color: AppColors.primary),
+                      Icon(Icons.edit_calendar,
+                          size: 14, color: AppColors.primary),
                       SizedBox(width: 4),
                       Text(
                         'Bulan Ini',
@@ -176,19 +187,16 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                 ),
               ],
             ),
-
             const SizedBox(height: 14),
-
-            
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppColors.border.withOpacity( 0.6)),
+                border: Border.all(color: AppColors.border.withOpacity(0.6)),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity( 0.02),
+                    color: Colors.black.withOpacity(0.02),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -196,7 +204,6 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
               ),
               child: Column(
                 children: [
-                  
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -210,7 +217,8 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                             border: Border.all(color: AppColors.border),
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          child: const Icon(Icons.chevron_left, size: 18, color: AppColors.inkSecondary),
+                          child: const Icon(Icons.chevron_left,
+                              size: 18, color: AppColors.inkSecondary),
                         ),
                       ),
                       Column(
@@ -225,15 +233,19 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                           ),
                           const SizedBox(height: 2),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 2),
                             decoration: BoxDecoration(
-                              color: AppColors.primaryFixed.withOpacity( 0.35),
-                              borderRadius: BorderRadius.circular(AppColors.radiusFull),
+                              color: AppColors.primaryFixed.withOpacity(0.35),
+                              borderRadius:
+                                  BorderRadius.circular(AppColors.radiusFull),
                             ),
                             child: const Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                CircleAvatar(radius: 3, backgroundColor: AppColors.primary),
+                                CircleAvatar(
+                                    radius: 3,
+                                    backgroundColor: AppColors.primary),
                                 SizedBox(width: 4),
                                 Text(
                                   'Minggu Berjalan (Aktif)',
@@ -258,17 +270,15 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                             border: Border.all(color: AppColors.border),
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          child: const Icon(Icons.chevron_right, size: 18, color: AppColors.inkSecondary),
+                          child: const Icon(Icons.chevron_right,
+                              size: 18, color: AppColors.inkSecondary),
                         ),
                       ),
                     ],
                   ),
-
                   const SizedBox(height: 12),
                   const Divider(height: 1),
                   const SizedBox(height: 10),
-
-                  
                   Row(
                     children: [
                       Expanded(
@@ -280,11 +290,17 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                           ),
                           child: Column(
                             children: [
-                              const Text('Total Beban', style: TextStyle(fontSize: 10.5, color: AppColors.inkSecondary)),
+                              const Text('Total Beban',
+                                  style: TextStyle(
+                                      fontSize: 10.5,
+                                      color: AppColors.inkSecondary)),
                               const SizedBox(height: 2),
                               Text(
                                 knownHours.isEmpty ? '—' : '$totalHours Jam',
-                                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.primary),
+                                style: const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w700,
+                                    color: AppColors.primary),
                               ),
                             ],
                           ),
@@ -300,11 +316,17 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                           ),
                           child: Column(
                             children: [
-                              const Text('Rasio Shift', style: TextStyle(fontSize: 10.5, color: AppColors.inkSecondary)),
+                              const Text('Rasio Shift',
+                                  style: TextStyle(
+                                      fontSize: 10.5,
+                                      color: AppColors.inkSecondary)),
                               const SizedBox(height: 2),
                               Text(
                                 '${dutyDays}D : ${offDays}L',
-                                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.ink),
+                                style: const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w700,
+                                    color: AppColors.ink),
                               ),
                             ],
                           ),
@@ -320,11 +342,17 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                           ),
                           child: Column(
                             children: [
-                              const Text('Shift Malam', style: TextStyle(fontSize: 10.5, color: AppColors.inkSecondary)),
+                              const Text('Shift Malam',
+                                  style: TextStyle(
+                                      fontSize: 10.5,
+                                      color: AppColors.inkSecondary)),
                               const SizedBox(height: 2),
                               Text(
                                 '$nightShifts Shift',
-                                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.secondary),
+                                style: const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w700,
+                                    color: AppColors.secondary),
                               ),
                             ],
                           ),
@@ -335,10 +363,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                 ],
               ),
             ),
-
             const SizedBox(height: 16),
-
-            
             const Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -357,9 +382,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                 ),
               ],
             ),
-
             const SizedBox(height: 8),
-
             if (_busy)
               const LoadingState(label: 'Memuat roster mingguan')
             else if (_error != null)
@@ -369,8 +392,8 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                 title: 'Tidak dapat memuat jadwal',
               )
             else
-              for (int i = 0; i < 7; i++) _dayTile(_weekStart.add(Duration(days: i))),
-
+              for (int i = 0; i < 7; i++)
+                _dayTile(_weekStart.add(Duration(days: i))),
             const SizedBox(height: 12),
             _legend(),
             const SizedBox(height: 12),
@@ -383,7 +406,19 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
 
   String _formatWeekRange(DateTime start, DateTime end) {
     const List<String> months = [
-      '', 'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'
+      '',
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'Mei',
+      'Jun',
+      'Jul',
+      'Agu',
+      'Sep',
+      'Okt',
+      'Nov',
+      'Des'
     ];
     return '${start.day} ${months[start.month]} - ${end.day} ${months[end.month]} ${end.year}';
   }
@@ -391,10 +426,12 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
   Widget _dayTile(DateTime day) {
     final ScheduleEntry? e = _entryFor(day);
     final bool isToday = DateUtils.isSameDay(day, DateTime.now());
-    final bool isPast = day.isBefore(DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day));
+    final bool isPast = day.isBefore(DateTime(
+        DateTime.now().year, DateTime.now().month, DateTime.now().day));
     const List<String> hari = ['SEN', 'SEL', 'RAB', 'KAM', 'JUM', 'SAB', 'MIN'];
 
-    final bool isNight = e != null && (e.overnight || e.kind == ShiftKind.malam);
+    final bool isNight =
+        e != null && (e.overnight || e.kind == ShiftKind.malam);
     final IconData shiftIcon = isNight ? Icons.bedtime : Icons.wb_sunny;
 
     return Container(
@@ -403,12 +440,13 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isToday ? AppColors.primary : AppColors.border.withOpacity( 0.5),
+          color:
+              isToday ? AppColors.primary : AppColors.border.withOpacity(0.5),
           width: isToday ? 1.8 : 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity( isToday ? 0.05 : 0.02),
+            color: Colors.black.withOpacity(isToday ? 0.05 : 0.02),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -422,17 +460,20 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                
                 Container(
                   width: 44,
                   height: 48,
                   decoration: BoxDecoration(
                     color: isToday
                         ? AppColors.primaryContainer
-                        : (e == null ? AppColors.dividerSoft : AppColors.surfaceLow),
+                        : (e == null
+                            ? AppColors.dividerSoft
+                            : AppColors.surfaceLow),
                     borderRadius: BorderRadius.circular(10),
                     border: Border.all(
-                      color: isToday ? AppColors.primaryContainer : AppColors.border.withOpacity( 0.6),
+                      color: isToday
+                          ? AppColors.primaryContainer
+                          : AppColors.border.withOpacity(0.6),
                     ),
                   ),
                   child: Column(
@@ -443,7 +484,9 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                         style: TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.w600,
-                          color: isToday ? const Color(0xFF89F5E7) : AppColors.inkSecondary,
+                          color: isToday
+                              ? const Color(0xFF89F5E7)
+                              : AppColors.inkSecondary,
                         ),
                       ),
                       Text(
@@ -458,7 +501,6 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                   ),
                 ),
                 const SizedBox(width: 12),
-                
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -474,29 +516,37 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                               color: AppColors.ink,
                             ),
                           ),
-                          
-                          
-                          
-                          
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 2),
                             decoration: BoxDecoration(
                               color: isToday
-                                  ? AppColors.primary.withOpacity( 0.12)
-                                  : (e == null ? AppColors.surfaceLow : (isPast ? AppColors.surfaceLow : AppColors.surfaceLow)),
-                              borderRadius: BorderRadius.circular(AppColors.radiusFull),
+                                  ? AppColors.primary.withOpacity(0.12)
+                                  : (e == null
+                                      ? AppColors.surfaceLow
+                                      : (isPast
+                                          ? AppColors.surfaceLow
+                                          : AppColors.surfaceLow)),
+                              borderRadius:
+                                  BorderRadius.circular(AppColors.radiusFull),
                               border: Border.all(
-                                color: isToday ? AppColors.primary : AppColors.border,
+                                color: isToday
+                                    ? AppColors.primary
+                                    : AppColors.border,
                               ),
                             ),
                             child: Text(
                               e == null
                                   ? 'Libur'
-                                  : (isToday ? 'HARI INI' : (isPast ? 'Selesai' : 'Mendatang')),
+                                  : (isToday
+                                      ? 'HARI INI'
+                                      : (isPast ? 'Selesai' : 'Mendatang')),
                               style: TextStyle(
                                 fontSize: 10,
                                 fontWeight: FontWeight.w600,
-                                color: isToday ? AppColors.primary : AppColors.inkSecondary,
+                                color: isToday
+                                    ? AppColors.primary
+                                    : AppColors.inkSecondary,
                               ),
                             ),
                           ),
@@ -507,31 +557,36 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                         Row(
                           children: [
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 6, vertical: 2),
                               decoration: BoxDecoration(
                                 color: AppColors.surfaceLow,
                                 borderRadius: BorderRadius.circular(6),
-                                border: Border.all(color: AppColors.border.withOpacity( 0.6)),
+                                border: Border.all(
+                                    color: AppColors.border.withOpacity(0.6)),
                               ),
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Icon(shiftIcon, size: 12, color: AppColors.secondary),
+                                  Icon(shiftIcon,
+                                      size: 12, color: AppColors.secondary),
                                   const SizedBox(width: 4),
                                   Text(
                                     e.window,
-                                    style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.secondary),
+                                    style: const TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w600,
+                                        color: AppColors.secondary),
                                   ),
                                 ],
                               ),
                             ),
-                            
-                            
                             if (e.durationHours != null) ...[
                               const SizedBox(width: 6),
                               Text(
                                 '${e.durationHours} Jam',
-                                style: const TextStyle(fontSize: 11, color: AppColors.outline),
+                                style: const TextStyle(
+                                    fontSize: 11, color: AppColors.outline),
                               ),
                             ],
                           ],
@@ -539,7 +594,8 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                       ] else ...[
                         const Text(
                           'Tidak ada penugasan dinas pada hari ini.',
-                          style: TextStyle(fontSize: 11.5, color: AppColors.outline),
+                          style: TextStyle(
+                              fontSize: 11.5, color: AppColors.outline),
                         ),
                       ],
                     ],
@@ -547,23 +603,26 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                 ),
               ],
             ),
-
             if (e != null && (e.overnight || e.kind == ShiftKind.malam)) ...[
               const SizedBox(height: 8),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: AppColors.secondaryFixed.withOpacity( 0.4),
+                  color: AppColors.secondaryFixed.withOpacity(0.4),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: const Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.nightlight, size: 13, color: AppColors.secondary),
+                    Icon(Icons.nightlight,
+                        size: 13, color: AppColors.secondary),
                     SizedBox(width: 4),
                     Text(
                       'Melewati Tengah Malam +1 Hari',
-                      style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w600, color: AppColors.secondary),
+                      style: TextStyle(
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.secondary),
                     ),
                   ],
                 ),
@@ -580,37 +639,53 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.border.withOpacity( 0.6)),
+          border: Border.all(color: AppColors.border.withOpacity(0.6)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
               'Pedoman Kode Dinas RS',
-              style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: AppColors.ink),
+              style: TextStyle(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 13,
+                  color: AppColors.ink),
             ),
             const SizedBox(height: 8),
-            _legendRow(color: AppColors.primary, title: 'Pagi (P)', time: '07:00 – 15:00 WIB'),
-            _legendRow(color: AppColors.secondary, title: 'Siang (S)', time: '14:00 – 21:00 WIB'),
-            _legendRow(color: AppColors.primaryContainer, title: 'Malam (M)', time: '21:00 – 07:00 WIB (+1)'),
+            _legendRow(
+                color: AppColors.primary,
+                title: 'Pagi (P)',
+                time: '07:00 – 15:00 WIB'),
+            _legendRow(
+                color: AppColors.secondary,
+                title: 'Siang (S)',
+                time: '14:00 – 21:00 WIB'),
+            _legendRow(
+                color: AppColors.primaryContainer,
+                title: 'Malam (M)',
+                time: '21:00 – 07:00 WIB (+1)'),
             const SizedBox(height: 6),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
               decoration: BoxDecoration(
                 color: AppColors.surfaceContainer,
                 borderRadius: BorderRadius.circular(6),
-                border: Border.all(color: AppColors.secondary.withOpacity( 0.4)),
+                border: Border.all(color: AppColors.secondary.withOpacity(0.4)),
               ),
               child: const Text(
                 'Lintas Hari (+1)',
-                style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.secondary),
+                style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.secondary),
               ),
             ),
           ],
         ),
       );
 
-  Widget _legendRow({required Color color, required String title, required String time}) {
+  Widget _legendRow(
+      {required Color color, required String title, required String time}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 3),
       child: Row(
@@ -621,9 +696,15 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
             decoration: BoxDecoration(color: color, shape: BoxShape.circle),
           ),
           const SizedBox(width: 8),
-          Text(title, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.ink)),
+          Text(title,
+              style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.ink)),
           const Spacer(),
-          Text(time, style: const TextStyle(fontSize: 11.5, color: AppColors.inkSecondary)),
+          Text(time,
+              style: const TextStyle(
+                  fontSize: 11.5, color: AppColors.inkSecondary)),
         ],
       ),
     );
@@ -645,14 +726,18 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                 SizedBox(width: 8),
                 Text(
                   'Ajukan Tukar Shift',
-                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13.5, color: AppColors.primary),
+                  style: TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 13.5,
+                      color: AppColors.primary),
                 ),
               ],
             ),
             const SizedBox(height: 4),
             const Text(
               'Sesuai SOP Keperawatan, permohonan wajib diajukan maksimal 1x24 jam sebelum shift dimulai dan diverifikasi Kepala Ruangan.',
-              style: TextStyle(fontSize: 11.5, color: AppColors.inkSecondary, height: 1.35),
+              style: TextStyle(
+                  fontSize: 11.5, color: AppColors.inkSecondary, height: 1.35),
             ),
             if (widget.onRequestLeave != null) ...[
               const SizedBox(height: 12),

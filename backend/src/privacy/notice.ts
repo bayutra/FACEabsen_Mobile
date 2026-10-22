@@ -1,4 +1,3 @@
- 
 export const PRIVACY_NOTICE_ID = {
   version: '2026-10-01',
   lang: 'id',

@@ -9,10 +9,6 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'fakes.dart';
 
-
-
-
-
 class _SessionFakeAdapter implements HttpClientAdapter {
   Map<String, List<String>> get _json => {
         Headers.contentTypeHeader: [Headers.jsonContentType],
@@ -60,10 +56,9 @@ void main() {
         password: 'pw',
         rememberMe: false,
       );
-      
+
       expect(await store.readAccessToken(), 'access-123');
-      
-      
+
       expect(await store.readRefreshToken(), isNull);
     });
 
@@ -122,7 +117,8 @@ void main() {
       await tester.enterText(find.byType(TextField).at(1), 'Password123!');
     }
 
-    testWidgets('checked by default → login with rememberMe=true', (tester) async {
+    testWidgets('checked by default → login with rememberMe=true',
+        (tester) async {
       final FakeAuthRepository auth = FakeAuthRepository();
       var done = false;
       await pumpLogin(tester, auth, onDone: () => done = true);

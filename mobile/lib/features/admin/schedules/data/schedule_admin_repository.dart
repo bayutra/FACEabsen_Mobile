@@ -1,6 +1,5 @@
 import 'package:dio/dio.dart';
 
-
 class AdminScheduleEntry {
   const AdminScheduleEntry({
     required this.id,
@@ -41,7 +40,6 @@ class AdminScheduleEntry {
   }
 }
 
-
 class AdminSchedulePage {
   const AdminSchedulePage({
     required this.items,
@@ -55,7 +53,6 @@ class AdminSchedulePage {
   final int totalPages;
   final int totalItems;
 }
-
 
 class AdminScheduleEmployee {
   const AdminScheduleEmployee({
@@ -84,7 +81,6 @@ class AdminScheduleEmployee {
     );
   }
 }
-
 
 class AdminShiftOption {
   const AdminShiftOption({
@@ -122,11 +118,6 @@ class AdminShiftOption {
     );
   }
 }
-
-
-
-
-
 
 class ScheduleAdminRepository {
   ScheduleAdminRepository({required Dio dio}) : _dio = dio;
@@ -167,8 +158,6 @@ class ScheduleAdminRepository {
     );
   }
 
-  
-  
   Future<List<AdminScheduleEmployee>> activeEmployees() async {
     final List<AdminScheduleEmployee> items = <AdminScheduleEmployee>[];
     int page = 1;
@@ -235,8 +224,6 @@ class ScheduleAdminRepository {
 String _dateKey(DateTime date) => '${date.year.toString().padLeft(4, '0')}-'
     '${date.month.toString().padLeft(2, '0')}-'
     '${date.day.toString().padLeft(2, '0')}';
-
-
 
 DateTime? _dateOf(Object? value) {
   if (value is! String || value.isEmpty) return null;

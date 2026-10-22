@@ -2,7 +2,8 @@ import 'package:face_absen_mobile/features/schedule/data/schedule_repository.dar
 import 'package:face_absen_mobile/features/schedule/domain/shift_status.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-ScheduleEntry entry(String start, String end, {bool overnight = false, String name = 'SHIFT'}) =>
+ScheduleEntry entry(String start, String end,
+        {bool overnight = false, String name = 'SHIFT'}) =>
     ScheduleEntry.fromJson({
       'id': 'sch1',
       'workDate': '2026-10-06T00:00:00.000Z',
@@ -26,7 +27,8 @@ void main() {
     });
 
     test('survives a missing shift block without throwing', () {
-      final e = ScheduleEntry.fromJson({'id': 'x', 'workDate': '2026-10-06T00:00:00.000Z'});
+      final e = ScheduleEntry.fromJson(
+          {'id': 'x', 'workDate': '2026-10-06T00:00:00.000Z'});
       expect(e.shiftName, '—');
       expect(e.window, '--:-- → --:--');
     });
@@ -74,8 +76,10 @@ void main() {
           'earlyCheckoutThresholdMin': 15,
         },
       });
-      expect(e.checkInStatusAt(DateTime(2026, 10, 6, 7, 20)).status, PunchStatus.late);
-      expect(e.checkOutStatusAt(DateTime(2026, 10, 6, 14, 30)).status, PunchStatus.earlyCheckout);
+      expect(e.checkInStatusAt(DateTime(2026, 10, 6, 7, 20)).status,
+          PunchStatus.late);
+      expect(e.checkOutStatusAt(DateTime(2026, 10, 6, 14, 30)).status,
+          PunchStatus.earlyCheckout);
     });
   });
 
@@ -87,23 +91,20 @@ void main() {
     });
 
     test('boundary hours map to the expected kind', () {
-      
       expect(entry('13:59', '21:59').kind, ShiftKind.pagi);
       expect(entry('14:00', '22:00').kind, ShiftKind.siang);
-      
+
       expect(entry('10:00', '06:00', overnight: true).kind, ShiftKind.malam);
     });
 
-    test('malformed or out-of-range times degrade to morning, never to night', () {
-      
-      
+    test('malformed or out-of-range times degrade to morning, never to night',
+        () {
       expect(entry('abc', 'def').kind, ShiftKind.pagi);
       expect(entry('', '').kind, ShiftKind.pagi);
       expect(entry('99:99', '99:99').kind, ShiftKind.pagi);
     });
 
     test('valid early-morning window is not mistaken for a night shift', () {
-      
       expect(entry('00:00', '08:00').kind, ShiftKind.pagi);
     });
   });

@@ -1,17 +1,19 @@
-import { createParamDecorator, type ExecutionContext, SetMetadata } from '@nestjs/common';
+import {
+  createParamDecorator,
+  type ExecutionContext,
+  SetMetadata,
+} from '@nestjs/common';
 
 export const IS_PUBLIC_KEY = 'auth:public';
 export const ROLES_KEY = 'auth:roles';
 export const PERMS_KEY = 'auth:permissions';
 
- 
 export const Public = () => SetMetadata(IS_PUBLIC_KEY, true);
 
- 
 export const Roles = (...roles: string[]) => SetMetadata(ROLES_KEY, roles);
 
- 
-export const RequirePermissions = (...perms: string[]) => SetMetadata(PERMS_KEY, perms);
+export const RequirePermissions = (...perms: string[]) =>
+  SetMetadata(PERMS_KEY, perms);
 
 export interface AuthContext {
   userId: string;

@@ -4,13 +4,6 @@ import 'package:flutter/foundation.dart';
 import '../storage/secure_store.dart';
 import 'env.dart';
 
-
-
-
-
-
-
-
 String? normalizeBaseUrl(String raw) {
   String value = raw.trim();
   if (value.isEmpty) return null;
@@ -21,21 +14,15 @@ String? normalizeBaseUrl(String raw) {
   if (uri.scheme != 'http' && uri.scheme != 'https') return null;
   if (uri.host.isEmpty) return null;
 
-  
-  
-  final String path = (uri.path.isEmpty || uri.path == '/') ? '/api/v1' : uri.path;
-  String normalized = uri.replace(path: path, query: null, fragment: null).toString();
+  final String path =
+      (uri.path.isEmpty || uri.path == '/') ? '/api/v1' : uri.path;
+  String normalized =
+      uri.replace(path: path, query: null, fragment: null).toString();
   while (normalized.endsWith('/')) {
     normalized = normalized.substring(0, normalized.length - 1);
   }
   return normalized;
 }
-
-
-
-
-
-
 
 class ServerSettings extends ChangeNotifier {
   ServerSettings({required SecureStore store, required Dio dio})
@@ -45,33 +32,25 @@ class ServerSettings extends ChangeNotifier {
   final SecureStore _store;
   final Dio _dio;
 
-  
   String get baseUrl => _dio.options.baseUrl;
 
-  
   String get hostLabel {
     final Uri? uri = Uri.tryParse(baseUrl);
     return uri?.host.isNotEmpty == true ? uri!.host : baseUrl;
   }
 
-  
   String get defaultBaseUrl => Env.apiBaseUrl;
 
-  
-  
   Future<void> restore() async {
     final String? saved = await _store.readApiBaseUrl();
     if (saved == null || saved.isEmpty) return;
     if (normalizeBaseUrl(saved) == null) {
-      
       await _store.clearApiBaseUrl();
       return;
     }
     _dio.options.baseUrl = saved;
   }
 
-  
-  
   Future<String> apply(String raw) async {
     if (raw.trim().isEmpty) {
       await _store.clearApiBaseUrl();

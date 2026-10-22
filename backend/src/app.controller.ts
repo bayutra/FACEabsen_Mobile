@@ -15,7 +15,6 @@ export class AppController {
     return this.appService.health();
   }
 
-   
   @Get('health/live')
   live() {
     return this.appService.live();

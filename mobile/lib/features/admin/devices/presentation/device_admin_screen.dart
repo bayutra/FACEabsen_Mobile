@@ -7,8 +7,6 @@ import '../data/device_admin_repository.dart';
 import '../domain/device_admin_models.dart';
 import '../../presentation/admin_widgets.dart';
 
-
-
 class DeviceAdminScreen extends StatefulWidget {
   const DeviceAdminScreen({super.key, required this.dio});
 
@@ -19,7 +17,8 @@ class DeviceAdminScreen extends StatefulWidget {
 }
 
 class _DeviceAdminScreenState extends State<DeviceAdminScreen> {
-  late final DeviceAdminRepository _repo = DeviceAdminRepository(dio: widget.dio);
+  late final DeviceAdminRepository _repo =
+      DeviceAdminRepository(dio: widget.dio);
 
   AdminDevicePage? _page;
   String? _error;
@@ -169,7 +168,8 @@ class _DeviceAdminScreenState extends State<DeviceAdminScreen> {
       final bool ok = await confirmAdminAction(
         context,
         title: 'Tandai perangkat hilang?',
-        message: 'Perangkat tidak bisa dipakai presensi sampai diaktifkan ulang.',
+        message:
+            'Perangkat tidak bisa dipakai presensi sampai diaktifkan ulang.',
         confirmLabel: 'Tandai Hilang',
         destructive: true,
       );
@@ -203,7 +203,13 @@ class _DeviceAdminScreenState extends State<DeviceAdminScreen> {
           ),
           const SizedBox(height: 8),
           AdminFilterChips(
-            values: const <String?>[null, 'PENDING', 'ACTIVE', 'REVOKED', 'LOST'],
+            values: const <String?>[
+              null,
+              'PENDING',
+              'ACTIVE',
+              'REVOKED',
+              'LOST'
+            ],
             selected: _status,
             labels: const <String, String>{
               'all': 'Semua',
@@ -231,7 +237,9 @@ class _DeviceAdminScreenState extends State<DeviceAdminScreen> {
           else
             for (final AdminDevice d in items) ...<Widget>[
               AdminTile(
-                icon: d.platform == 'IOS' ? Icons.phone_iphone : Icons.phone_android,
+                icon: d.platform == 'IOS'
+                    ? Icons.phone_iphone
+                    : Icons.phone_android,
                 title: d.deviceName ?? d.platform,
                 subtitle: '${d.employeeName} (${d.employeeNo}) · '
                     '${adminShortDate(d.registeredAt)}',

@@ -18,7 +18,6 @@ import type {
   UpdateShiftDto,
 } from './dto.js';
 
- 
 @Injectable()
 export class ShiftsService {
   constructor(
@@ -26,13 +25,21 @@ export class ShiftsService {
     private readonly audit: AuditService,
   ) {}
 
-  
-
-  async createShift(dto: CreateShiftDto, actorId: string, meta: { ip?: string } = {}) {
-    const hospital = await this.prisma.hospital.findUnique({ where: { id: dto.hospitalId } });
+  async createShift(
+    dto: CreateShiftDto,
+    actorId: string,
+    meta: { ip?: string } = {},
+  ) {
+    const hospital = await this.prisma.hospital.findUnique({
+      where: { id: dto.hospitalId },
+    });
     if (!hospital) throw new NotFoundException('Hospital not found');
-    
-    await this.assertSameFacility(actorId, dto.hospitalId, 'Hospital not found');
+
+    await this.assertSameFacility(
+      actorId,
+      dto.hospitalId,
+      'Hospital not found',
+    );
     if (dto.startTime === dto.endTime) {
       throw new BadRequestException('Shift start and end cannot be equal');
     }
@@ -43,13 +50,16 @@ export class ShiftsService {
       );
     }
     const existing = await this.prisma.shift.findUnique({
-      where: { hospitalId_name: { hospitalId: dto.hospitalId, name: dto.name } },
+      where: {
+        hospitalId_name: { hospitalId: dto.hospitalId, name: dto.name },
+      },
     });
-    if (existing) throw new ConflictException('Shift name already exists for this hospital');
+    if (existing)
+      throw new ConflictException(
+        'Shift name already exists for this hospital',
+      );
 
     try {
-      
-      
       return await this.prisma.$transaction(async (tx) => {
         const shift = await tx.shift.create({
           data: {
@@ -70,7 +80,10 @@ export class ShiftsService {
             targetType: 'shift',
             targetId: shift.id,
             ipAddress: meta.ip,
-            metadata: { name: dto.name, window: `${dto.startTime} -> ${dto.endTime}` },
+            metadata: {
+              name: dto.name,
+              window: `${dto.startTime} -> ${dto.endTime}`,
+            },
           },
           tx,
         );
@@ -82,7 +95,6 @@ export class ShiftsService {
   }
 
   async listShifts(query: ListShiftsQuery, userId: string, roles: string[]) {
-    
     let hospitalId = query.hospitalId;
     if (!satisfiesRole(roles, 'SUPER_ADMIN')) {
       const scope = await resolveHospitalScope(this.prisma, userId, roles);
@@ -102,19 +114,34 @@ export class ShiftsService {
       include: { hospital: { select: { id: true, code: true, name: true } } },
     });
     if (!shift) throw new NotFoundException('Shift not found');
-    await this.assertSameFacility(userId, shift.hospitalId, 'Shift not found', roles);
+    await this.assertSameFacility(
+      userId,
+      shift.hospitalId,
+      'Shift not found',
+      roles,
+    );
     return shift;
   }
 
-  async updateShift(id: string, dto: UpdateShiftDto, actorId: string, meta: { ip?: string } = {}) {
+  async updateShift(
+    id: string,
+    dto: UpdateShiftDto,
+    actorId: string,
+    meta: { ip?: string } = {},
+  ) {
     const existing = await this.prisma.shift.findUnique({ where: { id } });
     if (!existing) throw new NotFoundException('Shift not found');
-    await this.assertSameFacility(actorId, existing.hospitalId, 'Shift not found');
+    await this.assertSameFacility(
+      actorId,
+      existing.hospitalId,
+      'Shift not found',
+    );
 
     const startTime = dto.startTime ?? existing.startTime;
     const endTime = dto.endTime ?? existing.endTime;
-    if (startTime === endTime) throw new BadRequestException('Shift start and end cannot be equal');
-    
+    if (startTime === endTime)
+      throw new BadRequestException('Shift start and end cannot be equal');
+
     parseHHmm(startTime);
     parseHHmm(endTime);
     const derived = isOvernightRange(startTime, endTime);
@@ -126,9 +153,14 @@ export class ShiftsService {
     }
     if (dto.name && dto.name !== existing.name) {
       const clash = await this.prisma.shift.findUnique({
-        where: { hospitalId_name: { hospitalId: existing.hospitalId, name: dto.name } },
+        where: {
+          hospitalId_name: { hospitalId: existing.hospitalId, name: dto.name },
+        },
       });
-      if (clash) throw new ConflictException('Shift name already exists for this hospital');
+      if (clash)
+        throw new ConflictException(
+          'Shift name already exists for this hospital',
+        );
     }
 
     try {
@@ -150,15 +182,22 @@ export class ShiftsService {
     }
   }
 
-   
   async deleteShift(id: string, actorId: string, meta: { ip?: string } = {}) {
     const existing = await this.prisma.shift.findUnique({ where: { id } });
     if (!existing) throw new NotFoundException('Shift not found');
-    await this.assertSameFacility(actorId, existing.hospitalId, 'Shift not found');
+    await this.assertSameFacility(
+      actorId,
+      existing.hospitalId,
+      'Shift not found',
+    );
 
-    const used = await this.prisma.employeeSchedule.findFirst({ where: { shiftId: id } });
+    const used = await this.prisma.employeeSchedule.findFirst({
+      where: { shiftId: id },
+    });
     if (used) {
-      throw new ConflictException('Shift is still on a roster and cannot be deleted');
+      throw new ConflictException(
+        'Shift is still on a roster and cannot be deleted',
+      );
     }
 
     await this.prisma.shift.delete({ where: { id } });
@@ -173,16 +212,27 @@ export class ShiftsService {
     return { removed: true };
   }
 
-  
-
-   
   async listMineFor(userId: string, query: ListSchedulesQuery) {
-    const employee = await this.prisma.employee.findUnique({ where: { userId }, select: { id: true } });
-    if (!employee) return { data: [], pagination: { page: 1, pageSize: query.pageSize ?? 20, totalItems: 0, totalPages: 0 } };
+    const employee = await this.prisma.employee.findUnique({
+      where: { userId },
+      select: { id: true },
+    });
+    if (!employee)
+      return {
+        data: [],
+        pagination: {
+          page: 1,
+          pageSize: query.pageSize ?? 20,
+          totalItems: 0,
+          totalPages: 0,
+        },
+      };
 
     const page = query.page ?? 1;
     const pageSize = query.pageSize ?? 20;
-    const AND: Prisma.EmployeeScheduleWhereInput[] = [{ employeeId: employee.id }];
+    const AND: Prisma.EmployeeScheduleWhereInput[] = [
+      { employeeId: employee.id },
+    ];
     if (query.shiftId) AND.push({ shiftId: query.shiftId });
     if (query.from) AND.push({ workDate: { gte: new Date(query.from) } });
     if (query.to) AND.push({ workDate: { lte: new Date(query.to) } });
@@ -196,8 +246,6 @@ export class ShiftsService {
         skip: (page - 1) * pageSize,
         take: pageSize,
         include: {
-          
-          
           shift: {
             select: {
               id: true,
@@ -215,31 +263,56 @@ export class ShiftsService {
     ]);
     return {
       data: rows,
-      pagination: { page, pageSize, totalItems: total, totalPages: Math.ceil(total / pageSize) },
+      pagination: {
+        page,
+        pageSize,
+        totalItems: total,
+        totalPages: Math.ceil(total / pageSize),
+      },
     };
   }
 
-  async assignSchedule(dto: CreateScheduleDto, actorId: string, meta: { ip?: string } = {}) {
+  async assignSchedule(
+    dto: CreateScheduleDto,
+    actorId: string,
+    meta: { ip?: string } = {},
+  ) {
     const employee = await this.prisma.employee.findUnique({
       where: { id: dto.employeeId },
       include: { department: { select: { hospitalId: true } } },
     });
     if (!employee) throw new NotFoundException('Employee not found');
-    const shift = await this.prisma.shift.findUnique({ where: { id: dto.shiftId } });
+    const shift = await this.prisma.shift.findUnique({
+      where: { id: dto.shiftId },
+    });
     if (!shift) throw new NotFoundException('Shift not found');
-    
-    await this.assertSameFacility(actorId, employee.department?.hospitalId, 'Employee not found');
+
+    await this.assertSameFacility(
+      actorId,
+      employee.department?.hospitalId,
+      'Employee not found',
+    );
     await this.assertSameFacility(actorId, shift.hospitalId, 'Shift not found');
 
     const clash = await this.prisma.employeeSchedule.findUnique({
-      where: { employeeId_workDate: { employeeId: dto.employeeId, workDate: new Date(dto.workDate) } },
+      where: {
+        employeeId_workDate: {
+          employeeId: dto.employeeId,
+          workDate: new Date(dto.workDate),
+        },
+      },
     });
-    if (clash) throw new ConflictException('Employee already scheduled on this date');
+    if (clash)
+      throw new ConflictException('Employee already scheduled on this date');
 
     try {
       return await this.prisma.$transaction(async (tx) => {
         const schedule = await tx.employeeSchedule.create({
-          data: { employeeId: dto.employeeId, shiftId: dto.shiftId, workDate: new Date(dto.workDate) },
+          data: {
+            employeeId: dto.employeeId,
+            shiftId: dto.shiftId,
+            workDate: new Date(dto.workDate),
+          },
           include: {
             shift: true,
             employee: { select: { id: true, name: true, employeeNo: true } },
@@ -252,7 +325,11 @@ export class ShiftsService {
             targetType: 'schedule',
             targetId: schedule.id,
             ipAddress: meta.ip,
-            metadata: { employeeId: dto.employeeId, shiftId: dto.shiftId, workDate: dto.workDate },
+            metadata: {
+              employeeId: dto.employeeId,
+              shiftId: dto.shiftId,
+              workDate: dto.workDate,
+            },
           },
           tx,
         );
@@ -263,16 +340,22 @@ export class ShiftsService {
     }
   }
 
-  async listSchedules(query: ListSchedulesQuery, userId: string, roles: string[]) {
+  async listSchedules(
+    query: ListSchedulesQuery,
+    userId: string,
+    roles: string[],
+  ) {
     const page = query.page ?? 1;
     const pageSize = query.pageSize ?? 20;
     const AND: Array<Record<string, unknown>> = [];
-    
-    
+
     if (!satisfiesRole(roles, 'SUPER_ADMIN')) {
       const scope = await resolveHospitalScope(this.prisma, userId, roles);
       if (scope.kind !== 'hospital') {
-        return { data: [], pagination: { page, pageSize, totalItems: 0, totalPages: 0 } };
+        return {
+          data: [],
+          pagination: { page, pageSize, totalItems: 0, totalPages: 0 },
+        };
       }
       AND.push({ shift: { hospitalId: scope.hospitalId } });
     }
@@ -308,7 +391,12 @@ export class ShiftsService {
     ]);
     return {
       data: rows,
-      pagination: { page, pageSize, totalItems: total, totalPages: Math.ceil(total / pageSize) },
+      pagination: {
+        page,
+        pageSize,
+        totalItems: total,
+        totalPages: Math.ceil(total / pageSize),
+      },
     };
   }
 
@@ -318,12 +406,22 @@ export class ShiftsService {
       include: {
         shift: true,
         employee: {
-          select: { id: true, name: true, employeeNo: true, department: { select: { hospitalId: true } } },
+          select: {
+            id: true,
+            name: true,
+            employeeNo: true,
+            department: { select: { hospitalId: true } },
+          },
         },
       },
     });
     if (!schedule) throw new NotFoundException('Schedule not found');
-    await this.assertSameFacility(userId, schedule.shift?.hospitalId, 'Schedule not found', roles);
+    await this.assertSameFacility(
+      userId,
+      schedule.shift?.hospitalId,
+      'Schedule not found',
+      roles,
+    );
     await this.assertSameFacility(
       userId,
       schedule.employee?.department?.hospitalId ?? schedule.shift?.hospitalId,
@@ -333,7 +431,11 @@ export class ShiftsService {
     return schedule;
   }
 
-  async unassignSchedule(id: string, actorId: string, meta: { ip?: string } = {}) {
+  async unassignSchedule(
+    id: string,
+    actorId: string,
+    meta: { ip?: string } = {},
+  ) {
     const existing = await this.prisma.employeeSchedule.findUnique({
       where: { id },
       include: {
@@ -342,14 +444,23 @@ export class ShiftsService {
       },
     });
     if (!existing) throw new NotFoundException('Schedule not found');
-    await this.assertSameFacility(actorId, existing.shift?.hospitalId, 'Schedule not found');
+    await this.assertSameFacility(
+      actorId,
+      existing.shift?.hospitalId,
+      'Schedule not found',
+    );
     await this.assertSameFacility(
       actorId,
       existing.employee?.department?.hospitalId ?? existing.shift?.hospitalId,
       'Schedule not found',
     );
-    const used = await this.prisma.attendance.findFirst({ where: { scheduleId: id } });
-    if (used) throw new ConflictException('Schedule has attendance and cannot be removed');
+    const used = await this.prisma.attendance.findFirst({
+      where: { scheduleId: id },
+    });
+    if (used)
+      throw new ConflictException(
+        'Schedule has attendance and cannot be removed',
+      );
 
     await this.prisma.employeeSchedule.delete({ where: { id } });
     await this.audit.log({
@@ -363,13 +474,16 @@ export class ShiftsService {
   }
 
   private mapUnique(e: unknown, label: string): unknown {
-    if (typeof e === 'object' && e !== null && (e as { code?: string }).code === 'P2002') {
+    if (
+      typeof e === 'object' &&
+      e !== null &&
+      (e as { code?: string }).code === 'P2002'
+    ) {
       return new ConflictException(`${label} already exists`);
     }
     return e;
   }
 
-   
   private async assertSameFacility(
     actorId: string,
     targetHospitalId: string | null | undefined,
@@ -379,7 +493,11 @@ export class ShiftsService {
     const roles = actorRoles ?? (await this.getRoles(actorId));
     if (satisfiesRole(roles, 'SUPER_ADMIN')) return;
     const scope = await resolveHospitalScope(this.prisma, actorId, roles);
-    if (scope.kind !== 'hospital' || !targetHospitalId || targetHospitalId !== scope.hospitalId) {
+    if (
+      scope.kind !== 'hospital' ||
+      !targetHospitalId ||
+      targetHospitalId !== scope.hospitalId
+    ) {
       throw new NotFoundException(message);
     }
   }

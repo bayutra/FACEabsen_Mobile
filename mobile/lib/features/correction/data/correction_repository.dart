@@ -2,7 +2,6 @@ import 'package:dio/dio.dart';
 
 import '../domain/correction_models.dart';
 
-
 class CorrectionRepository {
   CorrectionRepository({required Dio dio}) : _dio = dio;
 
@@ -32,7 +31,8 @@ class CorrectionRepository {
     final Response res = await _dio.get('/corrections/me');
     final List list = res.data as List;
     return list
-        .map((e) => CorrectionItem.fromJson(Map<String, dynamic>.from(e as Map)))
+        .map(
+            (e) => CorrectionItem.fromJson(Map<String, dynamic>.from(e as Map)))
         .toList();
   }
 

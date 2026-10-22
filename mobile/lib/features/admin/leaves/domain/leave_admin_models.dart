@@ -1,7 +1,3 @@
-
-
-
-
 library;
 
 const Map<String, String> leaveTypeLabels = <String, String>{
@@ -15,12 +11,12 @@ const Map<String, String> leaveTypeLabels = <String, String>{
 String leaveTypeLabel(String type) => leaveTypeLabels[type] ?? type;
 
 String leaveStatusLabel(String status) => switch (status) {
-  'PENDING' => 'Menunggu',
-  'APPROVED' => 'Disetujui',
-  'REJECTED' => 'Ditolak',
-  'CANCELLED' => 'Dibatalkan',
-  _ => status,
-};
+      'PENDING' => 'Menunggu',
+      'APPROVED' => 'Disetujui',
+      'REJECTED' => 'Ditolak',
+      'CANCELLED' => 'Dibatalkan',
+      _ => status,
+    };
 
 class AdminLeave {
   const AdminLeave({
@@ -57,7 +53,6 @@ class AdminLeave {
 
   String get statusLabel => leaveStatusLabel(status);
 
-  
   int? get dayCount {
     final DateTime? start = startDate;
     final DateTime? end = endDate;

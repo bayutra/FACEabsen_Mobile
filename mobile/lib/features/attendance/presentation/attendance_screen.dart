@@ -14,8 +14,6 @@ import '../../schedule/data/schedule_repository.dart';
 import '../../schedule/domain/shift_status.dart';
 import '../../../core/theme/app_colors.dart';
 
-
-
 class AttendanceScreen extends StatefulWidget {
   const AttendanceScreen({
     super.key,
@@ -31,12 +29,9 @@ class AttendanceScreen extends StatefulWidget {
   final FaceRepository faces;
   final DeviceRepository devices;
 
-  
   final String displayName;
   final String employeeNo;
 
-  
-  
   final ScheduleEntry? shift;
 
   @override
@@ -47,20 +42,13 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   String? _phase;
   String? _error;
 
-  
-  
   String? _queued;
   AttendanceResult? _result;
   bool _busy = false;
 
-  
-  
-  
   CancelToken? _cancelToken;
   bool _cancelled = false;
 
-  
-  
   int _step = 0;
 
   static String _initials(String name) {
@@ -92,19 +80,19 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       _step = 0;
       _phase = 'Verifikasi wajah…';
     });
-    
-    
+
     List<double>? embedding;
     Map<String, Object>? live;
     String? deviceId;
     bool compromised = false;
     try {
       if (!mounted || _cancelled) return;
-      
-      
-      final Map<String, Object>? att = await Navigator.of(context).push<Map<String, Object>>(
+
+      final Map<String, Object>? att =
+          await Navigator.of(context).push<Map<String, Object>>(
         MaterialPageRoute(
-          builder: (_) => PassiveScanScreen(faces: widget.faces, displayName: widget.displayName),
+          builder: (_) => PassiveScanScreen(
+              faces: widget.faces, displayName: widget.displayName),
         ),
       );
       if (!mounted || _cancelled) return;
@@ -116,7 +104,10 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
         });
         return;
       }
-      final List<double> captured = (att['embedding'] as List).cast<num>().map((num e) => e.toDouble()).toList();
+      final List<double> captured = (att['embedding'] as List)
+          .cast<num>()
+          .map((num e) => e.toDouble())
+          .toList();
       embedding = captured;
       live = att;
 
@@ -146,21 +137,26 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       });
       final AttendanceResult result = checkIn
           ? await widget.attendance.checkIn(
-              embedding: embedding, liveness: live, deviceId: deviceId, compromised: compromised, cancelToken: _cancelToken)
+              embedding: embedding,
+              liveness: live,
+              deviceId: deviceId,
+              compromised: compromised,
+              cancelToken: _cancelToken)
           : await widget.attendance.checkOut(
-              embedding: embedding, liveness: live, deviceId: deviceId, compromised: compromised, cancelToken: _cancelToken);
+              embedding: embedding,
+              liveness: live,
+              deviceId: deviceId,
+              compromised: compromised,
+              cancelToken: _cancelToken);
       if (!mounted || _cancelled) return;
-      
-      
+
       FlushResult? flushed;
       try {
         final OutboxRepository box = widget.attendance.outbox();
         if (await box.count() > 0) {
           flushed = await widget.attendance.flushOutbox(outbox: box);
         }
-      } catch (_) {
-        
-      }
+      } catch (_) {}
       if (!mounted || _cancelled) return;
       setState(() {
         _result = result;
@@ -171,8 +167,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
           _queued = '${flushed.sent} presensi tertunda berhasil dikirim.';
         }
       });
-      
-      
+
       if (mounted) {
         await Navigator.of(context).push<void>(
           MaterialPageRoute(
@@ -186,10 +181,6 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
         );
       }
     } on AttendanceOffline {
-      
-      
-      
-      
       if (!mounted || _cancelled) return;
       if (embedding != null && live != null && deviceId != null) {
         try {
@@ -203,9 +194,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                   queuedAt: DateTime.now().toUtc(),
                 ),
               );
-        } catch (_) {
-          
-        }
+        } catch (_) {}
       }
       setState(() {
         _queued = 'Presensi tersimpan di perangkat, akan dikirim otomatis.';
@@ -213,8 +202,6 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
         _phase = null;
       });
     } on AttendanceRejected catch (e) {
-      
-      
       if (!mounted || _cancelled) return;
       setState(() {
         _error = e.message;
@@ -223,10 +210,11 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       });
     } catch (e) {
       if (!mounted || _cancelled) return;
-      
+
       if (e is DioException && e.type == DioExceptionType.cancel) return;
       setState(() {
-        _error = 'Presensi gagal. Periksa koneksi server. (${describeError(e)})';
+        _error =
+            'Presensi gagal. Periksa koneksi server. (${describeError(e)})';
         _busy = false;
         _phase = null;
       });
@@ -279,7 +267,6 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            
             Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
@@ -341,10 +328,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                 ],
               ),
             ),
-
             const SizedBox(height: 16),
-
-            
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
@@ -369,7 +353,8 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                       shape: BoxShape.circle,
                       border: Border.all(color: AppColors.primaryFixed),
                     ),
-                    child: const Icon(Icons.fingerprint, size: 36, color: AppColors.primary),
+                    child: const Icon(Icons.fingerprint,
+                        size: 36, color: AppColors.primary),
                   ),
                   const SizedBox(height: 12),
                   const Text(
@@ -391,7 +376,8 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                   ),
                   const SizedBox(height: 16),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     decoration: BoxDecoration(
                       color: AppColors.surfaceLow,
                       borderRadius: BorderRadius.circular(10),
@@ -399,7 +385,8 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                     child: const Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.verified_user, size: 14, color: AppColors.primaryContainer),
+                        Icon(Icons.verified_user,
+                            size: 14, color: AppColors.primaryContainer),
                         SizedBox(width: 6),
                         Text(
                           'Standar Akreditasi KARS & Permenkes RI',
@@ -415,9 +402,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                 ],
               ),
             ),
-
             const SizedBox(height: 16),
-
             if (_queued != null)
               Padding(
                 padding: const EdgeInsets.only(bottom: 16),
@@ -427,7 +412,6 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                   title: 'Tersimpan di perangkat',
                 ),
               ),
-
             if (_error != null)
               Container(
                 margin: const EdgeInsets.only(bottom: 16),
@@ -439,7 +423,8 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.error_outline, color: AppColors.error, size: 20),
+                    const Icon(Icons.error_outline,
+                        color: AppColors.error, size: 20),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
@@ -454,12 +439,10 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                   ],
                 ),
               ),
-
             if (widget.shift != null) ...[
               _shiftStatusCard(widget.shift!),
               const SizedBox(height: 14),
             ],
-
             if (r != null) ...[
               _ResultCard(result: r),
               const SizedBox(height: 16),
@@ -467,13 +450,15 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                 style: OutlinedButton.styleFrom(
                   minimumSize: const Size(64, 48),
                   side: const BorderSide(color: AppColors.primary),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
                 ),
                 onPressed: () => setState(() => _result = null),
                 icon: const Icon(Icons.refresh, color: AppColors.primary),
                 label: const Text(
                   'Presensi Ulang',
-                  style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600),
+                  style: TextStyle(
+                      color: AppColors.primary, fontWeight: FontWeight.w600),
                 ),
               ),
             ] else ...[
@@ -485,7 +470,8 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                     foregroundColor: Colors.white,
                     elevation: 2,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(AppColors.radiusButton),
+                      borderRadius:
+                          BorderRadius.circular(AppColors.radiusButton),
                     ),
                   ),
                   onPressed: () => _run(true),
@@ -503,9 +489,11 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppColors.secondary,
                     backgroundColor: Colors.white,
-                    side: const BorderSide(color: AppColors.secondary, width: 1.5),
+                    side: const BorderSide(
+                        color: AppColors.secondary, width: 1.5),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(AppColors.radiusButton),
+                      borderRadius:
+                          BorderRadius.circular(AppColors.radiusButton),
                     ),
                   ),
                   onPressed: () => _run(false),
@@ -529,7 +517,6 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               color: Colors.white,
@@ -545,7 +532,8 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                           color: AppColors.primaryContainer,
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        child: const Icon(Icons.local_hospital, color: Colors.white, size: 20),
+                        child: const Icon(Icons.local_hospital,
+                            color: Colors.white, size: 20),
                       ),
                       const SizedBox(width: 10),
                       const Column(
@@ -561,7 +549,9 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                           ),
                           Row(
                             children: [
-                              CircleAvatar(radius: 3, backgroundColor: AppColors.success),
+                              CircleAvatar(
+                                  radius: 3,
+                                  backgroundColor: AppColors.success),
                               SizedBox(width: 4),
                               Text(
                                 'SIMRS Mobile Ver. 3.4',
@@ -577,7 +567,8 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                     ],
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
                       color: AppColors.surfaceLow,
                       borderRadius: BorderRadius.circular(AppColors.radiusFull),
@@ -586,7 +577,8 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                     child: const Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.apartment, size: 14, color: AppColors.primary),
+                        Icon(Icons.apartment,
+                            size: 14, color: AppColors.primary),
                         SizedBox(width: 4),
                         Text(
                           'RSU Darmayu Madiun',
@@ -602,20 +594,18 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                 ],
               ),
             ),
-
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 child: Column(
                   children: [
-                    
                     SizedBox(
                       height: 180,
                       child: Center(
                         child: Stack(
                           alignment: Alignment.center,
                           children: [
-                            
                             Container(
                               width: 170,
                               height: 170,
@@ -627,7 +617,6 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                                 ),
                               ),
                             ),
-                            
                             Container(
                               width: 140,
                               height: 140,
@@ -639,14 +628,14 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                                 ),
                               ),
                             ),
-                            
                             Container(
                               width: 100,
                               height: 100,
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 color: AppColors.primaryContainer,
-                                border: Border.all(color: const Color(0xFF89F5E7), width: 3),
+                                border: Border.all(
+                                    color: const Color(0xFF89F5E7), width: 3),
                                 boxShadow: [
                                   BoxShadow(
                                     color: AppColors.primary.withOpacity(0.3),
@@ -656,10 +645,10 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                                 ],
                               ),
                               child: const Center(
-                                child: Icon(Icons.person, size: 56, color: Colors.white),
+                                child: Icon(Icons.person,
+                                    size: 56, color: Colors.white),
                               ),
                             ),
-                            
                             Positioned(
                               bottom: 35,
                               right: 35,
@@ -675,25 +664,28 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                                     ),
                                   ],
                                 ),
-                                child: const Icon(Icons.face, size: 16, color: AppColors.primary),
+                                child: const Icon(Icons.face,
+                                    size: 16, color: AppColors.primary),
                               ),
                             ),
                           ],
                         ),
                       ),
                     ),
-
-                    
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 4),
                       decoration: BoxDecoration(
                         color: AppColors.primaryContainer.withOpacity(0.12),
-                        borderRadius: BorderRadius.circular(AppColors.radiusFull),
+                        borderRadius:
+                            BorderRadius.circular(AppColors.radiusFull),
                       ),
                       child: const Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          CircleAvatar(radius: 3.5, backgroundColor: AppColors.primaryContainer),
+                          CircleAvatar(
+                              radius: 3.5,
+                              backgroundColor: AppColors.primaryContainer),
                           SizedBox(width: 6),
                           Text(
                             'Layar Verifikasi Sedang Berlangsung',
@@ -706,9 +698,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                         ],
                       ),
                     ),
-
                     const SizedBox(height: 8),
-
                     const Text(
                       'Memverifikasi Presensi Anda...',
                       style: TextStyle(
@@ -717,11 +707,10 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                         color: AppColors.ink,
                       ),
                     ),
-
                     const SizedBox(height: 4),
-
                     Text(
-                      _phase ?? 'Sistem sedang memproses data biometrik ke server SIMRS Kepegawaian.',
+                      _phase ??
+                          'Sistem sedang memproses data biometrik ke server SIMRS Kepegawaian.',
                       textAlign: TextAlign.center,
                       style: const TextStyle(
                         fontSize: 12.5,
@@ -729,16 +718,15 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                         height: 1.4,
                       ),
                     ),
-
                     const SizedBox(height: 14),
-
-                    
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.circular(AppColors.radiusButton),
-                        border: Border.all(color: AppColors.border.withOpacity(0.5)),
+                        borderRadius:
+                            BorderRadius.circular(AppColors.radiusButton),
+                        border: Border.all(
+                            color: AppColors.border.withOpacity(0.5)),
                       ),
                       child: Column(
                         children: [
@@ -747,7 +735,8 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                             children: [
                               Row(
                                 children: [
-                                  Icon(Icons.timelapse, size: 15, color: AppColors.primary),
+                                  Icon(Icons.timelapse,
+                                      size: 15, color: AppColors.primary),
                                   SizedBox(width: 6),
                                   Text(
                                     'Proses Sinkronisasi',
@@ -770,7 +759,8 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                           ),
                           const SizedBox(height: 8),
                           ClipRRect(
-                            borderRadius: BorderRadius.circular(AppColors.radiusFull),
+                            borderRadius:
+                                BorderRadius.circular(AppColors.radiusFull),
                             child: const LinearProgressIndicator(
                               minHeight: 6,
                               backgroundColor: AppColors.surfaceContainer,
@@ -780,25 +770,23 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                         ],
                       ),
                     ),
-
                     const SizedBox(height: 12),
-
-                    
-                    
-                    
-                    
                     Container(
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.circular(AppColors.radiusButton),
-                        border: Border.all(color: AppColors.border.withOpacity(0.6)),
+                        borderRadius:
+                            BorderRadius.circular(AppColors.radiusButton),
+                        border: Border.all(
+                            color: AppColors.border.withOpacity(0.6)),
                       ),
                       child: Column(
                         children: [
                           _pipelineStep(
                             stepNumber: '1',
                             title: 'Verifikasi Biometrik Wajah',
-                            subtitle: _step >= 1 ? 'Liveness Lolos' : 'Menunggu hasil pindai wajah',
+                            subtitle: _step >= 1
+                                ? 'Liveness Lolos'
+                                : 'Menunggu hasil pindai wajah',
                             isDone: _step >= 1,
                             isInProgress: _step == 0,
                           ),
@@ -825,20 +813,19 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                         ],
                       ),
                     ),
-
                     const SizedBox(height: 12),
-
-                    
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
                         color: AppColors.surfaceLow,
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: AppColors.primary.withOpacity(0.2)),
+                        border: Border.all(
+                            color: AppColors.primary.withOpacity(0.2)),
                       ),
                       child: const Row(
                         children: [
-                          Icon(Icons.shield_outlined, size: 20, color: AppColors.primary),
+                          Icon(Icons.shield_outlined,
+                              size: 20, color: AppColors.primary),
                           SizedBox(width: 10),
                           Expanded(
                             child: Text(
@@ -853,14 +840,11 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                         ],
                       ),
                     ),
-
                     const SizedBox(height: 16),
                   ],
                 ),
               ),
             ),
-
-            
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
               child: Column(
@@ -877,8 +861,6 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                         ),
                       ),
                       onPressed: () {
-                        
-                        
                         _cancelled = true;
                         _cancelToken?.cancel();
                         if (!mounted) return;
@@ -892,7 +874,8 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                       icon: const Icon(Icons.close, size: 18),
                       label: const Text(
                         'Batalkan Presensi',
-                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                        style: TextStyle(
+                            fontSize: 14, fontWeight: FontWeight.w600),
                       ),
                     ),
                   ),
@@ -905,13 +888,10 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     );
   }
 
-  
-  
-  
   Widget _shiftStatusCard(ScheduleEntry shift) {
     final DateTime now = DateTime.now();
-    final DateTime end =
-        shiftEnd(shift.workDate, shift.endTime, shift.startTime, shift.overnight);
+    final DateTime end = shiftEnd(
+        shift.workDate, shift.endTime, shift.startTime, shift.overnight);
     final bool arriving = now.isBefore(end);
     final ShiftVerdict verdict =
         arriving ? shift.checkInStatusAt(now) : shift.checkOutStatusAt(now);
@@ -964,7 +944,8 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                 ),
                 Text(
                   thresholds,
-                  style: const TextStyle(fontSize: 10.5, color: AppColors.inkSecondary),
+                  style: const TextStyle(
+                      fontSize: 10.5, color: AppColors.inkSecondary),
                 ),
               ],
             ),
@@ -993,7 +974,9 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
               shape: BoxShape.circle,
               color: isDone
                   ? AppColors.successTint
-                  : (isInProgress ? const Color(0xFFE0F2FE) : AppColors.surfaceLow),
+                  : (isInProgress
+                      ? const Color(0xFFE0F2FE)
+                      : AppColors.surfaceLow),
               border: Border.all(
                 color: isDone
                     ? AppColors.success
@@ -1002,7 +985,8 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
             ),
             child: Center(
               child: isDone
-                  ? const Icon(Icons.check, size: 15, color: AppColors.successText)
+                  ? const Icon(Icons.check,
+                      size: 15, color: AppColors.successText)
                   : (isInProgress
                       ? const SizedBox(
                           width: 12,
@@ -1035,25 +1019,35 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
-                        color: isInProgress ? const Color(0xFF004C6E) : AppColors.ink,
+                        color: isInProgress
+                            ? const Color(0xFF004C6E)
+                            : AppColors.ink,
                       ),
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(
                         color: isDone
                             ? AppColors.successTint
-                            : (isInProgress ? const Color(0xFFE0F2FE) : AppColors.surfaceLow),
-                        borderRadius: BorderRadius.circular(AppColors.radiusFull),
+                            : (isInProgress
+                                ? const Color(0xFFE0F2FE)
+                                : AppColors.surfaceLow),
+                        borderRadius:
+                            BorderRadius.circular(AppColors.radiusFull),
                       ),
                       child: Text(
-                        isDone ? 'Selesai' : (isInProgress ? 'Proses' : 'Menunggu'),
+                        isDone
+                            ? 'Selesai'
+                            : (isInProgress ? 'Proses' : 'Menunggu'),
                         style: TextStyle(
                           fontSize: 9.5,
                           fontWeight: FontWeight.w600,
                           color: isDone
                               ? AppColors.successText
-                              : (isInProgress ? AppColors.info : AppColors.outline),
+                              : (isInProgress
+                                  ? AppColors.info
+                                  : AppColors.outline),
                         ),
                       ),
                     ),
@@ -1078,7 +1072,8 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   }
 }
 
-class _ResultCard extends StatelessWidget {  const _ResultCard({required this.result});
+class _ResultCard extends StatelessWidget {
+  const _ResultCard({required this.result});
   final AttendanceResult result;
 
   @override
@@ -1103,26 +1098,33 @@ class _ResultCard extends StatelessWidget {  const _ResultCard({required this.re
               SizedBox(width: 8),
               Text(
                 'Presensi Berhasil Dicatat',
-                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.primary),
+                style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.primary),
               ),
             ],
           ),
           const SizedBox(height: 8),
-          Text(status, style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600)),
+          Text(status,
+              style: const TextStyle(
+                  color: AppColors.primary, fontWeight: FontWeight.w600)),
           if (result.shiftLabel != null)
             Padding(
               padding: const EdgeInsets.only(top: 2),
-              child: Text(result.shiftLabel!, style: const TextStyle(fontSize: 13, color: AppColors.ink)),
+              child: Text(result.shiftLabel!,
+                  style: const TextStyle(fontSize: 13, color: AppColors.ink)),
             ),
           if (result.faceScore != null)
             Padding(
               padding: const EdgeInsets.only(top: 2),
-              child: Text('Kecocokan Wajah: ${(result.faceScore! * 100).round()}%',
-                  style: const TextStyle(fontSize: 12, color: AppColors.inkSecondary)),
+              child: Text(
+                  'Kecocokan Wajah: ${(result.faceScore! * 100).round()}%',
+                  style: const TextStyle(
+                      fontSize: 12, color: AppColors.inkSecondary)),
             ),
         ],
       ),
     );
   }
 }
-

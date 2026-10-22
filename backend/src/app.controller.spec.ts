@@ -11,7 +11,10 @@ describe('AppController', () => {
       controllers: [AppController],
       providers: [
         AppService,
-        { provide: PrismaService, useValue: { $queryRaw: async () => [{ '?column?': 1 }] } },
+        {
+          provide: PrismaService,
+          useValue: { $queryRaw: async () => [{ '?column?': 1 }] },
+        },
       ],
     }).compile();
 
@@ -24,7 +27,10 @@ describe('AppController', () => {
     });
 
     it('health reports ok when DB pings', async () => {
-      await expect(appController.health()).resolves.toMatchObject({ status: 'ok', db: 'up' });
+      await expect(appController.health()).resolves.toMatchObject({
+        status: 'ok',
+        db: 'up',
+      });
     });
 
     it('health degrades when DB is down', async () => {
@@ -43,10 +49,12 @@ describe('AppController', () => {
         ],
       }).compile();
       const ctrl = mod.get<AppController>(AppController);
-      await expect(ctrl.health()).resolves.toMatchObject({ status: 'degraded', db: 'down' });
+      await expect(ctrl.health()).resolves.toMatchObject({
+        status: 'degraded',
+        db: 'down',
+      });
     });
 
-    
     it('live needs no DB', async () => {
       const mod: TestingModule = await Test.createTestingModule({
         controllers: [AppController],

@@ -2,17 +2,11 @@ import 'package:dio/dio.dart';
 
 import '../domain/audit_admin_models.dart';
 
-
-
-
-
 class AuditAdminRepository {
   AuditAdminRepository({required Dio dio}) : _dio = dio;
 
   final Dio _dio;
 
-  
-  
   Future<List<String>> actions() async {
     final Response res = await _dio.get('/audit/actions');
     final List<dynamic> list = res.data as List? ?? const <dynamic>[];
@@ -43,7 +37,8 @@ class AuditAdminRepository {
         'pageSize': pageSize,
       },
     );
-    final Map<String, dynamic> body = Map<String, dynamic>.from(res.data as Map);
+    final Map<String, dynamic> body =
+        Map<String, dynamic>.from(res.data as Map);
     final List<dynamic> data = (body['data'] as List?) ?? const <dynamic>[];
     final Map<String, dynamic> pagination =
         (body['pagination'] as Map?)?.cast<String, dynamic>() ??

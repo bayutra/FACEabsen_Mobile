@@ -14,7 +14,6 @@ export interface AuditEvent {
   result?: string;
 }
 
- 
 export const SECURITY_ACTIONS = [
   'LOGIN_FAILED',
   'ATTENDANCE_REJECTED',
@@ -25,14 +24,12 @@ export const SECURITY_ACTIONS = [
   'EMPLOYEE_DEACTIVATED',
 ] as const;
 
- 
 export type AuditWriter = Pick<PrismaService, 'auditLog'>;
 
 @Injectable()
 export class AuditService {
   constructor(private readonly prisma: PrismaService) {}
 
-   
   async log(event: AuditEvent, client?: AuditWriter): Promise<void> {
     const target = client ?? this.prisma;
     await target.auditLog.create({
@@ -49,7 +46,6 @@ export class AuditService {
     });
   }
 
-   
   async list(query: ListAuditQuery) {
     const page = query.page ?? 1;
     const pageSize = query.pageSize ?? 20;
@@ -61,7 +57,9 @@ export class AuditService {
     }
     if (query.actorId) AND.push({ actorId: query.actorId });
     if (query.actorEmail) {
-      AND.push({ actor: { email: { contains: query.actorEmail, mode: 'insensitive' } } });
+      AND.push({
+        actor: { email: { contains: query.actorEmail, mode: 'insensitive' } },
+      });
     }
     if (query.targetType) AND.push({ targetType: query.targetType });
     if (query.targetId) AND.push({ targetId: query.targetId });
@@ -85,7 +83,12 @@ export class AuditService {
     ]);
     return {
       data: rows,
-      pagination: { page, pageSize, totalItems: total, totalPages: Math.ceil(total / pageSize) },
+      pagination: {
+        page,
+        pageSize,
+        totalItems: total,
+        totalPages: Math.ceil(total / pageSize),
+      },
     };
   }
 

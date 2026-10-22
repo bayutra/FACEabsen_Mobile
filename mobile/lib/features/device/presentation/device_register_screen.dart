@@ -3,8 +3,6 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/stitch.dart';
 
-
-
 class DeviceRegisterScreen extends StatelessWidget {
   const DeviceRegisterScreen({
     super.key,
@@ -26,9 +24,6 @@ class DeviceRegisterScreen extends StatelessWidget {
   final VoidCallback? onContinue;
   final VoidCallback? onUseOther;
 
-  
-  
-  
   final VoidCallback? onRequestReplacement;
 
   @override
@@ -38,8 +33,8 @@ class DeviceRegisterScreen extends StatelessWidget {
           title: 'Daftarkan Perangkat',
           subtitle: 'RS ABSEN SIMRS • Langkah 2 dari 3',
           onBack: () => Navigator.of(context).pop(),
-          trailing: const Icon(Icons.help_outline,
-              color: AppColors.inkSecondary),
+          trailing:
+              const Icon(Icons.help_outline, color: AppColors.inkSecondary),
         ),
         body: ListView(
           padding: const EdgeInsets.all(AppColors.pageMargin),
@@ -61,10 +56,9 @@ class DeviceRegisterScreen extends StatelessWidget {
                         height: 48,
                         decoration: BoxDecoration(
                           color: AppColors.surfaceLow,
-                          borderRadius: BorderRadius.circular(
-                              AppColors.radiusInput),
-                          border:
-                              Border.all(color: AppColors.border),
+                          borderRadius:
+                              BorderRadius.circular(AppColors.radiusInput),
+                          border: Border.all(color: AppColors.border),
                         ),
                         child: const Icon(Icons.phone_android,
                             color: AppColors.primaryContainer),
@@ -72,13 +66,10 @@ class DeviceRegisterScreen extends StatelessWidget {
                       const SizedBox(width: 12),
                       Expanded(
                         child: Column(
-                          crossAxisAlignment:
-                              CrossAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(deviceName,
-                                style: AppText.bodyMdMedium),
-                            Text(deviceModel,
-                                style: AppText.labelSm),
+                            Text(deviceName, style: AppText.bodyMdMedium),
+                            Text(deviceModel, style: AppText.labelSm),
                           ],
                         ),
                       ),
@@ -128,8 +119,8 @@ class DeviceRegisterScreen extends StatelessWidget {
                 SizedBox(
                   height: AppColors.buttonHeight,
                   child: FilledButton.icon(
-                    onPressed: onContinue ??
-                        () => Navigator.of(context).pop(true),
+                    onPressed:
+                        onContinue ?? () => Navigator.of(context).pop(true),
                     icon: const Icon(Icons.arrow_forward, size: 20),
                     label: const Text('Lanjutkan'),
                   ),
@@ -148,8 +139,8 @@ class DeviceRegisterScreen extends StatelessWidget {
                 SizedBox(
                   height: AppColors.ghostHeight,
                   child: OutlinedButton(
-                    onPressed: onUseOther ??
-                        () => Navigator.of(context).pop(false),
+                    onPressed:
+                        onUseOther ?? () => Navigator.of(context).pop(false),
                     child: const Text('Gunakan Perangkat Lain'),
                   ),
                 ),
@@ -161,8 +152,8 @@ class DeviceRegisterScreen extends StatelessWidget {
                         size: 14, color: AppColors.inkSecondary),
                     const SizedBox(width: 4),
                     Text('SHA-256 • SIMRS Secure Binding',
-                        style: AppText.labelSm.copyWith(
-                            color: AppColors.inkSecondary)),
+                        style: AppText.labelSm
+                            .copyWith(color: AppColors.inkSecondary)),
                   ],
                 ),
               ],

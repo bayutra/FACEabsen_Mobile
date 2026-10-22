@@ -22,15 +22,6 @@ import 'features/schedule/data/schedule_repository.dart';
 import 'features/preflight/data/preflight_repository.dart';
 import 'core/navigation/home_shell.dart';
 
-
-
-
-
-
-
-
-
-
 class App extends StatelessWidget {
   const App({super.key});
 
@@ -65,7 +56,6 @@ class _BootstrapGateState extends State<BootstrapGate> {
   late final ProfileRepository _profiles;
   late final PreflightRepository _preflight;
 
-  
   bool? _authed;
   Object? _startupError;
 
@@ -99,8 +89,6 @@ class _BootstrapGateState extends State<BootstrapGate> {
     _restore();
   }
 
-  
-  
   Future<void> _restore() async {
     setState(() {
       _authed = null;

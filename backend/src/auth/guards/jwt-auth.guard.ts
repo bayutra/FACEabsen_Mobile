@@ -17,7 +17,6 @@ interface AccessPayload {
   sid: string;
 }
 
- 
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
   constructor(
@@ -42,7 +41,6 @@ export class JwtAuthGuard implements CanActivate {
 
     let payload: AccessPayload;
     try {
-      
       payload = await this.jwt.verifyAsync<AccessPayload>(token, {
         algorithms: [AUTH_POLICY.jwtAlgorithm],
         issuer: AUTH_POLICY.jwtIssuer,
@@ -54,11 +52,15 @@ export class JwtAuthGuard implements CanActivate {
       throw new UnauthorizedException('Malformed access token');
     }
 
-    const session = await this.prisma.session.findUnique({ where: { id: payload.sid } });
+    const session = await this.prisma.session.findUnique({
+      where: { id: payload.sid },
+    });
     if (!session || session.revokedAt || session.expiresAt < new Date()) {
       throw new UnauthorizedException('Session expired or revoked');
     }
-    const user = await this.prisma.user.findUnique({ where: { id: payload.sub } });
+    const user = await this.prisma.user.findUnique({
+      where: { id: payload.sub },
+    });
     if (!user || !user.isActive) {
       throw new UnauthorizedException('Account inactive');
     }

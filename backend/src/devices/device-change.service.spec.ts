@@ -12,9 +12,19 @@ const auditStub = { log: vi.fn(async () => undefined) } as never;
 
 function makePrisma(over: Record<string, Record<string, unknown>> = {}) {
   const tx = {
-    device: { update: vi.fn(async (a: { where: { id: string }; data: object }) => ({ id: a.where.id, ...a.data })) },
+    device: {
+      update: vi.fn(async (a: { where: { id: string }; data: object }) => ({
+        id: a.where.id,
+        ...a.data,
+      })),
+    },
     session: { updateMany: vi.fn(async () => ({ count: 1 })) },
-    deviceChangeRequest: { update: vi.fn(async (a: { where: { id: string }; data: object }) => ({ id: a.where.id, ...a.data })) },
+    deviceChangeRequest: {
+      update: vi.fn(async (a: { where: { id: string }; data: object }) => ({
+        id: a.where.id,
+        ...a.data,
+      })),
+    },
   };
   return {
     __tx: tx,
@@ -53,7 +63,11 @@ const newPending = { id: 'd2', employeeId: 'e1', status: 'PENDING' };
 
 describe('DeviceChangeService.request', () => {
   it('creates PENDING request + audits', async () => {
-    const create = vi.fn(async (a: { data: Record<string, unknown> }) => ({ id: 'r1', status: 'PENDING', ...a.data }));
+    const create = vi.fn(async (a: { data: Record<string, unknown> }) => ({
+      id: 'r1',
+      status: 'PENDING',
+      ...a.data,
+    }));
     const prisma = makePrisma({
       device: {
         findFirst: vi.fn(async () => oldActive),
@@ -77,10 +91,17 @@ describe('DeviceChangeService.request', () => {
       },
     };
     const svc = new DeviceChangeService(makePrisma(base), auditStub);
-    await expect(svc.request(dto({ password: 'Nope1234!' }), 'u1')).rejects.toThrow('Identity verification failed');
+    await expect(
+      svc.request(dto({ password: 'Nope1234!' }), 'u1'),
+    ).rejects.toThrow('Identity verification failed');
 
     const svc2 = new DeviceChangeService(
-      makePrisma({ device: { findFirst: vi.fn(async () => null), findUnique: vi.fn(async () => newPending) } }),
+      makePrisma({
+        device: {
+          findFirst: vi.fn(async () => null),
+          findUnique: vi.fn(async () => newPending),
+        },
+      }),
       auditStub,
     );
     await expect(svc2.request(dto(), 'u1')).rejects.toThrow('No active device');
@@ -94,7 +115,9 @@ describe('DeviceChangeService.request', () => {
       }),
       auditStub,
     );
-    await expect(svc3.request(dto(), 'u1')).rejects.toThrow('New device not found');
+    await expect(svc3.request(dto(), 'u1')).rejects.toThrow(
+      'New device not found',
+    );
 
     const svc4 = new DeviceChangeService(
       makePrisma({
@@ -122,7 +145,13 @@ describe('DeviceChangeService.request', () => {
 });
 
 describe('DeviceChangeService.approve/reject/cancel', () => {
-  const pending = { id: 'r1', status: 'PENDING', employeeId: 'e1', oldDeviceId: 'd1', newDeviceId: 'd2' };
+  const pending = {
+    id: 'r1',
+    status: 'PENDING',
+    employeeId: 'e1',
+    oldDeviceId: 'd1',
+    newDeviceId: 'd2',
+  };
 
   function approvedPrisma() {
     return makePrisma({
@@ -139,15 +168,30 @@ describe('DeviceChangeService.approve/reject/cancel', () => {
     const prisma = approvedPrisma();
     const svc = new DeviceChangeService(prisma, auditStub);
     await svc.approve('r1', 'admin', ['SUPER_ADMIN'], 'ok');
-    const tx = (prisma as unknown as { __tx: { device: { update: ReturnType<typeof vi.fn> }; session: { updateMany: ReturnType<typeof vi.fn> } } }).__tx;
+    const tx = (
+      prisma as unknown as {
+        __tx: {
+          device: { update: ReturnType<typeof vi.fn> };
+          session: { updateMany: ReturnType<typeof vi.fn> };
+        };
+      }
+    ).__tx;
     expect(tx.device.update).toHaveBeenCalledWith(
-      expect.objectContaining({ where: { id: 'd1' }, data: expect.objectContaining({ status: 'REVOKED' }) }),
+      expect.objectContaining({
+        where: { id: 'd1' },
+        data: expect.objectContaining({ status: 'REVOKED' }),
+      }),
     );
     expect(tx.device.update).toHaveBeenCalledWith(
-      expect.objectContaining({ where: { id: 'd2' }, data: { status: 'ACTIVE' } }),
+      expect.objectContaining({
+        where: { id: 'd2' },
+        data: { status: 'ACTIVE' },
+      }),
     );
     expect(tx.session.updateMany).toHaveBeenCalledWith(
-      expect.objectContaining({ where: expect.objectContaining({ deviceId: 'd1' }) }),
+      expect.objectContaining({
+        where: expect.objectContaining({ deviceId: 'd1' }),
+      }),
     );
     const actions = auditStub.log.mock.calls.map((c) => c[0].action);
     expect(actions).toContain('DEVICE_REPLACED');
@@ -156,26 +200,48 @@ describe('DeviceChangeService.approve/reject/cancel', () => {
 
   it('approve guards: reviewed / stale devices', async () => {
     const svc = new DeviceChangeService(
-      makePrisma({ deviceChange: { findUnique: vi.fn(async () => ({ ...pending, status: 'APPROVED' })) } }),
+      makePrisma({
+        deviceChange: {
+          findUnique: vi.fn(async () => ({ ...pending, status: 'APPROVED' })),
+        },
+      }),
       auditStub,
     );
-    await expect(svc.approve('r1', 'admin', ['SUPER_ADMIN'])).rejects.toThrow('already reviewed');
+    await expect(svc.approve('r1', 'admin', ['SUPER_ADMIN'])).rejects.toThrow(
+      'already reviewed',
+    );
 
     const svc2 = new DeviceChangeService(
       makePrisma({
         deviceChange: { findUnique: vi.fn(async () => pending) },
-        device: { findUnique: vi.fn(async () => ({ ...newPending, status: 'REVOKED' })) },
+        device: {
+          findUnique: vi.fn(async () => ({ ...newPending, status: 'REVOKED' })),
+        },
       }),
       auditStub,
     );
-    await expect(svc2.approve('r1', 'admin', ['SUPER_ADMIN'])).rejects.toThrow('no longer eligible');
+    await expect(svc2.approve('r1', 'admin', ['SUPER_ADMIN'])).rejects.toThrow(
+      'no longer eligible',
+    );
   });
 
   it('reject flips + audits; cancel is owner-only and pending-only', async () => {
-    const update = vi.fn(async (a: { where: { id: string }; data: object }) => ({ id: a.where.id, ...a.data }));
-    const prisma = makePrisma({ deviceChange: { findUnique: vi.fn(async () => pending), update } });
+    const update = vi.fn(
+      async (a: { where: { id: string }; data: object }) => ({
+        id: a.where.id,
+        ...a.data,
+      }),
+    );
+    const prisma = makePrisma({
+      deviceChange: { findUnique: vi.fn(async () => pending), update },
+    });
     const svc = new DeviceChangeService(prisma, auditStub);
-    const rej = (await svc.reject('r1', 'admin', ['SUPER_ADMIN'], 'rusak beneran?')) as { status: string };
+    const rej = (await svc.reject(
+      'r1',
+      'admin',
+      ['SUPER_ADMIN'],
+      'rusak beneran?',
+    )) as { status: string };
     expect(rej.status).toBe('REJECTED');
 
     const emp = { id: 'e1' };
@@ -184,16 +250,19 @@ describe('DeviceChangeService.approve/reject/cancel', () => {
       deviceChange: { findUnique: vi.fn(async () => pending), update },
     });
     const svc2 = new DeviceChangeService(prisma2, auditStub);
-    await expect(svc2.cancel('r1', 'u1')).resolves.toMatchObject({ status: 'CANCELLED' });
+    await expect(svc2.cancel('r1', 'u1')).resolves.toMatchObject({
+      status: 'CANCELLED',
+    });
 
     const prisma3 = makePrisma({
       employee: { findUnique: vi.fn(async () => ({ id: 'e9' })) },
       deviceChange: { findUnique: vi.fn(async () => pending) },
     });
-    await expect(new DeviceChangeService(prisma3, auditStub).cancel('r1', 'u9')).rejects.toThrow('not found');
+    await expect(
+      new DeviceChangeService(prisma3, auditStub).cancel('r1', 'u9'),
+    ).rejects.toThrow('not found');
   });
 });
-
 
 describe('DeviceChangeService facility scoping (ADMIN)', () => {
   const ADMIN = ['ADMIN'];
@@ -209,7 +278,10 @@ describe('DeviceChangeService facility scoping (ADMIN)', () => {
   function scopedPrisma(over: Record<string, Record<string, unknown>> = {}) {
     return makePrisma({
       employee: {
-        findUnique: vi.fn(async () => ({ id: 'e-adm', department: { hospitalId: 'h1' } })),
+        findUnique: vi.fn(async () => ({
+          id: 'e-adm',
+          department: { hospitalId: 'h1' },
+        })),
       },
       ...over,
     });
@@ -217,11 +289,17 @@ describe('DeviceChangeService facility scoping (ADMIN)', () => {
 
   it('foreign approve / reject read as 404', async () => {
     const svc = new DeviceChangeService(
-      scopedPrisma({ deviceChange: { findUnique: vi.fn(async () => foreign) } }),
+      scopedPrisma({
+        deviceChange: { findUnique: vi.fn(async () => foreign) },
+      }),
       auditStub,
     );
-    await expect(svc.approve('r9', 'u-adm', ADMIN)).rejects.toThrow('Change request not found');
-    await expect(svc.reject('r9', 'u-adm', ADMIN)).rejects.toThrow('Change request not found');
+    await expect(svc.approve('r9', 'u-adm', ADMIN)).rejects.toThrow(
+      'Change request not found',
+    );
+    await expect(svc.reject('r9', 'u-adm', ADMIN)).rejects.toThrow(
+      'Change request not found',
+    );
   });
 
   it('foreign listAll returns only the caller facility rows', async () => {

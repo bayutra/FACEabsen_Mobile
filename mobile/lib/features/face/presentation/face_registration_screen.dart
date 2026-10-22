@@ -11,8 +11,6 @@ import 'face_registered_screen.dart';
 import '../../attendance/data/attendance_repository.dart';
 import '../../device/data/device_repository.dart';
 
-
-
 class FaceRegistrationScreen extends StatefulWidget {
   const FaceRegistrationScreen({
     super.key,
@@ -25,11 +23,9 @@ class FaceRegistrationScreen extends StatefulWidget {
 
   final FaceRepository faces;
 
-  
   final String displayName;
   final String employeeNo;
 
-  
   final AttendanceRepository? attendance;
   final DeviceRepository? devices;
 
@@ -50,8 +46,6 @@ class _FaceRegistrationScreenState extends State<FaceRegistrationScreen>
   bool _useScreenFlash = false;
   bool _flashOverlay = false;
 
-  
-  
   FaceGate? _failGate;
 
   @override
@@ -63,8 +57,6 @@ class _FaceRegistrationScreenState extends State<FaceRegistrationScreen>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    
-    
     if (state == AppLifecycleState.paused ||
         state == AppLifecycleState.inactive) {
       final CameraController? controller = _controller;
@@ -96,13 +88,10 @@ class _FaceRegistrationScreenState extends State<FaceRegistrationScreen>
         enableAudio: false,
       );
       await controller.initialize();
-      
-      
+
       try {
         await controller.setFlashMode(FlashMode.off);
-      } on CameraException {
-        
-      }
+      } on CameraException {}
       if (mounted) setState(() => _controller = controller);
     } on CameraException catch (e) {
       if (!mounted) return;
@@ -146,15 +135,14 @@ class _FaceRegistrationScreenState extends State<FaceRegistrationScreen>
                 ? ' (skor ${(result.score! * 100).round()}%)'
                 : '');
         _success = result.ok;
-        
-        
+
         _failGate =
             (!result.ok && result.gate != null && result.gate != FaceGate.ok)
                 ? result.gate
                 : null;
         _busy = false;
       });
-      
+
       if (result.ok) {
         final AttendanceRepository? att = widget.attendance;
         final DeviceRepository? dev = widget.devices;
@@ -284,7 +272,6 @@ class _FaceRegistrationScreenState extends State<FaceRegistrationScreen>
                                     child: Container(
                                         color: Colors.white.withOpacity(0.85)),
                                   ),
-                                
                                 Align(
                                   alignment: Alignment.topCenter,
                                   child: Padding(
@@ -324,7 +311,6 @@ class _FaceRegistrationScreenState extends State<FaceRegistrationScreen>
                                     ),
                                   ),
                                 ),
-                                
                                 Align(
                                   alignment: Alignment.topRight,
                                   child: Padding(
@@ -482,7 +468,6 @@ class _FaceRegistrationScreenState extends State<FaceRegistrationScreen>
   }
 }
 
-
 class _CameraFrameGuide extends CustomPainter {
   const _CameraFrameGuide();
 
@@ -498,7 +483,7 @@ class _CameraFrameGuide extends CustomPainter {
       frame,
       const Radius.circular(24),
     );
-    
+
     canvas.drawPath(
       Path()
         ..addRRect(roundedFrame)

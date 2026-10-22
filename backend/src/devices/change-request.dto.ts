@@ -1,9 +1,20 @@
-import { IsIn, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
+import {
+  IsIn,
+  IsOptional,
+  IsString,
+  MaxLength,
+  MinLength,
+} from 'class-validator';
 
-export const REPLACEMENT_REASONS = ['BROKEN', 'LOST', 'STOLEN', 'UPGRADE', 'OTHER'] as const;
+export const REPLACEMENT_REASONS = [
+  'BROKEN',
+  'LOST',
+  'STOLEN',
+  'UPGRADE',
+  'OTHER',
+] as const;
 
 export class CreateChangeRequestDto {
-   
   @IsString()
   newDeviceId!: string;
 
@@ -15,7 +26,6 @@ export class CreateChangeRequestDto {
   @MaxLength(500)
   reasonNote?: string;
 
-   
   @IsString()
   @MinLength(1)
   @MaxLength(256)

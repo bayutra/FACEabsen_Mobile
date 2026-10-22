@@ -11,8 +11,6 @@ import '../data/auth_repository.dart';
 import '../../device/data/device_repository.dart';
 import 'register_screen.dart';
 
-
-
 class LoginScreen extends StatefulWidget {
   const LoginScreen({
     super.key,
@@ -26,8 +24,6 @@ class LoginScreen extends StatefulWidget {
   final DeviceRepository devices;
   final VoidCallback onDone;
 
-  
-  
   final ServerSettings? servers;
 
   @override
@@ -43,7 +39,7 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _rememberMe = true;
   String? _error;
   bool _busy = false;
-  
+
   String? _totpToken;
   bool _useRecovery = false;
 
@@ -94,9 +90,6 @@ class _LoginScreenState extends State<LoginScreen> {
         _busy = false;
       });
     } catch (e) {
-      
-      
-      
       if (kDebugMode) debugPrint('login failed: $e');
       if (!mounted) return;
       setState(() {
@@ -106,17 +99,10 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  
-  
-  
-  
   Future<void> _finishSession() async {
     try {
       await widget.devices.register();
-    } catch (_) {
-      
-      
-    }
+    } catch (_) {}
     if (!mounted) return;
     widget.onDone();
   }
@@ -195,7 +181,6 @@ class _LoginScreenState extends State<LoginScreen> {
     return 'Gagal masuk (${code ?? 'tanpa kode'}).';
   }
 
-  
   Widget _totpCard() {
     return AppCard(
       padding: const EdgeInsets.all(20),
@@ -248,7 +233,8 @@ class _LoginScreenState extends State<LoginScreen> {
           ],
           const SizedBox(height: 12),
           if (_error != null) ...[
-            InfoBanner(_error!, tone: InfoBannerTone.error, title: 'Tidak dapat masuk'),
+            InfoBanner(_error!,
+                tone: InfoBannerTone.error, title: 'Tidak dapat masuk'),
             const SizedBox(height: 16),
           ],
           SizedBox(
@@ -267,7 +253,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  const Icon(Icons.arrow_forward, size: 20, color: Colors.white),
+                  const Icon(Icons.arrow_forward,
+                      size: 20, color: Colors.white),
                 ],
               ),
             ),
@@ -285,7 +272,9 @@ class _LoginScreenState extends State<LoginScreen> {
                         });
                       },
                 child: Text(
-                  _useRecovery ? 'Pakai kode autentikator' : 'Pakai kode pemulihan',
+                  _useRecovery
+                      ? 'Pakai kode autentikator'
+                      : 'Pakai kode pemulihan',
                   style: AppText.labelMd.copyWith(color: AppColors.secondary),
                 ),
               ),
@@ -303,7 +292,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       },
                 child: Text(
                   'Kembali',
-                  style: AppText.labelMd.copyWith(color: AppColors.inkSecondary),
+                  style:
+                      AppText.labelMd.copyWith(color: AppColors.inkSecondary),
                 ),
               ),
             ],
@@ -320,7 +310,6 @@ class _LoginScreenState extends State<LoginScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            
             Container(
               height: 6,
               width: double.infinity,
@@ -343,7 +332,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    
                     Row(
                       children: [
                         const HospitalMark(size: 48),
@@ -369,7 +357,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                     ),
                                     decoration: BoxDecoration(
                                       color: AppColors.primaryFixed,
-                                      borderRadius: BorderRadius.circular(AppColors.radiusFull),
+                                      borderRadius: BorderRadius.circular(
+                                          AppColors.radiusFull),
                                     ),
                                     child: Text(
                                       'v2.4',
@@ -395,8 +384,6 @@ class _LoginScreenState extends State<LoginScreen> {
                       ],
                     ),
                     const SizedBox(height: 24),
-
-                    
                     Text(
                       'Selamat Datang',
                       style: AppText.displayMobile.copyWith(
@@ -411,179 +398,180 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                     const SizedBox(height: 24),
-
-                    
                     if (_totpToken == null)
-                    AppCard(
-                      padding: const EdgeInsets.all(20),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Email *',
-                            style: AppText.labelMd.copyWith(color: AppColors.ink),
-                          ),
-                          const SizedBox(height: 6),
-                          TextField(
-                            controller: _email,
-                            keyboardType: TextInputType.emailAddress,
-                            decoration: const InputDecoration(
-                              hintText: 'nama@rumahsakit.example',
-                              prefixIcon: Icon(Icons.mail_outline),
+                      AppCard(
+                        padding: const EdgeInsets.all(20),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Email *',
+                              style: AppText.labelMd
+                                  .copyWith(color: AppColors.ink),
                             ),
-                          ),
-                          const SizedBox(height: 4),
-                          Row(
-                            children: [
-                              const Icon(
-                                Icons.verified_user_outlined,
-                                size: 14,
-                                color: AppColors.inkSecondary,
+                            const SizedBox(height: 6),
+                            TextField(
+                              controller: _email,
+                              keyboardType: TextInputType.emailAddress,
+                              decoration: const InputDecoration(
+                                hintText: 'nama@rumahsakit.example',
+                                prefixIcon: Icon(Icons.mail_outline),
                               ),
-                              const SizedBox(width: 4),
-                              Expanded(
-                                child: Text(
-                                  'Nomor Induk Pegawai terdaftar di Kepegawaian RS',
-                                  style: AppText.labelSm.copyWith(
-                                    color: AppColors.inkSecondary,
+                            ),
+                            const SizedBox(height: 4),
+                            Row(
+                              children: [
+                                const Icon(
+                                  Icons.verified_user_outlined,
+                                  size: 14,
+                                  color: AppColors.inkSecondary,
+                                ),
+                                const SizedBox(width: 4),
+                                Expanded(
+                                  child: Text(
+                                    'Nomor Induk Pegawai terdaftar di Kepegawaian RS',
+                                    style: AppText.labelSm.copyWith(
+                                      color: AppColors.inkSecondary,
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            'Kata Sandi *',
-                            style: AppText.labelMd.copyWith(color: AppColors.ink),
-                          ),
-                          const SizedBox(height: 6),
-                          TextField(
-                            controller: _password,
-                            obscureText: _obscurePassword,
-                            decoration: InputDecoration(
-                              hintText: '••••••••••••',
-                              prefixIcon: const Icon(Icons.lock_outline),
-                              suffixIcon: IconButton(
-                                icon: Icon(
-                                  _obscurePassword
-                                      ? Icons.visibility_outlined
-                                      : Icons.visibility_off_outlined,
-                                ),
-                                onPressed: () {
-                                  setState(() {
-                                    _obscurePassword = !_obscurePassword;
-                                  });
-                                },
-                              ),
+                              ],
                             ),
-                            onSubmitted: (_) => _submit(),
-                          ),
-                          const SizedBox(height: 12),
-                          Row(
-                            children: [
-                              SizedBox(
-                                width: 24,
-                                height: 24,
-                                child: Checkbox(
-                                  value: _rememberMe,
-                                  onChanged: (val) {
+                            const SizedBox(height: 16),
+                            Text(
+                              'Kata Sandi *',
+                              style: AppText.labelMd
+                                  .copyWith(color: AppColors.ink),
+                            ),
+                            const SizedBox(height: 6),
+                            TextField(
+                              controller: _password,
+                              obscureText: _obscurePassword,
+                              decoration: InputDecoration(
+                                hintText: '••••••••••••',
+                                prefixIcon: const Icon(Icons.lock_outline),
+                                suffixIcon: IconButton(
+                                  icon: Icon(
+                                    _obscurePassword
+                                        ? Icons.visibility_outlined
+                                        : Icons.visibility_off_outlined,
+                                  ),
+                                  onPressed: () {
                                     setState(() {
-                                      _rememberMe = val ?? true;
+                                      _obscurePassword = !_obscurePassword;
                                     });
                                   },
                                 ),
                               ),
-                              const SizedBox(width: 8),
-                              Text(
-                                'Ingat Saya',
-                                style: AppText.bodyMd.copyWith(color: AppColors.ink),
-                              ),
-                              const Spacer(),
-                              TextButton(
-                                onPressed: () {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text(
-                                        'Hubungi SIMRS & SDM Kepegawaian (Ext. 104) untuk reset kata sandi.',
-                                      ),
-                                    ),
-                                  );
-                                },
-                                child: Text(
-                                  'Lupa password?',
-                                  style: AppText.labelMd.copyWith(
-                                    color: AppColors.secondary,
+                              onSubmitted: (_) => _submit(),
+                            ),
+                            const SizedBox(height: 12),
+                            Row(
+                              children: [
+                                SizedBox(
+                                  width: 24,
+                                  height: 24,
+                                  child: Checkbox(
+                                    value: _rememberMe,
+                                    onChanged: (val) {
+                                      setState(() {
+                                        _rememberMe = val ?? true;
+                                      });
+                                    },
                                   ),
                                 ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                          if (_error != null) ...[
-                            InfoBanner(
-                              _error!,
-                              tone: _error!.startsWith('Perangkat')
-                                  ? InfoBannerTone.warning
-                                  : InfoBannerTone.error,
-                              title: 'Tidak dapat masuk',
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Ingat Saya',
+                                  style: AppText.bodyMd
+                                      .copyWith(color: AppColors.ink),
+                                ),
+                                const Spacer(),
+                                TextButton(
+                                  onPressed: () {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                          'Hubungi SIMRS & SDM Kepegawaian (Ext. 104) untuk reset kata sandi.',
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                  child: Text(
+                                    'Lupa password?',
+                                    style: AppText.labelMd.copyWith(
+                                      color: AppColors.secondary,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
-                            const SizedBox(height: 16),
-                          ],
-                          SizedBox(
-                            width: double.infinity,
-                            height: AppColors.buttonHeight,
-                            child: FilledButton(
-                              onPressed: _busy ? null : _submit,
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text(
-                                    _busy ? 'Memverifikasi...' : 'Masuk',
-                                    style: AppText.bodyLgMedium.copyWith(
-                                      color: Colors.white,
+                            const SizedBox(height: 12),
+                            if (_error != null) ...[
+                              InfoBanner(
+                                _error!,
+                                tone: _error!.startsWith('Perangkat')
+                                    ? InfoBannerTone.warning
+                                    : InfoBannerTone.error,
+                                title: 'Tidak dapat masuk',
+                              ),
+                              const SizedBox(height: 16),
+                            ],
+                            SizedBox(
+                              width: double.infinity,
+                              height: AppColors.buttonHeight,
+                              child: FilledButton(
+                                onPressed: _busy ? null : _submit,
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      _busy ? 'Memverifikasi...' : 'Masuk',
+                                      style: AppText.bodyLgMedium.copyWith(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    const Icon(Icons.arrow_forward,
+                                        size: 20, color: Colors.white),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  'Belum punya akun?',
+                                  style: AppText.labelSm.copyWith(
+                                    color: AppColors.inkSecondary,
+                                  ),
+                                ),
+                                TextButton(
+                                  onPressed: _busy ? null : _openRegister,
+                                  child: Text(
+                                    'Daftar',
+                                    style: AppText.labelMd.copyWith(
+                                      color: AppColors.secondary,
                                       fontWeight: FontWeight.w600,
                                     ),
                                   ),
-                                  const SizedBox(width: 8),
-                                  const Icon(Icons.arrow_forward, size: 20, color: Colors.white),
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
-                          ),
-                          const SizedBox(height: 4),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                'Belum punya akun?',
-                                style: AppText.labelSm.copyWith(
-                                  color: AppColors.inkSecondary,
-                                ),
-                              ),
-                              TextButton(
-                                onPressed: _busy ? null : _openRegister,
-                                child: Text(
-                                  'Daftar',
-                                  style: AppText.labelMd.copyWith(
-                                    color: AppColors.secondary,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
                     if (_totpToken != null) _totpCard(),
                     const SizedBox(height: 16),
-
-                    
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
                         color: AppColors.surfaceLow,
-                        borderRadius: BorderRadius.circular(AppColors.radiusCard),
+                        borderRadius:
+                            BorderRadius.circular(AppColors.radiusCard),
                         border: Border.all(
                           color: AppColors.border,
                         ),
@@ -616,7 +604,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                   children: [
                                     Text(
                                       'Keamanan Akun',
-                                      style: AppText.labelMd.copyWith(color: AppColors.ink),
+                                      style: AppText.labelMd
+                                          .copyWith(color: AppColors.ink),
                                     ),
                                     const SizedBox(width: 6),
                                     Container(
@@ -626,7 +615,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                       ),
                                       decoration: BoxDecoration(
                                         color: AppColors.surfaceContainer,
-                                        borderRadius: BorderRadius.circular(AppColors.radiusFull),
+                                        borderRadius: BorderRadius.circular(
+                                            AppColors.radiusFull),
                                       ),
                                       child: Text(
                                         'Multi-Perangkat',
@@ -652,8 +642,6 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                     const SizedBox(height: 12),
-
-                    
                     const Center(
                       child: AppPill(
                         'Verifikasi Wajah Biometrik aktif',
@@ -663,8 +651,6 @@ class _LoginScreenState extends State<LoginScreen> {
                         border: AppColors.tealBadgeBorder,
                       ),
                     ),
-                    
-                    
                     if (widget.servers != null) ...[
                       const SizedBox(height: 8),
                       Center(
@@ -698,10 +684,9 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
             ),
-
-            
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: AppColors.pageMargin, vertical: 10),
+              padding: const EdgeInsets.symmetric(
+                  horizontal: AppColors.pageMargin, vertical: 10),
               decoration: const BoxDecoration(
                 color: AppColors.surfaceLow,
                 border: Border(
@@ -713,7 +698,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(Icons.help_outline, size: 16, color: AppColors.inkSecondary),
+                      const Icon(Icons.help_outline,
+                          size: 16, color: AppColors.inkSecondary),
                       const SizedBox(width: 4),
                       Text(
                         'Butuh bantuan aktivasi akun?',
@@ -727,17 +713,22 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(height: 2),
                   RichText(
                     text: TextSpan(
-                      style: AppText.labelSm.copyWith(color: AppColors.inkSecondary),
+                      style: AppText.labelSm
+                          .copyWith(color: AppColors.inkSecondary),
                       children: const [
                         TextSpan(text: 'Hubungi '),
                         TextSpan(
                           text: 'SIMRS & SDM Kepegawaian',
-                          style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.ink),
+                          style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.ink),
                         ),
                         TextSpan(text: ' ('),
                         TextSpan(
                           text: 'Ext. 104',
-                          style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.primary),
+                          style: TextStyle(
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.primary),
                         ),
                         TextSpan(text: ')'),
                       ],

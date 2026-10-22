@@ -21,22 +21,33 @@ describe('AuditService.list', () => {
     prisma.auditLog.count = count;
     const svc = new AuditService(prisma);
 
-    const out = await svc.list({ action: 'LOGIN_FAILED', page: 1, pageSize: 20 });
+    const out = await svc.list({
+      action: 'LOGIN_FAILED',
+      page: 1,
+      pageSize: 20,
+    });
     expect(out.pagination).toMatchObject({ totalItems: 5, totalPages: 1 });
     expect(findMany).toHaveBeenCalledWith(
-      expect.objectContaining({ where: expect.objectContaining({ AND: expect.any(Array) }) }),
+      expect.objectContaining({
+        where: expect.objectContaining({ AND: expect.any(Array) }),
+      }),
     );
 
     findMany.mockClear();
     await svc.list({ security: true });
-    const where = findMany.mock.calls[0][0].where as { AND: Array<{ action?: unknown }> };
+    const where = findMany.mock.calls[0][0].where as {
+      AND: Array<{ action?: unknown }>;
+    };
     const actionClause = where.AND.find((c) => c.action);
     expect(actionClause).toEqual({ action: { in: [...SECURITY_ACTIONS] } });
   });
 
   it('actions() returns distinct catalog', async () => {
     const prisma = makePrisma();
-    prisma.auditLog.findMany = vi.fn(async () => [{ action: 'B' }, { action: 'A' }]);
+    prisma.auditLog.findMany = vi.fn(async () => [
+      { action: 'B' },
+      { action: 'A' },
+    ]);
     const svc = new AuditService(prisma);
     await expect(svc.actions()).resolves.toEqual(['B', 'A']);
   });

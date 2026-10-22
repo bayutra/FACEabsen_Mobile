@@ -2,16 +2,12 @@ import 'package:dio/dio.dart';
 
 import '../../../core/storage/secure_store.dart';
 
-
-
-
 class TotpChallengeException implements Exception {
   TotpChallengeException({required this.totpToken, required this.expiresIn});
 
   final String totpToken;
   final int expiresIn;
 }
-
 
 class RegistrationUnit {
   const RegistrationUnit({
@@ -35,8 +31,6 @@ class RegistrationUnit {
   }
 }
 
-
-
 class AuthRepository {
   AuthRepository({required Dio dio, required SecureStore store})
       : _dio = dio,
@@ -54,7 +48,8 @@ class AuthRepository {
       '/auth/login',
       data: {'email': email, 'password': password},
     );
-    final Map<String, dynamic> body = Map<String, dynamic>.from(res.data as Map);
+    final Map<String, dynamic> body =
+        Map<String, dynamic>.from(res.data as Map);
     if (body['totpRequired'] == true) {
       throw TotpChallengeException(
         totpToken: body['totpToken'] as String,
@@ -64,19 +59,15 @@ class AuthRepository {
     return _storeSession(body, rememberMe);
   }
 
-  
-  
   Future<List<RegistrationUnit>> listUnits() async {
     final Response res = await _dio.get('/departments/public');
     final List<dynamic> rows = (res.data as List<dynamic>?) ?? const [];
     return rows
-        .map((e) => RegistrationUnit.fromJson(Map<String, dynamic>.from(e as Map)))
+        .map((e) =>
+            RegistrationUnit.fromJson(Map<String, dynamic>.from(e as Map)))
         .toList();
   }
 
-  
-  
-  
   Future<Map<String, dynamic>> register({
     required String name,
     required String email,
@@ -94,16 +85,17 @@ class AuthRepository {
         'email': email,
         'password': password,
         if (phone != null && phone.isNotEmpty) 'phone': phone,
-        if (employeeNo != null && employeeNo.isNotEmpty) 'employeeNo': employeeNo,
+        if (employeeNo != null && employeeNo.isNotEmpty)
+          'employeeNo': employeeNo,
         if (position != null && position.isNotEmpty) 'position': position,
         if (departmentId != null && departmentId.isNotEmpty)
           'departmentId': departmentId,
       },
     );
-    return _storeSession(Map<String, dynamic>.from(res.data as Map), rememberMe);
+    return _storeSession(
+        Map<String, dynamic>.from(res.data as Map), rememberMe);
   }
 
-  
   Future<Map<String, dynamic>> verifyTotp({
     required String totpToken,
     required String code,
@@ -113,10 +105,10 @@ class AuthRepository {
       '/auth/totp/verify',
       data: {'totpToken': totpToken, 'code': code},
     );
-    return _storeSession(Map<String, dynamic>.from(res.data as Map), rememberMe);
+    return _storeSession(
+        Map<String, dynamic>.from(res.data as Map), rememberMe);
   }
 
-  
   Future<Map<String, dynamic>> recoverTotp({
     required String totpToken,
     required String recoveryCode,
@@ -126,14 +118,10 @@ class AuthRepository {
       '/auth/totp/recover',
       data: {'totpToken': totpToken, 'recoveryCode': recoveryCode},
     );
-    return _storeSession(Map<String, dynamic>.from(res.data as Map), rememberMe);
+    return _storeSession(
+        Map<String, dynamic>.from(res.data as Map), rememberMe);
   }
 
-  
-  
-  
-  
-  
   Future<Map<String, dynamic>> _storeSession(
     Map<String, dynamic> body,
     bool rememberMe,
@@ -160,8 +148,6 @@ class AuthRepository {
     }
   }
 
-  
-  
   Future<void> logout() async {
     try {
       await _dio.post('/auth/logout');
@@ -170,7 +156,6 @@ class AuthRepository {
     }
   }
 
-  
   Future<void> changePassword({
     required String currentPassword,
     required String newPassword,

@@ -1,5 +1,14 @@
 import { Transform, Type } from 'class-transformer';
-import { IsBoolean, IsIn, IsInt, IsOptional, IsString, Max, MaxLength, Min } from 'class-validator';
+import {
+  IsBoolean,
+  IsIn,
+  IsInt,
+  IsOptional,
+  IsString,
+  Max,
+  MaxLength,
+  Min,
+} from 'class-validator';
 
 export class ListAuditQuery {
   @IsOptional()
@@ -50,9 +59,16 @@ export class ListAuditQuery {
   @IsString()
   to?: string;
 
-   
   @IsOptional()
-  @Transform(({ value }) => value === undefined ? undefined : value === 'true' ? true : value === 'false' ? false : value)
+  @Transform(({ value }) =>
+    value === undefined
+      ? undefined
+      : value === 'true'
+        ? true
+        : value === 'false'
+          ? false
+          : value,
+  )
   @IsBoolean()
   security?: boolean;
 }

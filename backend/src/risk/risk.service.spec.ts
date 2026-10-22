@@ -15,11 +15,17 @@ const full: RiskInput = {
 describe('RiskService PRD §23 table', () => {
   it('perfect signals score 100 LOW', () => {
     const svc = new RiskService(cfg());
-    expect(svc.score({ ...full, faceScore: 1 })).toEqual({ score: 100, category: 'LOW' });
+    expect(svc.score({ ...full, faceScore: 1 })).toEqual({
+      score: 100,
+      category: 'LOW',
+    });
   });
 
   it('typical good face (0.9) stays LOW', () => {
-    expect(new RiskService(cfg()).score({ ...full, faceScore: 0.9 })).toEqual({ score: 96, category: 'LOW' });
+    expect(new RiskService(cfg()).score({ ...full, faceScore: 0.9 })).toEqual({
+      score: 96,
+      category: 'LOW',
+    });
   });
 
   it('borderline face (0.5) drops to MEDIUM and flags review', () => {
@@ -43,11 +49,16 @@ describe('RiskService PRD §23 table', () => {
   });
 
   it('weights and thresholds are configurable; bad thresholds fail fast', () => {
-    const svc = new RiskService(cfg({ RISK_W_FACE: 50, RISK_LOW_MIN: 95, RISK_MEDIUM_MIN: 80 }));
-    expect(svc.score({ ...full, faceScore: 1 })).toEqual({ score: 105, category: 'LOW' });
-    expect(() => new RiskService(cfg({ RISK_LOW_MIN: 70, RISK_MEDIUM_MIN: 70 }))).toThrow(
-      'RISK_LOW_MIN',
+    const svc = new RiskService(
+      cfg({ RISK_W_FACE: 50, RISK_LOW_MIN: 95, RISK_MEDIUM_MIN: 80 }),
     );
+    expect(svc.score({ ...full, faceScore: 1 })).toEqual({
+      score: 105,
+      category: 'LOW',
+    });
+    expect(
+      () => new RiskService(cfg({ RISK_LOW_MIN: 70, RISK_MEDIUM_MIN: 70 })),
+    ).toThrow('RISK_LOW_MIN');
   });
 
   it('medium review can be disabled', () => {

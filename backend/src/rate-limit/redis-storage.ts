@@ -8,14 +8,12 @@ interface ThrottlerRecord {
   timeToBlockExpire: number;
 }
 
- 
 export interface RateStore {
   incr(key: string): Promise<number>;
   expire(key: string, seconds: number): Promise<unknown>;
   ttl(key: string): Promise<number>;
 }
 
- 
 export class RedisThrottlerStorage implements ThrottlerStorage {
   private readonly logger = new Logger(RedisThrottlerStorage.name);
 
@@ -35,14 +33,29 @@ export class RedisThrottlerStorage implements ThrottlerStorage {
       }
       const blocked = totalHits > limit;
       if (blocked && blockDuration > 0) {
-        await this.store.expire(key, Math.max(1, Math.ceil(blockDuration / 1000)));
+        await this.store.expire(
+          key,
+          Math.max(1, Math.ceil(blockDuration / 1000)),
+        );
       }
       const ttlSec = await this.store.ttl(key);
       const timeToExpire = ttlSec > 0 ? ttlSec * 1000 : ttl;
-      return { totalHits, timeToExpire, isBlocked: blocked, timeToBlockExpire: blocked ? timeToExpire : 0 };
+      return {
+        totalHits,
+        timeToExpire,
+        isBlocked: blocked,
+        timeToBlockExpire: blocked ? timeToExpire : 0,
+      };
     } catch (e) {
-      this.logger.warn(`Rate-limit store unreachable, failing open: ${(e as Error).message}`);
-      return { totalHits: 1, timeToExpire: ttl, isBlocked: false, timeToBlockExpire: 0 };
+      this.logger.warn(
+        `Rate-limit store unreachable, failing open: ${(e as Error).message}`,
+      );
+      return {
+        totalHits: 1,
+        timeToExpire: ttl,
+        isBlocked: false,
+        timeToBlockExpire: 0,
+      };
     }
   }
 }

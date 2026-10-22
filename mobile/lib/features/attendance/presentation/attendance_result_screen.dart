@@ -3,9 +3,6 @@ import 'package:flutter/material.dart';
 import '../../../core/widgets/hospital_mark.dart';
 import '../domain/attendance_models.dart';
 
-
-
-
 class AttendanceResultScreen extends StatefulWidget {
   const AttendanceResultScreen({
     super.key,
@@ -32,7 +29,7 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
   @override
   void initState() {
     super.initState();
-    
+
     _tab = widget.result.needsReview ? 2 : 0;
   }
 
@@ -116,7 +113,6 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          
           Container(
             padding: const EdgeInsets.all(4),
             decoration: BoxDecoration(
@@ -151,8 +147,6 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
             ],
           ),
           const SizedBox(height: 12),
-
-          
           if (_tab == 0) ...[
             _successHeroCard(title, timeIso, status),
           ] else if (_tab == 1) ...[
@@ -161,12 +155,8 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
             _reviewHeroCard(timeIso),
           ],
           const SizedBox(height: 14),
-
-          
           _shiftDataCard(),
           const SizedBox(height: 20),
-
-          
           SizedBox(
             height: 52,
             child: FilledButton(
@@ -217,8 +207,6 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
             ),
           ),
           const SizedBox(height: 10),
-
-          
           SizedBox(
             height: 48,
             child: OutlinedButton(
@@ -383,16 +371,19 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
                   decoration: BoxDecoration(
                     color: const Color(0xFFFEF2F2),
                     shape: BoxShape.circle,
-                    border: Border.all(color: const Color(0xFFFECACA), width: 1.5),
+                    border:
+                        Border.all(color: const Color(0xFFFECACA), width: 1.5),
                   ),
                   child: const Center(
-                    child: Icon(Icons.gpp_bad, size: 32, color: Color(0xFFBA1A1A)),
+                    child:
+                        Icon(Icons.gpp_bad, size: 32, color: Color(0xFFBA1A1A)),
                   ),
                 ),
               ),
               const SizedBox(height: 12),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                 decoration: BoxDecoration(
                   color: const Color(0xFFFEF2F2),
                   borderRadius: BorderRadius.circular(999),
@@ -401,7 +392,8 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
                 child: const Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.error_outline, size: 14, color: Color(0xFFB91C1C)),
+                    Icon(Icons.error_outline,
+                        size: 14, color: Color(0xFFB91C1C)),
                     SizedBox(width: 4),
                     Text(
                       'Presensi Ditolak',
@@ -464,8 +456,6 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
           ),
         ),
         const SizedBox(height: 12),
-
-        
         _card(
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -476,7 +466,8 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
                 children: [
                   const Row(
                     children: [
-                      Icon(Icons.report_problem, size: 18, color: Color(0xFFBA1A1A)),
+                      Icon(Icons.report_problem,
+                          size: 18, color: Color(0xFFBA1A1A)),
                       SizedBox(width: 6),
                       Text(
                         'Diagnosa Sistem Absensi',
@@ -489,7 +480,8 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
                     ],
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                     decoration: BoxDecoration(
                       color: const Color(0xFFFEF2F2),
                       borderRadius: BorderRadius.circular(6),
@@ -508,8 +500,6 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
                 ],
               ),
               const SizedBox(height: 12),
-
-              
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
@@ -520,7 +510,8 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
                 child: const Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(Icons.report_problem, size: 20, color: Color(0xFFBA1A1A)),
+                    Icon(Icons.report_problem,
+                        size: 20, color: Color(0xFFBA1A1A)),
                     SizedBox(width: 10),
                     Expanded(
                       child: Column(
@@ -550,10 +541,9 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
                 ),
               ),
               const SizedBox(height: 10),
-
-              
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                 decoration: BoxDecoration(
                   color: const Color(0xFFF8F9FF),
                   borderRadius: BorderRadius.circular(12),
@@ -574,7 +564,8 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
                       ),
                     ),
                     const Spacer(),
-                    const Icon(Icons.check_circle, size: 15, color: Color(0xFF047857)),
+                    const Icon(Icons.check_circle,
+                        size: 15, color: Color(0xFF047857)),
                     const SizedBox(width: 4),
                     Text(
                       'Sesuai (${score.toStringAsFixed(1)}%)',
@@ -588,8 +579,6 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
                 ),
               ),
               const SizedBox(height: 10),
-
-              
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
@@ -651,16 +640,19 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
                   decoration: BoxDecoration(
                     color: const Color(0xFFFFFBEB),
                     shape: BoxShape.circle,
-                    border: Border.all(color: const Color(0xFFFDE68A), width: 1.5),
+                    border:
+                        Border.all(color: const Color(0xFFFDE68A), width: 1.5),
                   ),
                   child: const Center(
-                    child: Icon(Icons.hourglass_top, size: 32, color: Color(0xFFB45309)),
+                    child: Icon(Icons.hourglass_top,
+                        size: 32, color: Color(0xFFB45309)),
                   ),
                 ),
               ),
               const SizedBox(height: 12),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                 decoration: BoxDecoration(
                   color: const Color(0xFFFFFBEB),
                   borderRadius: BorderRadius.circular(999),
@@ -740,8 +732,6 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
           ),
         ),
         const SizedBox(height: 12),
-
-        
         _card(
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -752,7 +742,8 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
                 children: [
                   const Row(
                     children: [
-                      Icon(Icons.assignment_late, size: 18, color: Color(0xFFB45309)),
+                      Icon(Icons.assignment_late,
+                          size: 18, color: Color(0xFFB45309)),
                       SizedBox(width: 6),
                       Text(
                         'Alasan Dispensasi Presensi',
@@ -765,7 +756,8 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
                     ],
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                     decoration: BoxDecoration(
                       color: const Color(0xFFE5EEFF),
                       borderRadius: BorderRadius.circular(6),
@@ -786,8 +778,6 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
                 ],
               ),
               const SizedBox(height: 12),
-
-              
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
@@ -798,7 +788,8 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Icon(Icons.attribution, size: 20, color: Color(0xFFB45309)),
+                    const Icon(Icons.attribution,
+                        size: 20, color: Color(0xFFB45309)),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Column(
@@ -828,8 +819,6 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
                 ),
               ),
               const SizedBox(height: 12),
-
-              
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
@@ -886,8 +875,6 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
                 ),
               ),
               const SizedBox(height: 10),
-
-              
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
@@ -898,7 +885,8 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
                 child: const Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(Icons.info_outline, size: 18, color: Color(0xFF005C55)),
+                    Icon(Icons.info_outline,
+                        size: 18, color: Color(0xFF005C55)),
                     SizedBox(width: 8),
                     Expanded(
                       child: Text(
@@ -1099,7 +1087,8 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
             children: [
               const Row(
                 children: [
-                  Icon(Icons.medical_services, size: 18, color: Color(0xFF005C55)),
+                  Icon(Icons.medical_services,
+                      size: 18, color: Color(0xFF005C55)),
                   SizedBox(width: 8),
                   Text(
                     'Data Penugasan Shift',
@@ -1112,7 +1101,8 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
                 ],
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
                 decoration: BoxDecoration(
                   color: const Color(0xFFCCFBF1),
                   borderRadius: BorderRadius.circular(999),
@@ -1130,8 +1120,6 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
             ],
           ),
           const SizedBox(height: 12),
-
-          
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
@@ -1148,7 +1136,8 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
                     color: const Color(0xFFD3E4FE),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Icon(Icons.badge, color: Color(0xFF005C55), size: 22),
+                  child: const Icon(Icons.badge,
+                      color: Color(0xFF005C55), size: 22),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
@@ -1180,8 +1169,6 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
             ),
           ),
           const SizedBox(height: 12),
-
-          
           Row(
             children: [
               Expanded(
@@ -1230,8 +1217,6 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
             ],
           ),
           const SizedBox(height: 12),
-
-          
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
@@ -1294,7 +1279,9 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
               Icon(
                 icon,
                 size: 14,
-                color: isSuccess ? const Color(0xFF047857) : const Color(0xFF6E7977),
+                color: isSuccess
+                    ? const Color(0xFF047857)
+                    : const Color(0xFF6E7977),
               ),
               const SizedBox(width: 4),
               Expanded(
@@ -1316,7 +1303,8 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
             value,
             style: TextStyle(
               fontSize: 13,
-              color: isSuccess ? const Color(0xFF047857) : const Color(0xFF0B1C30),
+              color:
+                  isSuccess ? const Color(0xFF047857) : const Color(0xFF0B1C30),
               fontWeight: FontWeight.w700,
             ),
             maxLines: 1,
@@ -1327,7 +1315,8 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
             subtitle,
             style: TextStyle(
               fontSize: 10,
-              color: isSuccess ? const Color(0xFF047857) : const Color(0xFF6E7977),
+              color:
+                  isSuccess ? const Color(0xFF047857) : const Color(0xFF6E7977),
             ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
@@ -1474,7 +1463,8 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
                           ? 'Kamis, 24 Okt 2024'
                           : widget.result.workDate,
                     ),
-                    _detailRow('Check-In', _hhmmSeconds(widget.result.checkInAt)),
+                    _detailRow(
+                        'Check-In', _hhmmSeconds(widget.result.checkInAt)),
                     _detailRow(
                       'Check-Out',
                       widget.result.checkOutAt == null
@@ -1524,7 +1514,8 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
                     ),
                   ),
                   style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: Color(0xFFBDC9C6), width: 1.2),
+                    side:
+                        const BorderSide(color: Color(0xFFBDC9C6), width: 1.2),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
                     ),
@@ -1597,9 +1588,7 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
     if (name.isEmpty || name == '—') return '—';
     final parts = name.trim().split(' ');
     if (parts.length == 1) {
-      return parts[0]
-          .substring(0, parts[0].length >= 2 ? 2 : 1)
-          .toUpperCase();
+      return parts[0].substring(0, parts[0].length >= 2 ? 2 : 1).toUpperCase();
     }
     return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
   }

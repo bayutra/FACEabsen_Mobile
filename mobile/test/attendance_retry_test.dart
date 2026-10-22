@@ -10,11 +10,9 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'fakes.dart';
 
-
 class _RateLimitAdapter implements HttpClientAdapter {
   _RateLimitAdapter(this.script);
 
-  
   final List<(int, String?)> script;
   int hits = 0;
 
@@ -43,7 +41,6 @@ class _RateLimitAdapter implements HttpClientAdapter {
   @override
   void close({bool force = false}) {}
 }
-
 
 class _PostStatusAdapter implements HttpClientAdapter {
   _PostStatusAdapter(this.status, {this.retryAfter});
@@ -127,7 +124,8 @@ void main() {
     test('429 + Retry-After: 0 retries once then succeeds', () async {
       final FakeStore store = FakeStore();
       final Dio dio = createApiClient(store: store);
-      final _RateLimitAdapter fake = _RateLimitAdapter([(429, '0'), (200, null)]);
+      final _RateLimitAdapter fake =
+          _RateLimitAdapter([(429, '0'), (200, null)]);
       dio.httpClientAdapter = fake;
 
       final Response<dynamic> res = await dio.get('/protected');
@@ -135,7 +133,8 @@ void main() {
       expect(fake.hits, 2);
     });
 
-    test('Retry-After beyond the foreground cap propagates immediately', () async {
+    test('Retry-After beyond the foreground cap propagates immediately',
+        () async {
       final FakeStore store = FakeStore();
       final Dio dio = createApiClient(store: store);
       final _RateLimitAdapter fake = _RateLimitAdapter([(429, '120')]);
@@ -155,13 +154,14 @@ void main() {
       dio.httpClientAdapter = fake;
 
       await expectLater(dio.get('/protected'), throwsA(isA<DioException>()));
-      
+
       expect(fake.hits, 2);
     });
   });
 
   group('punch mapping + outbox retention', () {
-    Future<AttendanceRepository> repoWith(int status, {String? retryAfter}) async {
+    Future<AttendanceRepository> repoWith(int status,
+        {String? retryAfter}) async {
       final Dio dio = _dio();
       dio.httpClientAdapter =
           _PostStatusAdapter(status, retryAfter: retryAfter);
@@ -175,7 +175,8 @@ void main() {
           compromised: false,
         );
 
-    test('429 and 500 throw AttendanceOffline (queueable), 422 rejects', () async {
+    test('429 and 500 throw AttendanceOffline (queueable), 422 rejects',
+        () async {
       await expectLater(
           punch(await repoWith(429)), throwsA(isA<AttendanceOffline>()));
       await expectLater(

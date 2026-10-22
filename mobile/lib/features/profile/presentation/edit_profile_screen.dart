@@ -5,10 +5,6 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/stitch.dart';
 import '../data/profile_repository.dart';
 
-
-
-
-
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({
     super.key,

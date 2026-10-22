@@ -2,16 +2,13 @@ import 'package:dio/dio.dart';
 
 import '../domain/correction_admin_models.dart';
 
-
-
-
-
 class CorrectionAdminRepository {
   CorrectionAdminRepository({required Dio dio}) : _dio = dio;
 
   final Dio _dio;
 
-  Future<List<AdminCorrection>> list({String? status, String? employeeId}) async {
+  Future<List<AdminCorrection>> list(
+      {String? status, String? employeeId}) async {
     final Response<dynamic> res = await _dio.get<dynamic>(
       '/corrections',
       queryParameters: <String, dynamic>{
@@ -47,5 +44,5 @@ class CorrectionAdminRepository {
 }
 
 Map<String, dynamic> _reviewBody(String? note) => <String, dynamic>{
-  if (note != null && note.trim().isNotEmpty) 'reviewNote': note.trim(),
-};
+      if (note != null && note.trim().isNotEmpty) 'reviewNote': note.trim(),
+    };

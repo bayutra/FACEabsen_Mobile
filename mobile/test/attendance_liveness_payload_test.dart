@@ -1,9 +1,6 @@
 import 'package:face_absen_mobile/features/attendance/data/attendance_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-
-
-
 void main() {
   const String now = '2026-10-07T07:00:00.000Z';
 
@@ -48,8 +45,7 @@ void main() {
       );
       expect(out['mode'], 'passive');
       expect(out['padScore'], 0.82);
-      
-      
+
       expect(out.containsKey('challenges'), isFalse);
     });
 
@@ -64,7 +60,7 @@ void main() {
           'embedding': List<double>.filled(192, 0.1),
         },
       );
-      
+
       expect(out.containsKey('embedding'), isFalse);
     });
 
@@ -81,7 +77,6 @@ void main() {
     });
 
     test('never leaks a stray challenge list from the caller', () {
-      
       final Map<String, Object?> out = AttendanceRepository.livenessPayload(
         <String, Object>{
           'passed': true,
@@ -120,7 +115,12 @@ void main() {
         'padScore': 0.8,
       },
     ]) {
-      expect(AttendanceRepository.livenessPayload(input).keys.toSet().difference(allowed), isEmpty);
+      expect(
+          AttendanceRepository.livenessPayload(input)
+              .keys
+              .toSet()
+              .difference(allowed),
+          isEmpty);
     }
   });
 }

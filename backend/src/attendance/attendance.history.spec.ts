@@ -30,31 +30,56 @@ function makePrisma(over: Record<string, Record<string, unknown>> = {}) {
 }
 
 const svcOf = (prisma: PrismaService) =>
-  new AttendanceService(prisma, depsStub, depsStub, depsStub, depsStub, auditStub, configStub);
+  new AttendanceService(
+    prisma,
+    depsStub,
+    depsStub,
+    depsStub,
+    depsStub,
+    auditStub,
+    configStub,
+  );
 
 describe('AttendanceService.listMine', () => {
   it('scopes to caller + envelope + no profile 404', async () => {
     const findMany = vi.fn(async () => [{ id: 'a1' }]);
-    const prisma = makePrisma({ attendance: { count: vi.fn(async () => 1), findMany } });
+    const prisma = makePrisma({
+      attendance: { count: vi.fn(async () => 1), findMany },
+    });
     const svc = svcOf(prisma);
     const out = await svc.listMine('u1', { page: 1, pageSize: 20 });
-    expect(out.pagination).toMatchObject({ page: 1, pageSize: 20, totalItems: 1, totalPages: 1 });
+    expect(out.pagination).toMatchObject({
+      page: 1,
+      pageSize: 20,
+      totalItems: 1,
+      totalPages: 1,
+    });
     expect(findMany).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: expect.objectContaining({ AND: expect.arrayContaining([{ employeeId: 'e1' }]) }),
+        where: expect.objectContaining({
+          AND: expect.arrayContaining([{ employeeId: 'e1' }]),
+        }),
       }),
     );
 
-    const svc2 = svcOf(makePrisma({ employee: { findUnique: vi.fn(async () => null) } }));
-    await expect(svc2.listMine('ghost', {})).rejects.toThrow('No employee profile');
+    const svc2 = svcOf(
+      makePrisma({ employee: { findUnique: vi.fn(async () => null) } }),
+    );
+    await expect(svc2.listMine('ghost', {})).rejects.toThrow(
+      'No employee profile',
+    );
   });
 
   it('passes date/status filters', async () => {
     const findMany = vi.fn(async () => []);
     const prisma = makePrisma({ attendance: { findMany } });
-    await svcOf(prisma).listMine('u1', { from: '2026-10-01', to: '2026-10-05', checkInStatus: 'LATE' });
+    await svcOf(prisma).listMine('u1', {
+      from: '2026-10-01',
+      to: '2026-10-05',
+      checkInStatus: 'LATE',
+    });
     const where = findMany.mock.calls[0][0].where as { AND: unknown[] };
-    expect(where.AND).toHaveLength(4); 
+    expect(where.AND).toHaveLength(4);
   });
 });
 
@@ -83,7 +108,9 @@ describe('AttendanceService.listAll', () => {
       attendance: { findMany },
       department: { findUnique: vi.fn(async () => ({ hospitalId: 'h2' })) },
     });
-    const out = await svcOf(prisma).listAll({ departmentId: 'd9' }, 'u-adm', ['ADMIN']);
+    const out = await svcOf(prisma).listAll({ departmentId: 'd9' }, 'u-adm', [
+      'ADMIN',
+    ]);
     expect(out.pagination.totalItems).toBe(0);
     expect(findMany).not.toHaveBeenCalled();
   });
@@ -103,26 +130,48 @@ describe('AttendanceService.getOne', () => {
   });
 
   it('owner and admin pass; stranger and unknown get 404', async () => {
-    const prisma = makePrisma({ attendance: { findUnique: vi.fn(async () => row()) } });
+    const prisma = makePrisma({
+      attendance: { findUnique: vi.fn(async () => row()) },
+    });
     const svc = svcOf(prisma);
-    await expect(svc.getOne('a1', 'u1', ['EMPLOYEE'])).resolves.toMatchObject({ id: 'a1' });
-    await expect(svc.getOne('a1', 'u9', ['ADMIN'])).resolves.toMatchObject({ id: 'a1' });
-    await expect(svc.getOne('a1', 'u9', ['SUPER_ADMIN'])).resolves.toMatchObject({ id: 'a1' });
-    await expect(svc.getOne('a1', 'u9', ['EMPLOYEE'])).rejects.toThrow('Attendance not found');
+    await expect(svc.getOne('a1', 'u1', ['EMPLOYEE'])).resolves.toMatchObject({
+      id: 'a1',
+    });
+    await expect(svc.getOne('a1', 'u9', ['ADMIN'])).resolves.toMatchObject({
+      id: 'a1',
+    });
+    await expect(
+      svc.getOne('a1', 'u9', ['SUPER_ADMIN']),
+    ).resolves.toMatchObject({ id: 'a1' });
+    await expect(svc.getOne('a1', 'u9', ['EMPLOYEE'])).rejects.toThrow(
+      'Attendance not found',
+    );
 
-    const svc2 = svcOf(makePrisma({ attendance: { findUnique: vi.fn(async () => null) } }));
-    await expect(svc2.getOne('nope', 'u1', ['ADMIN'])).rejects.toThrow('Attendance not found');
+    const svc2 = svcOf(
+      makePrisma({ attendance: { findUnique: vi.fn(async () => null) } }),
+    );
+    await expect(svc2.getOne('nope', 'u1', ['ADMIN'])).rejects.toThrow(
+      'Attendance not found',
+    );
   });
 
   it('ADMIN of another facility gets 404 on a foreign row', async () => {
     const prisma = makePrisma({
       attendance: {
         findUnique: vi.fn(async () =>
-          row({ employee: { id: 'e9', userId: 'u9x', department: { hospitalId: 'h2' } } }),
+          row({
+            employee: {
+              id: 'e9',
+              userId: 'u9x',
+              department: { hospitalId: 'h2' },
+            },
+          }),
         ),
       },
     });
-    
-    await expect(svcOf(prisma).getOne('a1', 'u-adm', ['ADMIN'])).rejects.toThrow('Attendance not found');
+
+    await expect(
+      svcOf(prisma).getOne('a1', 'u-adm', ['ADMIN']),
+    ).rejects.toThrow('Attendance not found');
   });
 });

@@ -1,8 +1,3 @@
-
-
-
-
-
 import {
   BadRequestException,
   ConflictException,
@@ -29,7 +24,7 @@ import {
 } from './totp.js';
 
 const RECOVERY_CODE_COUNT = 8;
- 
+
 const RECOVERY_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 
 export function normalizeRecoveryCode(input: string): string {
@@ -57,15 +52,22 @@ export class TotpService {
     private readonly config: ConfigService,
     private readonly audit: AuditService,
   ) {
-    this.accessTtlSec = Number(config.get('JWT_ACCESS_TTL_SEC', AUTH_POLICY.accessTtlSec));
-    this.refreshTtlDays = Number(config.get('REFRESH_TTL_DAYS', AUTH_POLICY.refreshTtlDays));
-    this.totpIssuer = String(config.get('TOTP_ISSUER', AUTH_POLICY.jwtIssuer) ?? AUTH_POLICY.jwtIssuer);
+    this.accessTtlSec = Number(
+      config.get('JWT_ACCESS_TTL_SEC', AUTH_POLICY.accessTtlSec),
+    );
+    this.refreshTtlDays = Number(
+      config.get('REFRESH_TTL_DAYS', AUTH_POLICY.refreshTtlDays),
+    );
+    this.totpIssuer = String(
+      config.get('TOTP_ISSUER', AUTH_POLICY.jwtIssuer) ?? AUTH_POLICY.jwtIssuer,
+    );
     if (!config.get('JWT_ACCESS_SECRET')) {
-      this.logger.warn('JWT_ACCESS_SECRET missing — using dev fallback. Set it in production.');
+      this.logger.warn(
+        'JWT_ACCESS_SECRET missing — using dev fallback. Set it in production.',
+      );
     }
   }
 
-   
   async setup(userId: string) {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user) throw new NotFoundException('User not found');
@@ -74,17 +76,21 @@ export class TotpService {
       where: { id: userId },
       data: { totpSecret: secret, totpEnabled: false },
     });
-    
+
     await this.prisma.totpRecoveryCode.deleteMany({ where: { userId } });
-    return { secret, otpauthUri: buildOtpauthUri(this.totpIssuer, user.email, secret) };
+    return {
+      secret,
+      otpauthUri: buildOtpauthUri(this.totpIssuer, user.email, secret),
+    };
   }
 
-   
   async enable(userId: string, code: string) {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user) throw new NotFoundException('User not found');
-    if (user.totpEnabled) throw new ConflictException('TOTP is already enabled');
-    if (!user.totpSecret) throw new BadRequestException('TOTP setup has not been started');
+    if (user.totpEnabled)
+      throw new ConflictException('TOTP is already enabled');
+    if (!user.totpSecret)
+      throw new BadRequestException('TOTP setup has not been started');
     if (!verifyTotp(user.totpSecret, code)) {
       await this.audit.log({
         actorId: userId,
@@ -104,14 +110,19 @@ export class TotpService {
     }
     await this.prisma.totpRecoveryCode.deleteMany({ where: { userId } });
     await this.prisma.totpRecoveryCode.createMany({
-      data: recoveryCodes.map((c) => ({ userId, codeHash: sha256(normalizeRecoveryCode(c)) })),
+      data: recoveryCodes.map((c) => ({
+        userId,
+        codeHash: sha256(normalizeRecoveryCode(c)),
+      })),
     });
-    await this.prisma.user.update({ where: { id: userId }, data: { totpEnabled: true } });
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { totpEnabled: true },
+    });
     await this.audit.log({ actorId: userId, action: 'TOTP_ENABLED' });
     return { recoveryCodes };
   }
 
-   
   async disable(userId: string, password: string, meta: RequestMeta = {}) {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user) throw new NotFoundException('User not found');
@@ -122,11 +133,14 @@ export class TotpService {
       where: { id: userId },
       data: { totpSecret: null, totpEnabled: false },
     });
-    await this.audit.log({ actorId: userId, action: 'TOTP_DISABLED', ipAddress: meta.ip });
+    await this.audit.log({
+      actorId: userId,
+      action: 'TOTP_DISABLED',
+      ipAddress: meta.ip,
+    });
     return { disabled: true as const };
   }
 
-   
   signTotpToken(userId: string) {
     return this.jwt.signAsync(
       { sub: userId, purpose: TOTP_TOKEN_PURPOSE },
@@ -138,7 +152,6 @@ export class TotpService {
     );
   }
 
-   
   async verifyTotpToken(token: string): Promise<string> {
     let payload: { sub?: string; purpose?: string };
     try {
@@ -155,7 +168,6 @@ export class TotpService {
     return payload.sub;
   }
 
-   
   async verify(totpToken: string, code: string, meta: RequestMeta = {}) {
     const userId = await this.verifyTotpToken(totpToken);
     const user = await this.prisma.user.findUnique({
@@ -173,8 +185,11 @@ export class TotpService {
     return this.issueLogin(user, meta, 'totp');
   }
 
-   
-  async recover(totpToken: string, recoveryCode: string, meta: RequestMeta = {}) {
+  async recover(
+    totpToken: string,
+    recoveryCode: string,
+    meta: RequestMeta = {},
+  ) {
     const userId = await this.verifyTotpToken(totpToken);
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
@@ -182,9 +197,11 @@ export class TotpService {
     });
     const presentedHash = sha256(normalizeRecoveryCode(recoveryCode));
     const rows = user
-      ? await this.prisma.totpRecoveryCode.findMany({ where: { userId: user.id, usedAt: null } })
+      ? await this.prisma.totpRecoveryCode.findMany({
+          where: { userId: user.id, usedAt: null },
+        })
       : [];
-    
+
     let matchId: string | null = null;
     for (const row of rows) {
       if (safeEqual(row.codeHash, presentedHash)) matchId = row.id;
@@ -204,8 +221,6 @@ export class TotpService {
     return this.issueLogin(user, meta, 'totp-recovery');
   }
 
-  
-
   private async fail(userId: string, meta: RequestMeta, stage: string) {
     await this.audit.log({
       actorId: userId,
@@ -217,13 +232,22 @@ export class TotpService {
   }
 
   private async issueLogin(
-    user: { id: string; email: string; userRoles?: Array<{ role: { name: string } }> },
+    user: {
+      id: string;
+      email: string;
+      userRoles?: Array<{ role: { name: string } }>;
+    },
     meta: RequestMeta,
     method: string,
   ) {
     const roles = (user.userRoles ?? []).map((ur) => ur.role.name);
     const session = await this.createSession(user.id, meta);
-    const accessToken = await this.signAccess(user.id, user.email, roles, session.id);
+    const accessToken = await this.signAccess(
+      user.id,
+      user.email,
+      roles,
+      session.id,
+    );
     await this.audit.log({
       actorId: user.id,
       action: 'LOGIN_SUCCESS',
@@ -257,7 +281,11 @@ export class TotpService {
   private signAccess(sub: string, email: string, roles: string[], sid: string) {
     return this.jwt.signAsync(
       { sub, email, roles, sid },
-      { algorithm: AUTH_POLICY.jwtAlgorithm, issuer: AUTH_POLICY.jwtIssuer, expiresIn: this.accessTtlSec },
+      {
+        algorithm: AUTH_POLICY.jwtAlgorithm,
+        issuer: AUTH_POLICY.jwtIssuer,
+        expiresIn: this.accessTtlSec,
+      },
     );
   }
 }

@@ -5,7 +5,8 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'fakes.dart';
 
-OutboxEntry _entry({String deviceId = 'd1', PunchKind kind = PunchKind.checkIn}) =>
+OutboxEntry _entry(
+        {String deviceId = 'd1', PunchKind kind = PunchKind.checkIn}) =>
     OutboxEntry(
       kind: kind,
       embedding: List<double>.filled(192, 0.1),
@@ -97,25 +98,25 @@ void main() {
         42,
         'bukan-map',
         null,
-        {'kind': 'checkIn'}, 
+        {'kind': 'checkIn'},
         {
           ...valid,
-          'kind': 'checkSideways', 
+          'kind': 'checkSideways',
         },
         {
           ...valid,
-          'embedding': ['nan-string'], 
+          'embedding': ['nan-string'],
         },
         {
           ...valid,
-          'queuedAt': 'kemarin-sore', 
+          'queuedAt': 'kemarin-sore',
         },
       ]));
 
       final List<OutboxEntry> loaded = await box.load();
       expect(loaded, hasLength(1));
       expect(loaded.single.deviceId, 'd1');
-      
+
       expect(await box.count(), 1);
     });
 
@@ -129,7 +130,6 @@ void main() {
       await store.writeOutbox(jsonEncode({'bukan': 'list'}));
       expect(await box.load(), isEmpty);
 
-      
       await box.save(_entry());
       expect(await box.count(), 1);
     });

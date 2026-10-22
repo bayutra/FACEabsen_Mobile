@@ -1,6 +1,5 @@
 import 'package:dio/dio.dart';
 
-
 class ShiftHospital {
   const ShiftHospital({
     required this.id,
@@ -20,7 +19,6 @@ class ShiftHospital {
         name: _stringOf(json['name'], fallback: 'Tanpa nama'),
       );
 }
-
 
 class AdminShift {
   const AdminShift({
@@ -70,10 +68,6 @@ class AdminShift {
     );
   }
 }
-
-
-
-
 
 class ShiftAdminRepository {
   ShiftAdminRepository({required Dio dio}) : _dio = dio;
@@ -161,7 +155,6 @@ class ShiftAdminRepository {
     );
   }
 
-  
   Future<void> delete(String id) async {
     await _dio.delete<dynamic>('/shifts/$id');
   }

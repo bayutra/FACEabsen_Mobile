@@ -1,6 +1,23 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Param, Patch, Post, Query, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Patch,
+  Post,
+  Query,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import type { Request } from 'express';
-import { RequirePermissions, Roles, CurrentUser, type AuthContext } from '../auth/decorators.js';
+import {
+  RequirePermissions,
+  Roles,
+  CurrentUser,
+  type AuthContext,
+} from '../auth/decorators.js';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
 import { PermissionsGuard } from '../auth/guards/permissions.guard.js';
 import { RolesGuard } from '../auth/guards/roles.guard.js';
@@ -20,14 +37,21 @@ export class EmployeesController {
   @Roles('ADMIN')
   @RequirePermissions('employee:create')
   @Post()
-  create(@Body() dto: CreateEmployeeDto, @CurrentUser() actor: AuthContext, @Req() req: Request) {
+  create(
+    @Body() dto: CreateEmployeeDto,
+    @CurrentUser() actor: AuthContext,
+    @Req() req: Request,
+  ) {
     return this.employees.create(dto, actor.userId, { ip: req.ip });
   }
 
   @Roles('SUPERVISOR')
   @RequirePermissions('employee:read')
   @Get()
-  findAll(@Query() query: ListEmployeesQuery, @CurrentUser() user: AuthContext) {
+  findAll(
+    @Query() query: ListEmployeesQuery,
+    @CurrentUser() user: AuthContext,
+  ) {
     return this.employees.findAll(query, user.userId, user.roles);
   }
 
@@ -36,7 +60,6 @@ export class EmployeesController {
     return this.employees.findMyEmployee(user.userId);
   }
 
-   
   @Patch('me')
   updateMe(
     @Body() dto: UpdateMyProfileDto,
@@ -69,7 +92,11 @@ export class EmployeesController {
   @RequirePermissions('employee:update')
   @HttpCode(HttpStatus.OK)
   @Post(':id/deactivate')
-  deactivate(@Param('id') id: string, @CurrentUser() actor: AuthContext, @Req() req: Request) {
+  deactivate(
+    @Param('id') id: string,
+    @CurrentUser() actor: AuthContext,
+    @Req() req: Request,
+  ) {
     return this.employees.deactivate(id, actor.userId, { ip: req.ip });
   }
 }

@@ -1,7 +1,6 @@
 import '../../profile/data/profile_repository.dart';
 import '../../schedule/data/schedule_repository.dart';
 
-
 class PreflightSnapshot {
   const PreflightSnapshot({
     required this.displayName,
@@ -19,7 +18,6 @@ class PreflightSnapshot {
   final bool hasProfile;
   final ScheduleEntry? shift;
 }
-
 
 class PreflightRepository {
   PreflightRepository({
@@ -48,9 +46,7 @@ class PreflightRepository {
       dept = p.department;
       active = p.isActive;
       hasProfile = true;
-    } catch (_) {
-      
-    }
+    } catch (_) {}
 
     ScheduleEntry? shift;
     try {
@@ -66,9 +62,7 @@ class PreflightRepository {
           break;
         }
       }
-    } catch (_) {
-      
-    }
+    } catch (_) {}
 
     return PreflightSnapshot(
       displayName: name,

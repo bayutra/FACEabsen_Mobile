@@ -7,7 +7,10 @@ const report: TabularReport = {
   generatedAt: '2026-10-05T00:00:00.000Z',
   summary: [['Hadir', 3]],
   headers: ['NIP', 'Nama, lengkap', 'Status'],
-  rows: [['EMP-001', 'Siti "Siaga"', 'ON_TIME'], ['EMP-002', null, 'LATE']],
+  rows: [
+    ['EMP-001', 'Siti "Siaga"', 'ON_TIME'],
+    ['EMP-002', null, 'LATE'],
+  ],
 };
 
 describe('export renderers', () => {
@@ -33,14 +36,14 @@ describe('export renderers', () => {
       ],
     };
     const csv = toCSV(evil);
-    
+
     expect(csv).toContain("'=cmd|'/c calc'!A0");
     expect(csv).toContain("'+1+1");
     expect(csv).toContain("'-2+3");
     expect(csv).toContain("'@SUM(A1:A2)");
-    
+
     expect(csv).toContain(`"'\t=HYPERLINK`);
-    
+
     expect(toCSV(report)).not.toContain("'Siti");
   });
 

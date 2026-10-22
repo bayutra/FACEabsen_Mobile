@@ -1,6 +1,5 @@
 import 'package:dio/dio.dart';
 
-
 class DepartmentHospital {
   const DepartmentHospital({
     required this.id,
@@ -21,7 +20,6 @@ class DepartmentHospital {
         name: _stringOf(json['name'], fallback: 'Tanpa nama'),
       );
 }
-
 
 class AdminDepartmentItem {
   const AdminDepartmentItem({
@@ -58,10 +56,6 @@ class AdminDepartmentItem {
     );
   }
 }
-
-
-
-
 
 class DepartmentAdminRepository {
   DepartmentAdminRepository({required Dio dio}) : _dio = dio;
@@ -116,7 +110,6 @@ class DepartmentAdminRepository {
     );
   }
 
-  
   Future<void> delete(String id) async {
     await _dio.delete<dynamic>('/departments/$id');
   }

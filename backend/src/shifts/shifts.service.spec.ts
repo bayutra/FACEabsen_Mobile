@@ -6,10 +6,11 @@ const auditStub = { log: vi.fn(async () => undefined) } as never;
 
 function makePrisma(over: Record<string, Record<string, unknown>> = {}) {
   const base = {
-    hospital: { findUnique: vi.fn(async () => ({ id: 'h1' })), ...over.hospital },
-    
-    
-    
+    hospital: {
+      findUnique: vi.fn(async () => ({ id: 'h1' })),
+      ...over.hospital,
+    },
+
     userRole: {
       findMany: vi.fn(async () => [{ role: { name: 'SUPER_ADMIN' } }]),
       ...over.userRole,
@@ -21,7 +22,10 @@ function makePrisma(over: Record<string, Record<string, unknown>> = {}) {
       update: vi.fn(),
       ...over.shift,
     },
-    employee: { findUnique: vi.fn(async () => ({ id: 'e1' })), ...over.employee },
+    employee: {
+      findUnique: vi.fn(async () => ({ id: 'e1' })),
+      ...over.employee,
+    },
     employeeSchedule: {
       findUnique: vi.fn(async () => null),
       findMany: vi.fn(async () => []),
@@ -32,11 +36,12 @@ function makePrisma(over: Record<string, Record<string, unknown>> = {}) {
     },
     attendance: { findFirst: vi.fn(async () => null), ...over.attendance },
   };
-  
-  
+
   return {
     ...base,
-    $transaction: vi.fn(async (fn: (tx: unknown) => Promise<unknown>) => fn(base)),
+    $transaction: vi.fn(async (fn: (tx: unknown) => Promise<unknown>) =>
+      fn(base),
+    ),
   } as unknown as PrismaService;
 }
 
@@ -49,10 +54,16 @@ const malamDto = () => ({
 
 describe('ShiftsService.createShift', () => {
   it('derives overnight + defaults, audits', async () => {
-    const create = vi.fn(async (a: { data: Record<string, unknown> }) => ({ id: 's1', ...a.data }));
+    const create = vi.fn(async (a: { data: Record<string, unknown> }) => ({
+      id: 's1',
+      ...a.data,
+    }));
     const prisma = makePrisma({ shift: { create } });
     const svc = new ShiftsService(prisma, auditStub);
-    const out = (await svc.createShift(malamDto(), 'admin')) as Record<string, unknown>;
+    const out = (await svc.createShift(malamDto(), 'admin')) as Record<
+      string,
+      unknown
+    >;
     expect(out.overnight).toBe(true);
     expect(out.gracePeriodMin).toBe(15);
     expect(auditStub.log).toHaveBeenCalledWith(
@@ -62,28 +73,49 @@ describe('ShiftsService.createShift', () => {
   });
 
   it('rejects unknown hospital, equal times, overnight contradiction, duplicate name', async () => {
-    const svc = new ShiftsService(makePrisma({ hospital: { findUnique: vi.fn(async () => null) } }), auditStub);
-    await expect(svc.createShift(malamDto(), 'a')).rejects.toThrow('Hospital not found');
+    const svc = new ShiftsService(
+      makePrisma({ hospital: { findUnique: vi.fn(async () => null) } }),
+      auditStub,
+    );
+    await expect(svc.createShift(malamDto(), 'a')).rejects.toThrow(
+      'Hospital not found',
+    );
 
     const svc2 = new ShiftsService(makePrisma(), auditStub);
-    await expect(svc2.createShift({ ...malamDto(), startTime: '07:00', endTime: '07:00' }, 'a')).rejects.toThrow('cannot be equal');
-    await expect(svc2.createShift({ ...malamDto(), overnight: false }, 'a')).rejects.toThrow('contradicts');
+    await expect(
+      svc2.createShift(
+        { ...malamDto(), startTime: '07:00', endTime: '07:00' },
+        'a',
+      ),
+    ).rejects.toThrow('cannot be equal');
+    await expect(
+      svc2.createShift({ ...malamDto(), overnight: false }, 'a'),
+    ).rejects.toThrow('contradicts');
 
     const svc3 = new ShiftsService(
       makePrisma({ shift: { findUnique: vi.fn(async () => ({ id: 'sx' })) } }),
       auditStub,
     );
-    await expect(svc3.createShift(malamDto(), 'a')).rejects.toThrow('already exists');
+    await expect(svc3.createShift(malamDto(), 'a')).rejects.toThrow(
+      'already exists',
+    );
   });
 });
-
-
-
 
 describe('ShiftsService.listMineFor (employee-facing roster)', () => {
   it('scopes to the caller employee and returns shift context', async () => {
     const rows = [
-      { id: 'sch1', employeeId: 'e1', workDate: new Date('2026-10-06'), shift: { name: 'PAGI', startTime: '07:00', endTime: '15:00', overnight: false } },
+      {
+        id: 'sch1',
+        employeeId: 'e1',
+        workDate: new Date('2026-10-06'),
+        shift: {
+          name: 'PAGI',
+          startTime: '07:00',
+          endTime: '15:00',
+          overnight: false,
+        },
+      },
     ];
     const findMany = vi.fn(async () => rows);
     const count = vi.fn(async () => 1);
@@ -92,7 +124,11 @@ describe('ShiftsService.listMineFor (employee-facing roster)', () => {
       employeeSchedule: { count, findMany },
     });
     const svc = new ShiftsService(prisma, auditStub);
-    const out = await svc.listMineFor('u1', { from: '2026-10-01', to: '2026-10-31', pageSize: 7 });
+    const out = await svc.listMineFor('u1', {
+      from: '2026-10-01',
+      to: '2026-10-31',
+      pageSize: 7,
+    });
 
     expect(findMany).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -113,7 +149,9 @@ describe('ShiftsService.listMineFor (employee-facing roster)', () => {
   });
 
   it('returns an empty page when the account has no employee profile', async () => {
-    const prisma = makePrisma({ employee: { findUnique: vi.fn(async () => null) } });
+    const prisma = makePrisma({
+      employee: { findUnique: vi.fn(async () => null) },
+    });
     const svc = new ShiftsService(prisma, auditStub);
     const out = await svc.listMineFor('u1', {});
     expect(out.data).toEqual([]);
@@ -127,7 +165,7 @@ describe('ShiftsService.listMineFor (employee-facing roster)', () => {
       employeeSchedule: { count: vi.fn(async () => 0), findMany },
     });
     const svc = new ShiftsService(prisma, auditStub);
-    
+
     await svc.listMineFor('u1', { employeeId: 'e-other' } as never);
     const arg = findMany.mock.calls[0][0] as { where: { AND: unknown[] } };
     expect(arg.where.AND[0]).toEqual({ employeeId: 'e-mine' });
@@ -136,17 +174,24 @@ describe('ShiftsService.listMineFor (employee-facing roster)', () => {
 
 describe('ShiftsService audit atomicity', () => {
   it('rolls the insert back when the audit write fails', async () => {
-    const create = vi.fn(async (a: { data: Record<string, unknown> }) => ({ id: 's1', ...a.data }));
+    const create = vi.fn(async (a: { data: Record<string, unknown> }) => ({
+      id: 's1',
+      ...a.data,
+    }));
     const prisma = makePrisma({ shift: { create } });
 
     let committed = false;
-    (prisma as unknown as {
-      $transaction: (fn: (tx: unknown) => Promise<unknown>) => Promise<unknown>;
-    }).$transaction = async (fn) => {
+    (
+      prisma as unknown as {
+        $transaction: (
+          fn: (tx: unknown) => Promise<unknown>,
+        ) => Promise<unknown>;
+      }
+    ).$transaction = async (fn) => {
       try {
-        return await fn((prisma as unknown as { $transaction?: unknown }));
+        return await fn(prisma as unknown as { $transaction?: unknown });
       } catch (e) {
-        committed = false; 
+        committed = false;
         throw e;
       }
     };
@@ -158,17 +203,23 @@ describe('ShiftsService audit atomicity', () => {
     } as never;
 
     const svc = new ShiftsService(prisma, failingAudit);
-    await expect(svc.createShift(malamDto(), 'admin')).rejects.toThrow('audit unavailable');
+    await expect(svc.createShift(malamDto(), 'admin')).rejects.toThrow(
+      'audit unavailable',
+    );
     expect(create).toHaveBeenCalledTimes(1);
     expect(committed).toBe(false);
   });
 
   it('writes the audit through the transaction client, not the base client', async () => {
-    const create = vi.fn(async (a: { data: Record<string, unknown> }) => ({ id: 's1', ...a.data }));
+    const create = vi.fn(async (a: { data: Record<string, unknown> }) => ({
+      id: 's1',
+      ...a.data,
+    }));
     const prisma = makePrisma({ shift: { create } });
     const svc = new ShiftsService(prisma, auditStub);
     await svc.createShift(malamDto(), 'admin');
-    const txArg = (auditStub.log as unknown as { mock: { calls: unknown[][] } }).mock.calls[0][1];
+    const txArg = (auditStub.log as unknown as { mock: { calls: unknown[][] } })
+      .mock.calls[0][1];
     expect(txArg).toBeDefined();
   });
 });
@@ -185,9 +236,14 @@ describe('ShiftsService schedules', () => {
     });
     const svc = new ShiftsService(prisma, auditStub);
     await expect(
-      svc.assignSchedule({ employeeId: 'e1', shiftId: 's1', workDate: '2026-09-23' }, 'a'),
+      svc.assignSchedule(
+        { employeeId: 'e1', shiftId: 's1', workDate: '2026-09-23' },
+        'a',
+      ),
     ).rejects.toThrow('already scheduled');
-    await expect(svc.unassignSchedule('sch', 'a')).rejects.toThrow('cannot be removed');
+    await expect(svc.unassignSchedule('sch', 'a')).rejects.toThrow(
+      'cannot be removed',
+    );
   });
 
   it('unassign succeeds when unused and audits', async () => {
@@ -199,9 +255,13 @@ describe('ShiftsService schedules', () => {
       },
     });
     const svc = new ShiftsService(prisma, auditStub);
-    await expect(svc.unassignSchedule('sch', 'a')).resolves.toEqual({ removed: true });
+    await expect(svc.unassignSchedule('sch', 'a')).resolves.toEqual({
+      removed: true,
+    });
     expect(del).toHaveBeenCalled();
-    expect(auditStub.log).toHaveBeenCalledWith(expect.objectContaining({ action: 'SCHEDULE_UNASSIGNED' }));
+    expect(auditStub.log).toHaveBeenCalledWith(
+      expect.objectContaining({ action: 'SCHEDULE_UNASSIGNED' }),
+    );
   });
 
   it('assign rejects unknown employee/shift', async () => {
@@ -210,16 +270,29 @@ describe('ShiftsService schedules', () => {
       auditStub,
     );
     await expect(
-      svc.assignSchedule({ employeeId: 'no', shiftId: 's1', workDate: '2026-09-23' }, 'a'),
+      svc.assignSchedule(
+        { employeeId: 'no', shiftId: 's1', workDate: '2026-09-23' },
+        'a',
+      ),
     ).rejects.toThrow('Employee not found');
   });
 });
 
 describe('ShiftsService extras (STEP 23 coverage)', () => {
   it('update validates + renames with clash check; get/list work', async () => {
-    const update = vi.fn(async (a: { where: { id: string }; data: object }) => ({ id: a.where.id, ...a.data }));
+    const update = vi.fn(
+      async (a: { where: { id: string }; data: object }) => ({
+        id: a.where.id,
+        ...a.data,
+      }),
+    );
     const existing = {
-      id: 's1', hospitalId: 'h1', name: 'PAGI', startTime: '07:00', endTime: '15:00', overnight: false,
+      id: 's1',
+      hospitalId: 'h1',
+      name: 'PAGI',
+      startTime: '07:00',
+      endTime: '15:00',
+      overnight: false,
     };
     const prisma = makePrisma({
       shift: {
@@ -230,13 +303,23 @@ describe('ShiftsService extras (STEP 23 coverage)', () => {
       },
     });
     const svc = new ShiftsService(prisma, auditStub);
-    const out = (await svc.updateShift('s1', { gracePeriodMin: 10 }, 'a')) as { overnight: boolean };
+    const out = (await svc.updateShift('s1', { gracePeriodMin: 10 }, 'a')) as {
+      overnight: boolean;
+    };
     expect(out.overnight).toBe(false);
-    await expect(svc.updateShift('s1', { startTime: '15:00', endTime: '07:00', overnight: false }, 'a')).rejects.toThrow(
-      'contradicts',
-    );
-    await expect(svc.getShift('s1', 'u', ['SUPER_ADMIN'])).resolves.toMatchObject({ id: 's1' });
-    expect(await svc.listShifts({ hospitalId: 'h1' }, 'u', ['SUPER_ADMIN'])).toBeDefined();
+    await expect(
+      svc.updateShift(
+        's1',
+        { startTime: '15:00', endTime: '07:00', overnight: false },
+        'a',
+      ),
+    ).rejects.toThrow('contradicts');
+    await expect(
+      svc.getShift('s1', 'u', ['SUPER_ADMIN']),
+    ).resolves.toMatchObject({ id: 's1' });
+    expect(
+      await svc.listShifts({ hospitalId: 'h1' }, 'u', ['SUPER_ADMIN']),
+    ).toBeDefined();
   });
 
   it('assign rejects unknown shift; unassign unknown 404', async () => {
@@ -246,10 +329,17 @@ describe('ShiftsService extras (STEP 23 coverage)', () => {
     });
     const svc = new ShiftsService(prisma, auditStub);
     await expect(
-      svc.assignSchedule({ employeeId: 'e1', shiftId: 'no', workDate: '2026-09-23' }, 'a'),
+      svc.assignSchedule(
+        { employeeId: 'e1', shiftId: 'no', workDate: '2026-09-23' },
+        'a',
+      ),
     ).rejects.toThrow('Shift not found');
-    await expect(svc.unassignSchedule('no', 'a')).rejects.toThrow('Schedule not found');
-    await expect(svc.getSchedule('no', 'u', ['SUPER_ADMIN'])).rejects.toThrow('Schedule not found');
+    await expect(svc.unassignSchedule('no', 'a')).rejects.toThrow(
+      'Schedule not found',
+    );
+    await expect(svc.getSchedule('no', 'u', ['SUPER_ADMIN'])).rejects.toThrow(
+      'Schedule not found',
+    );
   });
 });
 
@@ -258,25 +348,41 @@ describe('ShiftsService.deleteShift', () => {
     const del = vi.fn(async () => ({}));
     const prisma = makePrisma({
       shift: {
-        findUnique: vi.fn(async () => ({ id: 's1', name: 'PAGI', hospitalId: 'h1' })),
+        findUnique: vi.fn(async () => ({
+          id: 's1',
+          name: 'PAGI',
+          hospitalId: 'h1',
+        })),
         delete: del,
       },
       employeeSchedule: { findFirst: vi.fn(async () => null) },
     });
     const svc = new ShiftsService(prisma, auditStub);
 
-    await expect(svc.deleteShift('s1', 'a')).resolves.toEqual({ removed: true });
+    await expect(svc.deleteShift('s1', 'a')).resolves.toEqual({
+      removed: true,
+    });
     expect(del).toHaveBeenCalledWith({ where: { id: 's1' } });
-    expect(auditStub.log).toHaveBeenCalledWith(expect.objectContaining({ action: 'SHIFT_DELETED' }));
+    expect(auditStub.log).toHaveBeenCalledWith(
+      expect.objectContaining({ action: 'SHIFT_DELETED' }),
+    );
   });
 
   it('refuses while a roster row references it (history protection)', async () => {
     const prisma = makePrisma({
-      shift: { findUnique: vi.fn(async () => ({ id: 's1', name: 'PAGI', hospitalId: 'h1' })) },
+      shift: {
+        findUnique: vi.fn(async () => ({
+          id: 's1',
+          name: 'PAGI',
+          hospitalId: 'h1',
+        })),
+      },
       employeeSchedule: { findFirst: vi.fn(async () => ({ id: 'sch' })) },
     });
     const svc = new ShiftsService(prisma, auditStub);
-    await expect(svc.deleteShift('s1', 'a')).rejects.toThrow('cannot be deleted');
+    await expect(svc.deleteShift('s1', 'a')).rejects.toThrow(
+      'cannot be deleted',
+    );
   });
 
   it('404s on an unknown id', async () => {
@@ -284,14 +390,15 @@ describe('ShiftsService.deleteShift', () => {
       makePrisma({ shift: { findUnique: vi.fn(async () => null) } }),
       auditStub,
     );
-    await expect(svc.deleteShift('nope', 'a')).rejects.toThrow('Shift not found');
+    await expect(svc.deleteShift('nope', 'a')).rejects.toThrow(
+      'Shift not found',
+    );
   });
 });
 
-
 describe('ShiftsService facility scoping (ADMIN)', () => {
   const ADMIN = ['ADMIN'];
-  
+
   function scopedPrisma(over: Record<string, Record<string, unknown>> = {}) {
     return makePrisma({
       userRole: { findMany: vi.fn(async () => [{ role: { name: 'ADMIN' } }]) },
@@ -309,13 +416,19 @@ describe('ShiftsService facility scoping (ADMIN)', () => {
   it('createShift in another hospital reads as 404', async () => {
     const svc = new ShiftsService(scopedPrisma(), auditStub);
     await expect(
-      svc.createShift({ hospitalId: 'h2', name: 'X', startTime: '07:00', endTime: '15:00' }, 'u-adm'),
+      svc.createShift(
+        { hospitalId: 'h2', name: 'X', startTime: '07:00', endTime: '15:00' },
+        'u-adm',
+      ),
     ).rejects.toThrow('Hospital not found');
   });
 
   it('listShifts is forced to the caller facility even with a foreign filter', async () => {
     const findMany = vi.fn(async () => []);
-    const svc = new ShiftsService(scopedPrisma({ shift: { findMany } }), auditStub);
+    const svc = new ShiftsService(
+      scopedPrisma({ shift: { findMany } }),
+      auditStub,
+    );
     await svc.listShifts({ hospitalId: 'h2' }, 'u-adm', ADMIN);
     expect(findMany).toHaveBeenCalledWith(
       expect.objectContaining({ where: { hospitalId: 'h1' } }),
@@ -335,6 +448,8 @@ describe('ShiftsService facility scoping (ADMIN)', () => {
       }),
       auditStub,
     );
-    await expect(svc.getSchedule('sch', 'u-adm', ADMIN)).rejects.toThrow('Schedule not found');
+    await expect(svc.getSchedule('sch', 'u-adm', ADMIN)).rejects.toThrow(
+      'Schedule not found',
+    );
   });
 });

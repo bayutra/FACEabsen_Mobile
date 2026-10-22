@@ -2,10 +2,6 @@ import 'package:dio/dio.dart';
 
 import '../domain/team_admin_models.dart';
 
-
-
-
-
 class TeamAdminRepository {
   TeamAdminRepository({required Dio dio}) : _dio = dio;
 
@@ -55,8 +51,6 @@ class TeamAdminRepository {
         .toList();
   }
 
-  
-  
   Future<TeamMemberDetail?> memberDetail(String id) async {
     final Response<dynamic> res =
         await _dio.get<dynamic>('/supervisor/team/$id');

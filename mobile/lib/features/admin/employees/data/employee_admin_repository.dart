@@ -2,7 +2,6 @@ import 'package:dio/dio.dart';
 
 import '../domain/employee_admin_models.dart';
 
-
 class EmployeeAdminRepository {
   EmployeeAdminRepository({required Dio dio}) : _dio = dio;
 
@@ -25,13 +24,16 @@ class EmployeeAdminRepository {
         'pageSize': pageSize,
       },
     );
-    final Map<String, dynamic> body = Map<String, dynamic>.from(res.data as Map);
+    final Map<String, dynamic> body =
+        Map<String, dynamic>.from(res.data as Map);
     final List<dynamic> data = (body['data'] as List?) ?? const <dynamic>[];
     final Map<String, dynamic> pagination =
-        (body['pagination'] as Map?)?.cast<String, dynamic>() ?? const <String, dynamic>{};
+        (body['pagination'] as Map?)?.cast<String, dynamic>() ??
+            const <String, dynamic>{};
     return AdminEmployeePage(
       items: data
-          .map((dynamic e) => AdminEmployee.fromJson(Map<String, dynamic>.from(e as Map)))
+          .map((dynamic e) =>
+              AdminEmployee.fromJson(Map<String, dynamic>.from(e as Map)))
           .toList(),
       page: pagination['page'] as int? ?? page,
       totalPages: pagination['totalPages'] as int? ?? 1,
@@ -43,7 +45,8 @@ class EmployeeAdminRepository {
     final Response res = await _dio.get('/departments');
     final List<dynamic> list = res.data as List;
     return list
-        .map((dynamic e) => AdminDepartment.fromJson(Map<String, dynamic>.from(e as Map)))
+        .map((dynamic e) =>
+            AdminDepartment.fromJson(Map<String, dynamic>.from(e as Map)))
         .toList();
   }
 
@@ -63,8 +66,10 @@ class EmployeeAdminRepository {
       'email': email.trim(),
       'password': password,
       if (phone != null && phone.trim().isNotEmpty) 'phone': phone.trim(),
-      if (position != null && position.trim().isNotEmpty) 'position': position.trim(),
-      if (departmentId != null && departmentId.isNotEmpty) 'departmentId': departmentId,
+      if (position != null && position.trim().isNotEmpty)
+        'position': position.trim(),
+      if (departmentId != null && departmentId.isNotEmpty)
+        'departmentId': departmentId,
       'roles': roles,
     });
   }
@@ -82,11 +87,11 @@ class EmployeeAdminRepository {
       if (email != null && email.trim().isNotEmpty) 'email': email.trim(),
       if (phone != null) 'phone': phone.trim(),
       if (position != null) 'position': position.trim(),
-      if (departmentId != null && departmentId.isNotEmpty) 'departmentId': departmentId,
+      if (departmentId != null && departmentId.isNotEmpty)
+        'departmentId': departmentId,
     });
   }
 
-  
   Future<void> deactivate(String id) async {
     await _dio.post('/employees/$id/deactivate');
   }

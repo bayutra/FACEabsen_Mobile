@@ -1,9 +1,6 @@
 import 'package:face_absen_mobile/core/validation/password_policy.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-
-
-
 void main() {
   group('validateNewPassword', () {
     test('empty is required', () {

@@ -3,12 +3,6 @@ import 'package:flutter/services.dart';
 
 import 'app_colors.dart';
 
-
-
-
-
-
-
 ThemeData buildAppTheme() {
   const ColorScheme scheme = ColorScheme.light(
     primary: AppColors.primary,
@@ -58,7 +52,6 @@ ThemeData buildAppTheme() {
       fillColor: AppColors.surfaceLowest,
       contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
       constraints: const BoxConstraints(minHeight: AppColors.inputHeight),
-      
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(AppColors.radiusInput),
         borderSide: const BorderSide(color: AppColors.inputBorder),
@@ -85,17 +78,11 @@ ThemeData buildAppTheme() {
     ),
     filledButtonTheme: FilledButtonThemeData(
       style: FilledButton.styleFrom(
-        
-        
-        
-        
-        
         backgroundColor: AppColors.primaryContainer,
         foregroundColor: Colors.white,
         disabledBackgroundColor: AppColors.surfaceContainer,
         disabledForegroundColor: AppColors.inkDisabled,
         minimumSize: const Size(64, AppColors.buttonHeight),
-        
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppColors.radiusButton),
         ),
@@ -136,9 +123,9 @@ ThemeData buildAppTheme() {
     bottomSheetTheme: const BottomSheetThemeData(
       backgroundColor: AppColors.surfaceLowest,
       surfaceTintColor: Colors.transparent,
-      
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(AppColors.radiusSheet)),
+        borderRadius:
+            BorderRadius.vertical(top: Radius.circular(AppColors.radiusSheet)),
       ),
     ),
     dialogTheme: DialogTheme(
@@ -151,7 +138,8 @@ ThemeData buildAppTheme() {
     navigationBarTheme: NavigationBarThemeData(
       backgroundColor: AppColors.surfaceLowest,
       indicatorColor: AppColors.primaryContainer,
-      labelTextStyle: WidgetStateProperty.resolveWith((Set<WidgetState> states) {
+      labelTextStyle:
+          WidgetStateProperty.resolveWith((Set<WidgetState> states) {
         if (states.contains(WidgetState.selected)) {
           return AppText.labelSm.copyWith(
             color: AppColors.ink,
@@ -169,7 +157,8 @@ ThemeData buildAppTheme() {
     ),
     snackBarTheme: SnackBarThemeData(
       backgroundColor: AppColors.inverseSurface,
-      contentTextStyle: AppText.bodyMd.copyWith(color: AppColors.onInverseSurface),
+      contentTextStyle:
+          AppText.bodyMd.copyWith(color: AppColors.onInverseSurface),
       behavior: SnackBarBehavior.floating,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppColors.radiusInput),
@@ -181,7 +170,9 @@ ThemeData buildAppTheme() {
     ),
     checkboxTheme: CheckboxThemeData(
       fillColor: WidgetStateProperty.resolveWith((Set<WidgetState> states) =>
-          states.contains(WidgetState.selected) ? AppColors.primary : Colors.transparent),
+          states.contains(WidgetState.selected)
+              ? AppColors.primary
+              : Colors.transparent),
       side: const BorderSide(color: AppColors.border),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
     ),

@@ -2,10 +2,6 @@ import 'package:dio/dio.dart';
 
 import '../domain/device_admin_models.dart';
 
-
-
-
-
 class DeviceAdminRepository {
   DeviceAdminRepository({required Dio dio}) : _dio = dio;
 
@@ -26,13 +22,16 @@ class DeviceAdminRepository {
         'pageSize': pageSize,
       },
     );
-    final Map<String, dynamic> body = Map<String, dynamic>.from(res.data as Map);
+    final Map<String, dynamic> body =
+        Map<String, dynamic>.from(res.data as Map);
     final List<dynamic> data = (body['data'] as List?) ?? const <dynamic>[];
     final Map<String, dynamic> pagination =
-        (body['pagination'] as Map?)?.cast<String, dynamic>() ?? const <String, dynamic>{};
+        (body['pagination'] as Map?)?.cast<String, dynamic>() ??
+            const <String, dynamic>{};
     return AdminDevicePage(
       items: data
-          .map((dynamic e) => AdminDevice.fromJson(Map<String, dynamic>.from(e as Map)))
+          .map((dynamic e) =>
+              AdminDevice.fromJson(Map<String, dynamic>.from(e as Map)))
           .toList(),
       page: pagination['page'] as int? ?? page,
       totalPages: pagination['totalPages'] as int? ?? 1,
@@ -40,7 +39,6 @@ class DeviceAdminRepository {
     );
   }
 
-  
   Future<void> activate(String id) async {
     await _dio.post('/devices/$id/activate', data: <String, dynamic>{});
   }

@@ -1,19 +1,31 @@
-
-
-
-
-import { Body, Controller, HttpCode, HttpStatus, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  HttpCode,
+  HttpStatus,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import type { Request } from 'express';
 import type { RequestMeta } from './auth.service.js';
 import { AUTH_POLICY } from './constants.js';
 import { CurrentUser, Public, type AuthContext } from './decorators.js';
 import { JwtAuthGuard } from './guards/jwt-auth.guard.js';
-import { DisableTotpDto, EnableTotpDto, RecoverTotpDto, VerifyTotpDto } from './totp.dto.js';
+import {
+  DisableTotpDto,
+  EnableTotpDto,
+  RecoverTotpDto,
+  VerifyTotpDto,
+} from './totp.dto.js';
 import { TotpService } from './totp.service.js';
 
 const loginThrottle = {
-  default: { limit: AUTH_POLICY.loginThrottle.limit, ttl: AUTH_POLICY.loginThrottle.ttl },
+  default: {
+    limit: AUTH_POLICY.loginThrottle.limit,
+    ttl: AUTH_POLICY.loginThrottle.ttl,
+  },
 };
 
 function metaOf(req: Request): RequestMeta {
@@ -40,7 +52,11 @@ export class TotpController {
 
   @HttpCode(HttpStatus.OK)
   @Post('disable')
-  disable(@CurrentUser() user: AuthContext, @Body() dto: DisableTotpDto, @Req() req: Request) {
+  disable(
+    @CurrentUser() user: AuthContext,
+    @Body() dto: DisableTotpDto,
+    @Req() req: Request,
+  ) {
     return this.totp.disable(user.userId, dto.password, metaOf(req));
   }
 

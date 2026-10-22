@@ -19,7 +19,10 @@ import { ChangePasswordDto, LoginDto, RefreshDto, RegisterDto } from './dto.js';
 import { JwtAuthGuard } from './guards/jwt-auth.guard.js';
 
 const loginThrottle = {
-  default: { limit: AUTH_POLICY.loginThrottle.limit, ttl: AUTH_POLICY.loginThrottle.ttl },
+  default: {
+    limit: AUTH_POLICY.loginThrottle.limit,
+    ttl: AUTH_POLICY.loginThrottle.ttl,
+  },
 };
 
 function metaOf(req: Request): RequestMeta {
@@ -47,9 +50,13 @@ export class AuthController {
     return this.auth.refresh(dto.refreshToken, metaOf(req));
   }
 
-   
   @Public()
-  @Throttle({ default: { limit: AUTH_POLICY.loginThrottle.limit, ttl: AUTH_POLICY.loginThrottle.ttl } })
+  @Throttle({
+    default: {
+      limit: AUTH_POLICY.loginThrottle.limit,
+      ttl: AUTH_POLICY.loginThrottle.ttl,
+    },
+  })
   @HttpCode(HttpStatus.CREATED)
   @Post('register')
   register(@Body() dto: RegisterDto, @Req() req: Request) {
@@ -74,7 +81,12 @@ export class AuthController {
     @Body() dto: ChangePasswordDto,
     @Req() req: Request,
   ) {
-    return this.auth.changePassword(user.userId, user.sessionId, dto, metaOf(req));
+    return this.auth.changePassword(
+      user.userId,
+      user.sessionId,
+      dto,
+      metaOf(req),
+    );
   }
 
   @Get('sessions')

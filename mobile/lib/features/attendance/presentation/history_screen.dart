@@ -6,14 +6,12 @@ import '../../correction/data/correction_repository.dart';
 import '../../correction/presentation/correction_form_screen.dart';
 import '../../../core/theme/app_colors.dart';
 
-
 String clockHm(String? iso) {
   if (iso == null) return '--:--';
   final DateTime? d = DateTime.tryParse(iso)?.toLocal();
   if (d == null) return '--:--';
   return '${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}';
 }
-
 
 String clockHms(String? iso) {
   if (iso == null) return '--:--:--';
@@ -22,35 +20,63 @@ String clockHms(String? iso) {
   return '${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}:${d.second.toString().padLeft(2, '0')}';
 }
 
-
 String formatWorkDateId(String ymd) {
   final DateTime? d = DateTime.tryParse(ymd);
   if (d == null) return ymd;
   const List<String> hari = [
-    'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'
+    'Senin',
+    'Selasa',
+    'Rabu',
+    'Kamis',
+    'Jumat',
+    'Sabtu',
+    'Minggu'
   ];
   const List<String> bulan = [
-    'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
-    'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des',
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'Mei',
+    'Jun',
+    'Jul',
+    'Agu',
+    'Sep',
+    'Okt',
+    'Nov',
+    'Des',
   ];
   return '${hari[d.weekday - 1]}, ${d.day} ${bulan[d.month - 1]} ${d.year}';
 }
-
 
 String formatWorkDateLongId(String ymd) {
   final DateTime? d = DateTime.tryParse(ymd);
   if (d == null) return ymd;
   const List<String> hari = [
-    'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'
+    'Senin',
+    'Selasa',
+    'Rabu',
+    'Kamis',
+    'Jumat',
+    'Sabtu',
+    'Minggu'
   ];
   const List<String> bulan = [
-    'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-    'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember',
+    'Januari',
+    'Februari',
+    'Maret',
+    'April',
+    'Mei',
+    'Juni',
+    'Juli',
+    'Agustus',
+    'September',
+    'Oktober',
+    'November',
+    'Desember',
   ];
   return '${hari[d.weekday - 1]}, ${d.day} ${bulan[d.month - 1]} ${d.year}';
 }
-
-
 
 String? effectiveDurationLabel(String? inIso, String? outIso) {
   final DateTime? a = inIso == null ? null : DateTime.tryParse(inIso);
@@ -61,7 +87,6 @@ String? effectiveDurationLabel(String? inIso, String? outIso) {
   return '${diff.inHours} Jam ${diff.inMinutes % 60} Menit';
 }
 
-
 String dateKey(DateTime d) =>
     '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
 
@@ -70,13 +95,12 @@ String _initials(String name) {
       name.trim().split(RegExp(r'\s+')).where((p) => p.isNotEmpty).toList();
   if (parts.isEmpty) return '—';
   if (parts.length == 1) {
-    return parts.first.substring(0, parts.first.length >= 2 ? 2 : 1).toUpperCase();
+    return parts.first
+        .substring(0, parts.first.length >= 2 ? 2 : 1)
+        .toUpperCase();
   }
   return (parts.first.substring(0, 1) + parts[1].substring(0, 1)).toUpperCase();
 }
-
-
-
 
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({
@@ -111,8 +135,18 @@ class _HistoryScreenState extends State<HistoryScreen> {
   String? _error;
 
   static const List<String> _months = [
-    'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-    'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember',
+    'Januari',
+    'Februari',
+    'Maret',
+    'April',
+    'Mei',
+    'Juni',
+    'Juli',
+    'Agustus',
+    'September',
+    'Oktober',
+    'November',
+    'Desember',
   ];
 
   @override
@@ -186,7 +220,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
     _load(reset: true);
   }
 
-  
   Map<String, List<AttendanceHistoryItem>> get _grouped {
     final Map<String, List<AttendanceHistoryItem>> out = {};
     for (final AttendanceHistoryItem i in _items) {
@@ -199,8 +232,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
       _items.where((i) => i.checkInStatus == 'ON_TIME').length;
 
   int get _lateCount => _items
-      .where((i) =>
-          i.checkInStatus == 'LATE' || i.checkInStatus == 'VERY_LATE')
+      .where((i) => i.checkInStatus == 'LATE' || i.checkInStatus == 'VERY_LATE')
       .length;
 
   int get _reviewCount => _items.where((i) => i.needsReview).length;
@@ -271,7 +303,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   ),
                   Text(
                     widget.displayName +
-                        (widget.employeeNo != '—' && widget.employeeNo.isNotEmpty
+                        (widget.employeeNo != '—' &&
+                                widget.employeeNo.isNotEmpty
                             ? ' • ${widget.employeeNo}'
                             : ''),
                     style: const TextStyle(
@@ -585,9 +618,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                   decoration: BoxDecoration(
-                    color: _status == e.key
-                        ? AppColors.primary
-                        : AppColors.canvas,
+                    color:
+                        _status == e.key ? AppColors.primary : AppColors.canvas,
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
                       color: _status == e.key
@@ -837,7 +869,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -880,7 +911,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   ],
                 ),
                 const SizedBox(height: 12),
-                
                 Container(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -893,7 +923,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   ),
                   child: Row(
                     children: [
-                      
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -941,7 +970,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
                         color: AppColors.border.withOpacity(0.4),
                       ),
                       const SizedBox(width: 12),
-                      
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1024,7 +1052,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   ),
                 ],
                 const SizedBox(height: 10),
-                
                 Row(
                   children: [
                     Container(
@@ -1180,8 +1207,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
   }
 }
 
-
-
 class _DetailSheet extends StatelessWidget {
   const _DetailSheet({
     required this.item,
@@ -1220,7 +1245,6 @@ class _DetailSheet extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              
               const SizedBox(height: 10),
               Container(
                 width: 44,
@@ -1231,7 +1255,6 @@ class _DetailSheet extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 10),
-              
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
                 child: Row(
@@ -1296,23 +1319,18 @@ class _DetailSheet extends StatelessWidget {
                 height: 1,
                 color: AppColors.border.withOpacity(0.3),
               ),
-              
               Flexible(
                 child: SingleChildScrollView(
                   padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      
                       _buildVerificationBanner(lowRisk),
                       const SizedBox(height: 14),
-                      
                       _buildTimeSection(duration),
                       const SizedBox(height: 14),
-                      
                       _buildBiometricSection(lowRisk),
                       const SizedBox(height: 14),
-                      
                       _buildLedgerSection(),
                       if (corrections != null) ...[
                         const SizedBox(height: 14),
@@ -1337,7 +1355,6 @@ class _DetailSheet extends StatelessWidget {
                   ),
                 ),
               ),
-              
               Container(
                 padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
                 decoration: BoxDecoration(
@@ -1535,8 +1552,8 @@ class _DetailSheet extends StatelessWidget {
                     children: [
                       const Text(
                         'Presensi Masuk',
-                        style:
-                            TextStyle(fontSize: 11, color: AppColors.inkSecondary),
+                        style: TextStyle(
+                            fontSize: 11, color: AppColors.inkSecondary),
                       ),
                       const SizedBox(height: 3),
                       Text(
@@ -1586,8 +1603,8 @@ class _DetailSheet extends StatelessWidget {
                     children: [
                       const Text(
                         'Presensi Pulang',
-                        style:
-                            TextStyle(fontSize: 11, color: AppColors.inkSecondary),
+                        style: TextStyle(
+                            fontSize: 11, color: AppColors.inkSecondary),
                       ),
                       const SizedBox(height: 3),
                       Text(
@@ -1634,7 +1651,8 @@ class _DetailSheet extends StatelessWidget {
                 children: [
                   const Text(
                     'Total Durasi Efektif:',
-                    style: TextStyle(fontSize: 11, color: AppColors.inkSecondary),
+                    style:
+                        TextStyle(fontSize: 11, color: AppColors.inkSecondary),
                   ),
                   Text(
                     duration,
@@ -1754,8 +1772,8 @@ class _DetailSheet extends StatelessWidget {
                       const SizedBox(height: 2),
                       const Text(
                         'Anti-spoofing face mesh tervalidasi real-time tanpa penundaan.',
-                        style:
-                            TextStyle(fontSize: 10.5, color: AppColors.inkSecondary),
+                        style: TextStyle(
+                            fontSize: 10.5, color: AppColors.inkSecondary),
                       ),
                       const SizedBox(height: 3),
                       Text(

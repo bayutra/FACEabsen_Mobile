@@ -8,15 +8,20 @@ export interface EnvLike {
   HOSPITAL_TZ?: string;
 }
 
- 
 export function assertProductionEnv(env: EnvLike): void {
   if (env.NODE_ENV !== 'production') return;
   const problems: string[] = [];
   const secret = env.JWT_ACCESS_SECRET ?? '';
-  if (!secret || secret === 'dev-only-secret' || secret === 'change-me-in-production-min-32-chars') {
+  if (
+    !secret ||
+    secret === 'dev-only-secret' ||
+    secret === 'change-me-in-production-min-32-chars'
+  ) {
     problems.push('JWT_ACCESS_SECRET is missing or still a placeholder');
   } else if (secret.length < AUTH_POLICY.jwtMinSecretLength) {
-    problems.push(`JWT_ACCESS_SECRET must be at least ${AUTH_POLICY.jwtMinSecretLength} chars`);
+    problems.push(
+      `JWT_ACCESS_SECRET must be at least ${AUTH_POLICY.jwtMinSecretLength} chars`,
+    );
   }
   if (!env.DATABASE_URL) problems.push('DATABASE_URL is missing');
   const key = env.DATA_ENCRYPTION_KEY ?? '';
@@ -25,9 +30,13 @@ export function assertProductionEnv(env: EnvLike): void {
   }
   if (env.HOSPITAL_TZ) {
     try {
-      new Intl.DateTimeFormat('en-CA', { timeZone: env.HOSPITAL_TZ }).format(new Date());
+      new Intl.DateTimeFormat('en-CA', { timeZone: env.HOSPITAL_TZ }).format(
+        new Date(),
+      );
     } catch {
-      problems.push(`HOSPITAL_TZ is not a valid IANA time zone: ${env.HOSPITAL_TZ}`);
+      problems.push(
+        `HOSPITAL_TZ is not a valid IANA time zone: ${env.HOSPITAL_TZ}`,
+      );
     }
   }
   if (problems.length > 0) {

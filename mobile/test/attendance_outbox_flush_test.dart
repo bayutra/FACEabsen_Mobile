@@ -10,7 +10,6 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'fakes.dart';
 
-
 class _CapturingAdapter implements HttpClientAdapter {
   final List<Map<String, dynamic>> bodies = <Map<String, dynamic>>[];
   final List<String> paths = <String>[];
@@ -31,14 +30,15 @@ class _CapturingAdapter implements HttpClientAdapter {
         'checkInAt': '2026-10-07T07:00:00.000Z',
       }),
       200,
-      headers: {Headers.contentTypeHeader: [Headers.jsonContentType]},
+      headers: {
+        Headers.contentTypeHeader: [Headers.jsonContentType]
+      },
     );
   }
 
   @override
   void close({bool force = false}) {}
 }
-
 
 class _StatusAdapter implements HttpClientAdapter {
   _StatusAdapter(this.status, this.reason);
@@ -55,14 +55,15 @@ class _StatusAdapter implements HttpClientAdapter {
     return ResponseBody.fromString(
       jsonEncode(<String, dynamic>{'reason': reason}),
       status,
-      headers: {Headers.contentTypeHeader: [Headers.jsonContentType]},
+      headers: {
+        Headers.contentTypeHeader: [Headers.jsonContentType]
+      },
     );
   }
 
   @override
   void close({bool force = false}) {}
 }
-
 
 class _ThrowAdapter implements HttpClientAdapter {
   _ThrowAdapter(this.type);
@@ -135,9 +136,7 @@ void main() {
     });
 
     test('cancel dan response server → false', () {
-      expect(
-          AttendanceRepository.isNetworkError(
-              err(DioExceptionType.cancel)),
+      expect(AttendanceRepository.isNetworkError(err(DioExceptionType.cancel)),
           isFalse);
       expect(
           AttendanceRepository.isNetworkError(
@@ -158,7 +157,6 @@ void main() {
       dio.httpClientAdapter = baseline;
       final AttendanceRepository repo = await _repoWithSeed(dio);
 
-      
       await repo.checkIn(
         embedding: List<double>.filled(192, 0.1),
         liveness: _passiveLiveness(),
@@ -167,7 +165,6 @@ void main() {
       );
       final String idA = baseline.bodies.single['requestId'] as String;
 
-      
       dio.httpClientAdapter = _ThrowAdapter(DioExceptionType.connectionError);
       try {
         await repo.checkIn(
@@ -182,11 +179,9 @@ void main() {
       }
       expect(await repo.outbox().count(), 1);
 
-      
       final _CapturingAdapter flushed = _CapturingAdapter();
       dio.httpClientAdapter = flushed;
-      final FlushResult result =
-          await repo.flushOutbox(outbox: repo.outbox());
+      final FlushResult result = await repo.flushOutbox(outbox: repo.outbox());
 
       expect(result.sent, 1);
       expect(result.dropped, 0);
@@ -194,7 +189,7 @@ void main() {
       expect(await repo.outbox().count(), 0);
       final String idB = flushed.bodies.single['requestId'] as String;
       expect(idB, isNot(idA));
-      
+
       expect(
           DateTime.tryParse(
               flushed.bodies.single['requestTimestamp'] as String),
@@ -210,17 +205,15 @@ void main() {
 
       await repo.outbox().save(_queued(kind: PunchKind.checkIn));
       await repo.outbox().save(_queued(kind: PunchKind.checkOut));
-      final FlushResult result =
-          await repo.flushOutbox(outbox: repo.outbox());
+      final FlushResult result = await repo.flushOutbox(outbox: repo.outbox());
 
       expect(result.sent, 2);
       expect(result.pending, 0);
       expect(cap.bodies, hasLength(2));
-      final Set<Object?> ids =
-          cap.bodies.map((b) => b['requestId']).toSet();
+      final Set<Object?> ids = cap.bodies.map((b) => b['requestId']).toSet();
       expect(ids, hasLength(2));
-      expect(cap.paths,
-          <String>['/attendance/check-in', '/attendance/check-out']);
+      expect(
+          cap.paths, <String>['/attendance/check-in', '/attendance/check-out']);
     });
 
     test('422 server outcome tercatat lalu entry dibuang (tidak retry)',
@@ -230,8 +223,7 @@ void main() {
       final AttendanceRepository repo = await _repoWithSeed(dio);
 
       await repo.outbox().save(_queued());
-      final FlushResult result =
-          await repo.flushOutbox(outbox: repo.outbox());
+      final FlushResult result = await repo.flushOutbox(outbox: repo.outbox());
 
       expect(result.sent, 0);
       expect(result.dropped, 1);
@@ -246,8 +238,7 @@ void main() {
       final AttendanceRepository repo = await _repoWithSeed(dio);
 
       await repo.outbox().save(_queued());
-      final FlushResult result =
-          await repo.flushOutbox(outbox: repo.outbox());
+      final FlushResult result = await repo.flushOutbox(outbox: repo.outbox());
 
       expect(result.sent, 0);
       expect(result.dropped, 0);

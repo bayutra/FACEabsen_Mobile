@@ -23,38 +23,71 @@ const KEY = randomBytes(32).toString('base64');
 const tpl = () => Array.from({ length: 192 }, (_, i) => Math.sin(i) / 2);
 
 function makeFake() {
-  const users = new Map<string, any>([['u-emp', { id: 'u-emp', email: 'e@rs.test', passwordHash: 'x', isActive: true }]]);
+  const users = new Map<string, any>([
+    [
+      'u-emp',
+      { id: 'u-emp', email: 'e@rs.test', passwordHash: 'x', isActive: true },
+    ],
+  ]);
   const sessions = new Map<string, any>();
-  const employees = new Map<string, any>([['e1', { id: 'e1', userId: 'u-emp' }]]);
+  const employees = new Map<string, any>([
+    ['e1', { id: 'e1', userId: 'u-emp' }],
+  ]);
   const faces = new Map<string, any>();
   const consents = new Map<string, any>([
-    ['e1:BIOMETRIC_ATTENDANCE', { id: 'c1', employeeId: 'e1', purpose: 'BIOMETRIC_ATTENDANCE', version: '2026-10-01', revokedAt: null }],
+    [
+      'e1:BIOMETRIC_ATTENDANCE',
+      {
+        id: 'c1',
+        employeeId: 'e1',
+        purpose: 'BIOMETRIC_ATTENDANCE',
+        version: '2026-10-01',
+        revokedAt: null,
+      },
+    ],
   ]);
   const audits: any[] = [];
   let seq = 100;
 
   return {
-    users, sessions, faces, audits,
+    users,
+    sessions,
+    faces,
+    audits,
     user: {
       findUnique: async ({ where, include }: any) => {
         const u = users.get(where.id) ?? null;
         if (!u) return null;
-        return include?.userRoles ? { ...u, userRoles: [{ role: { name: 'EMPLOYEE' } }] } : { ...u };
+        return include?.userRoles
+          ? { ...u, userRoles: [{ role: { name: 'EMPLOYEE' } }] }
+          : { ...u };
       },
     },
     userRole: {
-      findMany: async () => [{ role: { name: 'EMPLOYEE', rolePermissions: [] } }],
+      findMany: async () => [
+        { role: { name: 'EMPLOYEE', rolePermissions: [] } },
+      ],
     },
     employee: {
       findUnique: async ({ where }: any) => {
         if (where.id) return employees.get(where.id) ?? null;
-        if ('userId' in where) return [...employees.values()].find((e) => e.userId === where.userId) ?? null;
+        if ('userId' in where)
+          return (
+            [...employees.values()].find((e) => e.userId === where.userId) ??
+            null
+          );
         return null;
       },
     },
     faceTemplate: {
-      findUnique: async ({ where }: any) => faces.get(where.employeeId) ?? null,      create: async ({ data }: any) => {
-        const r = { id: `f${++seq}`, version: 1, updatedAt: new Date(), ...data };
+      findUnique: async ({ where }: any) => faces.get(where.employeeId) ?? null,
+      create: async ({ data }: any) => {
+        const r = {
+          id: `f${++seq}`,
+          version: 1,
+          updatedAt: new Date(),
+          ...data,
+        };
         faces.set(data.employeeId, r);
         return { ...r };
       },
@@ -66,11 +99,18 @@ function makeFake() {
     },
     consent: {
       findUnique: async ({ where }: any) =>
-        consents.get(`${where.employeeId_purpose.employeeId}:${where.employeeId_purpose.purpose}`) ?? null,
+        consents.get(
+          `${where.employeeId_purpose.employeeId}:${where.employeeId_purpose.purpose}`,
+        ) ?? null,
     },
     session: {
       create: async ({ data }: any) => {
-        const s = { id: `s${++seq}`, createdAt: new Date(), revokedAt: null, ...data };
+        const s = {
+          id: `s${++seq}`,
+          createdAt: new Date(),
+          revokedAt: null,
+          ...data,
+        };
         sessions.set(s.id, s);
         return { ...s };
       },
@@ -87,7 +127,16 @@ beforeAll(async () => {
   fake = makeFake();
 
   const module = await Test.createTestingModule({
-    imports: [JwtModule.register({ secret: 'e2e-face', signOptions: { algorithm: 'HS256', issuer: 'face-absen', expiresIn: 900 } })],
+    imports: [
+      JwtModule.register({
+        secret: 'e2e-face',
+        signOptions: {
+          algorithm: 'HS256',
+          issuer: 'face-absen',
+          expiresIn: 900,
+        },
+      }),
+    ],
     controllers: [FaceController],
     providers: [
       FaceService,
@@ -98,14 +147,27 @@ beforeAll(async () => {
       RolesGuard,
       PermissionsGuard,
       { provide: PrismaService, useValue: fake },
-      { provide: ConfigService, useValue: { get: (k: string, d: unknown) => (k === 'DATA_ENCRYPTION_KEY' ? KEY : d) } },
-      { provide: AuditService, useValue: { log: async (e: unknown) => void fake.audits.push(e) } },
+      {
+        provide: ConfigService,
+        useValue: {
+          get: (k: string, d: unknown) =>
+            k === 'DATA_ENCRYPTION_KEY' ? KEY : d,
+        },
+      },
+      {
+        provide: AuditService,
+        useValue: { log: async (e: unknown) => void fake.audits.push(e) },
+      },
     ],
   }).compile();
 
   app = module.createNestApplication();
   app.useGlobalPipes(
-    new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, transform: true }),
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+    }),
   );
   await app.init();
   jwt = app.get(JwtService);
@@ -119,19 +181,34 @@ describe('face registration over HTTP (PRD §54)', () => {
   it('valid face registers (v1), re-registers (v2), status hides bytes', async () => {
     const server = app.getHttpServer();
     const s = await fake.session.create({
-      data: { userId: 'u-emp', refreshTokenHash: 'h', expiresAt: new Date(Date.now() + 86_400_000) },
+      data: {
+        userId: 'u-emp',
+        refreshTokenHash: 'h',
+        expiresAt: new Date(Date.now() + 86_400_000),
+      },
     });
-    const token = await jwt.signAsync({ sub: 'u-emp', email: 'e@rs.test', roles: ['EMPLOYEE'], sid: s.id });
+    const token = await jwt.signAsync({
+      sub: 'u-emp',
+      email: 'e@rs.test',
+      roles: ['EMPLOYEE'],
+      sid: s.id,
+    });
     const auth = { Authorization: `Bearer ${token}` };
 
     const st0 = await request(server).get('/face/status').set(auth);
     expect(st0.body).toEqual({ registered: false });
 
-    const r1 = await request(server).post('/face/register').set(auth).send({ template: tpl(), qualityScore: 0.9 });
+    const r1 = await request(server)
+      .post('/face/register')
+      .set(auth)
+      .send({ template: tpl(), qualityScore: 0.9 });
     expect(r1.status).toBe(200);
     expect(r1.body.version).toBe(1);
 
-    const r2 = await request(server).post('/face/register').set(auth).send({ template: tpl(), qualityScore: 0.8 });
+    const r2 = await request(server)
+      .post('/face/register')
+      .set(auth)
+      .send({ template: tpl(), qualityScore: 0.8 });
     expect(r2.body.version).toBe(2);
 
     const st = await request(server).get('/face/status').set(auth);
@@ -145,13 +222,42 @@ describe('face registration over HTTP (PRD §54)', () => {
   it('rejects: blur-equivalent low quality, wrong dims, anon', async () => {
     const server = app.getHttpServer();
     const s = await fake.session.create({
-      data: { userId: 'u-emp', refreshTokenHash: 'h', expiresAt: new Date(Date.now() + 86_400_000) },
+      data: {
+        userId: 'u-emp',
+        refreshTokenHash: 'h',
+        expiresAt: new Date(Date.now() + 86_400_000),
+      },
     });
-    const token = await jwt.signAsync({ sub: 'u-emp', email: 'e@rs.test', roles: ['EMPLOYEE'], sid: s.id });
+    const token = await jwt.signAsync({
+      sub: 'u-emp',
+      email: 'e@rs.test',
+      roles: ['EMPLOYEE'],
+      sid: s.id,
+    });
     const auth = { Authorization: `Bearer ${token}` };
 
-    expect((await request(server).post('/face/register').set(auth).send({ template: tpl(), qualityScore: 0.2 })).status).toBe(400);
-    expect((await request(server).post('/face/register').set(auth).send({ template: tpl().slice(0, 100), qualityScore: 0.9 })).status).toBe(400);
-    expect((await request(server).post('/face/register').send({ template: tpl(), qualityScore: 0.9 })).status).toBe(401);
+    expect(
+      (
+        await request(server)
+          .post('/face/register')
+          .set(auth)
+          .send({ template: tpl(), qualityScore: 0.2 })
+      ).status,
+    ).toBe(400);
+    expect(
+      (
+        await request(server)
+          .post('/face/register')
+          .set(auth)
+          .send({ template: tpl().slice(0, 100), qualityScore: 0.9 })
+      ).status,
+    ).toBe(400);
+    expect(
+      (
+        await request(server)
+          .post('/face/register')
+          .send({ template: tpl(), qualityScore: 0.9 })
+      ).status,
+    ).toBe(401);
   });
 });

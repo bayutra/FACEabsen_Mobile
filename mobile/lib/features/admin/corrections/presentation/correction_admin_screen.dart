@@ -7,10 +7,6 @@ import '../../presentation/admin_widgets.dart';
 import '../data/correction_admin_repository.dart';
 import '../domain/correction_admin_models.dart';
 
-
-
-
-
 class CorrectionAdminScreen extends StatefulWidget {
   const CorrectionAdminScreen({super.key, required this.dio});
 
@@ -206,8 +202,7 @@ class _CorrectionAdminScreenState extends State<CorrectionAdminScreen> {
       return AdminError(message: _error!, onRetry: _load);
     }
 
-    final List<AdminCorrection> items =
-        _items ?? const <AdminCorrection>[];
+    final List<AdminCorrection> items = _items ?? const <AdminCorrection>[];
     return RefreshIndicator(
       onRefresh: _load,
       child: ListView(

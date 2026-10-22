@@ -8,8 +8,6 @@ import '../data/user_admin_repository.dart';
 import '../domain/user_admin_models.dart';
 import 'user_admin_form_screen.dart';
 
-
-
 class UserAdminScreen extends StatefulWidget {
   const UserAdminScreen({super.key, required this.dio});
 
@@ -177,8 +175,9 @@ class _UserAdminScreenState extends State<UserAdminScreen> {
             child: const Text('Batal'),
           ),
           FilledButton(
-            onPressed:
-                pass.text.length >= 8 ? () => Navigator.of(ctx).pop(true) : null,
+            onPressed: pass.text.length >= 8
+                ? () => Navigator.of(ctx).pop(true)
+                : null,
             child: const Text('Reset'),
           ),
         ],
@@ -238,7 +237,8 @@ class _UserAdminScreenState extends State<UserAdminScreen> {
               const SizedBox(height: 8),
               OutlinedButton.icon(
                 onPressed: () => Navigator.of(ctx).pop('toggle'),
-                icon: Icon(u.isActive ? Icons.block : Icons.check_circle_outline),
+                icon:
+                    Icon(u.isActive ? Icons.block : Icons.check_circle_outline),
                 label: Text(u.isActive ? 'Nonaktifkan' : 'Aktifkan'),
               ),
               const SizedBox(height: 8),
@@ -297,7 +297,8 @@ class _UserAdminScreenState extends State<UserAdminScreen> {
                 const SizedBox(height: 2),
                 Text(
                   u.employeeName ?? 'Tanpa data karyawan',
-                  style: AppText.labelSm.copyWith(color: AppColors.inkSecondary),
+                  style:
+                      AppText.labelSm.copyWith(color: AppColors.inkSecondary),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -367,9 +368,7 @@ class _UserAdminScreenState extends State<UserAdminScreen> {
           const SizedBox(height: 4),
           AdminFilterChips(
             values: const <String?>[null, 'true', 'false'],
-            selected: _active == null
-                ? null
-                : (_active! ? 'true' : 'false'),
+            selected: _active == null ? null : (_active! ? 'true' : 'false'),
             labels: const <String, String>{
               'all': 'Semua status',
               'true': 'Aktif',

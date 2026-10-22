@@ -1,18 +1,31 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { satisfiesRole } from '../auth/rbac.js';
 import { resolveHospitalScope } from '../auth/tenant-scope.js';
 import { PrismaService } from '../prisma/prisma.service.js';
-import { classifyDay, assertRangeDays, eachDay } from '../supervisor/supervisor.service.js';
-import { CONTENT_TYPES, toCSV, toPDF, toXLSX, type ExportFormat, type TabularReport } from './export.js';
+import {
+  classifyDay,
+  assertRangeDays,
+  eachDay,
+} from '../supervisor/supervisor.service.js';
+import {
+  CONTENT_TYPES,
+  toCSV,
+  toPDF,
+  toXLSX,
+  type ExportFormat,
+  type TabularReport,
+} from './export.js';
 
 export type ReportFormat = ExportFormat;
 
- 
 @Injectable()
 export class ReportsService {
   constructor(private readonly prisma: PrismaService) {}
 
-   
   async scopeOf(userId: string, roles: string[]): Promise<string[] | null> {
     if (satisfiesRole(roles, 'SUPER_ADMIN')) return null;
     if (satisfiesRole(roles, 'ADMIN')) {
@@ -26,11 +39,18 @@ export class ReportsService {
     }
     const me = await this.prisma.employee.findUnique({ where: { userId } });
     if (!me) return [];
-    const team = await this.prisma.employee.findMany({ where: { supervisorId: me.id } });
+    const team = await this.prisma.employee.findMany({
+      where: { supervisorId: me.id },
+    });
     return team.map((m) => m.id);
   }
 
-  async daily(date: string, userId: string, roles: string[], format: ReportFormat = 'json') {
+  async daily(
+    date: string,
+    userId: string,
+    roles: string[],
+    format: ReportFormat = 'json',
+  ) {
     const ids = await this.scopeOf(userId, roles);
     const whereId = ids ? { employeeId: { in: ids } } : {};
     const [schedules, rows, leaves, employees] = await Promise.all([
@@ -51,7 +71,10 @@ export class ReportsService {
         },
       }),
       ids
-        ? this.prisma.employee.findMany({ where: { id: { in: ids } }, include: { department: true } })
+        ? this.prisma.employee.findMany({
+            where: { id: { in: ids } },
+            include: { department: true },
+          })
         : this.prisma.employee.findMany({ include: { department: true } }),
     ]);
 
@@ -67,7 +90,11 @@ export class ReportsService {
       const emp = byEmp.get(s.employeeId);
       const att = attByEmp.get(s.employeeId);
       const lv = leaveByEmp.get(s.employeeId);
-      const st = classifyDay({ onLeave: !!lv, scheduled: true, checkInStatus: att?.checkInStatus });
+      const st = classifyDay({
+        onLeave: !!lv,
+        scheduled: true,
+        checkInStatus: att?.checkInStatus,
+      });
       if (st === 'PRESENT') present++;
       else if (st === 'LATE') late++;
       else if (st === 'ABSENT') absent++;
@@ -77,13 +104,19 @@ export class ReportsService {
         emp?.name ?? '-',
         (emp?.department as { name?: string } | null)?.name ?? '-',
         s.shift.name,
-        att?.checkInAt ? new Date(att.checkInAt).toISOString().slice(11, 16) : '-',
-        att?.checkOutAt ? new Date(att.checkOutAt).toISOString().slice(11, 16) : '-',
+        att?.checkInAt
+          ? new Date(att.checkInAt).toISOString().slice(11, 16)
+          : '-',
+        att?.checkOutAt
+          ? new Date(att.checkOutAt).toISOString().slice(11, 16)
+          : '-',
         st,
-        att?.riskScore !== null && att?.riskScore !== undefined ? String(att.riskScore) : '-',
+        att?.riskScore !== null && att?.riskScore !== undefined
+          ? String(att.riskScore)
+          : '-',
       ]);
     }
-    
+
     for (const a of rows) {
       if (schedules.some((s) => s.employeeId === a.employeeId)) continue;
       const emp = byEmp.get(a.employeeId);
@@ -97,7 +130,9 @@ export class ReportsService {
         a.checkInAt ? new Date(a.checkInAt).toISOString().slice(11, 16) : '-',
         a.checkOutAt ? new Date(a.checkOutAt).toISOString().slice(11, 16) : '-',
         a.checkInStatus ?? '-',
-        a.riskScore !== null && a.riskScore !== undefined ? String(a.riskScore) : '-',
+        a.riskScore !== null && a.riskScore !== undefined
+          ? String(a.riskScore)
+          : '-',
       ]);
     }
 
@@ -111,13 +146,27 @@ export class ReportsService {
         ['Tidak hadir', String(absent)],
         ['Izin/cuti', String(onLeave)],
       ],
-      headers: ['NIP', 'Nama', 'Departemen', 'Shift', 'Masuk', 'Pulang', 'Status', 'Risiko'],
+      headers: [
+        'NIP',
+        'Nama',
+        'Departemen',
+        'Shift',
+        'Masuk',
+        'Pulang',
+        'Status',
+        'Risiko',
+      ],
       rows: table,
     };
     return this.render(report, format, `laporan-harian-${date}`);
   }
 
-  async monthly(month: string, userId: string, roles: string[], format: ReportFormat = 'json') {
+  async monthly(
+    month: string,
+    userId: string,
+    roles: string[],
+    format: ReportFormat = 'json',
+  ) {
     const [y, m] = month.split('-').map(Number);
     const last = new Date(Date.UTC(y, m, 0)).getUTCDate();
     const from = `${month}-01`;
@@ -128,13 +177,22 @@ export class ReportsService {
     const whereId = ids ? { employeeId: { in: ids } } : {};
     const [employees, schedules, rows, leaves] = await Promise.all([
       ids
-        ? this.prisma.employee.findMany({ where: { id: { in: ids } }, orderBy: { name: 'asc' } })
+        ? this.prisma.employee.findMany({
+            where: { id: { in: ids } },
+            orderBy: { name: 'asc' },
+          })
         : this.prisma.employee.findMany({ orderBy: { name: 'asc' } }),
       this.prisma.employeeSchedule.findMany({
-        where: { ...whereId, workDate: { gte: new Date(from), lte: new Date(to) } },
+        where: {
+          ...whereId,
+          workDate: { gte: new Date(from), lte: new Date(to) },
+        },
       }),
       this.prisma.attendance.findMany({
-        where: { ...whereId, workDate: { gte: new Date(from), lte: new Date(to) } },
+        where: {
+          ...whereId,
+          workDate: { gte: new Date(from), lte: new Date(to) },
+        },
       }),
       this.prisma.leaveRequest.findMany({
         where: {
@@ -158,9 +216,18 @@ export class ReportsService {
       let o = 0;
       for (const d of days) {
         const st = classifyDay({
-          onLeave: leaves.some((x) => x.employeeId === e.id && d >= iso(x.startDate) && d <= iso(x.endDate)),
-          scheduled: schedules.some((s) => s.employeeId === e.id && iso(s.workDate) === d),
-          checkInStatus: rows.find((r) => r.employeeId === e.id && iso(r.workDate) === d)?.checkInStatus,
+          onLeave: leaves.some(
+            (x) =>
+              x.employeeId === e.id &&
+              d >= iso(x.startDate) &&
+              d <= iso(x.endDate),
+          ),
+          scheduled: schedules.some(
+            (s) => s.employeeId === e.id && iso(s.workDate) === d,
+          ),
+          checkInStatus: rows.find(
+            (r) => r.employeeId === e.id && iso(r.workDate) === d,
+          )?.checkInStatus,
         });
         if (st === 'PRESENT') p++;
         else if (st === 'LATE') l++;
@@ -171,7 +238,15 @@ export class ReportsService {
       tL += l;
       tA += a;
       tO += o;
-      table.push([e.employeeNo, e.name, String(p), String(l), String(a), String(o), String(p + l)]);
+      table.push([
+        e.employeeNo,
+        e.name,
+        String(p),
+        String(l),
+        String(a),
+        String(o),
+        String(p + l),
+      ]);
     }
     const report: TabularReport = {
       title: `Laporan Bulanan ${month}`,
@@ -183,42 +258,86 @@ export class ReportsService {
         ['Tidak hadir', String(tA)],
         ['Izin/cuti', String(tO)],
       ],
-      headers: ['NIP', 'Nama', 'Hadir', 'Terlambat', 'Tidak hadir', 'Izin/cuti', 'Kehadiran'],
+      headers: [
+        'NIP',
+        'Nama',
+        'Hadir',
+        'Terlambat',
+        'Tidak hadir',
+        'Izin/cuti',
+        'Kehadiran',
+      ],
       rows: table,
     };
     return this.render(report, format, `laporan-bulanan-${month}`);
   }
 
-  async department(from: string, to: string, userId: string, roles: string[], format: ReportFormat = 'json') {
+  async department(
+    from: string,
+    to: string,
+    userId: string,
+    roles: string[],
+    format: ReportFormat = 'json',
+  ) {
     const ids = await this.scopeOf(userId, roles);
     const employees = ids
-      ? await this.prisma.employee.findMany({ where: { id: { in: ids } }, include: { department: true } })
+      ? await this.prisma.employee.findMany({
+          where: { id: { in: ids } },
+          include: { department: true },
+        })
       : await this.prisma.employee.findMany({ include: { department: true } });
     const empIds = employees.map((e) => e.id);
     const [schedules, rows, leaves] = await Promise.all([
       this.prisma.employeeSchedule.findMany({
-        where: { employeeId: { in: empIds }, workDate: { gte: new Date(from), lte: new Date(to) } },
+        where: {
+          employeeId: { in: empIds },
+          workDate: { gte: new Date(from), lte: new Date(to) },
+        },
       }),
       this.prisma.attendance.findMany({
-        where: { employeeId: { in: empIds }, workDate: { gte: new Date(from), lte: new Date(to) } },
+        where: {
+          employeeId: { in: empIds },
+          workDate: { gte: new Date(from), lte: new Date(to) },
+        },
       }),
       this.prisma.leaveRequest.findMany({
-        where: { employeeId: { in: empIds }, status: 'APPROVED', startDate: { lte: new Date(to) }, endDate: { gte: new Date(from) } },
+        where: {
+          employeeId: { in: empIds },
+          status: 'APPROVED',
+          startDate: { lte: new Date(to) },
+          endDate: { gte: new Date(from) },
+        },
       }),
     ]);
 
-    const byDept = new Map<string, { name: string; p: number; l: number; a: number; o: number }>();
+    const byDept = new Map<
+      string,
+      { name: string; p: number; l: number; a: number; o: number }
+    >();
     const days = eachDay(from, to);
     for (const e of employees) {
-      const dept = (e.department as { id: string; name: string } | null) ?? { id: '-', name: '-' };
-      if (!byDept.has(dept.id)) byDept.set(dept.id, { name: dept.name, p: 0, l: 0, a: 0, o: 0 });
+      const dept = (e.department as { id: string; name: string } | null) ?? {
+        id: '-',
+        name: '-',
+      };
+      if (!byDept.has(dept.id))
+        byDept.set(dept.id, { name: dept.name, p: 0, l: 0, a: 0, o: 0 });
       const acc = byDept.get(dept.id);
       if (!acc) continue;
       for (const d of days) {
         const st = classifyDay({
-          onLeave: leaves.some((x) => x.employeeId === e.id && d >= iso(x.startDate) && d <= iso(x.endDate)),
-          scheduled: schedules.some((s) => s.employeeId === e.id && iso(s.workDate) === d),
-          checkInStatus: rows.find((r) => r.employeeId === e.id && iso(r.workDate) === d)?.checkInStatus,
+          onLeave: leaves.some(
+            (x) =>
+              x.employeeId === e.id &&
+              d >= iso(x.startDate) &&
+              d <= iso(x.endDate),
+          ),
+          scheduled: schedules.some(
+            (s) => s.employeeId === e.id && iso(s.workDate) === d,
+          ),
+          checkInStatus: rows.find(
+            (r) => r.employeeId === e.id && iso(r.workDate) === d,
+          )?.checkInStatus,
         });
         if (st === 'PRESENT') acc.p++;
         else if (st === 'LATE') acc.l++;
@@ -226,7 +345,13 @@ export class ReportsService {
         else if (st === 'ON_LEAVE') acc.o++;
       }
     }
-    const table = [...byDept.values()].map((d) => [d.name, String(d.p), String(d.l), String(d.a), String(d.o)]);
+    const table = [...byDept.values()].map((d) => [
+      d.name,
+      String(d.p),
+      String(d.l),
+      String(d.a),
+      String(d.o),
+    ]);
     const report: TabularReport = {
       title: `Laporan Departemen ${from} → ${to}`,
       generatedAt: new Date().toISOString(),
@@ -237,7 +362,14 @@ export class ReportsService {
     return this.render(report, format, `laporan-departemen-${from}-${to}`);
   }
 
-  async employee(id: string, from: string, to: string, userId: string, roles: string[], format: ReportFormat = 'json') {
+  async employee(
+    id: string,
+    from: string,
+    to: string,
+    userId: string,
+    roles: string[],
+    format: ReportFormat = 'json',
+  ) {
     const target = await this.prisma.employee.findUnique({
       where: { id },
       include: { department: true },
@@ -245,11 +377,17 @@ export class ReportsService {
     if (!target) throw new NotFoundException('Employee not found');
     const me = await this.prisma.employee.findUnique({ where: { userId } });
     const allowed =
-      satisfiesRole(roles, 'ADMIN') || me?.id === id || target.supervisorId === me?.id;
-    if (!allowed) throw new ForbiddenException('Not authorized for this report');
+      satisfiesRole(roles, 'ADMIN') ||
+      me?.id === id ||
+      target.supervisorId === me?.id;
+    if (!allowed)
+      throw new ForbiddenException('Not authorized for this report');
 
     const rows = await this.prisma.attendance.findMany({
-      where: { employeeId: id, workDate: { gte: new Date(from), lte: new Date(to) } },
+      where: {
+        employeeId: id,
+        workDate: { gte: new Date(from), lte: new Date(to) },
+      },
       orderBy: { workDate: 'asc' },
       include: { shift: true },
     });
@@ -259,7 +397,9 @@ export class ReportsService {
       a.checkInAt ? new Date(a.checkInAt).toISOString().slice(11, 16) : '-',
       a.checkOutAt ? new Date(a.checkOutAt).toISOString().slice(11, 16) : '-',
       a.checkInStatus ?? '-',
-      a.riskScore !== null && a.riskScore !== undefined ? String(a.riskScore) : '-',
+      a.riskScore !== null && a.riskScore !== undefined
+        ? String(a.riskScore)
+        : '-',
     ]);
     const report: TabularReport = {
       title: `Laporan Karyawan ${target.employeeNo} ${from} → ${to}`,
@@ -271,10 +411,20 @@ export class ReportsService {
       headers: ['Tanggal', 'Shift', 'Masuk', 'Pulang', 'Status', 'Risiko'],
       rows: table,
     };
-    return this.render(report, format, `laporan-karyawan-${target.employeeNo}-${from}-${to}`);
+    return this.render(
+      report,
+      format,
+      `laporan-karyawan-${target.employeeNo}-${from}-${to}`,
+    );
   }
 
-  async late(from: string, to: string, userId: string, roles: string[], format: ReportFormat = 'json') {
+  async late(
+    from: string,
+    to: string,
+    userId: string,
+    roles: string[],
+    format: ReportFormat = 'json',
+  ) {
     assertRangeDays(from, to);
     const ids = await this.scopeOf(userId, roles);
     const rows = await this.prisma.attendance.findMany({
@@ -304,7 +454,13 @@ export class ReportsService {
     return this.render(report, format, `laporan-terlambat-${from}-${to}`);
   }
 
-  async leaves(from: string, to: string, userId: string, roles: string[], format: ReportFormat = 'json') {
+  async leaves(
+    from: string,
+    to: string,
+    userId: string,
+    roles: string[],
+    format: ReportFormat = 'json',
+  ) {
     assertRangeDays(from, to);
     const ids = await this.scopeOf(userId, roles);
     const rows = await this.prisma.leaveRequest.findMany({
@@ -337,12 +493,27 @@ export class ReportsService {
   async render(report: TabularReport, format: ReportFormat, filename: string) {
     if (format === 'json') return { format, report };
     if (format === 'csv') {
-      return { format, filename: `${filename}.csv`, contentType: CONTENT_TYPES.csv, body: toCSV(report) };
+      return {
+        format,
+        filename: `${filename}.csv`,
+        contentType: CONTENT_TYPES.csv,
+        body: toCSV(report),
+      };
     }
     if (format === 'xlsx') {
-      return { format, filename: `${filename}.xlsx`, contentType: CONTENT_TYPES.xlsx, body: await toXLSX(report) };
+      return {
+        format,
+        filename: `${filename}.xlsx`,
+        contentType: CONTENT_TYPES.xlsx,
+        body: await toXLSX(report),
+      };
     }
-    return { format, filename: `${filename}.pdf`, contentType: CONTENT_TYPES.pdf, body: await toPDF(report) };
+    return {
+      format,
+      filename: `${filename}.pdf`,
+      contentType: CONTENT_TYPES.pdf,
+      body: await toPDF(report),
+    };
   }
 }
 

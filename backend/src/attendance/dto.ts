@@ -22,7 +22,6 @@ export class LivenessAttestationDto {
   @IsBoolean()
   passed!: boolean;
 
-   
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
@@ -36,12 +35,10 @@ export class LivenessAttestationDto {
   @Max(1)
   score!: number;
 
-   
   @IsOptional()
   @IsIn(['active', 'passive'])
   mode?: 'active' | 'passive';
 
-   
   @IsOptional()
   @IsNumber()
   @Min(0)
@@ -53,7 +50,6 @@ class AttendanceSignalsDto {
   @IsString()
   deviceId!: string;
 
-   
   @IsArray()
   @ArrayMinSize(192)
   @ArrayMaxSize(192)
@@ -64,14 +60,12 @@ class AttendanceSignalsDto {
   @Type(() => LivenessAttestationDto)
   liveness!: LivenessAttestationDto;
 
-   
   @Matches(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)
   requestId!: string;
 
   @IsISO8601()
   requestTimestamp!: string;
 
-   
   @IsString()
   @MinLength(10)
   @MaxLength(256)
@@ -80,7 +74,6 @@ class AttendanceSignalsDto {
   @IsBoolean()
   deviceCompromised!: boolean;
 
-   
   @IsOptional()
   @IsString()
   @MinLength(10)
@@ -137,12 +130,19 @@ export class AdminHistoryQuery extends MyHistoryQuery {
   riskCategory?: 'LOW' | 'MEDIUM' | 'HIGH';
 
   @IsOptional()
-  @Transform(({ value }) => value === undefined ? undefined : value === 'true' ? true : value === 'false' ? false : value)
+  @Transform(({ value }) =>
+    value === undefined
+      ? undefined
+      : value === 'true'
+        ? true
+        : value === 'false'
+          ? false
+          : value,
+  )
   @IsBoolean()
   needsReview?: boolean;
 }
 
- 
 export class ReviewQueueQuery {
   @IsOptional()
   @Type(() => Number)

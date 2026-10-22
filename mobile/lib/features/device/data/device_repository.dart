@@ -11,7 +11,6 @@ import '../../../core/crypto/device_keys.dart';
 import '../../../core/storage/secure_store.dart';
 import '../domain/device_models.dart';
 
-
 class DeviceRepository {
   DeviceRepository({required Dio dio, required SecureStore store})
       : _dio = dio,
@@ -39,26 +38,12 @@ class DeviceRepository {
     return DeviceKeys.publicKeyBase64(pair);
   }
 
-  
-  
-  
   Future<bool> isCompromised() => FlutterJailbreakDetection.jailbroken;
 
-  
-  
-  
-  
-  
-  
-  
   Future<BoundDevice> register() async {
     try {
       return await _registerOnce();
     } on DioException catch (e) {
-      
-      
-      
-      
       if (e.response?.statusCode == 409) {
         await _store.clearDeviceIdentity();
         return _registerOnce();
@@ -79,7 +64,6 @@ class DeviceRepository {
     }
     final PackageInfo pkg = await PackageInfo.fromPlatform();
 
-    
     final String pub = await publicKeyBase64();
     final String? seed = await _store.readPrivateSeed();
     if (seed == null || seed.isEmpty) {
@@ -108,8 +92,6 @@ class DeviceRepository {
     return device;
   }
 
-  
-  
   Future<String> ensureDeviceId() async {
     final String? bound = await _store.readDeviceId();
     if (bound != null && bound.isNotEmpty) return bound;
@@ -132,8 +114,6 @@ class DeviceRepository {
 
   Future<String?> currentDeviceId() => _store.readDeviceId();
 
-  
-  
   Future<ChangeRequest> requestReplacement({
     required String newDeviceId,
     required String reason,
@@ -145,7 +125,8 @@ class DeviceRepository {
       data: {
         'newDeviceId': newDeviceId,
         'reason': reason,
-        if (reasonNote != null && reasonNote.isNotEmpty) 'reasonNote': reasonNote,
+        if (reasonNote != null && reasonNote.isNotEmpty)
+          'reasonNote': reasonNote,
         'password': password,
       },
     );

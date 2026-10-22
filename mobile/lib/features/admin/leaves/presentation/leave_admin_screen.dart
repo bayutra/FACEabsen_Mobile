@@ -7,7 +7,6 @@ import '../../presentation/admin_widgets.dart';
 import '../data/leave_admin_repository.dart';
 import '../domain/leave_admin_models.dart';
 
-
 class LeaveAdminScreen extends StatefulWidget {
   const LeaveAdminScreen({super.key, required this.dio});
 

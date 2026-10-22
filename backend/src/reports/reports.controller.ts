@@ -1,7 +1,12 @@
 import { Controller, Get, Param, Query, Res, UseGuards } from '@nestjs/common';
 import type { Response } from 'express';
 import { IsOptional, IsString, Matches } from 'class-validator';
-import { RequirePermissions, Roles, CurrentUser, type AuthContext } from '../auth/decorators.js';
+import {
+  RequirePermissions,
+  Roles,
+  CurrentUser,
+  type AuthContext,
+} from '../auth/decorators.js';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
 import { PermissionsGuard } from '../auth/guards/permissions.guard.js';
 import { RolesGuard } from '../auth/guards/roles.guard.js';
@@ -10,13 +15,14 @@ import { ReportsService, type ReportFormat } from './reports.service.js';
 const FORMATS = ['json', 'csv', 'xlsx', 'pdf'] as const;
 
 function fmt(value: unknown): ReportFormat {
-  return (FORMATS as readonly string[]).includes(String(value)) ? (value as ReportFormat) : 'json';
+  return (FORMATS as readonly string[]).includes(String(value))
+    ? (value as ReportFormat)
+    : 'json';
 }
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 const MONTH_RE = /^\d{4}-(0[1-9]|1[0-2])$/;
 
- 
 export class ReportRangeQuery {
   @Matches(DATE_RE)
   from!: string;
@@ -29,7 +35,6 @@ export class ReportRangeQuery {
   format?: string;
 }
 
- 
 export class ReportDateQuery {
   @Matches(DATE_RE)
   date!: string;
@@ -39,7 +44,6 @@ export class ReportDateQuery {
   format?: string;
 }
 
- 
 export class ReportMonthQuery {
   @Matches(MONTH_RE)
   month!: string;
@@ -62,7 +66,15 @@ export class ReportsController {
     @CurrentUser() user: AuthContext,
     @Res({ passthrough: true }) res: Response,
   ) {
-    return this.send(await this.reports.daily(query.date, user.userId, user.roles, fmt(query.format)), res);
+    return this.send(
+      await this.reports.daily(
+        query.date,
+        user.userId,
+        user.roles,
+        fmt(query.format),
+      ),
+      res,
+    );
   }
 
   @RequirePermissions('report:read:team')
@@ -72,7 +84,15 @@ export class ReportsController {
     @CurrentUser() user: AuthContext,
     @Res({ passthrough: true }) res: Response,
   ) {
-    return this.send(await this.reports.monthly(query.month, user.userId, user.roles, fmt(query.format)), res);
+    return this.send(
+      await this.reports.monthly(
+        query.month,
+        user.userId,
+        user.roles,
+        fmt(query.format),
+      ),
+      res,
+    );
   }
 
   @RequirePermissions('report:read:team')
@@ -82,7 +102,16 @@ export class ReportsController {
     @CurrentUser() user: AuthContext,
     @Res({ passthrough: true }) res: Response,
   ) {
-    return this.send(await this.reports.department(query.from, query.to, user.userId, user.roles, fmt(query.format)), res);
+    return this.send(
+      await this.reports.department(
+        query.from,
+        query.to,
+        user.userId,
+        user.roles,
+        fmt(query.format),
+      ),
+      res,
+    );
   }
 
   @RequirePermissions('attendance:read:team')
@@ -93,7 +122,17 @@ export class ReportsController {
     @CurrentUser() user: AuthContext,
     @Res({ passthrough: true }) res: Response,
   ) {
-    return this.send(await this.reports.employee(id, query.from, query.to, user.userId, user.roles, fmt(query.format)), res);
+    return this.send(
+      await this.reports.employee(
+        id,
+        query.from,
+        query.to,
+        user.userId,
+        user.roles,
+        fmt(query.format),
+      ),
+      res,
+    );
   }
 
   @RequirePermissions('report:read:team')
@@ -103,7 +142,16 @@ export class ReportsController {
     @CurrentUser() user: AuthContext,
     @Res({ passthrough: true }) res: Response,
   ) {
-    return this.send(await this.reports.late(query.from, query.to, user.userId, user.roles, fmt(query.format)), res);
+    return this.send(
+      await this.reports.late(
+        query.from,
+        query.to,
+        user.userId,
+        user.roles,
+        fmt(query.format),
+      ),
+      res,
+    );
   }
 
   @RequirePermissions('report:read:team')
@@ -113,18 +161,41 @@ export class ReportsController {
     @CurrentUser() user: AuthContext,
     @Res({ passthrough: true }) res: Response,
   ) {
-    return this.send(await this.reports.leaves(query.from, query.to, user.userId, user.roles, fmt(query.format)), res);
+    return this.send(
+      await this.reports.leaves(
+        query.from,
+        query.to,
+        user.userId,
+        user.roles,
+        fmt(query.format),
+      ),
+      res,
+    );
   }
 
   private send(
-    out: { format: string; report?: unknown; filename?: string; contentType?: string; body?: string | Buffer },
+    out: {
+      format: string;
+      report?: unknown;
+      filename?: string;
+      contentType?: string;
+      body?: string | Buffer;
+    },
     res: Response,
   ) {
-    if (out.format === 'json' || !out.filename || !out.contentType || out.body === undefined) {
+    if (
+      out.format === 'json' ||
+      !out.filename ||
+      !out.contentType ||
+      out.body === undefined
+    ) {
       return (out as { report: unknown }).report;
     }
     res.setHeader('Content-Type', out.contentType);
-    res.setHeader('Content-Disposition', `attachment; filename="${out.filename}"`);
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename="${out.filename}"`,
+    );
     return res.send(out.body);
   }
 }

@@ -8,15 +8,11 @@ import { GlobalHttpExceptionFilter } from './common/http-exception.filter.js';
 import { assertProductionEnv } from './security.js';
 
 async function bootstrap() {
-  
   assertProductionEnv(process.env as Record<string, string>);
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
-  
-  
   app.set('trust proxy', 1);
 
-  
   if (process.env.NODE_ENV === 'production' && !process.env.REDIS_URL) {
     Logger.warn(
       'REDIS_URL is unset: using in-memory rate limits and lockout state (per-instance only)',
@@ -24,30 +20,26 @@ async function bootstrap() {
     );
   }
 
-  
   app.use(helmet());
 
-  
   app.useGlobalPipes(
-    new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, transform: true }),
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+    }),
   );
 
-  
-  
   app.useGlobalFilters(new GlobalHttpExceptionFilter());
 
   const apiPrefix = process.env.API_PREFIX ?? 'api/v1';
   app.setGlobalPrefix(apiPrefix);
 
-  
-  
   const corsOrigin = process.env.CORS_ORIGIN?.trim();
   if (corsOrigin) {
     app.enableCors({ origin: corsOrigin.split(',').map((o) => o.trim()) });
   }
 
-  
-  
   const docsEnabled =
     process.env.DOCS_ENABLED !== undefined
       ? process.env.DOCS_ENABLED === 'true'

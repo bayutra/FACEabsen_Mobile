@@ -34,7 +34,11 @@ function makeFake() {
           ? [...users.values()].find((x) => x.email === where.email)
           : users.get(where.id);
         if (!u) return null;
-        if (include?.userRoles) return { ...u, userRoles: u.roles.map((r: string) => ({ role: { name: r } })) };
+        if (include?.userRoles)
+          return {
+            ...u,
+            userRoles: u.roles.map((r: string) => ({ role: { name: r } })),
+          };
         return { ...u };
       },
       update: async ({ where, data }: any) => {
@@ -49,7 +53,10 @@ function makeFake() {
         const roles: string[] = u?.roles ?? [];
         if (include?.role?.include?.rolePermissions) {
           return roles.map((r) => ({
-            role: { name: r, rolePermissions: [] as Array<{ permission: { key: string } }> },
+            role: {
+              name: r,
+              rolePermissions: [] as Array<{ permission: { key: string } }>,
+            },
           }));
         }
         return roles.map((r: string) => ({ role: { name: r } }));
@@ -57,14 +64,21 @@ function makeFake() {
     },
     session: {
       create: async ({ data }: any) => {
-        const s = { id: `s${++seq}`, createdAt: new Date(), revokedAt: null, ...data };
+        const s = {
+          id: `s${++seq}`,
+          createdAt: new Date(),
+          revokedAt: null,
+          ...data,
+        };
         sessions.set(s.id, s);
         return { ...s };
       },
       findUnique: async ({ where }: any) => {
         const s = where.id
-          ? sessions.get(where.id) ?? null
-          : ([...sessions.values()].find((x) => x.refreshTokenHash === where.refreshTokenHash) ?? null);
+          ? (sessions.get(where.id) ?? null)
+          : ([...sessions.values()].find(
+              (x) => x.refreshTokenHash === where.refreshTokenHash,
+            ) ?? null);
         return s ? { ...s } : null;
       },
       findMany: async () => [...sessions.values()].map((s) => ({ ...s })),
@@ -142,7 +156,11 @@ beforeAll(async () => {
     imports: [
       JwtModule.register({
         secret: 'e2e-secret',
-        signOptions: { algorithm: 'HS256', issuer: 'face-absen', expiresIn: 900 },
+        signOptions: {
+          algorithm: 'HS256',
+          issuer: 'face-absen',
+          expiresIn: 900,
+        },
       }),
     ],
     controllers: [AuthController, TotpController],
@@ -153,14 +171,21 @@ beforeAll(async () => {
       RolesGuard,
       PermissionsGuard,
       { provide: PrismaService, useValue: fake },
-      { provide: ConfigService, useValue: { get: (_k: string, d: unknown) => d } },
+      {
+        provide: ConfigService,
+        useValue: { get: (_k: string, d: unknown) => d },
+      },
       { provide: AuditService, useValue: { log: async () => undefined } },
     ],
   }).compile();
 
   app = module.createNestApplication();
   app.useGlobalPipes(
-    new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, transform: true }),
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+    }),
   );
   await app.init();
 });
@@ -179,7 +204,10 @@ describe('TOTP over HTTP', () => {
     expect(res.body.accessToken).toBeTruthy();
     expect(res.body.refreshToken).toBeTruthy();
     expect(res.body.expiresIn).toBe(15 * 60);
-    expect(res.body.user).toMatchObject({ id: 'u-plain', email: 'plain@rs.test' });
+    expect(res.body.user).toMatchObject({
+      id: 'u-plain',
+      email: 'plain@rs.test',
+    });
     expect(res.body.totpRequired).toBeUndefined();
   });
 
@@ -240,7 +268,10 @@ describe('TOTP over HTTP', () => {
 
     const wrong = await request(server)
       .post('/auth/totp/verify')
-      .send({ totpToken: challenge, code: '123456' === totp(secret) ? '654321' : '123456' });
+      .send({
+        totpToken: challenge,
+        code: '123456' === totp(secret) ? '654321' : '123456',
+      });
     expect(wrong.status).toBe(401);
 
     const ok = await request(server)
@@ -251,7 +282,9 @@ describe('TOTP over HTTP', () => {
     expect(ok.body.refreshToken).toBeTruthy();
     expect(ok.body.user).toMatchObject({ id: 'u-totp' });
 
-    const me = await request(server).get('/auth/me').set('Authorization', `Bearer ${ok.body.accessToken}`);
+    const me = await request(server)
+      .get('/auth/me')
+      .set('Authorization', `Bearer ${ok.body.accessToken}`);
     expect(me.status).toBe(200);
     expect(me.body.email).toBe('totp@rs.test');
   });

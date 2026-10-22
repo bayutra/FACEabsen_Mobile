@@ -1,6 +1,17 @@
-import { IsIn, IsISO8601, IsOptional, IsString, MaxLength } from 'class-validator';
+import {
+  IsIn,
+  IsISO8601,
+  IsOptional,
+  IsString,
+  MaxLength,
+} from 'class-validator';
 
-export const CORRECTION_TYPES = ['MISSED_CHECK_IN', 'MISSED_CHECK_OUT', 'WRONG_TIME', 'TECHNICAL_ISSUE'] as const;
+export const CORRECTION_TYPES = [
+  'MISSED_CHECK_IN',
+  'MISSED_CHECK_OUT',
+  'WRONG_TIME',
+  'TECHNICAL_ISSUE',
+] as const;
 
 export class CreateCorrectionDto {
   @IsString()

@@ -6,13 +6,20 @@ import 'leave_form_screen.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/stitch.dart';
 
-
 const List<String> _bulanPendekId = [
-  'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
-  'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des',
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'Mei',
+  'Jun',
+  'Jul',
+  'Agu',
+  'Sep',
+  'Okt',
+  'Nov',
+  'Des',
 ];
-
-
 
 String _formatLeaveRange(String startKey, String endKey) {
   final DateTime? s = DateTime.tryParse(startKey);
@@ -26,9 +33,6 @@ String _formatLeaveRange(String startKey, String endKey) {
   if (s.year == e.year) return '${s.day} $sm - ${e.day} $em ${e.year}';
   return '${s.day} $sm ${s.year} - ${e.day} $em ${e.year}';
 }
-
-
-
 
 class LeaveListScreen extends StatefulWidget {
   const LeaveListScreen({
@@ -48,7 +52,7 @@ class LeaveListScreen extends StatefulWidget {
 
 class _LeaveListScreenState extends State<LeaveListScreen> {
   late Future<List<LeaveItem>> _future;
-  String _selectedFilter = 'ALL'; 
+  String _selectedFilter = 'ALL';
 
   @override
   void initState() {
@@ -95,8 +99,16 @@ class _LeaveListScreenState extends State<LeaveListScreen> {
         title: const Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('RS Absen • Kepegawaian', style: TextStyle(fontSize: 11, color: AppColors.primary, fontWeight: FontWeight.w600)),
-            Text('Riwayat Izin & Cuti', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.ink)),
+            Text('RS Absen • Kepegawaian',
+                style: TextStyle(
+                    fontSize: 11,
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.w600)),
+            Text('Riwayat Izin & Cuti',
+                style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.ink)),
           ],
         ),
         backgroundColor: Colors.white,
@@ -116,7 +128,8 @@ class _LeaveListScreenState extends State<LeaveListScreen> {
         foregroundColor: Colors.white,
         onPressed: _openForm,
         icon: const Icon(Icons.add),
-        label: const Text('Ajukan Izin / Cuti', style: TextStyle(fontWeight: FontWeight.w600)),
+        label: const Text('Ajukan Izin / Cuti',
+            style: TextStyle(fontWeight: FontWeight.w600)),
       ),
       body: FutureBuilder<List<LeaveItem>>(
         future: _future,
@@ -127,21 +140,23 @@ class _LeaveListScreenState extends State<LeaveListScreen> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.error_outline, size: 36, color: AppColors.error),
+                    const Icon(Icons.error_outline,
+                        size: 36, color: AppColors.error),
                     const SizedBox(height: 8),
                     const Text('Gagal memuat riwayat pengajuan.'),
                     const SizedBox(height: 12),
-                    FilledButton(onPressed: _reload, child: const Text('Coba Lagi')),
+                    FilledButton(
+                        onPressed: _reload, child: const Text('Coba Lagi')),
                   ],
                 ),
               );
             }
-            return const Center(child: CircularProgressIndicator(color: AppColors.primary));
+            return const Center(
+                child: CircularProgressIndicator(color: AppColors.primary));
           }
 
           final List<LeaveItem> allItems = snap.data!;
 
-          
           const int totalAnnualQuota = 12;
           int usedLeaveDays = 0;
           int sickDays = 0;
@@ -159,12 +174,15 @@ class _LeaveListScreenState extends State<LeaveListScreen> {
             }
           }
 
-          final int remainingQuota = (totalAnnualQuota - usedLeaveDays).clamp(0, totalAnnualQuota);
-          final double usedRatio = (usedLeaveDays / totalAnnualQuota).clamp(0.0, 1.0);
-          final int approvedCount = allItems.where((l) => l.status == 'APPROVED').length;
-          final int rejectedCount = allItems.where((l) => l.status == 'REJECTED').length;
+          final int remainingQuota =
+              (totalAnnualQuota - usedLeaveDays).clamp(0, totalAnnualQuota);
+          final double usedRatio =
+              (usedLeaveDays / totalAnnualQuota).clamp(0.0, 1.0);
+          final int approvedCount =
+              allItems.where((l) => l.status == 'APPROVED').length;
+          final int rejectedCount =
+              allItems.where((l) => l.status == 'REJECTED').length;
 
-          
           final List<LeaveItem> filteredItems = allItems.where((l) {
             if (_selectedFilter == 'ALL') return true;
             return l.status == _selectedFilter;
@@ -175,12 +193,12 @@ class _LeaveListScreenState extends State<LeaveListScreen> {
             child: ListView(
               padding: const EdgeInsets.all(16),
               children: [
-                
                 Container(
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: AppColors.border.withOpacity(0.5)),
+                    border:
+                        Border.all(color: AppColors.border.withOpacity(0.5)),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withOpacity(0.02),
@@ -192,7 +210,6 @@ class _LeaveListScreenState extends State<LeaveListScreen> {
                   clipBehavior: Clip.antiAlias,
                   child: Column(
                     children: [
-                      
                       Container(height: 4, color: AppColors.primaryContainer),
                       Padding(
                         padding: const EdgeInsets.all(14),
@@ -208,17 +225,22 @@ class _LeaveListScreenState extends State<LeaveListScreen> {
                                   children: [
                                     const Row(
                                       children: [
-                                        Icon(Icons.verified_user, size: 16, color: AppColors.primary),
+                                        Icon(Icons.verified_user,
+                                            size: 16, color: AppColors.primary),
                                         SizedBox(width: 6),
                                         Text(
                                           'Ringkasan Kuota Cuti',
-                                          style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.inkSecondary),
+                                          style: TextStyle(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w600,
+                                              color: AppColors.inkSecondary),
                                         ),
                                       ],
                                     ),
                                     const SizedBox(height: 4),
                                     Row(
-                                      crossAxisAlignment: CrossAxisAlignment.baseline,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.baseline,
                                       textBaseline: TextBaseline.alphabetic,
                                       children: [
                                         Text(
@@ -232,50 +254,63 @@ class _LeaveListScreenState extends State<LeaveListScreen> {
                                         const SizedBox(width: 6),
                                         const Text(
                                           'Hari Tersisa',
-                                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.ink),
+                                          style: TextStyle(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w600,
+                                              color: AppColors.ink),
                                         ),
                                       ],
                                     ),
                                     Text(
                                       'Dari total kuota hak cuti 12 hari • Periode ${DateTime.now().year}',
-                                      style: const TextStyle(fontSize: 11, color: AppColors.outline),
+                                      style: const TextStyle(
+                                          fontSize: 11,
+                                          color: AppColors.outline),
                                     ),
                                   ],
                                 ),
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 8, vertical: 3),
                                   decoration: BoxDecoration(
                                     color: AppColors.surfaceLow,
-                                    borderRadius: BorderRadius.circular(AppColors.radiusFull),
+                                    borderRadius: BorderRadius.circular(
+                                        AppColors.radiusFull),
                                     border: Border.all(color: AppColors.border),
                                   ),
                                   child: Text(
                                     'Aktif ${DateTime.now().year}',
-                                    style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.w600, color: AppColors.primary),
+                                    style: const TextStyle(
+                                        fontSize: 10.5,
+                                        fontWeight: FontWeight.w600,
+                                        color: AppColors.primary),
                                   ),
                                 ),
                               ],
                             ),
-
                             const SizedBox(height: 12),
-
-                            
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
                                   'Terpakai: $usedLeaveDays Hari (${(usedRatio * 100).round()}%)',
-                                  style: const TextStyle(fontSize: 11, color: AppColors.inkSecondary),
+                                  style: const TextStyle(
+                                      fontSize: 11,
+                                      color: AppColors.inkSecondary),
                                 ),
                                 Text(
                                   'Tersedia: $remainingQuota Hari',
-                                  style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.primaryContainer),
+                                  style: const TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w600,
+                                      color: AppColors.primaryContainer),
                                 ),
                               ],
                             ),
                             const SizedBox(height: 6),
                             ClipRRect(
-                              borderRadius: BorderRadius.circular(AppColors.radiusFull),
+                              borderRadius:
+                                  BorderRadius.circular(AppColors.radiusFull),
                               child: LinearProgressIndicator(
                                 value: usedRatio,
                                 minHeight: 7,
@@ -283,19 +318,22 @@ class _LeaveListScreenState extends State<LeaveListScreen> {
                                 color: AppColors.primaryContainer,
                               ),
                             ),
-
                             const SizedBox(height: 14),
                             const Divider(height: 1),
                             const SizedBox(height: 10),
-
-                            
                             Row(
                               children: [
-                                Expanded(child: _bentoStat('Terpakai', '$usedLeaveDays Hari')),
+                                Expanded(
+                                    child: _bentoStat(
+                                        'Terpakai', '$usedLeaveDays Hari')),
                                 const SizedBox(width: 6),
-                                Expanded(child: _bentoStat('Sakit', '$sickDays Hari')),
+                                Expanded(
+                                    child:
+                                        _bentoStat('Sakit', '$sickDays Hari')),
                                 const SizedBox(width: 6),
-                                Expanded(child: _bentoStat('Dinas Luar', '$dutyDays Hari')),
+                                Expanded(
+                                    child: _bentoStat(
+                                        'Dinas Luar', '$dutyDays Hari')),
                                 const SizedBox(width: 6),
                                 Expanded(
                                   child: _bentoStat(
@@ -312,38 +350,43 @@ class _LeaveListScreenState extends State<LeaveListScreen> {
                     ],
                   ),
                 ),
-
                 const SizedBox(height: 16),
-
-                
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     const Text(
                       'DAFTAR PENGAJUAN',
-                      style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 0.6, color: AppColors.inkSecondary),
+                      style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.6,
+                          color: AppColors.inkSecondary),
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.circular(AppColors.radiusFull),
+                        borderRadius:
+                            BorderRadius.circular(AppColors.radiusFull),
                         border: Border.all(color: AppColors.border),
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.calendar_today, size: 12, color: AppColors.primary),
+                          const Icon(Icons.calendar_today,
+                              size: 12, color: AppColors.primary),
                           const SizedBox(width: 4),
-                          Text('Tahun ${DateTime.now().year}', style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.w600, color: AppColors.ink)),
+                          Text('Tahun ${DateTime.now().year}',
+                              style: const TextStyle(
+                                  fontSize: 10.5,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.ink)),
                         ],
                       ),
                     ),
                   ],
                 ),
-
                 const SizedBox(height: 8),
-
-                
                 SizedBox(
                   height: 44,
                   child: ListView(
@@ -359,32 +402,33 @@ class _LeaveListScreenState extends State<LeaveListScreen> {
                     ],
                   ),
                 ),
-
                 const SizedBox(height: 12),
-
-                
                 if (filteredItems.isEmpty)
                   Container(
                     padding: const EdgeInsets.all(32),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: AppColors.border.withOpacity(0.5)),
+                      border:
+                          Border.all(color: AppColors.border.withOpacity(0.5)),
                     ),
                     child: const Column(
                       children: [
-                        Icon(Icons.beach_access, size: 40, color: AppColors.border),
+                        Icon(Icons.beach_access,
+                            size: 40, color: AppColors.border),
                         SizedBox(height: 8),
                         Text(
                           'Tidak ada pengajuan pada kategori ini',
-                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.inkSecondary),
+                          style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.inkSecondary),
                         ),
                       ],
                     ),
                   )
                 else
                   for (final item in filteredItems) _leaveCard(item),
-
                 const SizedBox(height: 48),
               ],
             ),
@@ -441,7 +485,12 @@ class _LeaveListScreenState extends State<LeaveListScreen> {
 
   Widget _leaveCard(LeaveItem l) {
     final int days = _dayCount(l.startDate, l.endDate);
-    final (Color stripeColor, Color bgPill, Color textPill, String statusLabel) = switch (l.status) {
+    final (
+      Color stripeColor,
+      Color bgPill,
+      Color textPill,
+      String statusLabel
+    ) = switch (l.status) {
       'APPROVED' => (
           AppColors.success,
           AppColors.successTint,
@@ -493,7 +542,6 @@ class _LeaveListScreenState extends State<LeaveListScreen> {
       clipBehavior: Clip.antiAlias,
       child: Column(
         children: [
-          
           Container(height: 3, color: stripeColor),
           Padding(
             padding: const EdgeInsets.all(12),
@@ -509,19 +557,27 @@ class _LeaveListScreenState extends State<LeaveListScreen> {
                         const SizedBox(width: 8),
                         Text(
                           leaveTypes[l.type] ?? l.type,
-                          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.ink),
+                          style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.ink),
                         ),
                       ],
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 2),
                       decoration: BoxDecoration(
                         color: bgPill,
-                        borderRadius: BorderRadius.circular(AppColors.radiusFull),
+                        borderRadius:
+                            BorderRadius.circular(AppColors.radiusFull),
                       ),
                       child: Text(
                         statusLabel,
-                        style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: textPill),
+                        style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w600,
+                            color: textPill),
                       ),
                     ),
                   ],
@@ -529,22 +585,28 @@ class _LeaveListScreenState extends State<LeaveListScreen> {
                 const SizedBox(height: 8),
                 Row(
                   children: [
-                    const Icon(Icons.calendar_today, size: 12, color: AppColors.outline),
+                    const Icon(Icons.calendar_today,
+                        size: 12, color: AppColors.outline),
                     const SizedBox(width: 5),
                     Text(
                       _formatLeaveRange(l.startDate, l.endDate),
-                      style: const TextStyle(fontSize: 11.5, color: AppColors.inkSecondary),
+                      style: const TextStyle(
+                          fontSize: 11.5, color: AppColors.inkSecondary),
                     ),
                     const Spacer(),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 1.5),
                       decoration: BoxDecoration(
                         color: AppColors.surfaceLow,
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
                         '$days Hari Kerja',
-                        style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.w600, color: AppColors.primary),
+                        style: const TextStyle(
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.primary),
                       ),
                     ),
                   ],
@@ -552,7 +614,10 @@ class _LeaveListScreenState extends State<LeaveListScreen> {
                 const SizedBox(height: 6),
                 Text(
                   l.reason,
-                  style: const TextStyle(fontSize: 12, color: AppColors.inkSecondary, height: 1.35),
+                  style: const TextStyle(
+                      fontSize: 12,
+                      color: AppColors.inkSecondary,
+                      height: 1.35),
                 ),
                 if (l.reviewNote?.isNotEmpty == true) ...[
                   const SizedBox(height: 8),
@@ -562,11 +627,15 @@ class _LeaveListScreenState extends State<LeaveListScreen> {
                     decoration: BoxDecoration(
                       color: AppColors.surfaceLow,
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: AppColors.primary.withOpacity(0.2)),
+                      border:
+                          Border.all(color: AppColors.primary.withOpacity(0.2)),
                     ),
                     child: Text(
                       'Catatan Karu/HRD: ${l.reviewNote}',
-                      style: const TextStyle(fontSize: 11, fontStyle: FontStyle.italic, color: AppColors.primary),
+                      style: const TextStyle(
+                          fontSize: 11,
+                          fontStyle: FontStyle.italic,
+                          color: AppColors.primary),
                     ),
                   ),
                 ],

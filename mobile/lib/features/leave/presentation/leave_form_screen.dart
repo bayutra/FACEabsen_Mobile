@@ -5,26 +5,36 @@ import '../data/leave_repository.dart';
 import '../domain/leave_models.dart';
 import '../../../core/theme/app_colors.dart';
 
-
 String _formatIdDate(DateTime d) {
   const List<String> bulan = [
-    'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
-    'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des',
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'Mei',
+    'Jun',
+    'Jul',
+    'Agu',
+    'Sep',
+    'Okt',
+    'Nov',
+    'Des',
   ];
   return '${d.day} ${bulan[d.month - 1]} ${d.year}';
 }
 
-
 String _weekdayName(DateTime d) {
   const List<String> hari = [
-    'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'
+    'Senin',
+    'Selasa',
+    'Rabu',
+    'Kamis',
+    'Jumat',
+    'Sabtu',
+    'Minggu'
   ];
   return hari[d.weekday - 1];
 }
-
-
-
-
 
 class LeaveFormScreen extends StatefulWidget {
   const LeaveFormScreen({
@@ -113,7 +123,8 @@ class _LeaveFormScreenState extends State<LeaveFormScreen> {
       return;
     }
     if (!_agreed) {
-      setState(() => _error = 'Harap menyetujui pernyataan SOP koordinasi dengan Karu.');
+      setState(() =>
+          _error = 'Harap menyetujui pernyataan SOP koordinasi dengan Karu.');
       return;
     }
     setState(() {
@@ -164,7 +175,6 @@ class _LeaveFormScreenState extends State<LeaveFormScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            
             Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
@@ -217,11 +227,13 @@ class _LeaveFormScreenState extends State<LeaveFormScreen> {
                             const SizedBox(height: 2),
                             const Text(
                               'Karyawan Rumah Sakit',
-                              style: TextStyle(fontSize: 12, color: AppColors.inkSecondary),
+                              style: TextStyle(
+                                  fontSize: 12, color: AppColors.inkSecondary),
                             ),
                             Text(
                               'NIP: ${widget.employeeNo}',
-                              style: const TextStyle(fontSize: 11, color: AppColors.outline),
+                              style: const TextStyle(
+                                  fontSize: 11, color: AppColors.outline),
                             ),
                           ],
                         ),
@@ -236,24 +248,30 @@ class _LeaveFormScreenState extends State<LeaveFormScreen> {
                     children: [
                       const Row(
                         children: [
-                          Icon(Icons.event_available, size: 16, color: AppColors.primary),
+                          Icon(Icons.event_available,
+                              size: 16, color: AppColors.primary),
                           SizedBox(width: 6),
                           Text(
                             'Hak Cuti Tahunan',
-                            style: TextStyle(fontSize: 12, color: AppColors.inkSecondary),
+                            style: TextStyle(
+                                fontSize: 12, color: AppColors.inkSecondary),
                           ),
                         ],
                       ),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 3),
                         decoration: BoxDecoration(
                           color: AppColors.primaryFixed.withOpacity(0.4),
-                          borderRadius: BorderRadius.circular(AppColors.radiusFull),
-                          border: Border.all(color: AppColors.primary.withOpacity(0.2)),
+                          borderRadius:
+                              BorderRadius.circular(AppColors.radiusFull),
+                          border: Border.all(
+                              color: AppColors.primary.withOpacity(0.2)),
                         ),
                         child: const Row(
                           children: [
-                            Icon(Icons.verified, size: 12, color: AppColors.primary),
+                            Icon(Icons.verified,
+                                size: 12, color: AppColors.primary),
                             SizedBox(width: 4),
                             Text(
                               'Kuota tahun berjalan',
@@ -271,25 +289,27 @@ class _LeaveFormScreenState extends State<LeaveFormScreen> {
                 ],
               ),
             ),
-
             const SizedBox(height: 16),
-
-            
             const Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
                   '1. Jenis Dispensasi / Cuti',
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.ink),
+                  style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.ink),
                 ),
                 Text(
                   'Wajib Diisi',
-                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.primary),
+                  style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.primary),
                 ),
               ],
             ),
             const SizedBox(height: 8),
-
             GridView.count(
               crossAxisCount: 2,
               shrinkWrap: true,
@@ -325,18 +345,20 @@ class _LeaveFormScreenState extends State<LeaveFormScreen> {
               ],
             ),
             const SizedBox(height: 8),
-
-            
             InkWell(
               onTap: () => setState(() => _type = 'LAINNYA'),
               borderRadius: BorderRadius.circular(12),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                 decoration: BoxDecoration(
-                  color: _type == 'LAINNYA' ? AppColors.surfaceLow : Colors.white,
+                  color:
+                      _type == 'LAINNYA' ? AppColors.surfaceLow : Colors.white,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: _type == 'LAINNYA' ? AppColors.primary : AppColors.border.withOpacity(0.6),
+                    color: _type == 'LAINNYA'
+                        ? AppColors.primary
+                        : AppColors.border.withOpacity(0.6),
                     width: _type == 'LAINNYA' ? 1.8 : 1,
                   ),
                 ),
@@ -350,16 +372,16 @@ class _LeaveFormScreenState extends State<LeaveFormScreen> {
                     ),
                     const Text(
                       'Alasan Lainnya (Melahirkan, Kedukaan, Khusus)',
-                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.ink),
+                      style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.ink),
                     ),
                   ],
                 ),
               ),
             ),
-
             const SizedBox(height: 16),
-
-            
             Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
@@ -375,11 +397,17 @@ class _LeaveFormScreenState extends State<LeaveFormScreen> {
                     children: [
                       Text(
                         '2. Rentang Waktu Dispensasi',
-                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.ink),
+                        style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.ink),
                       ),
                       Text(
                         'Kalender Shift',
-                        style: TextStyle(fontSize: 11, color: AppColors.secondary, fontWeight: FontWeight.w500),
+                        style: TextStyle(
+                            fontSize: 11,
+                            color: AppColors.secondary,
+                            fontWeight: FontWeight.w500),
                       ),
                     ],
                   ),
@@ -395,26 +423,36 @@ class _LeaveFormScreenState extends State<LeaveFormScreen> {
                             decoration: BoxDecoration(
                               color: AppColors.canvas,
                               borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: AppColors.border.withOpacity(0.6)),
+                              border: Border.all(
+                                  color: AppColors.border.withOpacity(0.6)),
                             ),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text('Tanggal Mulai', style: TextStyle(fontSize: 11, color: AppColors.outline)),
+                                const Text('Tanggal Mulai',
+                                    style: TextStyle(
+                                        fontSize: 11,
+                                        color: AppColors.outline)),
                                 const SizedBox(height: 4),
                                 Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                                   children: [
                                     Text(
                                       _formatIdDate(_start),
-                                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.ink),
+                                      style: const TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w700,
+                                          color: AppColors.ink),
                                     ),
-                                    const Icon(Icons.event, size: 18, color: AppColors.primary),
+                                    const Icon(Icons.event,
+                                        size: 18, color: AppColors.primary),
                                   ],
                                 ),
                                 Text(
                                   _weekdayName(_start),
-                                  style: const TextStyle(fontSize: 11, color: AppColors.outline),
+                                  style: const TextStyle(
+                                      fontSize: 11, color: AppColors.outline),
                                 ),
                               ],
                             ),
@@ -431,26 +469,36 @@ class _LeaveFormScreenState extends State<LeaveFormScreen> {
                             decoration: BoxDecoration(
                               color: AppColors.canvas,
                               borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: AppColors.border.withOpacity(0.6)),
+                              border: Border.all(
+                                  color: AppColors.border.withOpacity(0.6)),
                             ),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text('Tanggal Selesai', style: TextStyle(fontSize: 11, color: AppColors.outline)),
+                                const Text('Tanggal Selesai',
+                                    style: TextStyle(
+                                        fontSize: 11,
+                                        color: AppColors.outline)),
                                 const SizedBox(height: 4),
                                 Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                                   children: [
                                     Text(
                                       _formatIdDate(_end),
-                                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.ink),
+                                      style: const TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w700,
+                                          color: AppColors.ink),
                                     ),
-                                    const Icon(Icons.event, size: 18, color: AppColors.primary),
+                                    const Icon(Icons.event,
+                                        size: 18, color: AppColors.primary),
                                   ],
                                 ),
                                 Text(
                                   _weekdayName(_end),
-                                  style: const TextStyle(fontSize: 11, color: AppColors.outline),
+                                  style: const TextStyle(
+                                      fontSize: 11, color: AppColors.outline),
                                 ),
                               ],
                             ),
@@ -460,9 +508,9 @@ class _LeaveFormScreenState extends State<LeaveFormScreen> {
                     ],
                   ),
                   const SizedBox(height: 10),
-                  
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     decoration: BoxDecoration(
                       color: AppColors.surfaceLow,
                       borderRadius: BorderRadius.circular(10),
@@ -472,23 +520,32 @@ class _LeaveFormScreenState extends State<LeaveFormScreen> {
                       children: [
                         Row(
                           children: [
-                            const Icon(Icons.timelapse, size: 16, color: AppColors.primary),
+                            const Icon(Icons.timelapse,
+                                size: 16, color: AppColors.primary),
                             const SizedBox(width: 6),
                             Text(
                               'Total: $days Hari Kerja',
-                              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.ink),
+                              style: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.ink),
                             ),
                           ],
                         ),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 2),
                           decoration: BoxDecoration(
                             color: AppColors.primary,
-                            borderRadius: BorderRadius.circular(AppColors.radiusFull),
+                            borderRadius:
+                                BorderRadius.circular(AppColors.radiusFull),
                           ),
                           child: Text(
                             'Mengganti $days Shift Dinas',
-                            style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: Colors.white),
+                            style: const TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white),
                           ),
                         ),
                       ],
@@ -497,10 +554,7 @@ class _LeaveFormScreenState extends State<LeaveFormScreen> {
                 ],
               ),
             ),
-
             const SizedBox(height: 16),
-
-            
             Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
@@ -516,11 +570,17 @@ class _LeaveFormScreenState extends State<LeaveFormScreen> {
                     children: [
                       Text(
                         '3. Delegasi / Pengganti Jaga Shift',
-                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.ink),
+                        style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.ink),
                       ),
                       Text(
                         'SOP Bangsal',
-                        style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.primary),
+                        style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.primary),
                       ),
                     ],
                   ),
@@ -535,7 +595,8 @@ class _LeaveFormScreenState extends State<LeaveFormScreen> {
                     decoration: BoxDecoration(
                       color: AppColors.surfaceLow,
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: AppColors.secondary.withOpacity(0.3)),
+                      border: Border.all(
+                          color: AppColors.secondary.withOpacity(0.3)),
                     ),
                     child: Row(
                       children: [
@@ -561,21 +622,30 @@ class _LeaveFormScreenState extends State<LeaveFormScreen> {
                             children: [
                               Text(
                                 'Rekan Pengganti Jaga',
-                                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.ink),
+                                style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w700,
+                                    color: AppColors.ink),
                               ),
                               Text(
                                 'Perawat Pelaksana',
-                                style: TextStyle(fontSize: 11, color: AppColors.inkSecondary),
+                                style: TextStyle(
+                                    fontSize: 11,
+                                    color: AppColors.inkSecondary),
                               ),
                               Text(
                                 '✓ Telah Konfirmasi Kesediaan',
-                                style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: AppColors.primary),
+                                style: TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppColors.primary),
                               ),
                             ],
                           ),
                         ),
                         IconButton(
-                          icon: const Icon(Icons.swap_horiz, color: AppColors.secondary),
+                          icon: const Icon(Icons.swap_horiz,
+                              color: AppColors.secondary),
                           onPressed: () {},
                           tooltip: 'Ganti Rekan Jaga',
                         ),
@@ -585,10 +655,7 @@ class _LeaveFormScreenState extends State<LeaveFormScreen> {
                 ],
               ),
             ),
-
             const SizedBox(height: 16),
-
-            
             Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
@@ -601,15 +668,20 @@ class _LeaveFormScreenState extends State<LeaveFormScreen> {
                 children: [
                   const Text(
                     '4. Alasan / Keterangan Keperluan',
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.ink),
+                    style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.ink),
                   ),
                   const SizedBox(height: 8),
                   TextField(
                     controller: _reason,
                     maxLines: 3,
                     decoration: InputDecoration(
-                      hintText: 'Tuliskan keterangan detail keperluan izin Anda...',
-                      hintStyle: const TextStyle(fontSize: 12.5, color: AppColors.outline),
+                      hintText:
+                          'Tuliskan keterangan detail keperluan izin Anda...',
+                      hintStyle: const TextStyle(
+                          fontSize: 12.5, color: AppColors.outline),
                       contentPadding: const EdgeInsets.all(12),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -617,17 +689,15 @@ class _LeaveFormScreenState extends State<LeaveFormScreen> {
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+                        borderSide: const BorderSide(
+                            color: AppColors.primary, width: 1.5),
                       ),
                     ),
                   ),
                 ],
               ),
             ),
-
             const SizedBox(height: 16),
-
-            
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
@@ -648,14 +718,14 @@ class _LeaveFormScreenState extends State<LeaveFormScreen> {
                       padding: EdgeInsets.only(top: 10),
                       child: Text(
                         'Saya menyatakan bahwa data permohonan ini benar dan telah dikoordinasikan secara lisan/tertulis dengan Kepala Ruangan (Karu) atau Supervisor bangsal.',
-                        style: TextStyle(fontSize: 11.5, color: AppColors.ink, height: 1.35),
+                        style: TextStyle(
+                            fontSize: 11.5, color: AppColors.ink, height: 1.35),
                       ),
                     ),
                   ),
                 ],
               ),
             ),
-
             if (_error != null) ...[
               const SizedBox(height: 12),
               Container(
@@ -665,13 +735,12 @@ class _LeaveFormScreenState extends State<LeaveFormScreen> {
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(color: AppColors.error),
                 ),
-                child: Text(_error!, style: const TextStyle(color: AppColors.errorText, fontSize: 12)),
+                child: Text(_error!,
+                    style: const TextStyle(
+                        color: AppColors.errorText, fontSize: 12)),
               ),
             ],
-
             const SizedBox(height: 18),
-
-            
             SizedBox(
               height: 52,
               child: ElevatedButton.icon(
@@ -679,13 +748,15 @@ class _LeaveFormScreenState extends State<LeaveFormScreen> {
                   backgroundColor: AppColors.primaryContainer,
                   foregroundColor: Colors.white,
                   elevation: 2,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14)),
                 ),
                 onPressed: _busy ? null : _submit,
                 icon: const Icon(Icons.send, size: 18),
                 label: Text(
                   _busy ? 'Mengirim Permohonan...' : 'Ajukan Permohonan Izin',
-                  style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                  style: const TextStyle(
+                      fontSize: 15, fontWeight: FontWeight.w600),
                 ),
               ),
             ),
@@ -709,10 +780,14 @@ class _LeaveFormScreenState extends State<LeaveFormScreen> {
       child: Container(
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.primaryContainer.withOpacity(0.1) : Colors.white,
+          color: isSelected
+              ? AppColors.primaryContainer.withOpacity(0.1)
+              : Colors.white,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: isSelected ? AppColors.primary : AppColors.border.withOpacity(0.6),
+            color: isSelected
+                ? AppColors.primary
+                : AppColors.border.withOpacity(0.6),
             width: isSelected ? 2 : 1,
           ),
           boxShadow: [
@@ -730,9 +805,13 @@ class _LeaveFormScreenState extends State<LeaveFormScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Icon(icon, color: isSelected ? AppColors.primary : AppColors.inkSecondary, size: 22),
+                Icon(icon,
+                    color:
+                        isSelected ? AppColors.primary : AppColors.inkSecondary,
+                    size: 22),
                 if (isSelected)
-                  const Icon(Icons.check_circle, color: AppColors.primary, size: 18)
+                  const Icon(Icons.check_circle,
+                      color: AppColors.primary, size: 18)
                 else
                   Container(
                     width: 14,

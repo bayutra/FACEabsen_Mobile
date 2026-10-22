@@ -4,10 +4,6 @@ import '../../../core/theme/app_colors.dart';
 import '../domain/face_quality.dart';
 import '../../device/presentation/helpdesk_sheet.dart';
 
-
-
-
-
 String guidanceTitle(FaceGate gate) {
   switch (gate) {
     case FaceGate.tooBlurry:
@@ -26,19 +22,16 @@ String guidanceTitle(FaceGate gate) {
   }
 }
 
-
-
-
-
-
-
-
 List<GuidanceTile> guidanceTiles(FaceGate gate) {
   switch (gate) {
     case FaceGate.noFace:
-      return const <GuidanceTile>[GuidanceTile('Wajah Terdeteksi', 'Tidak Terdeteksi', false)];
+      return const <GuidanceTile>[
+        GuidanceTile('Wajah Terdeteksi', 'Tidak Terdeteksi', false)
+      ];
     case FaceGate.multipleFaces:
-      return const <GuidanceTile>[GuidanceTile('Wajah Terdeteksi', '>1 Wajah', false)];
+      return const <GuidanceTile>[
+        GuidanceTile('Wajah Terdeteksi', '>1 Wajah', false)
+      ];
     case FaceGate.tooSmall:
       return const <GuidanceTile>[
         GuidanceTile('Wajah Terdeteksi', '1 Wajah', true),
@@ -73,19 +66,12 @@ List<GuidanceTile> guidanceTiles(FaceGate gate) {
   }
 }
 
-
 class GuidanceTile {
   const GuidanceTile(this.label, this.value, this.ok);
   final String label;
   final String value;
   final bool ok;
 }
-
-
-
-
-
-
 
 class FaceGuidanceCard extends StatelessWidget {
   const FaceGuidanceCard({
@@ -168,15 +154,18 @@ class FaceGuidanceCard extends StatelessWidget {
             const SizedBox(height: 8),
             const _Step(
               n: '1',
-              text: 'Bersihkan lensa kamera depan dengan kain bersih atau tisu kering.',
+              text:
+                  'Bersihkan lensa kamera depan dengan kain bersih atau tisu kering.',
             ),
             const _Step(
               n: '2',
-              text: 'Cari tempat dengan cahaya cukup, hindari membelakangi lampu terang.',
+              text:
+                  'Cari tempat dengan cahaya cukup, hindari membelakangi lampu terang.',
             ),
             const _Step(
               n: '3',
-              text: 'Lepas masker, kacamata gelap, atau aksesori penutup wajah sementara bila diizinkan.',
+              text:
+                  'Lepas masker, kacamata gelap, atau aksesori penutup wajah sementara bila diizinkan.',
             ),
             const SizedBox(height: 12),
             FilledButton.icon(
@@ -201,7 +190,8 @@ class FaceGuidanceCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: t.ok ? AppColors.canvas : AppColors.errorTint.withOpacity(0.4),
           borderRadius: BorderRadius.circular(AppColors.radiusInput),
-          border: Border.all(color: t.ok ? AppColors.border : AppColors.errorBorder),
+          border: Border.all(
+              color: t.ok ? AppColors.border : AppColors.errorBorder),
         ),
         child: Row(
           children: <Widget>[
@@ -212,11 +202,13 @@ class FaceGuidanceCard extends StatelessWidget {
                 children: <Widget>[
                   Text(
                     t.label,
-                    style: const TextStyle(fontSize: 11, color: AppColors.inkSecondary),
+                    style: const TextStyle(
+                        fontSize: 11, color: AppColors.inkSecondary),
                   ),
                   Text(
                     t.value,
-                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                    style: const TextStyle(
+                        fontSize: 12, fontWeight: FontWeight.w600),
                   ),
                 ],
               ),

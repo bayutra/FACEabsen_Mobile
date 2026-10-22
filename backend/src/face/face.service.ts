@@ -10,7 +10,6 @@ import { PrivacyService } from '../privacy/privacy.service.js';
 import { TemplateCryptoService } from './crypto.service.js';
 import { FACE_DIM, MIN_QUALITY, type RegisterFaceDto } from './dto.js';
 
- 
 @Injectable()
 export class FaceService {
   constructor(
@@ -20,21 +19,40 @@ export class FaceService {
     private readonly audit: AuditService,
   ) {}
 
-  async register(dto: RegisterFaceDto, userId: string, meta: { ip?: string } = {}) {
-    const employee = await this.prisma.employee.findUnique({ where: { userId } });
-    if (!employee) throw new NotFoundException('No employee profile for this account');
-    if (!(await this.privacy.hasActiveConsent(employee.id, 'BIOMETRIC_ATTENDANCE'))) {
-      throw new UnprocessableEntityException({ reason: 'NO_CONSENT', message: 'Persetujuan biometrik diperlukan' });
+  async register(
+    dto: RegisterFaceDto,
+    userId: string,
+    meta: { ip?: string } = {},
+  ) {
+    const employee = await this.prisma.employee.findUnique({
+      where: { userId },
+    });
+    if (!employee)
+      throw new NotFoundException('No employee profile for this account');
+    if (
+      !(await this.privacy.hasActiveConsent(
+        employee.id,
+        'BIOMETRIC_ATTENDANCE',
+      ))
+    ) {
+      throw new UnprocessableEntityException({
+        reason: 'NO_CONSENT',
+        message: 'Persetujuan biometrik diperlukan',
+      });
     }
     if (!dto.template.every((v) => Number.isFinite(v))) {
-      throw new BadRequestException('Template must contain only finite numbers');
+      throw new BadRequestException(
+        'Template must contain only finite numbers',
+      );
     }
     if (dto.qualityScore < MIN_QUALITY) {
       throw new BadRequestException(`Quality too low (minimum ${MIN_QUALITY})`);
     }
 
     const floats = Float32Array.from(dto.template);
-    const cipher = toBytes(this.crypto.encrypt(Buffer.from(floats.buffer), employee.id));
+    const cipher = toBytes(
+      this.crypto.encrypt(Buffer.from(floats.buffer), employee.id),
+    );
     const existing = await this.prisma.faceTemplate.findUnique({
       where: { employeeId: employee.id },
     });
@@ -69,8 +87,11 @@ export class FaceService {
   }
 
   async status(userId: string) {
-    const employee = await this.prisma.employee.findUnique({ where: { userId } });
-    if (!employee) throw new NotFoundException('No employee profile for this account');
+    const employee = await this.prisma.employee.findUnique({
+      where: { userId },
+    });
+    if (!employee)
+      throw new NotFoundException('No employee profile for this account');
     const row = await this.prisma.faceTemplate.findUnique({
       where: { employeeId: employee.id },
     });
@@ -84,18 +105,22 @@ export class FaceService {
     };
   }
 
-   
   async loadCipher(employeeId: string): Promise<Buffer | null> {
-    const row = await this.prisma.faceTemplate.findUnique({ where: { employeeId } });
+    const row = await this.prisma.faceTemplate.findUnique({
+      where: { employeeId },
+    });
     return row ? Buffer.from(row.templateCipher) : null;
   }
 
-   
   async matchScore(employeeId: string, live: number[]): Promise<number | null> {
     const blob = await this.loadCipher(employeeId);
     if (!blob) return null;
     const plain = this.crypto.decrypt(blob, employeeId);
-    const stored = new Float32Array(plain.buffer, plain.byteOffset, plain.byteLength / 4);
+    const stored = new Float32Array(
+      plain.buffer,
+      plain.byteOffset,
+      plain.byteLength / 4,
+    );
     if (stored.length !== live.length || stored.length === 0) return -1;
     let dot = 0;
     let na = 0;
@@ -112,7 +137,6 @@ export class FaceService {
 
 export { FACE_DIM };
 
- 
 function toBytes(buf: Uint8Array): Uint8Array<ArrayBuffer> {
   if (buf.buffer instanceof ArrayBuffer) {
     return new Uint8Array(buf.buffer, buf.byteOffset, buf.byteLength);

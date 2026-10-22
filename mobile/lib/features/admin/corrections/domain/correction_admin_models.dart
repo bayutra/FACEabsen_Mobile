@@ -1,7 +1,3 @@
-
-
-
-
 library;
 
 const Map<String, String> correctionTypeLabels = <String, String>{
@@ -14,12 +10,12 @@ const Map<String, String> correctionTypeLabels = <String, String>{
 String correctionTypeLabel(String type) => correctionTypeLabels[type] ?? type;
 
 String correctionStatusLabel(String status) => switch (status) {
-  'PENDING' => 'Menunggu',
-  'APPROVED' => 'Disetujui',
-  'REJECTED' => 'Ditolak',
-  'CANCELLED' => 'Dibatalkan',
-  _ => status,
-};
+      'PENDING' => 'Menunggu',
+      'APPROVED' => 'Disetujui',
+      'REJECTED' => 'Ditolak',
+      'CANCELLED' => 'Dibatalkan',
+      _ => status,
+    };
 
 class AdminCorrection {
   const AdminCorrection({

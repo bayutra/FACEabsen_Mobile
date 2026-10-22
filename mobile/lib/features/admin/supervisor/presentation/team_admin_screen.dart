@@ -7,9 +7,6 @@ import '../../presentation/admin_widgets.dart';
 import '../data/team_admin_repository.dart';
 import '../domain/team_admin_models.dart';
 
-
-
-
 class TeamAdminScreen extends StatefulWidget {
   const TeamAdminScreen({super.key, required this.dio});
 
@@ -238,7 +235,6 @@ class _TeamAdminScreenState extends State<TeamAdminScreen> {
   }
 }
 
-
 class _DateField extends StatelessWidget {
   const _DateField({
     required this.label,
@@ -290,7 +286,6 @@ class _DateField extends StatelessWidget {
   }
 }
 
-
 class _MemberSheet extends StatefulWidget {
   const _MemberSheet({
     required this.repo,
@@ -338,8 +333,6 @@ class _MemberSheetState extends State<_MemberSheet> {
       return;
     }
 
-    
-    
     try {
       final List<TeamAttendance> all = await widget.repo.attendance(
         from: widget.from,

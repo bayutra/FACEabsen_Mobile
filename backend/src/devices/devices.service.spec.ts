@@ -5,15 +5,15 @@ import { DevicesService } from './devices.service.js';
 
 const auditStub = { log: vi.fn(async () => undefined) } as never;
 
-
-
-
-const { privateKey: TEST_PRIV, publicKey: TEST_PUB } = generateKeyPairSync('ed25519');
-const TEST_RAW = (TEST_PUB.export({ format: 'der', type: 'spki' }) as Buffer).subarray(-32).toString('base64');
+const { privateKey: TEST_PRIV, publicKey: TEST_PUB } =
+  generateKeyPairSync('ed25519');
+const TEST_RAW = (TEST_PUB.export({ format: 'der', type: 'spki' }) as Buffer)
+  .subarray(-32)
+  .toString('base64');
 const TEST_NONCE = 'challenge-nonce-for-tests-001';
-const signNonce = (nonce: string) => sign(null, Buffer.from(nonce, 'utf8'), TEST_PRIV).toString('base64');
+const signNonce = (nonce: string) =>
+  sign(null, Buffer.from(nonce, 'utf8'), TEST_PRIV).toString('base64');
 
- 
 const jwtFor = (sub = 'u1', purpose = 'device-register') =>
   ({
     signAsync: vi.fn(async () => TEST_NONCE),
@@ -22,11 +22,11 @@ const jwtFor = (sub = 'u1', purpose = 'device-register') =>
 
 function makePrisma(over: Record<string, Record<string, unknown>> = {}) {
   return {
-    
-    
     employee: {
       findUnique: vi.fn(async (a: { where: Record<string, unknown> }) =>
-        'userId' in a.where ? { id: 'e-adm', department: { hospitalId: 'h1' } } : { id: 'e1' },
+        'userId' in a.where
+          ? { id: 'e-adm', department: { hospitalId: 'h1' } }
+          : { id: 'e1' },
       ),
       ...over.employee,
     },
@@ -55,7 +55,10 @@ const dto = () => ({
 
 describe('DevicesService.register', () => {
   it('first device activates immediately + audits', async () => {
-    const create = vi.fn(async (a: { data: Record<string, unknown> }) => ({ id: 'd1', ...a.data }));
+    const create = vi.fn(async (a: { data: Record<string, unknown> }) => ({
+      id: 'd1',
+      ...a.data,
+    }));
     const prisma = makePrisma({ device: { create } });
     const svc = new DevicesService(prisma, auditStub, jwtFor('u1'));
     const out = (await svc.register(dto(), 'u1')) as { status: string };
@@ -69,7 +72,10 @@ describe('DevicesService.register', () => {
     const prisma = makePrisma({
       device: {
         findFirst: vi.fn(async () => null),
-        create: vi.fn(async (a: { data: Record<string, unknown> }) => ({ id: 'd2', ...a.data })),
+        create: vi.fn(async (a: { data: Record<string, unknown> }) => ({
+          id: 'd2',
+          ...a.data,
+        })),
       },
     });
     const svc = new DevicesService(prisma, auditStub, jwtFor('u1'));
@@ -82,55 +88,99 @@ describe('DevicesService.register', () => {
       device: { findFirst: vi.fn(async () => ({ id: 'dx' })) },
     });
     const svc = new DevicesService(prisma, auditStub, jwtFor('u1'));
-    await expect(svc.register(dto(), 'u1')).rejects.toThrow('already registered');
+    await expect(svc.register(dto(), 'u1')).rejects.toThrow(
+      'already registered',
+    );
 
     const svc2 = new DevicesService(
       makePrisma({ employee: { findUnique: vi.fn(async () => null) } }),
       auditStub,
       jwtFor('ghost'),
     );
-    await expect(svc2.register(dto(), 'ghost')).rejects.toThrow('No employee profile');
+    await expect(svc2.register(dto(), 'ghost')).rejects.toThrow(
+      'No employee profile',
+    );
   });
 
   it('same-owner re-register is idempotent; foreign clash stays 409', async () => {
     const create = vi.fn();
     const sameOwner = makePrisma({
-      employee: { findUnique: vi.fn(async () => ({ id: 'e1', department: { hospitalId: 'h1' } })) },
-      device: { findFirst: vi.fn(async () => ({ id: 'd1', employeeId: 'e1', status: 'ACTIVE' })), create },
+      employee: {
+        findUnique: vi.fn(async () => ({
+          id: 'e1',
+          department: { hospitalId: 'h1' },
+        })),
+      },
+      device: {
+        findFirst: vi.fn(async () => ({
+          id: 'd1',
+          employeeId: 'e1',
+          status: 'ACTIVE',
+        })),
+        create,
+      },
     });
     const svc = new DevicesService(sameOwner, auditStub, jwtFor('u1'));
-    
-    await expect(svc.register(dto(), 'u1')).resolves.toMatchObject({ id: 'd1', status: 'ACTIVE' });
+
+    await expect(svc.register(dto(), 'u1')).resolves.toMatchObject({
+      id: 'd1',
+      status: 'ACTIVE',
+    });
     expect(create).not.toHaveBeenCalled();
 
     const foreign = makePrisma({
-      device: { findFirst: vi.fn(async () => ({ id: 'dx', employeeId: 'e9', status: 'ACTIVE' })) },
+      device: {
+        findFirst: vi.fn(async () => ({
+          id: 'dx',
+          employeeId: 'e9',
+          status: 'ACTIVE',
+        })),
+      },
     });
     const svc2 = new DevicesService(foreign, auditStub, jwtFor('u1'));
-    await expect(svc2.register(dto(), 'u1')).rejects.toThrow('already registered');
+    await expect(svc2.register(dto(), 'u1')).rejects.toThrow(
+      'already registered',
+    );
   });
 
   it('bad signature -> 401 INVALID_REGISTRATION_PROOF', async () => {
     const svc = new DevicesService(makePrisma(), auditStub, jwtFor('u1'));
-    const tampered = { ...dto(), nonceSignature: signNonce('forged-nonce-value-xyz') };
-    await expect(svc.register(tampered, 'u1')).rejects.toThrow('INVALID_REGISTRATION_PROOF');
+    const tampered = {
+      ...dto(),
+      nonceSignature: signNonce('forged-nonce-value-xyz'),
+    };
+    await expect(svc.register(tampered, 'u1')).rejects.toThrow(
+      'INVALID_REGISTRATION_PROOF',
+    );
   });
 
   it('expired challenge (verify throws) -> 401', async () => {
     const jwt = jwtFor('u1');
-    (jwt.verifyAsync as ReturnType<typeof vi.fn>).mockRejectedValueOnce(new Error('jwt expired'));
+    (jwt.verifyAsync as ReturnType<typeof vi.fn>).mockRejectedValueOnce(
+      new Error('jwt expired'),
+    );
     const svc = new DevicesService(makePrisma(), auditStub, jwt);
-    await expect(svc.register(dto(), 'u1')).rejects.toThrow('INVALID_REGISTRATION_PROOF');
+    await expect(svc.register(dto(), 'u1')).rejects.toThrow(
+      'INVALID_REGISTRATION_PROOF',
+    );
   });
 
   it('wrong-purpose challenge (e.g. access token reuse) -> 401', async () => {
-    const svc = new DevicesService(makePrisma(), auditStub, jwtFor('u1', 'totp'));
-    await expect(svc.register(dto(), 'u1')).rejects.toThrow('INVALID_REGISTRATION_PROOF');
+    const svc = new DevicesService(
+      makePrisma(),
+      auditStub,
+      jwtFor('u1', 'totp'),
+    );
+    await expect(svc.register(dto(), 'u1')).rejects.toThrow(
+      'INVALID_REGISTRATION_PROOF',
+    );
   });
 
   it('forged nonce (challenge bound to another user) -> 401', async () => {
     const svc = new DevicesService(makePrisma(), auditStub, jwtFor('u-other'));
-    await expect(svc.register(dto(), 'u1')).rejects.toThrow('INVALID_REGISTRATION_PROOF');
+    await expect(svc.register(dto(), 'u1')).rejects.toThrow(
+      'INVALID_REGISTRATION_PROOF',
+    );
   });
 
   it('challenge round-trips through the real JwtService (stateless, no DB)', async () => {
@@ -139,12 +189,22 @@ describe('DevicesService.register', () => {
       secret: 'unit-test-secret',
       signOptions: { algorithm: 'HS256', issuer: 'face-absen' },
     });
-    const create = vi.fn(async (a: { data: Record<string, unknown> }) => ({ id: 'd1', ...a.data }));
-    const svc = new DevicesService(makePrisma({ device: { create } }), auditStub, jwt as never);
+    const create = vi.fn(async (a: { data: Record<string, unknown> }) => ({
+      id: 'd1',
+      ...a.data,
+    }));
+    const svc = new DevicesService(
+      makePrisma({ device: { create } }),
+      auditStub,
+      jwt as never,
+    );
     const { nonce, expiresAt } = await svc.issueRegisterChallenge('u1');
     expect(typeof nonce).toBe('string');
     expect(Date.parse(expiresAt)).toBeGreaterThan(Date.now());
-    const out = (await svc.register({ ...dto(), nonce, nonceSignature: signNonce(nonce) }, 'u1')) as {
+    const out = (await svc.register(
+      { ...dto(), nonce, nonceSignature: signNonce(nonce) },
+      'u1',
+    )) as {
       status: string;
     };
     expect(out.status).toBe('ACTIVE');
@@ -163,15 +223,26 @@ describe('DevicesService admin (STEP 18)', () => {
       } as never,
     });
     const svc = new DevicesService(prisma, auditStub);
-    const out = await svc.listAll({ status: 'ACTIVE', page: 1, pageSize: 20 }, 'u', ['SUPER_ADMIN']);
+    const out = await svc.listAll(
+      { status: 'ACTIVE', page: 1, pageSize: 20 },
+      'u',
+      ['SUPER_ADMIN'],
+    );
     expect(out.pagination).toMatchObject({ totalItems: 1, totalPages: 1 });
     expect(findMany).toHaveBeenCalledWith(
-      expect.objectContaining({ where: expect.objectContaining({ AND: expect.any(Array) }) }),
+      expect.objectContaining({
+        where: expect.objectContaining({ AND: expect.any(Array) }),
+      }),
     );
   });
 
   it('revoke flips, kills sessions, audits; idempotent when already revoked', async () => {
-    const update = vi.fn(async (a: { where: { id: string }; data: object }) => ({ id: a.where.id, ...a.data }));
+    const update = vi.fn(
+      async (a: { where: { id: string }; data: object }) => ({
+        id: a.where.id,
+        ...a.data,
+      }),
+    );
     const revokeSessions = vi.fn(async () => ({ count: 3 }));
     const prisma = makePrisma({
       device: {
@@ -181,32 +252,59 @@ describe('DevicesService admin (STEP 18)', () => {
       session: { updateMany: revokeSessions },
     } as never);
     const svc = new DevicesService(prisma, auditStub);
-    const out = (await svc.revoke('d1', 'admin', ['SUPER_ADMIN'], 'stolen')) as { status: string };
+    const out = (await svc.revoke(
+      'd1',
+      'admin',
+      ['SUPER_ADMIN'],
+      'stolen',
+    )) as { status: string };
     expect(out.status).toBe('REVOKED');
     expect(revokeSessions).toHaveBeenCalledWith(
-      expect.objectContaining({ where: expect.objectContaining({ deviceId: 'd1' }) }),
+      expect.objectContaining({
+        where: expect.objectContaining({ deviceId: 'd1' }),
+      }),
     );
-    expect(auditStub.log).toHaveBeenCalledWith(expect.objectContaining({ action: 'DEVICE_REVOKED' }));
+    expect(auditStub.log).toHaveBeenCalledWith(
+      expect.objectContaining({ action: 'DEVICE_REVOKED' }),
+    );
 
     const svc2 = new DevicesService(
-      makePrisma({ device: { findUnique: vi.fn(async () => ({ ...active, status: 'REVOKED' })) } } as never),
+      makePrisma({
+        device: {
+          findUnique: vi.fn(async () => ({ ...active, status: 'REVOKED' })),
+        },
+      } as never),
       auditStub,
     );
-    await expect(svc2.revoke('d1', 'admin', ['SUPER_ADMIN'])).resolves.toMatchObject({ status: 'REVOKED' });
+    await expect(
+      svc2.revoke('d1', 'admin', ['SUPER_ADMIN']),
+    ).resolves.toMatchObject({ status: 'REVOKED' });
   });
 
   it('markLost: owner and admin pass, stranger 404', async () => {
     const prisma = makePrisma({
       device: {
-        findUnique: vi.fn(async () => ({ ...active, employee: { userId: 'u1', department: { hospitalId: 'h1' } } })),
-        update: vi.fn(async (a: { where: { id: string }; data: object }) => ({ id: a.where.id, ...a.data })),
+        findUnique: vi.fn(async () => ({
+          ...active,
+          employee: { userId: 'u1', department: { hospitalId: 'h1' } },
+        })),
+        update: vi.fn(async (a: { where: { id: string }; data: object }) => ({
+          id: a.where.id,
+          ...a.data,
+        })),
       },
       session: { updateMany: vi.fn(async () => ({})) },
     } as never);
     const svc = new DevicesService(prisma, auditStub);
-    await expect(svc.markLost('d1', 'u1', ['EMPLOYEE'])).resolves.toMatchObject({ status: 'LOST' });
-    await expect(svc.markLost('d1', 'u9', ['ADMIN'])).resolves.toMatchObject({ status: 'LOST' });
-    await expect(svc.markLost('d1', 'u9', ['EMPLOYEE'])).rejects.toThrow('Device not found');
+    await expect(svc.markLost('d1', 'u1', ['EMPLOYEE'])).resolves.toMatchObject(
+      { status: 'LOST' },
+    );
+    await expect(svc.markLost('d1', 'u9', ['ADMIN'])).resolves.toMatchObject({
+      status: 'LOST',
+    });
+    await expect(svc.markLost('d1', 'u9', ['EMPLOYEE'])).rejects.toThrow(
+      'Device not found',
+    );
   });
 });
 
@@ -217,13 +315,18 @@ describe('DevicesService.activate (STEP 18 — aktivasi langsung)', () => {
     const prisma = {
       employee: {
         findUnique: vi.fn(async (a: { where: Record<string, unknown> }) =>
-          'userId' in a.where ? { id: 'e-adm', department: { hospitalId: 'h1' } } : { id: 'e1' },
+          'userId' in a.where
+            ? { id: 'e-adm', department: { hospitalId: 'h1' } }
+            : { id: 'e1' },
         ),
         ...over.employee,
       },
       device: {
         findUnique: vi.fn(async () => null),
-        update: vi.fn(async (a: { where: { id: string }; data: object }) => ({ id: a.where.id, ...a.data })),
+        update: vi.fn(async (a: { where: { id: string }; data: object }) => ({
+          id: a.where.id,
+          ...a.data,
+        })),
         ...over.device,
       },
       ...over,
@@ -232,43 +335,74 @@ describe('DevicesService.activate (STEP 18 — aktivasi langsung)', () => {
   }
 
   it('PENDING → ACTIVE tanpa mencabut perangkat aktif lain', async () => {
-    
-    
     (auditStub as unknown as { log: ReturnType<typeof vi.fn> }).log.mockClear();
     const prisma = activatePrisma({
       device: {
-        findUnique: vi.fn(async () => ({ ...pending, employee: { department: { hospitalId: 'h1' } } })),
-        update: vi.fn(async (a: { where: { id: string }; data: object }) => ({ id: a.where.id, ...a.data })),
+        findUnique: vi.fn(async () => ({
+          ...pending,
+          employee: { department: { hospitalId: 'h1' } },
+        })),
+        update: vi.fn(async (a: { where: { id: string }; data: object }) => ({
+          id: a.where.id,
+          ...a.data,
+        })),
       },
     });
     const svc = new DevicesService(prisma, auditStub);
-    const out = (await svc.activate('d2', 'admin', ['SUPER_ADMIN'], 'kasir RS')) as { status: string };
+    const out = (await svc.activate(
+      'd2',
+      'admin',
+      ['SUPER_ADMIN'],
+      'kasir RS',
+    )) as { status: string };
     expect(out.status).toBe('ACTIVE');
 
-    const update = (prisma as unknown as { device: { update: ReturnType<typeof vi.fn> } }).device.update;
-    
+    const update = (
+      prisma as unknown as { device: { update: ReturnType<typeof vi.fn> } }
+    ).device.update;
+
     expect(update).toHaveBeenCalledTimes(1);
-    expect(update).toHaveBeenCalledWith({ where: { id: 'd2' }, data: { status: 'ACTIVE' } });
-    expect(auditStub.log).toHaveBeenCalledWith(expect.objectContaining({ action: 'DEVICE_ACTIVATED', targetId: 'd2' }));
-    expect(auditStub.log).not.toHaveBeenCalledWith(expect.objectContaining({ action: 'DEVICE_REVOKED' }));
+    expect(update).toHaveBeenCalledWith({
+      where: { id: 'd2' },
+      data: { status: 'ACTIVE' },
+    });
+    expect(auditStub.log).toHaveBeenCalledWith(
+      expect.objectContaining({ action: 'DEVICE_ACTIVATED', targetId: 'd2' }),
+    );
+    expect(auditStub.log).not.toHaveBeenCalledWith(
+      expect.objectContaining({ action: 'DEVICE_REVOKED' }),
+    );
   });
 
   it('non-PENDING device -> 409; foreign-facility ADMIN -> 404', async () => {
     const svc = new DevicesService(
       activatePrisma({
-        device: { findUnique: vi.fn(async () => ({ ...pending, status: 'REVOKED', employee: { department: { hospitalId: 'h1' } } })) },
+        device: {
+          findUnique: vi.fn(async () => ({
+            ...pending,
+            status: 'REVOKED',
+            employee: { department: { hospitalId: 'h1' } },
+          })),
+        },
       }),
       auditStub,
     );
-    await expect(svc.activate('d2', 'admin', ['SUPER_ADMIN'])).rejects.toThrow('Only PENDING devices can be activated');
+    await expect(svc.activate('d2', 'admin', ['SUPER_ADMIN'])).rejects.toThrow(
+      'Only PENDING devices can be activated',
+    );
 
     const foreign = activatePrisma({
       device: {
-        findUnique: vi.fn(async () => ({ ...pending, employee: { department: { hospitalId: 'h-other' } } })),
+        findUnique: vi.fn(async () => ({
+          ...pending,
+          employee: { department: { hospitalId: 'h-other' } },
+        })),
       },
     });
     const svc2 = new DevicesService(foreign, auditStub);
-    await expect(svc2.activate('d2', 'admin', ['ADMIN'])).rejects.toThrow('Device not found');
+    await expect(svc2.activate('d2', 'admin', ['ADMIN'])).rejects.toThrow(
+      'Device not found',
+    );
   });
 });
 
@@ -277,20 +411,36 @@ describe('DevicesService.getOne/heartbeat/validate', () => {
     id: 'd1',
     employeeId: 'e1',
     status: 'ACTIVE',
-    employee: { id: 'e1', userId: 'u1', name: 'Siti', employeeNo: 'EMP-001', department: { hospitalId: 'h1' } },
+    employee: {
+      id: 'e1',
+      userId: 'u1',
+      name: 'Siti',
+      employeeNo: 'EMP-001',
+      department: { hospitalId: 'h1' },
+    },
     ...over,
   });
 
   it('owner and admin can read; stranger gets 404', async () => {
-    const prisma = makePrisma({ device: { findUnique: vi.fn(async () => dev()) } });
+    const prisma = makePrisma({
+      device: { findUnique: vi.fn(async () => dev()) },
+    });
     const svc = new DevicesService(prisma, auditStub);
-    await expect(svc.getOne('d1', 'u1', ['EMPLOYEE'])).resolves.toMatchObject({ id: 'd1' });
-    await expect(svc.getOne('d1', 'u9', ['ADMIN'])).resolves.toMatchObject({ id: 'd1' });
-    await expect(svc.getOne('d1', 'u9', ['EMPLOYEE'])).rejects.toThrow('Device not found');
+    await expect(svc.getOne('d1', 'u1', ['EMPLOYEE'])).resolves.toMatchObject({
+      id: 'd1',
+    });
+    await expect(svc.getOne('d1', 'u9', ['ADMIN'])).resolves.toMatchObject({
+      id: 'd1',
+    });
+    await expect(svc.getOne('d1', 'u9', ['EMPLOYEE'])).rejects.toThrow(
+      'Device not found',
+    );
   });
 
   it('heartbeat requires ownership', async () => {
-    const update = vi.fn(async (a: { where: { id: string } }) => ({ id: a.where.id }));
+    const update = vi.fn(async (a: { where: { id: string } }) => ({
+      id: a.where.id,
+    }));
     const prisma = makePrisma({
       employee: {
         findUnique: vi.fn(async (a: { where: { userId: string } }) =>
@@ -300,11 +450,17 @@ describe('DevicesService.getOne/heartbeat/validate', () => {
       device: { findUnique: vi.fn(async () => dev()), update },
     });
     const svc = new DevicesService(prisma, auditStub);
-    await expect(svc.heartbeat('d1', 'u1')).resolves.toMatchObject({ id: 'd1' });
+    await expect(svc.heartbeat('d1', 'u1')).resolves.toMatchObject({
+      id: 'd1',
+    });
     expect(update).toHaveBeenCalledWith(
-      expect.objectContaining({ data: expect.objectContaining({ lastSeenAt: expect.any(Date) }) }),
+      expect.objectContaining({
+        data: expect.objectContaining({ lastSeenAt: expect.any(Date) }),
+      }),
     );
-    await expect(svc.heartbeat('d1', 'intruder')).rejects.toThrow('Device not found');
+    await expect(svc.heartbeat('d1', 'intruder')).rejects.toThrow(
+      'Device not found',
+    );
   });
 
   it('validateDeviceFor matrix (PRD test: authorized/unauthorized/revoked)', async () => {
@@ -314,34 +470,60 @@ describe('DevicesService.getOne/heartbeat/validate', () => {
       other: dev({ id: 'other', employeeId: 'e9' }),
     };
     const prisma = makePrisma({
-      device: { findUnique: vi.fn(async (a: { where: { id: string } }) => byId[a.where.id] ?? null) },
+      device: {
+        findUnique: vi.fn(
+          async (a: { where: { id: string } }) => byId[a.where.id] ?? null,
+        ),
+      },
     });
     const svc = new DevicesService(prisma, auditStub);
     expect(await svc.validateDeviceFor('e1', 'good')).toEqual({
       ok: true,
       device: { id: 'd1', status: 'ACTIVE' },
     });
-    expect(await svc.validateDeviceFor('e1', 'nope')).toEqual({ ok: false, reason: 'UNKNOWN_DEVICE' });
-    expect(await svc.validateDeviceFor('e1', 'other')).toEqual({ ok: false, reason: 'WRONG_OWNER' });
-    expect(await svc.validateDeviceFor('e1', 'revoked')).toEqual({ ok: false, reason: 'NOT_ACTIVE' });
+    expect(await svc.validateDeviceFor('e1', 'nope')).toEqual({
+      ok: false,
+      reason: 'UNKNOWN_DEVICE',
+    });
+    expect(await svc.validateDeviceFor('e1', 'other')).toEqual({
+      ok: false,
+      reason: 'WRONG_OWNER',
+    });
+    expect(await svc.validateDeviceFor('e1', 'revoked')).toEqual({
+      ok: false,
+      reason: 'NOT_ACTIVE',
+    });
   });
 });
-
 
 describe('DevicesService facility scoping (ADMIN)', () => {
   const foreign = {
     id: 'd9',
     employeeId: 'e9',
     status: 'ACTIVE',
-    employee: { id: 'e9', userId: 'u9', name: 'Tetangga', employeeNo: 'EMP-009', department: { hospitalId: 'h2' } },
+    employee: {
+      id: 'e9',
+      userId: 'u9',
+      name: 'Tetangga',
+      employeeNo: 'EMP-009',
+      department: { hospitalId: 'h2' },
+    },
   };
 
   it('foreign getOne / revoke / markLost read as 404', async () => {
-    const prisma = makePrisma({ device: { findUnique: vi.fn(async () => foreign) } });
+    const prisma = makePrisma({
+      device: { findUnique: vi.fn(async () => foreign) },
+    });
     const svc = new DevicesService(prisma, auditStub);
-    await expect(svc.getOne('d9', 'u-adm', ['ADMIN'])).rejects.toThrow('Device not found');
-    await expect(svc.revoke('d9', 'u-adm', ['ADMIN'])).rejects.toThrow('Device not found');
-    await expect(svc.markLost('d9', 'u-adm', ['ADMIN'])).rejects.toThrow('Device not found');
+    await expect(svc.getOne('d9', 'u-adm', ['ADMIN'])).rejects.toThrow(
+      'Device not found',
+    );
+    await expect(svc.revoke('d9', 'u-adm', ['ADMIN'])).rejects.toThrow(
+      'Device not found',
+    );
+    await expect(svc.markLost('d9', 'u-adm', ['ADMIN'])).rejects.toThrow(
+      'Device not found',
+    );
   });
 
   it('foreign listAll returns an empty page', async () => {
@@ -354,7 +536,11 @@ describe('DevicesService facility scoping (ADMIN)', () => {
     expect(out.pagination.totalItems).toBe(0);
     expect(findMany).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: expect.objectContaining({ AND: expect.arrayContaining([{ employee: { department: { hospitalId: 'h1' } } }]) }),
+        where: expect.objectContaining({
+          AND: expect.arrayContaining([
+            { employee: { department: { hospitalId: 'h1' } } },
+          ]),
+        }),
       }),
     );
   });

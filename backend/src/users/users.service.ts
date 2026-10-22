@@ -19,7 +19,6 @@ import type {
   UpdateUserDto,
 } from './dto.js';
 
- 
 @Injectable()
 export class UsersService {
   constructor(
@@ -32,13 +31,13 @@ export class UsersService {
     const pageSize = query.pageSize ?? 25;
     const AND: Prisma.UserWhereInput[] = [];
 
-    
-    
-    
     if (!satisfiesRole(roles, 'SUPER_ADMIN')) {
       const scope = await resolveHospitalScope(this.prisma, userId, roles);
       if (scope.kind !== 'hospital') {
-        return { data: [], pagination: { page, pageSize, totalItems: 0, totalPages: 0 } };
+        return {
+          data: [],
+          pagination: { page, pageSize, totalItems: 0, totalPages: 0 },
+        };
       }
       AND.push({
         OR: [
@@ -59,7 +58,8 @@ export class UsersService {
       });
     }
     if (query.isActive !== undefined) AND.push({ isActive: query.isActive });
-    if (query.role) AND.push({ userRoles: { some: { role: { name: query.role } } } });
+    if (query.role)
+      AND.push({ userRoles: { some: { role: { name: query.role } } } });
 
     const where: Prisma.UserWhereInput = AND.length > 0 ? { AND } : {};
 
@@ -96,12 +96,23 @@ export class UsersService {
         roles: u.userRoles.map((r) => r.role.name),
         userRoles: undefined,
       })),
-      pagination: { page, pageSize, totalItems: total, totalPages: Math.ceil(total / pageSize) },
+      pagination: {
+        page,
+        pageSize,
+        totalItems: total,
+        totalPages: Math.ceil(total / pageSize),
+      },
     };
   }
 
-  async createUser(dto: CreateUserDto, actorId: string, meta: { ip?: string } = {}) {
-    const existing = await this.prisma.user.findUnique({ where: { email: dto.email } });
+  async createUser(
+    dto: CreateUserDto,
+    actorId: string,
+    meta: { ip?: string } = {},
+  ) {
+    const existing = await this.prisma.user.findUnique({
+      where: { email: dto.email },
+    });
     if (existing) throw new ConflictException('Email already in use');
 
     validatePasswordPolicy(dto.password);
@@ -112,7 +123,10 @@ export class UsersService {
     try {
       return await this.prisma.$transaction(async (tx) => {
         const user = await tx.user.create({
-          data: { email: dto.email, passwordHash: await argon2.hash(dto.password) },
+          data: {
+            email: dto.email,
+            passwordHash: await argon2.hash(dto.password),
+          },
           select: { id: true, email: true, isActive: true },
         });
         await this.assignRoles(tx, user.id, roles);
@@ -134,23 +148,27 @@ export class UsersService {
     }
   }
 
-   
-  async updateUser(id: string, dto: UpdateUserDto, actorId: string, meta: { ip?: string } = {}) {
+  async updateUser(
+    id: string,
+    dto: UpdateUserDto,
+    actorId: string,
+    meta: { ip?: string } = {},
+  ) {
     const target = await this.loadManageable(id, actorId);
     const actorRoles = await this.getRoles(actorId);
 
     if (dto.isActive === false && id === actorId) {
       throw new BadRequestException('You cannot deactivate your own account');
     }
-    
+
     if (dto.roles && id === actorId) {
       throw new BadRequestException('You cannot change your own roles');
     }
     if (dto.roles) {
       const next = this.assertGrantable(actorRoles, dto.roles);
-      
-      
-      if (next.length === 0) throw new BadRequestException('At least one role is required');
+
+      if (next.length === 0)
+        throw new BadRequestException('At least one role is required');
     }
 
     await this.prisma.$transaction(async (tx) => {
@@ -163,8 +181,10 @@ export class UsersService {
           where: { id },
           data: {
             isActive: dto.isActive,
-            
-            ...(dto.isActive ? { failedLoginAttempts: 0, lockedUntil: null } : {}),
+
+            ...(dto.isActive
+              ? { failedLoginAttempts: 0, lockedUntil: null }
+              : {}),
           },
         });
       }
@@ -192,10 +212,14 @@ export class UsersService {
     });
 
     const roles = dto.roles ?? (await this.getRoles(id));
-    return { id, email: target.email, isActive: dto.isActive ?? target.isActive, roles };
+    return {
+      id,
+      email: target.email,
+      isActive: dto.isActive ?? target.isActive,
+      roles,
+    };
   }
 
-   
   async resetPassword(
     id: string,
     dto: ResetPasswordDto,
@@ -234,9 +258,6 @@ export class UsersService {
     return { reset: true };
   }
 
-  
-
-   
   private async loadManageable(id: string, actorId: string) {
     const user = await this.prisma.user.findUnique({
       where: { id },
@@ -251,11 +272,11 @@ export class UsersService {
       ]);
       if (!actorRoles.includes('SUPER_ADMIN')) {
         if (highestRoleRank(targetRoles) >= highestRoleRank(actorRoles)) {
-          throw new ForbiddenException('Cannot administer an account at or above your own rank');
+          throw new ForbiddenException(
+            'Cannot administer an account at or above your own rank',
+          );
         }
-        
-        
-        
+
         const [targetEmp, scope] = await Promise.all([
           this.prisma.employee.findUnique({
             where: { userId: id },
@@ -264,7 +285,10 @@ export class UsersService {
           resolveHospitalScope(this.prisma, actorId, actorRoles),
         ]);
         const targetHospital = targetEmp?.department?.hospitalId;
-        if (targetHospital && (scope.kind !== 'hospital' || scope.hospitalId !== targetHospital)) {
+        if (
+          targetHospital &&
+          (scope.kind !== 'hospital' || scope.hospitalId !== targetHospital)
+        ) {
           throw new NotFoundException('User not found');
         }
       }
@@ -272,7 +296,6 @@ export class UsersService {
     return user;
   }
 
-   
   private assertGrantable(actorRoles: string[], requested?: string[]) {
     const roles = [...new Set(['EMPLOYEE', ...(requested ?? [])])];
     for (const role of roles) {
@@ -283,7 +306,11 @@ export class UsersService {
     return roles;
   }
 
-  private async assignRoles(tx: Prisma.TransactionClient, userId: string, roles: string[]) {
+  private async assignRoles(
+    tx: Prisma.TransactionClient,
+    userId: string,
+    roles: string[],
+  ) {
     for (const name of roles) {
       const role = await tx.role.findUnique({ where: { name } });
       if (!role) throw new NotFoundException(`Role ${name} not found`);
@@ -300,7 +327,11 @@ export class UsersService {
   }
 
   private mapUnique(e: unknown): unknown {
-    if (typeof e === 'object' && e !== null && (e as { code?: string }).code === 'P2002') {
+    if (
+      typeof e === 'object' &&
+      e !== null &&
+      (e as { code?: string }).code === 'P2002'
+    ) {
       return new ConflictException('Email already in use');
     }
     return e;

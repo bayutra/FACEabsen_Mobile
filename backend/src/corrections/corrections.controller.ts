@@ -1,11 +1,31 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, Query, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Post,
+  Query,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import type { Request } from 'express';
-import { RequirePermissions, Roles, CurrentUser, type AuthContext } from '../auth/decorators.js';
+import {
+  RequirePermissions,
+  Roles,
+  CurrentUser,
+  type AuthContext,
+} from '../auth/decorators.js';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
 import { PermissionsGuard } from '../auth/guards/permissions.guard.js';
 import { RolesGuard } from '../auth/guards/roles.guard.js';
 import { CorrectionsService } from './corrections.service.js';
-import { CreateCorrectionDto, ListCorrectionsQuery, ReviewCorrectionDto } from './dto.js';
+import {
+  CreateCorrectionDto,
+  ListCorrectionsQuery,
+  ReviewCorrectionDto,
+} from './dto.js';
 
 @UseGuards(JwtAuthGuard)
 @Controller('corrections')
@@ -13,7 +33,11 @@ export class CorrectionsController {
   constructor(private readonly corrections: CorrectionsService) {}
 
   @Post()
-  create(@Body() dto: CreateCorrectionDto, @CurrentUser() user: AuthContext, @Req() req: Request) {
+  create(
+    @Body() dto: CreateCorrectionDto,
+    @CurrentUser() user: AuthContext,
+    @Req() req: Request,
+  ) {
     return this.corrections.create(dto, user.userId, { ip: req.ip });
   }
 
@@ -26,7 +50,10 @@ export class CorrectionsController {
   @Roles('SUPERVISOR')
   @RequirePermissions('correction:approve:team')
   @Get()
-  queue(@Query() query: ListCorrectionsQuery, @CurrentUser() user: AuthContext) {
+  queue(
+    @Query() query: ListCorrectionsQuery,
+    @CurrentUser() user: AuthContext,
+  ) {
     return this.corrections.listQueue(user.userId, user.roles, query);
   }
 
@@ -41,7 +68,13 @@ export class CorrectionsController {
     @CurrentUser() user: AuthContext,
     @Req() req: Request,
   ) {
-    return this.corrections.approve(id, user.userId, user.roles, dto.reviewNote, { ip: req.ip });
+    return this.corrections.approve(
+      id,
+      user.userId,
+      user.roles,
+      dto.reviewNote,
+      { ip: req.ip },
+    );
   }
 
   @UseGuards(RolesGuard, PermissionsGuard)
@@ -55,7 +88,13 @@ export class CorrectionsController {
     @CurrentUser() user: AuthContext,
     @Req() req: Request,
   ) {
-    return this.corrections.reject(id, user.userId, user.roles, dto.reviewNote, { ip: req.ip });
+    return this.corrections.reject(
+      id,
+      user.userId,
+      user.roles,
+      dto.reviewNote,
+      { ip: req.ip },
+    );
   }
 
   @HttpCode(HttpStatus.OK)

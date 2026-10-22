@@ -2,11 +2,6 @@ import 'package:dio/dio.dart';
 
 import '../domain/report_admin_models.dart';
 
-
-
-
-
-
 class ReportAdminRepository {
   ReportAdminRepository({required Dio dio}) : _dio = dio;
 
@@ -49,11 +44,6 @@ class ReportAdminRepository {
     return AdminReport.fromResponse(res.data);
   }
 
-  
-  
-  
-  
-  
   Future<List<AdminEmployeeOption>> employees({int pageSize = 100}) async {
     final Response<dynamic> res;
     try {
@@ -63,7 +53,8 @@ class ReportAdminRepository {
       );
     } on DioException catch (e) {
       if (e.response?.statusCode != 403) rethrow;
-      final Response<dynamic> team = await _dio.get<dynamic>('/supervisor/team');
+      final Response<dynamic> team =
+          await _dio.get<dynamic>('/supervisor/team');
       final Object? teamData = team.data;
       if (teamData is! List) return const <AdminEmployeeOption>[];
       return teamData

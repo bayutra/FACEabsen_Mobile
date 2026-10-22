@@ -4,15 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 import 'package:image/image.dart' as img;
 
-
 class FaceDetectorService {
-  
-  
-  
-  
-  
-  
-  
   FaceDetectorService({
     bool classification = false,
     bool contours = false,
@@ -34,20 +26,13 @@ class FaceDetectorService {
   final FaceDetector _detector;
   final void Function(String message)? _onError;
 
-  
-  
-  
   Future<List<Face>> detect(String filePath) async {
     try {
-      
       final List<Face> first = await _detector.processImage(
         InputImage.fromFilePath(filePath),
       );
       if (first.isNotEmpty) return first;
 
-      
-      
-      
       final File file = File(filePath);
       final Uint8List bytes = await file.readAsBytes();
       final img.Image? decoded = img.decodeImage(bytes);
@@ -69,8 +54,10 @@ class FaceDetectorService {
       }
     } catch (e) {
       final String cause = e.toString().split('\n').first;
-      final String short = cause.length <= 100 ? cause : '${cause.substring(0, 97)}...';
-      final String message = 'Deteksi wajah tidak tersedia di HP ini. Perbarui Google Play '
+      final String short =
+          cause.length <= 100 ? cause : '${cause.substring(0, 97)}...';
+      final String message =
+          'Deteksi wajah tidak tersedia di HP ini. Perbarui Google Play '
           'Services, hubungkan internet sekali untuk unduh model, lalu coba lagi. ($short)';
       _onError?.call(message);
       if (kDebugMode) {

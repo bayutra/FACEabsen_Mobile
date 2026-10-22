@@ -5,11 +5,6 @@ import '../domain/device_models.dart';
 import 'helpdesk_sheet.dart';
 import '../../../core/theme/app_colors.dart';
 
-
-
-
-
-
 class DeviceStatusSection extends StatefulWidget {
   const DeviceStatusSection({
     super.key,
@@ -68,9 +63,15 @@ class _DeviceStatusSectionState extends State<DeviceStatusSection> {
     return '${d.inDays} hari lalu';
   }
 
-  
   static Widget _pulseStatusPill(DeviceStatus s) {
-    final (String label, Color dotColor, Color glowColor, Color bg, Color text, Color border) = switch (s) {
+    final (
+      String label,
+      Color dotColor,
+      Color glowColor,
+      Color bg,
+      Color text,
+      Color border
+    ) = switch (s) {
       DeviceStatus.active => (
           'STATUS: AKTIF',
           AppColors.success,
@@ -161,7 +162,6 @@ class _DeviceStatusSectionState extends State<DeviceStatusSection> {
     );
   }
 
-  
   static Widget _historyStatusPill(DeviceStatus s) {
     final (String label, Color bg, Color fg, Color border) = switch (s) {
       DeviceStatus.active => (
@@ -253,7 +253,6 @@ class _DeviceStatusSectionState extends State<DeviceStatusSection> {
     }
   }
 
-  
   Widget _buildPolicyCard() {
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
@@ -286,7 +285,8 @@ class _DeviceStatusSectionState extends State<DeviceStatusSection> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (widget.employeeName != null && widget.employeeName!.isNotEmpty) ...[
+                if (widget.employeeName != null &&
+                    widget.employeeName!.isNotEmpty) ...[
                   Row(
                     children: [
                       Container(
@@ -295,7 +295,8 @@ class _DeviceStatusSectionState extends State<DeviceStatusSection> {
                         decoration: BoxDecoration(
                           color: AppColors.surfaceLow,
                           shape: BoxShape.circle,
-                          border: Border.all(color: AppColors.border.withOpacity(0.5)),
+                          border: Border.all(
+                              color: AppColors.border.withOpacity(0.5)),
                         ),
                         child: Center(
                           child: Text(
@@ -392,7 +393,6 @@ class _DeviceStatusSectionState extends State<DeviceStatusSection> {
     );
   }
 
-  
   Widget _buildBentoGrid(BoundDevice current, bool compromised) {
     return Column(
       children: [
@@ -402,14 +402,18 @@ class _DeviceStatusSectionState extends State<DeviceStatusSection> {
               icon: Icons.event_available_rounded,
               iconColor: AppColors.primary,
               label: 'REGISTRASI',
-              value: current.registeredAt != null ? formatIdDate(current.registeredAt!) : '—',
+              value: current.registeredAt != null
+                  ? formatIdDate(current.registeredAt!)
+                  : '—',
             ),
             const SizedBox(width: 8),
             _buildBentoCell(
               icon: Icons.access_time_rounded,
               iconColor: AppColors.secondary,
               label: 'TERAKHIR AKTIF',
-              value: current.lastSeenAt != null ? _ago(current.lastSeenAt!) : 'Belum pernah',
+              value: current.lastSeenAt != null
+                  ? _ago(current.lastSeenAt!)
+                  : 'Belum pernah',
             ),
           ],
         ),
@@ -420,11 +424,14 @@ class _DeviceStatusSectionState extends State<DeviceStatusSection> {
               icon: Icons.devices_rounded,
               iconColor: AppColors.primaryContainer,
               label: 'SISTEM OPERASI',
-              value: current.platform.isNotEmpty ? current.platform : 'Mobile OS',
+              value:
+                  current.platform.isNotEmpty ? current.platform : 'Mobile OS',
             ),
             const SizedBox(width: 8),
             _buildBentoCell(
-              icon: compromised ? Icons.gpp_bad_rounded : Icons.verified_user_rounded,
+              icon: compromised
+                  ? Icons.gpp_bad_rounded
+                  : Icons.verified_user_rounded,
               iconColor: compromised ? AppColors.error : AppColors.success,
               label: 'STATUS KEAMANAN',
               value: compromised ? 'Berisiko Root' : 'Terverifikasi',
@@ -487,7 +494,6 @@ class _DeviceStatusSectionState extends State<DeviceStatusSection> {
     );
   }
 
-  
   Widget _buildAttestationIndicator(bool compromised) {
     if (compromised) {
       return Container(
@@ -499,7 +505,8 @@ class _DeviceStatusSectionState extends State<DeviceStatusSection> {
         ),
         child: const Row(
           children: [
-            Icon(Icons.warning_amber_rounded, size: 16, color: AppColors.errorText),
+            Icon(Icons.warning_amber_rounded,
+                size: 16, color: AppColors.errorText),
             SizedBox(width: 8),
             Expanded(
               child: Text(
@@ -541,9 +548,9 @@ class _DeviceStatusSectionState extends State<DeviceStatusSection> {
     );
   }
 
-  
   Widget _buildActiveDeviceCard(BoundDevice current, bool compromised) {
-    final String rawId = current.installationId.isNotEmpty ? current.installationId : current.id;
+    final String rawId =
+        current.installationId.isNotEmpty ? current.installationId : current.id;
     final String displayId = rawId.length > 20
         ? '${rawId.substring(0, 10)}...${rawId.substring(rawId.length - 6)}'
         : rawId;
@@ -566,7 +573,6 @@ class _DeviceStatusSectionState extends State<DeviceStatusSection> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          
           Container(
             height: 4,
             decoration: const BoxDecoration(
@@ -609,7 +615,9 @@ class _DeviceStatusSectionState extends State<DeviceStatusSection> {
                           Text(
                             current.deviceName?.isNotEmpty == true
                                 ? current.deviceName!
-                                : (current.platform.isNotEmpty ? current.platform : 'Perangkat Terikat'),
+                                : (current.platform.isNotEmpty
+                                    ? current.platform
+                                    : 'Perangkat Terikat'),
                             style: const TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.w700,
@@ -653,7 +661,8 @@ class _DeviceStatusSectionState extends State<DeviceStatusSection> {
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.refresh_rounded, color: AppColors.primary),
+                      icon: const Icon(Icons.refresh_rounded,
+                          color: AppColors.primary),
                       tooltip: 'Kirim heartbeat',
                       onPressed: () => _heartbeat(current.id),
                     ),
@@ -671,7 +680,6 @@ class _DeviceStatusSectionState extends State<DeviceStatusSection> {
     );
   }
 
-  
   Widget _buildDeviceHistorySection(List<BoundDevice> devices) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -719,12 +727,14 @@ class _DeviceStatusSectionState extends State<DeviceStatusSection> {
             ),
             child: const Row(
               children: [
-                Icon(Icons.devices_other_rounded, color: AppColors.warning, size: 20),
+                Icon(Icons.devices_other_rounded,
+                    color: AppColors.warning, size: 20),
                 SizedBox(width: 10),
                 Expanded(
                   child: Text(
                     'Belum ada perangkat terdaftar. Presensi butuh minimal satu perangkat aktif.',
-                    style: TextStyle(fontSize: 12, color: AppColors.inkSecondary),
+                    style:
+                        TextStyle(fontSize: 12, color: AppColors.inkSecondary),
                   ),
                 ),
               ],
@@ -770,7 +780,9 @@ class _DeviceStatusSectionState extends State<DeviceStatusSection> {
                         Text(
                           d.deviceName?.isNotEmpty == true
                               ? d.deviceName!
-                              : shortDeviceId(d.installationId.isEmpty ? d.id : d.installationId),
+                              : shortDeviceId(d.installationId.isEmpty
+                                  ? d.id
+                                  : d.installationId),
                           style: const TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w700,
@@ -810,7 +822,6 @@ class _DeviceStatusSectionState extends State<DeviceStatusSection> {
     );
   }
 
-  
   Widget _helpdeskCard(BuildContext context) {
     return Container(
       margin: const EdgeInsets.only(top: 8),
@@ -902,12 +913,14 @@ class _DeviceStatusSectionState extends State<DeviceStatusSection> {
                 ),
                 child: const Row(
                   children: [
-                    Icon(Icons.warning_amber_rounded, color: AppColors.warningText, size: 20),
+                    Icon(Icons.warning_amber_rounded,
+                        color: AppColors.warningText, size: 20),
                     SizedBox(width: 10),
                     Expanded(
                       child: Text(
                         'Gagal memuat status perangkat. Periksa koneksi internet Anda.',
-                        style: TextStyle(fontSize: 12, color: AppColors.warningText),
+                        style: TextStyle(
+                            fontSize: 12, color: AppColors.warningText),
                       ),
                     ),
                   ],
@@ -924,7 +937,9 @@ class _DeviceStatusSectionState extends State<DeviceStatusSection> {
             );
           }
           final _DeviceInfo info = snap.data!;
-          final BoundDevice? current = info.devices.cast<BoundDevice?>().firstWhere(
+          final BoundDevice? current = info.devices
+              .cast<BoundDevice?>()
+              .firstWhere(
                 (BoundDevice? d) => d?.id == info.currentId,
                 orElse: () => info.devices.isEmpty ? null : info.devices.first,
               );
@@ -944,7 +959,8 @@ class _DeviceStatusSectionState extends State<DeviceStatusSection> {
                   child: const Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(Icons.gpp_bad_rounded, color: AppColors.errorText, size: 20),
+                      Icon(Icons.gpp_bad_rounded,
+                          color: AppColors.errorText, size: 20),
                       SizedBox(width: 10),
                       Expanded(
                         child: Column(
@@ -961,7 +977,8 @@ class _DeviceStatusSectionState extends State<DeviceStatusSection> {
                             SizedBox(height: 2),
                             Text(
                               'Perangkat ini terindikasi root/jailbreak. Server bisa menolak presensi karena alasan ini.',
-                              style: TextStyle(fontSize: 12, color: AppColors.errorText),
+                              style: TextStyle(
+                                  fontSize: 12, color: AppColors.errorText),
                             ),
                           ],
                         ),

@@ -3,7 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   test('combineWorkDateTime builds ISO or rejects', () {
-    expect(combineWorkDateTime('2026-10-05', '07:05'), '2026-10-05T07:05:00.000Z');
+    expect(
+        combineWorkDateTime('2026-10-05', '07:05'), '2026-10-05T07:05:00.000Z');
     expect(combineWorkDateTime('2026-10-05', ''), isNull);
     expect(combineWorkDateTime('2026-10-05', '25:00'), isNull);
     expect(combineWorkDateTime('2026-10-05', '7:05'), isNull);

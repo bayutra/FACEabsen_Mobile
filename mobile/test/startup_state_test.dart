@@ -2,9 +2,6 @@ import 'package:face_absen_mobile/core/navigation/startup_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-
-
-
 void main() {
   group('resolveStartupState', () {
     test('waiting tanpa data → loading', () {

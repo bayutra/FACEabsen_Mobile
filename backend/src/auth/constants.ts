@@ -1,23 +1,23 @@
-
-
-
-export const ROLES = ['EMPLOYEE', 'SUPERVISOR', 'ADMIN', 'SUPER_ADMIN'] as const;
+export const ROLES = [
+  'EMPLOYEE',
+  'SUPERVISOR',
+  'ADMIN',
+  'SUPER_ADMIN',
+] as const;
 export type RoleName = (typeof ROLES)[number];
 
- 
 export const PERMISSIONS = [
-  
   'attendance:create:self',
   'attendance:read:self',
   'correction:create:self',
   'leave:create:self',
-  
+
   'attendance:read:team',
   'attendance:approve:team',
   'correction:approve:team',
   'leave:approve:team',
   'report:read:team',
-  
+
   'employee:create',
   'employee:update',
   'employee:read',
@@ -30,18 +30,14 @@ export const PERMISSIONS = [
   'schedule:manage',
   'report:read',
   'audit:read',
-  
-  
-  
-  
+
   'user:manage',
-  
+
   'role:manage',
   'security:manage',
   'system:manage',
 ] as const;
 
- 
 export const ROLE_PERMISSIONS: Record<RoleName, string[]> = {
   EMPLOYEE: [
     'attendance:create:self',
@@ -55,8 +51,7 @@ export const ROLE_PERMISSIONS: Record<RoleName, string[]> = {
     'correction:approve:team',
     'leave:approve:team',
     'report:read:team',
-    
-    
+
     'employee:read',
     'employee:update',
   ],
@@ -78,7 +73,6 @@ export const ROLE_PERMISSIONS: Record<RoleName, string[]> = {
   SUPER_ADMIN: ['role:manage', 'security:manage', 'system:manage'],
 };
 
- 
 export function effectivePermissions(role: RoleName): string[] {
   const rank: Record<RoleName, number> = {
     EMPLOYEE: 1,
@@ -93,16 +87,20 @@ export function effectivePermissions(role: RoleName): string[] {
   return [...out];
 }
 
-export const SUPER_ADMIN_ONLY = ['role:manage', 'security:manage', 'system:manage'];
+export const SUPER_ADMIN_ONLY = [
+  'role:manage',
+  'security:manage',
+  'system:manage',
+];
 
 export const AUTH_POLICY = {
-  accessTtlSec: 15 * 60, 
+  accessTtlSec: 15 * 60,
   refreshTtlDays: 7,
   maxFailedAttempts: 5,
   lockoutMinutes: 15,
-  loginThrottle: { limit: 10, ttl: 60_000 }, 
+  loginThrottle: { limit: 10, ttl: 60_000 },
   password: { minLength: 8 },
-   
+
   jwtAlgorithm: 'HS256',
   jwtIssuer: 'face-absen',
   jwtMinSecretLength: 32,

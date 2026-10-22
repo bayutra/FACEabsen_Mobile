@@ -1,11 +1,3 @@
-
-
-
-
-
-
-
-
 enum ReportKind {
   daily('daily', 'Harian'),
   monthly('monthly', 'Bulanan'),
@@ -16,10 +8,8 @@ enum ReportKind {
 
   const ReportKind(this.code, this.label);
 
-  
   final String code;
 
-  
   final String label;
 
   static ReportKind fromCode(String? code) => ReportKind.values.firstWhere(
@@ -28,14 +18,12 @@ enum ReportKind {
       );
 }
 
-
 class ReportSummaryItem {
   const ReportSummaryItem({required this.label, required this.value});
 
   final String label;
   final String value;
 }
-
 
 class AdminEmployeeOption {
   const AdminEmployeeOption({
@@ -57,7 +45,6 @@ class AdminEmployeeOption {
         name: json['name']?.toString() ?? 'â€”',
       );
 }
-
 
 class AdminReport {
   const AdminReport({

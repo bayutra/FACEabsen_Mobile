@@ -29,7 +29,6 @@ export class CreateShiftDto {
   @Matches(HHMM)
   endTime!: string;
 
-   
   @IsOptional()
   @IsBoolean()
   overnight?: boolean;
@@ -103,7 +102,6 @@ export class CreateScheduleDto {
   @IsString()
   shiftId!: string;
 
-   
   @Matches(DATE)
   workDate!: string;
 }

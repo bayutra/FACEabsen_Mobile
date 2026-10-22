@@ -2,10 +2,6 @@ import 'package:dio/dio.dart';
 
 import '../domain/leave_admin_models.dart';
 
-
-
-
-
 class LeaveAdminRepository {
   LeaveAdminRepository({required Dio dio}) : _dio = dio;
 
@@ -54,10 +50,9 @@ class LeaveAdminRepository {
 }
 
 Map<String, dynamic> _reviewBody(String? note) => <String, dynamic>{
-  if (note != null && note.trim().isNotEmpty) 'reviewNote': note.trim(),
-};
+      if (note != null && note.trim().isNotEmpty) 'reviewNote': note.trim(),
+    };
 
-String _dateParam(DateTime d) =>
-    '${d.year.toString().padLeft(4, '0')}-'
+String _dateParam(DateTime d) => '${d.year.toString().padLeft(4, '0')}-'
     '${d.month.toString().padLeft(2, '0')}-'
     '${d.day.toString().padLeft(2, '0')}';

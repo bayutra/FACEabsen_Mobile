@@ -26,7 +26,15 @@ export class ListUsersQuery {
   role?: (typeof ROLE_NAMES)[number];
 
   @IsOptional()
-  @Transform(({ value }) => value === undefined ? undefined : value === 'true' ? true : value === 'false' ? false : value)
+  @Transform(({ value }) =>
+    value === undefined
+      ? undefined
+      : value === 'true'
+        ? true
+        : value === 'false'
+          ? false
+          : value,
+  )
   @IsBoolean()
   isActive?: boolean;
 
@@ -44,7 +52,6 @@ export class ListUsersQuery {
   pageSize?: number;
 }
 
- 
 export class CreateUserDto {
   @IsEmail()
   @MaxLength(255)
@@ -55,7 +62,6 @@ export class CreateUserDto {
   @MaxLength(256)
   password!: string;
 
-   
   @IsOptional()
   @IsArray()
   @IsIn(ROLE_NAMES, { each: true })
@@ -63,7 +69,6 @@ export class CreateUserDto {
 }
 
 export class UpdateUserDto {
-   
   @IsOptional()
   @IsArray()
   @IsIn(ROLE_NAMES, { each: true })

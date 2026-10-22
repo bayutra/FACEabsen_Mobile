@@ -27,7 +27,6 @@ interface RoleRow {
   role: { name: string };
 }
 
- 
 const DUMMY_HASH =
   '$argon2id$v=19$m=65536,t=3,p=4$AAAAAAAAAAAAAAAAAAAAAA$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
 
@@ -45,16 +44,24 @@ export class AuthService {
     private readonly config: ConfigService,
     private readonly audit: AuditService,
   ) {
-    this.accessTtlSec = Number(config.get('JWT_ACCESS_TTL_SEC', AUTH_POLICY.accessTtlSec));
-    this.refreshTtlDays = Number(config.get('REFRESH_TTL_DAYS', AUTH_POLICY.refreshTtlDays));
-    this.maxFailedAttempts = Number(config.get('LOGIN_MAX_ATTEMPTS', AUTH_POLICY.maxFailedAttempts));
-    this.lockoutMinutes = Number(config.get('LOCKOUT_MINUTES', AUTH_POLICY.lockoutMinutes));
+    this.accessTtlSec = Number(
+      config.get('JWT_ACCESS_TTL_SEC', AUTH_POLICY.accessTtlSec),
+    );
+    this.refreshTtlDays = Number(
+      config.get('REFRESH_TTL_DAYS', AUTH_POLICY.refreshTtlDays),
+    );
+    this.maxFailedAttempts = Number(
+      config.get('LOGIN_MAX_ATTEMPTS', AUTH_POLICY.maxFailedAttempts),
+    );
+    this.lockoutMinutes = Number(
+      config.get('LOCKOUT_MINUTES', AUTH_POLICY.lockoutMinutes),
+    );
     if (!config.get('JWT_ACCESS_SECRET')) {
-      this.logger.warn('JWT_ACCESS_SECRET missing â€” using dev fallback. Set it in production.');
+      this.logger.warn(
+        'JWT_ACCESS_SECRET missing â€” using dev fallback. Set it in production.',
+      );
     }
   }
-
-  
 
   async getRoles(userId: string): Promise<string[]> {
     const rows = await this.prisma.userRole.findMany({
@@ -67,7 +74,11 @@ export class AuthService {
   async getPermissions(userId: string): Promise<string[]> {
     const rows = await this.prisma.userRole.findMany({
       where: { userId },
-      include: { role: { include: { rolePermissions: { include: { permission: true } } } } },
+      include: {
+        role: {
+          include: { rolePermissions: { include: { permission: true } } },
+        },
+      },
     });
     const out = new Set<string>();
     for (const ur of rows as Array<{
@@ -78,8 +89,6 @@ export class AuthService {
     return [...out];
   }
 
-  
-
   async login(dto: LoginDto, meta: RequestMeta = {}) {
     const user = await this.prisma.user.findUnique({
       where: { email: dto.email },
@@ -87,10 +96,15 @@ export class AuthService {
     });
 
     if (user?.lockedUntil && user.lockedUntil > new Date()) {
-      throw new ForbiddenException('Account temporarily locked. Try again later.');
+      throw new ForbiddenException(
+        'Account temporarily locked. Try again later.',
+      );
     }
 
-    const ok = await argon2.verify(user?.passwordHash ?? DUMMY_HASH, dto.password);
+    const ok = await argon2.verify(
+      user?.passwordHash ?? DUMMY_HASH,
+      dto.password,
+    );
     if (!user || !ok) {
       await this.registerFailedAttempt(user?.id ?? null, dto.email, meta);
       throw new UnauthorizedException('Invalid credentials');
@@ -111,8 +125,6 @@ export class AuthService {
       data: { failedLoginAttempts: 0, lockedUntil: null },
     });
 
-    
-    
     if (user.totpEnabled) {
       const totpToken = await this.jwt.signAsync(
         { sub: user.id, purpose: TOTP_TOKEN_PURPOSE },
@@ -122,12 +134,21 @@ export class AuthService {
           expiresIn: TOTP_TOKEN_TTL_SEC,
         },
       );
-      return { totpRequired: true as const, totpToken, expiresIn: TOTP_TOKEN_TTL_SEC };
+      return {
+        totpRequired: true as const,
+        totpToken,
+        expiresIn: TOTP_TOKEN_TTL_SEC,
+      };
     }
 
     const roles = (user.userRoles as RoleRow[]).map((ur) => ur.role.name);
     const session = await this.createSession(user.id, dto.deviceId, meta);
-    const accessToken = await this.signAccess(user.id, user.email, roles, session.id);
+    const accessToken = await this.signAccess(
+      user.id,
+      user.email,
+      roles,
+      session.id,
+    );
 
     await this.audit.log({
       actorId: user.id,
@@ -145,7 +166,6 @@ export class AuthService {
     };
   }
 
-   
   async register(dto: RegisterDto, meta: RequestMeta = {}) {
     const email = dto.email.trim().toLowerCase();
     const name = dto.name.trim();
@@ -164,7 +184,9 @@ export class AuthService {
       });
       if (!department) throw new BadRequestException('Unit tidak ditemukan');
     }
-    const role = await this.prisma.role.findUnique({ where: { name: 'EMPLOYEE' } });
+    const role = await this.prisma.role.findUnique({
+      where: { name: 'EMPLOYEE' },
+    });
     if (!role) throw new BadRequestException('Peran EMPLOYEE belum tersedia');
 
     const employeeNo = dto.employeeNo?.trim() || (await this.nextEmployeeNo());
@@ -174,7 +196,9 @@ export class AuthService {
     try {
       userId = await this.prisma.$transaction(async (tx) => {
         const user = await tx.user.create({ data: { email, passwordHash } });
-        await tx.userRole.create({ data: { userId: user.id, roleId: role.id } });
+        await tx.userRole.create({
+          data: { userId: user.id, roleId: role.id },
+        });
         await tx.employee.create({
           data: {
             userId: user.id,
@@ -189,7 +213,11 @@ export class AuthService {
         return user.id;
       });
     } catch (e) {
-      if (typeof e === 'object' && e !== null && (e as { code?: string }).code === 'P2002') {
+      if (
+        typeof e === 'object' &&
+        e !== null &&
+        (e as { code?: string }).code === 'P2002'
+      ) {
         throw new ConflictException('Email atau nomor karyawan sudah dipakai');
       }
       throw e;
@@ -205,7 +233,12 @@ export class AuthService {
     });
 
     const session = await this.createSession(userId, undefined, meta);
-    const accessToken = await this.signAccess(userId, email, ['EMPLOYEE'], session.id);
+    const accessToken = await this.signAccess(
+      userId,
+      email,
+      ['EMPLOYEE'],
+      session.id,
+    );
     return {
       accessToken,
       refreshToken: session.refreshToken,
@@ -214,7 +247,6 @@ export class AuthService {
     };
   }
 
-   
   private async nextEmployeeNo(): Promise<string> {
     const count = await this.prisma.employee.count();
     for (let i = count + 1; i <= count + 50; i++) {
@@ -230,20 +262,23 @@ export class AuthService {
   async refresh(refreshToken: string, meta: RequestMeta = {}) {
     const prev = await this.prisma.session.findUnique({
       where: { refreshTokenHash: sha256(refreshToken) },
-      include: { user: { include: { userRoles: { include: { role: true } } } } },
+      include: {
+        user: { include: { userRoles: { include: { role: true } } } },
+      },
     });
     if (!prev || prev.revokedAt || prev.expiresAt < new Date()) {
       throw new UnauthorizedException('Invalid refresh token');
     }
-    if (!prev.user.isActive) throw new UnauthorizedException('Account inactive');
+    if (!prev.user.isActive)
+      throw new UnauthorizedException('Account inactive');
 
-    
-    
-    
-    
     const next = newRefreshToken();
     const rotated = await this.prisma.session.updateMany({
-      where: { id: prev.id, refreshTokenHash: sha256(refreshToken), revokedAt: null },
+      where: {
+        id: prev.id,
+        refreshTokenHash: sha256(refreshToken),
+        revokedAt: null,
+      },
       data: {
         refreshTokenHash: sha256(next),
         expiresAt: addDays(new Date(), this.refreshTtlDays),
@@ -262,7 +297,12 @@ export class AuthService {
       throw new UnauthorizedException('Invalid refresh token');
     }
     const roles = (prev.user.userRoles as RoleRow[]).map((ur) => ur.role.name);
-    const accessToken = await this.signAccess(prev.user.id, prev.user.email, roles, prev.id);
+    const accessToken = await this.signAccess(
+      prev.user.id,
+      prev.user.email,
+      roles,
+      prev.id,
+    );
     return { accessToken, refreshToken: next, expiresIn: this.accessTtlSec };
   }
 
@@ -297,7 +337,12 @@ export class AuthService {
     };
   }
 
-  async changePassword(userId: string, sessionId: string, dto: ChangePasswordDto, meta: RequestMeta = {}) {
+  async changePassword(
+    userId: string,
+    sessionId: string,
+    dto: ChangePasswordDto,
+    meta: RequestMeta = {},
+  ) {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user) throw new NotFoundException('User not found');
     const ok = await argon2.verify(user.passwordHash, dto.currentPassword);
@@ -312,12 +357,16 @@ export class AuthService {
         lockedUntil: null,
       },
     });
-    
+
     await this.prisma.session.updateMany({
       where: { userId, revokedAt: null, NOT: { id: sessionId } },
       data: { revokedAt: new Date() },
     });
-    await this.audit.log({ actorId: userId, action: 'PASSWORD_CHANGED', ipAddress: meta.ip });
+    await this.audit.log({
+      actorId: userId,
+      action: 'PASSWORD_CHANGED',
+      ipAddress: meta.ip,
+    });
     return { changed: true };
   }
 
@@ -338,7 +387,9 @@ export class AuthService {
   }
 
   async revokeSession(userId: string, sessionId: string) {
-    const session = await this.prisma.session.findUnique({ where: { id: sessionId } });
+    const session = await this.prisma.session.findUnique({
+      where: { id: sessionId },
+    });
     if (!session || session.userId !== userId) {
       throw new NotFoundException('Session not found');
     }
@@ -351,9 +402,11 @@ export class AuthService {
     return { revoked: true };
   }
 
-  
-
-  private async registerFailedAttempt(userId: string | null, email: string, meta: RequestMeta) {
+  private async registerFailedAttempt(
+    userId: string | null,
+    email: string,
+    meta: RequestMeta,
+  ) {
     if (userId) {
       const user = await this.prisma.user.findUnique({ where: { id: userId } });
       if (user) {
@@ -379,10 +432,16 @@ export class AuthService {
     });
   }
 
-  private async createSession(userId: string, deviceId: string | undefined, meta: RequestMeta) {
+  private async createSession(
+    userId: string,
+    deviceId: string | undefined,
+    meta: RequestMeta,
+  ) {
     let boundDeviceId: string | null = null;
     if (deviceId) {
-      const device = await this.prisma.device.findUnique({ where: { id: deviceId } });
+      const device = await this.prisma.device.findUnique({
+        where: { id: deviceId },
+      });
       if (device) boundDeviceId = device.id;
     }
     const refreshToken = newRefreshToken();
@@ -400,10 +459,13 @@ export class AuthService {
   }
 
   private signAccess(sub: string, email: string, roles: string[], sid: string) {
-    
     return this.jwt.signAsync(
       { sub, email, roles, sid },
-      { algorithm: AUTH_POLICY.jwtAlgorithm, issuer: AUTH_POLICY.jwtIssuer, expiresIn: this.accessTtlSec },
+      {
+        algorithm: AUTH_POLICY.jwtAlgorithm,
+        issuer: AUTH_POLICY.jwtIssuer,
+        expiresIn: this.accessTtlSec,
+      },
     );
   }
 }
@@ -423,7 +485,6 @@ function addDays(base: Date, days: number): Date {
 function addMinutes(base: Date, minutes: number): Date {
   return new Date(base.getTime() + minutes * 60 * 1000);
 }
-
 
 export interface PrismaServiceLike {
   user: {

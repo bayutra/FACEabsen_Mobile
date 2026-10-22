@@ -7,10 +7,6 @@ import '../../presentation/admin_widgets.dart';
 import '../data/department_admin_repository.dart';
 import 'unit_members_screen.dart';
 
-
-
-
-
 class DepartmentAdminScreen extends StatefulWidget {
   const DepartmentAdminScreen({
     super.key,
@@ -60,16 +56,12 @@ class _DepartmentAdminScreenState extends State<DepartmentAdminScreen> {
     await _loadHospitals();
   }
 
-  
-  
   Future<void> _loadHospitals() async {
     try {
       final List<DepartmentHospital> hospitals = await _repo.hospitals();
       if (!mounted) return;
       setState(() => _hospitals = hospitals);
-    } catch (_) {
-      
-    }
+    } catch (_) {}
   }
 
   Future<void> _openForm([AdminDepartmentItem? department]) async {
@@ -98,9 +90,7 @@ class _DepartmentAdminScreenState extends State<DepartmentAdminScreen> {
     if (saved == true && mounted) {
       showAdminSnack(
         context,
-        department == null
-            ? 'Unit ditambahkan.'
-            : 'Unit diperbarui.',
+        department == null ? 'Unit ditambahkan.' : 'Unit diperbarui.',
       );
       await _load();
     }

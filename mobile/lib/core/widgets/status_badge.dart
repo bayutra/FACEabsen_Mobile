@@ -4,7 +4,6 @@ import '../theme/app_colors.dart';
 import 'stitch.dart';
 import '../../features/device/domain/device_models.dart';
 
-
 class StatusBadge extends StatelessWidget {
   const StatusBadge({super.key, required this.status});
 
@@ -13,15 +12,19 @@ class StatusBadge extends StatelessWidget {
   _Spec get _spec {
     switch (status) {
       case DeviceStatus.active:
-        return const _Spec(AppColors.successTint, AppColors.successText, AppColors.successBorder);
+        return const _Spec(AppColors.successTint, AppColors.successText,
+            AppColors.successBorder);
       case DeviceStatus.pending:
-        return const _Spec(AppColors.warningTint, AppColors.warningText, AppColors.warningBorder);
+        return const _Spec(AppColors.warningTint, AppColors.warningText,
+            AppColors.warningBorder);
       case DeviceStatus.revoked:
       case DeviceStatus.lost:
       case DeviceStatus.replaced:
-        return const _Spec(AppColors.roseTint, AppColors.roseText, AppColors.roseBorder);
+        return const _Spec(
+            AppColors.roseTint, AppColors.roseText, AppColors.roseBorder);
       case DeviceStatus.unknown:
-        return const _Spec(AppColors.surfaceLow, AppColors.inkSecondary, AppColors.border);
+        return const _Spec(
+            AppColors.surfaceLow, AppColors.inkSecondary, AppColors.border);
     }
   }
 

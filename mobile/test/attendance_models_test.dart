@@ -30,7 +30,9 @@ void main() {
   });
 
   test('rejection reasons map to Indonesian', () {
-    expect(AttendanceRejected.fromResponse({'reason': 'DEVICE_NOT_ACTIVE'}).message,
+    expect(
+        AttendanceRejected.fromResponse({'reason': 'DEVICE_NOT_ACTIVE'})
+            .message,
         contains('tidak aktif'));
     expect(AttendanceRejected.fromResponse({'reason': 'FACE_MISMATCH'}).message,
         contains('tidak cocok'));
@@ -47,7 +49,12 @@ void main() {
           'checkInStatus': 'LATE',
           'checkOutAt': null,
           'checkOutStatus': null,
-          'shift': {'name': 'PAGI', 'startTime': '07:00', 'endTime': '15:00', 'overnight': false},
+          'shift': {
+            'name': 'PAGI',
+            'startTime': '07:00',
+            'endTime': '15:00',
+            'overnight': false
+          },
           'riskScore': 85,
           'riskCategory': 'MEDIUM',
           'needsReview': true,
@@ -61,6 +68,7 @@ void main() {
     expect(page.totalPages, 3);
 
     expect(toHistoryQueryString(), '');
-    expect(toHistoryQueryString(page: 2, checkInStatus: 'LATE'), '?page=2&checkInStatus=LATE');
+    expect(toHistoryQueryString(page: 2, checkInStatus: 'LATE'),
+        '?page=2&checkInStatus=LATE');
   });
 }

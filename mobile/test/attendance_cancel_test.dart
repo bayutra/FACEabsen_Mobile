@@ -50,7 +50,9 @@ class _CapturingAdapter implements HttpClientAdapter {
         'checkInAt': '2026-10-07T07:00:00.000Z',
       }),
       200,
-      headers: {Headers.contentTypeHeader: [Headers.jsonContentType]},
+      headers: {
+        Headers.contentTypeHeader: [Headers.jsonContentType]
+      },
     );
   }
 
@@ -75,7 +77,9 @@ Map<String, Object> _passiveLiveness() => <String, Object>{
 
 void main() {
   group('attendance cancel plumbing', () {
-    test('cancel mid-flight surfaces as AttendanceRejected, never raw DioException', () async {
+    test(
+        'cancel mid-flight surfaces as AttendanceRejected, never raw DioException',
+        () async {
       final Dio dio = Dio(BaseOptions(baseUrl: 'http://localhost:3000/api/v1'));
       dio.httpClientAdapter = _HangingAdapter();
       final AttendanceRepository repo = await _repoWithSeed(dio);
@@ -94,8 +98,6 @@ void main() {
       try {
         await flight.timeout(const Duration(seconds: 5));
         fail('expected AttendanceRejected');
-      } on AttendanceRejected {
-        
       } on DioException catch (e) {
         fail('must never leak DioException (got $e)');
       } on TimeoutException {
@@ -105,7 +107,9 @@ void main() {
   });
 
   group('attendance wire payload (passive liveness)', () {
-    test('POST carries all required server keys; passive omits challenges, keeps padScore', () async {
+    test(
+        'POST carries all required server keys; passive omits challenges, keeps padScore',
+        () async {
       final Dio dio = Dio(BaseOptions(baseUrl: 'http://localhost:3000/api/v1'));
       final _CapturingAdapter adapter = _CapturingAdapter();
       dio.httpClientAdapter = adapter;

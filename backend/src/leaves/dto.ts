@@ -1,6 +1,19 @@
-import { IsIn, IsISO8601, IsOptional, IsString, Matches, MaxLength } from 'class-validator';
+import {
+  IsIn,
+  IsISO8601,
+  IsOptional,
+  IsString,
+  Matches,
+  MaxLength,
+} from 'class-validator';
 
-export const LEAVE_TYPES = ['CUTI', 'SAKIT', 'IZIN', 'DINAS', 'LAINNYA'] as const;
+export const LEAVE_TYPES = [
+  'CUTI',
+  'SAKIT',
+  'IZIN',
+  'DINAS',
+  'LAINNYA',
+] as const;
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
 
 export class CreateLeaveDto {

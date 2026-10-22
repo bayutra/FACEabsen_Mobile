@@ -19,7 +19,9 @@ import { TotpService } from './totp.service.js';
         signOptions: {
           algorithm: AUTH_POLICY.jwtAlgorithm,
           issuer: AUTH_POLICY.jwtIssuer,
-          expiresIn: Number(config.get('JWT_ACCESS_TTL_SEC', AUTH_POLICY.accessTtlSec)),
+          expiresIn: Number(
+            config.get('JWT_ACCESS_TTL_SEC', AUTH_POLICY.accessTtlSec),
+          ),
         },
         verifyOptions: {
           algorithms: [AUTH_POLICY.jwtAlgorithm],
@@ -29,8 +31,21 @@ import { TotpService } from './totp.service.js';
     }),
   ],
   controllers: [AuthController, TotpController],
-  providers: [AuthService, TotpService, JwtAuthGuard, RolesGuard, PermissionsGuard],
-  
-  exports: [AuthService, TotpService, JwtAuthGuard, RolesGuard, PermissionsGuard, JwtModule],
+  providers: [
+    AuthService,
+    TotpService,
+    JwtAuthGuard,
+    RolesGuard,
+    PermissionsGuard,
+  ],
+
+  exports: [
+    AuthService,
+    TotpService,
+    JwtAuthGuard,
+    RolesGuard,
+    PermissionsGuard,
+    JwtModule,
+  ],
 })
 export class AuthModule {}

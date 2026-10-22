@@ -2,12 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
 
-
-
-
-
-
-
 class StatusPill extends StatelessWidget {
   const StatusPill(this.status, {super.key, this.label});
 
@@ -47,7 +41,6 @@ class StatusPill extends StatelessWidget {
   }
 }
 
-
 class AppPill extends StatelessWidget {
   const AppPill(
     this.label,
@@ -63,7 +56,6 @@ class AppPill extends StatelessWidget {
   final Color fg;
   final IconData? icon;
 
-  
   final Color? border;
 
   @override
@@ -97,8 +89,6 @@ class AppPill extends StatelessWidget {
       );
 }
 
-
-
 class Pressable extends StatefulWidget {
   const Pressable({super.key, required this.child, required this.onTap});
 
@@ -126,9 +116,6 @@ class _PressableState extends State<Pressable> {
       );
 }
 
-
-
-
 class StitchHeader extends StatelessWidget implements PreferredSizeWidget {
   const StitchHeader({
     super.key,
@@ -149,8 +136,6 @@ class StitchHeader extends StatelessWidget implements PreferredSizeWidget {
   final String? greeting;
   final String? name;
 
-  
-  
   bool get _threeLines => greeting != null && subtitle != null;
 
   @override
@@ -203,7 +188,8 @@ class StitchHeader extends StatelessWidget implements PreferredSizeWidget {
                         ),
                       Text(
                         name ?? title ?? '',
-                        style: AppText.headlineSm.copyWith(color: AppColors.ink),
+                        style:
+                            AppText.headlineSm.copyWith(color: AppColors.ink),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -228,7 +214,6 @@ class StitchHeader extends StatelessWidget implements PreferredSizeWidget {
         ),
       );
 }
-
 
 class StitchStepper extends StatelessWidget {
   const StitchStepper({
@@ -311,14 +296,12 @@ class StitchStepper extends StatelessWidget {
             ? Icon(Icons.check, size: 16, color: fg)
             : Text(
                 '${i + 1}',
-                style:
-                    AppText.labelMd.copyWith(color: fg),
+                style: AppText.labelMd.copyWith(color: fg),
               ),
       ),
     );
   }
 }
-
 
 class SectionHeader extends StatelessWidget {
   const SectionHeader(this.title, {super.key, this.trailing});
@@ -338,15 +321,13 @@ class SectionHeader extends StatelessWidget {
       );
 }
 
-
 class AppCard extends StatelessWidget {
-  const AppCard({super.key, required this.child, this.padding, this.accent, this.onTap});
+  const AppCard(
+      {super.key, required this.child, this.padding, this.accent, this.onTap});
 
   final Widget child;
   final EdgeInsetsGeometry? padding;
 
-  
-  
   final Color? accent;
 
   final VoidCallback? onTap;
@@ -385,8 +366,6 @@ class AppCard extends StatelessWidget {
   }
 }
 
-
-
 class LoadingState extends StatelessWidget {
   const LoadingState({super.key, this.label = 'Memuat data'});
 
@@ -405,14 +384,14 @@ class LoadingState extends StatelessWidget {
                 child: CircularProgressIndicator(strokeWidth: 3),
               ),
               const SizedBox(height: 12),
-              Text(label, style: AppText.labelMd.copyWith(color: AppColors.inkSecondary)),
+              Text(label,
+                  style:
+                      AppText.labelMd.copyWith(color: AppColors.inkSecondary)),
             ],
           ),
         ),
       );
-
 }
-
 
 class ActionTile extends StatelessWidget {
   const ActionTile({
@@ -480,7 +459,8 @@ class ActionTile extends StatelessWidget {
                   const SizedBox(height: 2),
                   Text(
                     subtitle,
-                    style: AppText.labelSm.copyWith(color: AppColors.inkSecondary),
+                    style:
+                        AppText.labelSm.copyWith(color: AppColors.inkSecondary),
                   ),
                 ],
               ),
@@ -492,7 +472,6 @@ class ActionTile extends StatelessWidget {
     );
   }
 }
-
 
 class EmptyState extends StatelessWidget {
   const EmptyState({
@@ -525,16 +504,21 @@ class EmptyState extends StatelessWidget {
                 child: Icon(icon, size: 28, color: AppColors.tealBadgeText),
               ),
               const SizedBox(height: 12),
-              Text(title, textAlign: TextAlign.center, style: AppText.bodyMdMedium),
+              Text(title,
+                  textAlign: TextAlign.center, style: AppText.bodyMdMedium),
               if (subtitle != null) ...<Widget>[
                 const SizedBox(height: 4),
                 Text(
                   subtitle!,
                   textAlign: TextAlign.center,
-                  style: AppText.labelSm.copyWith(color: AppColors.inkSecondary),
+                  style:
+                      AppText.labelSm.copyWith(color: AppColors.inkSecondary),
                 ),
               ],
-              if (action != null) ...<Widget>[const SizedBox(height: 14), action!],
+              if (action != null) ...<Widget>[
+                const SizedBox(height: 14),
+                action!
+              ],
             ],
           ),
         ),
@@ -543,9 +527,9 @@ class EmptyState extends StatelessWidget {
 
 enum InfoBannerTone { info, success, warning, error }
 
-
 class InfoBanner extends StatelessWidget {
-  const InfoBanner(this.text, {super.key, this.tone = InfoBannerTone.info, this.title});
+  const InfoBanner(this.text,
+      {super.key, this.tone = InfoBannerTone.info, this.title});
 
   final String text;
   final String? title;
@@ -595,10 +579,12 @@ class InfoBanner extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                if (title != null) Text(title!, style: AppText.labelMd.copyWith(color: fg)),
+                if (title != null)
+                  Text(title!, style: AppText.labelMd.copyWith(color: fg)),
                 Text(
                   text,
-                  style: AppText.labelSm.copyWith(color: AppColors.inkSecondary),
+                  style:
+                      AppText.labelSm.copyWith(color: AppColors.inkSecondary),
                 ),
               ],
             ),
@@ -609,10 +595,9 @@ class InfoBanner extends StatelessWidget {
   }
 }
 
-
-
 class DetailRow extends StatelessWidget {
-  const DetailRow(this.label, this.value, {super.key, this.bold = false, this.isTime = false});
+  const DetailRow(this.label, this.value,
+      {super.key, this.bold = false, this.isTime = false});
 
   final String label;
   final String value;
@@ -648,7 +633,6 @@ class DetailRow extends StatelessWidget {
         ),
       );
 }
-
 
 class MetricReadout extends StatelessWidget {
   const MetricReadout(this.text, {super.key, this.color, this.size = 32});

@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import '../data/preflight_repository.dart';
 import '../domain/eligibility.dart';
 
-
 class PreflightScreen extends StatefulWidget {
-  const PreflightScreen({super.key, required this.preflight, required this.onProceed});
+  const PreflightScreen(
+      {super.key, required this.preflight, required this.onProceed});
 
   final PreflightRepository preflight;
   final ValueChanged<PreflightSnapshot> onProceed;
@@ -135,9 +135,8 @@ class _PreflightScreenState extends State<PreflightScreen> {
           : _snap == null
               ? _errorWidget()
               : _body(_snap!),
-      bottomNavigationBar: hasData
-          ? _bottomActionZone(context, ready, blocking)
-          : null,
+      bottomNavigationBar:
+          hasData ? _bottomActionZone(context, ready, blocking) : null,
     );
   }
 
@@ -281,12 +280,15 @@ class _PreflightScreenState extends State<PreflightScreen> {
               ),
             ),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3.5),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 10, vertical: 3.5),
               decoration: BoxDecoration(
-                color: ready ? const Color(0xFFECFDF5) : const Color(0xFFFFFBEB),
+                color:
+                    ready ? const Color(0xFFECFDF5) : const Color(0xFFFFFBEB),
                 borderRadius: BorderRadius.circular(999),
                 border: Border.all(
-                  color: ready ? const Color(0xFFA7F3D0) : const Color(0xFFFDE68A),
+                  color:
+                      ready ? const Color(0xFFA7F3D0) : const Color(0xFFFDE68A),
                 ),
               ),
               child: Row(
@@ -296,7 +298,9 @@ class _PreflightScreenState extends State<PreflightScreen> {
                     width: 6,
                     height: 6,
                     decoration: BoxDecoration(
-                      color: ready ? const Color(0xFF10B981) : const Color(0xFFF59E0B),
+                      color: ready
+                          ? const Color(0xFF10B981)
+                          : const Color(0xFFF59E0B),
                       shape: BoxShape.circle,
                     ),
                   ),
@@ -306,7 +310,9 @@ class _PreflightScreenState extends State<PreflightScreen> {
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
-                      color: ready ? const Color(0xFF047857) : const Color(0xFFB45309),
+                      color: ready
+                          ? const Color(0xFF047857)
+                          : const Color(0xFFB45309),
                     ),
                   ),
                 ],
@@ -443,7 +449,8 @@ class _PreflightScreenState extends State<PreflightScreen> {
                                   borderRadius: BorderRadius.circular(999),
                                   border: Border.all(
                                     color: active
-                                        ? const Color(0xFF005C55).withOpacity(0.25)
+                                        ? const Color(0xFF005C55)
+                                            .withOpacity(0.25)
                                         : const Color(0xFFFECACA),
                                   ),
                                 ),
@@ -475,7 +482,8 @@ class _PreflightScreenState extends State<PreflightScreen> {
                 ),
                 const SizedBox(height: 12),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
                   decoration: BoxDecoration(
                     color: const Color(0xFFF8FAFC),
                     borderRadius: BorderRadius.circular(8),
@@ -541,9 +549,21 @@ class _PreflightScreenState extends State<PreflightScreen> {
 
   Widget _deviceGateCard(GateResult g, PreflightSnapshot s) {
     final (Color fg, Color bg, IconData icon) = switch (g.state) {
-      GateState.pass => (const Color(0xFF047857), const Color(0xFFECFDF5), Icons.check_circle),
-      GateState.warn => (const Color(0xFFB45309), const Color(0xFFFFFBEB), Icons.error_outline),
-      GateState.fail => (const Color(0xFFB91C1C), const Color(0xFFFEF2F2), Icons.cancel),
+      GateState.pass => (
+          const Color(0xFF047857),
+          const Color(0xFFECFDF5),
+          Icons.check_circle
+        ),
+      GateState.warn => (
+          const Color(0xFFB45309),
+          const Color(0xFFFFFBEB),
+          Icons.error_outline
+        ),
+      GateState.fail => (
+          const Color(0xFFB91C1C),
+          const Color(0xFFFEF2F2),
+          Icons.cancel
+        ),
     };
     final Color borderCol = switch (g.state) {
       GateState.pass => const Color(0xFFA7F3D0),
@@ -558,7 +578,8 @@ class _PreflightScreenState extends State<PreflightScreen> {
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: const Color(0xFFBDC9C6).withOpacity(0.5)),
         boxShadow: const [
-          BoxShadow(color: Color(0x0A000000), blurRadius: 8, offset: Offset(0, 2)),
+          BoxShadow(
+              color: Color(0x0A000000), blurRadius: 8, offset: Offset(0, 2)),
         ],
       ),
       child: Row(
@@ -591,7 +612,8 @@ class _PreflightScreenState extends State<PreflightScreen> {
                       ),
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 7, vertical: 2),
                       decoration: BoxDecoration(
                         color: bg,
                         borderRadius: BorderRadius.circular(4),
@@ -623,7 +645,8 @@ class _PreflightScreenState extends State<PreflightScreen> {
                 const SizedBox(height: 6),
                 Row(
                   children: [
-                    const Icon(Icons.fingerprint, size: 13, color: Color(0xFF64748B)),
+                    const Icon(Icons.fingerprint,
+                        size: 13, color: Color(0xFF64748B)),
                     const SizedBox(width: 3),
                     const Text(
                       'IMEI Matched',
@@ -638,11 +661,15 @@ class _PreflightScreenState extends State<PreflightScreen> {
                       style: TextStyle(color: Color(0xFF94A3B8)),
                     ),
                     Text(
-                      s.isActive ? 'Keamanan Knox Aktif' : 'Status Perangkat Tidak Sah',
+                      s.isActive
+                          ? 'Keamanan Knox Aktif'
+                          : 'Status Perangkat Tidak Sah',
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
-                        color: s.isActive ? const Color(0xFF047857) : const Color(0xFFB91C1C),
+                        color: s.isActive
+                            ? const Color(0xFF047857)
+                            : const Color(0xFFB91C1C),
                       ),
                     ),
                   ],
@@ -657,9 +684,21 @@ class _PreflightScreenState extends State<PreflightScreen> {
 
   Widget _scheduleGateCard(GateResult g, PreflightSnapshot s) {
     final (Color fg, Color bg, IconData icon) = switch (g.state) {
-      GateState.pass => (const Color(0xFF047857), const Color(0xFFECFDF5), Icons.check_circle),
-      GateState.warn => (const Color(0xFFB45309), const Color(0xFFFFFBEB), Icons.error_outline),
-      GateState.fail => (const Color(0xFFB91C1C), const Color(0xFFFEF2F2), Icons.cancel),
+      GateState.pass => (
+          const Color(0xFF047857),
+          const Color(0xFFECFDF5),
+          Icons.check_circle
+        ),
+      GateState.warn => (
+          const Color(0xFFB45309),
+          const Color(0xFFFFFBEB),
+          Icons.error_outline
+        ),
+      GateState.fail => (
+          const Color(0xFFB91C1C),
+          const Color(0xFFFEF2F2),
+          Icons.cancel
+        ),
     };
     final Color borderCol = switch (g.state) {
       GateState.pass => const Color(0xFFA7F3D0),
@@ -680,7 +719,8 @@ class _PreflightScreenState extends State<PreflightScreen> {
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: const Color(0xFFBDC9C6).withOpacity(0.5)),
         boxShadow: const [
-          BoxShadow(color: Color(0x0A000000), blurRadius: 8, offset: Offset(0, 2)),
+          BoxShadow(
+              color: Color(0x0A000000), blurRadius: 8, offset: Offset(0, 2)),
         ],
       ),
       child: Row(
@@ -713,7 +753,8 @@ class _PreflightScreenState extends State<PreflightScreen> {
                       ),
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 2),
                       decoration: BoxDecoration(
                         color: bg,
                         borderRadius: BorderRadius.circular(999),
@@ -734,7 +775,8 @@ class _PreflightScreenState extends State<PreflightScreen> {
                 if (s.shift != null) ...[
                   RichText(
                     text: TextSpan(
-                      style: const TextStyle(fontSize: 12, color: Color(0xFF3E4947)),
+                      style: const TextStyle(
+                          fontSize: 12, color: Color(0xFF3E4947)),
                       children: [
                         TextSpan(text: '$shiftName Sesuai Roster '),
                         TextSpan(
@@ -747,8 +789,6 @@ class _PreflightScreenState extends State<PreflightScreen> {
                       ],
                     ),
                   ),
-                  
-                  
                   if (g.state != GateState.pass)
                     Padding(
                       padding: const EdgeInsets.only(top: 2),
@@ -764,11 +804,13 @@ class _PreflightScreenState extends State<PreflightScreen> {
                 ] else
                   Text(
                     g.detail,
-                    style: const TextStyle(fontSize: 12, color: Color(0xFF3E4947)),
+                    style:
+                        const TextStyle(fontSize: 12, color: Color(0xFF3E4947)),
                   ),
                 const SizedBox(height: 8),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
                     color: const Color(0xFFF8FAFC),
                     borderRadius: BorderRadius.circular(6),
@@ -808,7 +850,8 @@ class _PreflightScreenState extends State<PreflightScreen> {
     );
   }
 
-  Widget _bottomActionZone(BuildContext context, bool ready, List<GateResult> blocking) {
+  Widget _bottomActionZone(
+      BuildContext context, bool ready, List<GateResult> blocking) {
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
       decoration: BoxDecoration(
@@ -830,7 +873,8 @@ class _PreflightScreenState extends State<PreflightScreen> {
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.warning_amber_rounded, color: Color(0xFFB45309), size: 20),
+                  const Icon(Icons.warning_amber_rounded,
+                      color: Color(0xFFB45309), size: 20),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
@@ -862,7 +906,9 @@ class _PreflightScreenState extends State<PreflightScreen> {
                 ),
               ),
               child: Text(
-                ready ? 'Lanjutkan ke Verifikasi Wajah' : 'Parameter Tidak Terpenuhi',
+                ready
+                    ? 'Lanjutkan ke Verifikasi Wajah'
+                    : 'Parameter Tidak Terpenuhi',
                 style: const TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w700,
@@ -902,7 +948,9 @@ class _PreflightScreenState extends State<PreflightScreen> {
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
-                    color: ready ? const Color(0xFF047857) : const Color(0xFF92400E),
+                    color: ready
+                        ? const Color(0xFF047857)
+                        : const Color(0xFF92400E),
                   ),
                 ),
                 const SizedBox(height: 2),
@@ -912,7 +960,9 @@ class _PreflightScreenState extends State<PreflightScreen> {
                       : 'Selesaikan parameter yang ditandai sebelum melanjutkan.',
                   style: TextStyle(
                     fontSize: 11.5,
-                    color: ready ? const Color(0xFF047857) : const Color(0xFF92400E),
+                    color: ready
+                        ? const Color(0xFF047857)
+                        : const Color(0xFF92400E),
                     height: 1.3,
                   ),
                 ),

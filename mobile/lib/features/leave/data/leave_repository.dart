@@ -2,7 +2,6 @@ import 'package:dio/dio.dart';
 
 import '../domain/leave_models.dart';
 
-
 class LeaveRepository {
   LeaveRepository({required Dio dio}) : _dio = dio;
 
@@ -16,7 +15,12 @@ class LeaveRepository {
   }) async {
     final Response res = await _dio.post(
       '/leaves',
-      data: {'type': type, 'startDate': startDate, 'endDate': endDate, 'reason': reason},
+      data: {
+        'type': type,
+        'startDate': startDate,
+        'endDate': endDate,
+        'reason': reason
+      },
     );
     return LeaveItem.fromJson(Map<String, dynamic>.from(res.data as Map));
   }

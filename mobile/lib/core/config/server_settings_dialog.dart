@@ -3,17 +3,18 @@ import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import 'server_settings.dart';
 
-
-
-Future<bool> showServerSettingsDialog(BuildContext context, ServerSettings settings) async {
-  final TextEditingController controller = TextEditingController(text: settings.baseUrl);
+Future<bool> showServerSettingsDialog(
+    BuildContext context, ServerSettings settings) async {
+  final TextEditingController controller =
+      TextEditingController(text: settings.baseUrl);
   String? error;
   bool saved = false;
 
   await showDialog<void>(
     context: context,
     builder: (BuildContext ctx) => StatefulBuilder(
-      builder: (BuildContext ctx, void Function(void Function()) setState) => AlertDialog(
+      builder: (BuildContext ctx, void Function(void Function()) setState) =>
+          AlertDialog(
         title: const Text('Server API'),
         content: SingleChildScrollView(
           child: Column(

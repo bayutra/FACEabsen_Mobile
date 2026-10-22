@@ -1,4 +1,3 @@
-
 class AdminAuditLog {
   const AdminAuditLog({
     required this.id,
@@ -26,7 +25,6 @@ class AdminAuditLog {
   final Map<String, dynamic>? metadata;
   final String result;
 
-  
   String get targetSummary {
     final String? t = targetType;
     final String? id = targetId;
@@ -38,7 +36,6 @@ class AdminAuditLog {
     return t ?? id!;
   }
 
-  
   String get actorLabel {
     final String? email = actorEmail;
     if (email != null && email.isNotEmpty) return email;
@@ -46,10 +43,12 @@ class AdminAuditLog {
   }
 
   factory AdminAuditLog.fromJson(Map<String, dynamic> json) {
-    final Map<String, dynamic>? actor =
-        json['actor'] is Map ? Map<String, dynamic>.from(json['actor'] as Map) : null;
-    final Map<String, dynamic>? meta =
-        json['metadata'] is Map ? Map<String, dynamic>.from(json['metadata'] as Map) : null;
+    final Map<String, dynamic>? actor = json['actor'] is Map
+        ? Map<String, dynamic>.from(json['actor'] as Map)
+        : null;
+    final Map<String, dynamic>? meta = json['metadata'] is Map
+        ? Map<String, dynamic>.from(json['metadata'] as Map)
+        : null;
     return AdminAuditLog(
       id: json['id'] as String,
       actorId: json['actorId'] as String? ?? '',

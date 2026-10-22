@@ -7,12 +7,6 @@ import '../../../core/widgets/stitch.dart';
 import '../../device/data/device_repository.dart';
 import '../data/auth_repository.dart';
 
-
-
-
-
-
-
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({
     super.key,
@@ -126,8 +120,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
         departmentId: _unitId,
       );
 
-      
-      
       try {
         await widget.devices.register();
       } catch (_) {}
@@ -169,7 +161,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   Widget _label(String text) => Padding(
         padding: const EdgeInsets.only(bottom: 6),
-        child: Text(text, style: AppText.labelMd.copyWith(color: AppColors.ink)),
+        child:
+            Text(text, style: AppText.labelMd.copyWith(color: AppColors.ink)),
       );
 
   Widget _unitField() {
@@ -231,9 +224,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ),
             )
             .toList(),
-        onChanged: _busy
-            ? null
-            : (String? value) => setState(() => _unitId = value),
+        onChanged:
+            _busy ? null : (String? value) => setState(() => _unitId = value),
       );
     }
 

@@ -1,4 +1,3 @@
-
 enum DeviceStatus { pending, active, revoked, lost, replaced, unknown }
 
 DeviceStatus deviceStatusFrom(String? raw) {
@@ -57,8 +56,7 @@ class BoundDevice {
   final DateTime? lastSeenAt;
 
   factory BoundDevice.fromJson(Map<String, dynamic> json) {
-    DateTime? parseDate(Object? v) =>
-        v is String ? DateTime.tryParse(v) : null;
+    DateTime? parseDate(Object? v) => v is String ? DateTime.tryParse(v) : null;
     return BoundDevice(
       id: json['id'] as String,
       installationId: json['installationId'] as String? ?? '',
@@ -71,7 +69,6 @@ class BoundDevice {
     );
   }
 }
-
 
 enum ChangeRequestStatus { pending, approved, rejected, cancelled, unknown }
 
@@ -123,15 +120,10 @@ class ChangeRequest {
   final String reason;
   final String? reviewNote;
 
-  
-  
-  
   final DateTime? requestedAt;
   final DateTime? reviewedAt;
   final String? reviewedBy;
 
-  
-  
   final BoundDevice? oldDevice;
   final BoundDevice? newDevice;
 
@@ -160,10 +152,8 @@ class ChangeRequest {
   }
 }
 
-
-
-String shortTicketId(String id) => '#${id.length <= 8 ? id : id.substring(0, 8)}';
-
+String shortTicketId(String id) =>
+    '#${id.length <= 8 ? id : id.substring(0, 8)}';
 
 String shortDeviceId(String id) => id.length <= 8 ? id : id.substring(0, 8);
 
@@ -185,14 +175,11 @@ const List<String> _idMonths = <String>[
 
 String _two(int v) => v.toString().padLeft(2, '0');
 
-
-
 String formatIdDateTime(DateTime dt) {
   final DateTime l = dt.toLocal();
   final String mon = (l.month >= 1 && l.month <= 12) ? _idMonths[l.month] : '';
   return '${l.day} $mon ${l.year}, ${_two(l.hour)}:${_two(l.minute)} WIB';
 }
-
 
 String formatIdDate(DateTime dt) {
   final DateTime l = dt.toLocal();

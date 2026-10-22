@@ -3,11 +3,12 @@ import 'dart:math' as math;
 import 'package:face_absen_mobile/features/liveness/domain/liveness_engine.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-
-List<EyePoint> ring(double cx, double cy, double width, double height, {int n = 12}) {
+List<EyePoint> ring(double cx, double cy, double width, double height,
+    {int n = 12}) {
   return List<EyePoint>.generate(n, (i) {
     final double a = 2 * math.pi * i / n;
-    return EyePoint(cx + (width / 2) * math.cos(a), cy + (height / 2) * math.sin(a));
+    return EyePoint(
+        cx + (width / 2) * math.cos(a), cy + (height / 2) * math.sin(a));
   });
 }
 
@@ -30,7 +31,8 @@ void main() {
 
     test('too few points -> null (no signal beats a false reading)', () {
       expect(eyeOpenRatioFromLandmarks(const []), isNull);
-      expect(eyeOpenRatioFromLandmarks(const [EyePoint(0, 0), EyePoint(1, 1)]), isNull);
+      expect(eyeOpenRatioFromLandmarks(const [EyePoint(0, 0), EyePoint(1, 1)]),
+          isNull);
     });
 
     test('degenerate contour (zero width or height) -> null', () {
@@ -39,11 +41,15 @@ void main() {
     });
 
     test('non-finite coordinate -> null instead of NaN propagation', () {
-      expect(eyeOpenRatioFromLandmarks(const [EyePoint(double.nan, 0), EyePoint(1, 1)]), isNull);
+      expect(
+          eyeOpenRatioFromLandmarks(
+              const [EyePoint(double.nan, 0), EyePoint(1, 1)]),
+          isNull);
     });
 
     test('absurd contour is clamped to 0..1', () {
-      expect(eyeOpenRatioFromLandmarks(ring(10, 10, 4, 400)), lessThanOrEqualTo(1.0));
+      expect(eyeOpenRatioFromLandmarks(ring(10, 10, 4, 400)),
+          lessThanOrEqualTo(1.0));
     });
   });
 
@@ -76,18 +82,25 @@ void main() {
       expect(s.toAttestation()['passed'], isTrue);
     });
 
-    test('regression guard: iOS-scale values are NOT open on the probability scale', () {
+    test(
+        'regression guard: iOS-scale values are NOT open on the probability scale',
+        () {
       expect(
         0.30 > BlinkThresholds.forProbability.open,
         isFalse,
-        reason: 'a 0.30 aspect ratio must not count as open on the probability scale',
+        reason:
+            'a 0.30 aspect ratio must not count as open on the probability scale',
       );
     });
 
     test('null eye signal is ignored: never advances, never fails', () {
       final s = LivenessSession(challenges: const [ChallengeType.blink]);
       expect(
-        s.process(FrameObservation(eyeSource: EyeSignalSource.landmarkRatio, at: DateTime(2026, 1, 1))).name,
+        s
+            .process(FrameObservation(
+                eyeSource: EyeSignalSource.landmarkRatio,
+                at: DateTime(2026, 1, 1)))
+            .name,
         LivenessStatus.inProgress.name,
       );
     });

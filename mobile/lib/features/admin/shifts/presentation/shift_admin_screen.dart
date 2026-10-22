@@ -7,7 +7,6 @@ import '../../../../core/widgets/stitch.dart';
 import '../../presentation/admin_widgets.dart';
 import '../data/shift_admin_repository.dart';
 
-
 class ShiftAdminScreen extends StatefulWidget {
   const ShiftAdminScreen({super.key, required this.dio});
 

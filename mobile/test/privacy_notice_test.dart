@@ -22,7 +22,9 @@ class _ConsentCapture implements HttpClientAdapter {
     return ResponseBody.fromString(
       jsonEncode(<String, dynamic>{'ok': true}),
       200,
-      headers: {Headers.contentTypeHeader: [Headers.jsonContentType]},
+      headers: {
+        Headers.contentTypeHeader: [Headers.jsonContentType]
+      },
     );
   }
 
@@ -38,13 +40,16 @@ FaceRepository _repo(Dio dio) => FaceRepository(
 
 void main() {
   test('fallback notice is versioned and non-empty', () {
-    expect(PrivacyNotice.fallback.version, matches(RegExp(r'^\d{4}-\d{2}-\d{2}$')));
+    expect(PrivacyNotice.fallback.version,
+        matches(RegExp(r'^\d{4}-\d{2}-\d{2}$')));
     expect(PrivacyNotice.fallback.title.isNotEmpty, isTrue);
     expect(PrivacyNotice.fallback.body.isNotEmpty, isTrue);
   });
 
   test('fromJson falls back gracefully', () {
-    final n = PrivacyNotice.fromJson({'body': ['a', 'b']});
+    final n = PrivacyNotice.fromJson({
+      'body': ['a', 'b']
+    });
     expect(n.lines, ['a', 'b']);
     expect(n.version, PrivacyNotice.fallback.version);
   });

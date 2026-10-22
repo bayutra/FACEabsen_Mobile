@@ -8,13 +8,6 @@ import '../../device/domain/device_models.dart' show formatIdDateTime;
 import '../../face/data/face_repository.dart';
 import '../../device/data/device_repository.dart';
 
-
-
-
-
-
-
-
 class FaceRegisteredScreen extends StatelessWidget {
   const FaceRegisteredScreen({
     super.key,
@@ -36,8 +29,6 @@ class FaceRegisteredScreen extends StatelessWidget {
   final FaceRepository faces;
   final DeviceRepository devices;
 
-  
-  
   final DateTime? registeredAt;
 
   void _goAttendance(BuildContext context, {bool popFirst = true}) {
@@ -84,10 +75,7 @@ class FaceRegisteredScreen extends StatelessWidget {
           ],
         ),
       );
-    } catch (_) {
-      
-      
-    }
+    } catch (_) {}
   }
 
   @override

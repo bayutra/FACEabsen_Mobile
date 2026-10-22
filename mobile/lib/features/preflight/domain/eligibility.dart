@@ -1,8 +1,3 @@
-
-
-
-
-
 library;
 
 import '../../schedule/data/schedule_repository.dart';
@@ -78,9 +73,7 @@ GateResult evaluateSchedule({
       detail: roster,
     );
   }
-  
-  
-  
+
   final ShiftVerdict punch = shift.checkInStatusAt(now);
   switch (punch.status) {
     case PunchStatus.late:
@@ -89,7 +82,8 @@ GateResult evaluateSchedule({
         title: 'Jadwal Shift Dinas',
         badge: 'Terlambat',
         state: GateState.warn,
-        detail: 'Terlambat ${punch.minutes} mnt (toleransi ${shift.gracePeriodMin} mnt).',
+        detail:
+            'Terlambat ${punch.minutes} mnt (toleransi ${shift.gracePeriodMin} mnt).',
       );
     case PunchStatus.veryLate:
       return GateResult(
@@ -97,7 +91,8 @@ GateResult evaluateSchedule({
         title: 'Jadwal Shift Dinas',
         badge: 'Sangat Terlambat',
         state: GateState.warn,
-        detail: 'Terlambat ${punch.minutes} mnt, ambang telat ${shift.lateThresholdMin} mnt terlampaui.',
+        detail:
+            'Terlambat ${punch.minutes} mnt, ambang telat ${shift.lateThresholdMin} mnt terlampaui.',
       );
     default:
       return GateResult(
@@ -105,11 +100,11 @@ GateResult evaluateSchedule({
         title: 'Jadwal Shift Dinas',
         badge: 'Tepat Waktu',
         state: GateState.pass,
-        detail: '$roster · Toleransi ${shift.gracePeriodMin} mnt · Ambang telat ${shift.lateThresholdMin} mnt',
+        detail:
+            '$roster · Toleransi ${shift.gracePeriodMin} mnt · Ambang telat ${shift.lateThresholdMin} mnt',
       );
   }
 }
-
 
 bool canProceed(List<GateResult> gates) =>
     !gates.any((GateResult g) => g.state == GateState.fail);
@@ -117,12 +112,11 @@ bool canProceed(List<GateResult> gates) =>
 int passedCount(List<GateResult> gates) =>
     gates.where((GateResult g) => g.state == GateState.pass).length;
 
-
-
 bool isBlocking(GateResult g) => switch (g.id) {
       GateId.schedule || GateId.account => true,
     };
 
-
-List<GateResult> blockingGates(List<GateResult> gates) =>
-    gates.where(isBlocking).where((GateResult g) => g.state == GateState.fail).toList();
+List<GateResult> blockingGates(List<GateResult> gates) => gates
+    .where(isBlocking)
+    .where((GateResult g) => g.state == GateState.fail)
+    .toList();

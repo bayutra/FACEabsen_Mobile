@@ -9,8 +9,6 @@ import '../../../core/storage/secure_store.dart';
 import '../domain/attendance_models.dart';
 import 'outbox_repository.dart';
 
-
-
 class AttendanceRepository {
   AttendanceRepository({required Dio dio, required SecureStore store})
       : _dio = dio,
@@ -22,16 +20,8 @@ class AttendanceRepository {
   static String signMessage(String requestId, String requestTimestamp) =>
       '$requestId.$requestTimestamp';
 
-  
-  
-  
   OutboxRepository outbox() => OutboxRepository(store: _store);
 
-  
-  
-  
-  
-  
   static bool isNetworkError(DioException e) {
     if (e.type == DioExceptionType.cancel) return false;
     if (e.response != null) return false;
@@ -42,25 +32,12 @@ class AttendanceRepository {
         e.type == DioExceptionType.unknown;
   }
 
-  
-  
-  
-  
-  
-  
   static bool isRetryableServerError(DioException e) {
     if (e.type == DioExceptionType.cancel) return false;
     final int? status = e.response?.statusCode;
     return status == 429 || (status != null && status >= 500);
   }
 
-  
-  
-  
-  
-  
-  
-  
   @visibleForTesting
   static Map<String, Object?> livenessPayload(Map<String, Object> liveness) {
     final bool passive = liveness['mode'] == 'passive';
@@ -70,7 +47,8 @@ class AttendanceRepository {
       'score': liveness['score'],
       'mode': passive ? 'passive' : 'active',
       if (!passive) 'challenges': liveness['challenges'],
-      if (passive && liveness['padScore'] != null) 'padScore': liveness['padScore'],
+      if (passive && liveness['padScore'] != null)
+        'padScore': liveness['padScore'],
     };
   }
 
@@ -100,15 +78,11 @@ class AttendanceRepository {
       'requestTimestamp': requestTimestamp,
       'signature': base64Encode(signature),
       'deviceCompromised': compromised,
-      if (integrityToken != null && integrityToken.isNotEmpty) 'integrityToken': integrityToken,
+      if (integrityToken != null && integrityToken.isNotEmpty)
+        'integrityToken': integrityToken,
     };
   }
 
-  
-  
-  
-  
-  
   Future<AttendanceResult> checkIn({
     required List<double> embedding,
     required Map<String, Object> liveness,
@@ -120,18 +94,24 @@ class AttendanceRepository {
     try {
       final Response res = await _dio.post(
         '/attendance/check-in',
-        data: await _signals(embedding: embedding, liveness: liveness, deviceId: deviceId, compromised: compromised, integrityToken: integrityToken),
+        data: await _signals(
+            embedding: embedding,
+            liveness: liveness,
+            deviceId: deviceId,
+            compromised: compromised,
+            integrityToken: integrityToken),
         cancelToken: cancelToken,
       );
-      return AttendanceResult.fromCheckIn(Map<String, dynamic>.from(res.data as Map));
+      return AttendanceResult.fromCheckIn(
+          Map<String, dynamic>.from(res.data as Map));
     } on DioException catch (e) {
-      if (isNetworkError(e) || isRetryableServerError(e)) throw AttendanceOffline(e);
+      if (isNetworkError(e) || isRetryableServerError(e)) {
+        throw AttendanceOffline(e);
+      }
       throw AttendanceRejected.fromResponse(e.response?.data);
     }
   }
 
-  
-  
   Future<AttendanceResult> checkOut({
     required List<double> embedding,
     required Map<String, Object> liveness,
@@ -143,32 +123,24 @@ class AttendanceRepository {
     try {
       final Response res = await _dio.post(
         '/attendance/check-out',
-        data: await _signals(embedding: embedding, liveness: liveness, deviceId: deviceId, compromised: compromised, integrityToken: integrityToken),
+        data: await _signals(
+            embedding: embedding,
+            liveness: liveness,
+            deviceId: deviceId,
+            compromised: compromised,
+            integrityToken: integrityToken),
         cancelToken: cancelToken,
       );
-      return AttendanceResult.fromCheckOut(Map<String, dynamic>.from(res.data as Map));
+      return AttendanceResult.fromCheckOut(
+          Map<String, dynamic>.from(res.data as Map));
     } on DioException catch (e) {
-      if (isNetworkError(e) || isRetryableServerError(e)) throw AttendanceOffline(e);
+      if (isNetworkError(e) || isRetryableServerError(e)) {
+        throw AttendanceOffline(e);
+      }
       throw AttendanceRejected.fromResponse(e.response?.data);
     }
   }
 
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
   Future<FlushResult> flushOutbox({
     required OutboxRepository outbox,
     CancelToken? cancelToken,
@@ -196,15 +168,11 @@ class AttendanceRepository {
         );
         sent++;
       } on DioException catch (e) {
-        
-        
-        
         if (e.response != null && !isRetryableServerError(e)) {
-          
           dropped++;
-          dropReasons.add(AttendanceRejected.fromResponse(e.response?.data).reason);
+          dropReasons
+              .add(AttendanceRejected.fromResponse(e.response?.data).reason);
         } else {
-          
           kept.add(entry);
         }
       }
@@ -218,7 +186,6 @@ class AttendanceRepository {
     );
   }
 
-  
   Future<AttendanceHistoryPage> myHistory({
     int page = 1,
     String? checkInStatus,
@@ -232,7 +199,8 @@ class AttendanceRepository {
       to: to,
     );
     final Response res = await _dio.get('/attendance/me$query');
-    return AttendanceHistoryPage.fromJson(Map<String, dynamic>.from(res.data as Map));
+    return AttendanceHistoryPage.fromJson(
+        Map<String, dynamic>.from(res.data as Map));
   }
 }
 
@@ -248,15 +216,10 @@ class AttendanceRejected implements Exception {
   String get message => attendanceRejectMessage(reason);
 }
 
-
-
-
-
 class AttendanceOffline implements Exception {
   AttendanceOffline([this.cause]);
   final Object? cause;
 }
-
 
 class FlushResult {
   FlushResult({
@@ -266,17 +229,11 @@ class FlushResult {
     this.dropReasons = const <String?>[],
   });
 
-  
   final int sent;
 
-  
-  
   final int dropped;
 
-  
-  
   final int pending;
 
-  
   final List<String?> dropReasons;
 }

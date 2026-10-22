@@ -56,8 +56,12 @@ describe('permission catalog', () => {
 
   it('hasAllPermissions denies by default', () => {
     expect(hasAllPermissions([], ['device:revoke'])).toBe(false);
-    expect(hasAllPermissions(['device:read'], ['device:read', 'device:revoke'])).toBe(false);
-    expect(hasAllPermissions(['device:read', 'device:revoke'], ['device:revoke'])).toBe(true);
+    expect(
+      hasAllPermissions(['device:read'], ['device:read', 'device:revoke']),
+    ).toBe(false);
+    expect(
+      hasAllPermissions(['device:read', 'device:revoke'], ['device:revoke']),
+    ).toBe(true);
     expect(hasAllPermissions(['a'], [])).toBe(true);
   });
 });
