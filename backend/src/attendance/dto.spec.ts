@@ -1,6 +1,6 @@
-// class-transformer/validator decorators read design:type metadata, which the
-// Nest bootstrap normally installs. This spec runs outside the bootstrap, so
-// it has to be loaded first.
+
+
+
 import 'reflect-metadata';
 import { plainToInstance } from 'class-transformer';
 import { validateSync, ValidationError } from 'class-validator';
@@ -8,13 +8,8 @@ import { describe, expect, it } from 'vitest';
 
 import { AdminHistoryQuery, CheckInDto, LivenessAttestationDto } from './dto.js';
 
-/**
- * The app boots with a global `ValidationPipe({ whitelist: true,
- * forbidNonWhitelisted: true })`, so any property the DTO does not declare
- * fails the whole punch with a 400. This spec pins that contract for the
- * passive (Face-ID style) liveness attestation.
- */
-/** Mirrors the app's global ValidationPipe config exactly. */
+ 
+ 
 const PIPE_OPTS = {
   whitelist: true,
   forbidNonWhitelisted: true,
@@ -61,7 +56,7 @@ describe('LivenessAttestationDto', () => {
   });
 
   it('does not demand a challenge list in passive mode', () => {
-    // The old DTO required `challenges`, which made a no-command run impossible.
+    
     expect(validateLiveness({ ...base, mode: 'passive', padScore: 0.5 }).length).toBe(0);
   });
 });
@@ -94,7 +89,7 @@ describe('CheckInDto nesting', () => {
   });
 
   it('flags an unknown key inside the nested liveness object', () => {
-    // Proves the whitelist really is enforced at depth, not just at the root.
+    
     const errors = validateSync(checkIn({
       passed: true,
       mode: 'passive',
@@ -103,8 +98,8 @@ describe('CheckInDto nesting', () => {
       padScore: 0.9,
       sneaky: true,
     }), PIPE_OPTS);
-    // validateSync reports nested violations on the child's `children`, not on
-    // the root, so the whole tree has to be walked.
+    
+    
     const flat: ValidationError[] = [];
     const walk = (list: ValidationError[]) => {
       for (const e of list) {

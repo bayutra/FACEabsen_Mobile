@@ -95,7 +95,7 @@ void main() {
         await flight.timeout(const Duration(seconds: 5));
         fail('expected AttendanceRejected');
       } on AttendanceRejected {
-        // Expected: cancellation is a domain failure, never a raw DioException.
+        
       } on DioException catch (e) {
         fail('must never leak DioException (got $e)');
       } on TimeoutException {

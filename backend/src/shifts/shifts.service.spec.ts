@@ -7,9 +7,9 @@ const auditStub = { log: vi.fn(async () => undefined) } as never;
 function makePrisma(over: Record<string, Record<string, unknown>> = {}) {
   const base = {
     hospital: { findUnique: vi.fn(async () => ({ id: 'h1' })), ...over.hospital },
-    // Default actor is SUPER_ADMIN (facility bypass), so the pre-existing
-    // tests keep exercising the global path unchanged. ADMIN scoping has its
-    // own describe block below with a facility-bound actor.
+    
+    
+    
     userRole: {
       findMany: vi.fn(async () => [{ role: { name: 'SUPER_ADMIN' } }]),
       ...over.userRole,
@@ -32,8 +32,8 @@ function makePrisma(over: Record<string, Record<string, unknown>> = {}) {
     },
     attendance: { findFirst: vi.fn(async () => null), ...over.attendance },
   };
-  // Interactive-transaction stand-in: hands the same models back as `tx`, so
-  // the service can write the row and its audit atomically.
+  
+  
   return {
     ...base,
     $transaction: vi.fn(async (fn: (tx: unknown) => Promise<unknown>) => fn(base)),
@@ -77,9 +77,9 @@ describe('ShiftsService.createShift', () => {
   });
 });
 
-// Regression guard: a failing audit must roll the data write back. Otherwise
-// the caller gets 500 while the row is already committed, and the audit trail
-// is silently missing — the exact failure seen in production-like use.
+
+
+
 describe('ShiftsService.listMineFor (employee-facing roster)', () => {
   it('scopes to the caller employee and returns shift context', async () => {
     const rows = [
@@ -127,7 +127,7 @@ describe('ShiftsService.listMineFor (employee-facing roster)', () => {
       employeeSchedule: { count: vi.fn(async () => 0), findMany },
     });
     const svc = new ShiftsService(prisma, auditStub);
-    // Even if the caller sneaks an employeeId into the query, it is ignored.
+    
     await svc.listMineFor('u1', { employeeId: 'e-other' } as never);
     const arg = findMany.mock.calls[0][0] as { where: { AND: unknown[] } };
     expect(arg.where.AND[0]).toEqual({ employeeId: 'e-mine' });
@@ -146,7 +146,7 @@ describe('ShiftsService audit atomicity', () => {
       try {
         return await fn((prisma as unknown as { $transaction?: unknown }));
       } catch (e) {
-        committed = false; // rollback stands in for Postgres rolling the tx back
+        committed = false; 
         throw e;
       }
     };
@@ -288,10 +288,10 @@ describe('ShiftsService.deleteShift', () => {
   });
 });
 
-// Tahap 2 — facility scoping: an ADMIN of h1 cannot touch h2's roster.
+
 describe('ShiftsService facility scoping (ADMIN)', () => {
   const ADMIN = ['ADMIN'];
-  // Actor u-adm belongs to hospital h1; every other employee row belongs to h2.
+  
   function scopedPrisma(over: Record<string, Record<string, unknown>> = {}) {
     return makePrisma({
       userRole: { findMany: vi.fn(async () => [{ role: { name: 'ADMIN' } }]) },

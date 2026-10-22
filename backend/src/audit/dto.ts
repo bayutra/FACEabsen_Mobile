@@ -50,7 +50,7 @@ export class ListAuditQuery {
   @IsString()
   to?: string;
 
-  /** Preset filter for security-relevant events (PRD §41 monitoring feed). */
+   
   @IsOptional()
   @Transform(({ value }) => value === undefined ? undefined : value === 'true' ? true : value === 'false' ? false : value)
   @IsBoolean()

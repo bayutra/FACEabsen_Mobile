@@ -6,7 +6,7 @@ import '../../correction/data/correction_repository.dart';
 import '../../correction/presentation/correction_form_screen.dart';
 import '../../../core/theme/app_colors.dart';
 
-/// `HH:mm` in device-local time, or a dash when absent/unparseable.
+
 String clockHm(String? iso) {
   if (iso == null) return '--:--';
   final DateTime? d = DateTime.tryParse(iso)?.toLocal();
@@ -14,7 +14,7 @@ String clockHm(String? iso) {
   return '${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}';
 }
 
-/// `HH:mm:ss` in device-local time, or dashes when absent/unparseable.
+
 String clockHms(String? iso) {
   if (iso == null) return '--:--:--';
   final DateTime? d = DateTime.tryParse(iso)?.toLocal();
@@ -22,7 +22,7 @@ String clockHms(String? iso) {
   return '${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}:${d.second.toString().padLeft(2, '0')}';
 }
 
-/// Manual id-ID short date: `Kamis, 24 Okt 2024`. Falls back to [ymd].
+
 String formatWorkDateId(String ymd) {
   final DateTime? d = DateTime.tryParse(ymd);
   if (d == null) return ymd;
@@ -36,7 +36,7 @@ String formatWorkDateId(String ymd) {
   return '${hari[d.weekday - 1]}, ${d.day} ${bulan[d.month - 1]} ${d.year}';
 }
 
-/// Manual id-ID long date: `Kamis, 24 Oktober 2024`. Falls back to [ymd].
+
 String formatWorkDateLongId(String ymd) {
   final DateTime? d = DateTime.tryParse(ymd);
   if (d == null) return ymd;
@@ -50,8 +50,8 @@ String formatWorkDateLongId(String ymd) {
   return '${hari[d.weekday - 1]}, ${d.day} ${bulan[d.month - 1]} ${d.year}';
 }
 
-/// `X Jam Y Menit` between two real punch timestamps, or null when either
-/// is missing/unparseable or the range is negative.
+
+
 String? effectiveDurationLabel(String? inIso, String? outIso) {
   final DateTime? a = inIso == null ? null : DateTime.tryParse(inIso);
   final DateTime? b = outIso == null ? null : DateTime.tryParse(outIso);
@@ -61,7 +61,7 @@ String? effectiveDurationLabel(String? inIso, String? outIso) {
   return '${diff.inHours} Jam ${diff.inMinutes % 60} Menit';
 }
 
-/// `yyyy-MM-dd` for API query bounds.
+
 String dateKey(DateTime d) =>
     '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
 
@@ -75,9 +75,9 @@ String _initials(String name) {
   return (parts.first.substring(0, 1) + parts[1].substring(0, 1)).toUpperCase();
 }
 
-/// Stitch "Riwayat Presensi & Detail Bottom Sheet": modern clinical styling,
-/// period navigator, 4-column KPI Bento strip, interactive status filter rail,
-/// daily attendance cards, and digital verification evidence bottom sheet.
+
+
+
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({
     super.key,
@@ -186,7 +186,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
     _load(reset: true);
   }
 
-  /// Rows grouped by work date, newest day first.
+  
   Map<String, List<AttendanceHistoryItem>> get _grouped {
     final Map<String, List<AttendanceHistoryItem>> out = {};
     for (final AttendanceHistoryItem i in _items) {
@@ -837,7 +837,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Top row: Shift name & window, status pill
+                
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -880,7 +880,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   ],
                 ),
                 const SizedBox(height: 12),
-                // Stamp & Times: 2 columns in rounded container
+                
                 Container(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -893,7 +893,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   ),
                   child: Row(
                     children: [
-                      // Masuk (In)
+                      
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -941,7 +941,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                         color: AppColors.border.withOpacity(0.4),
                       ),
                       const SizedBox(width: 12),
-                      // Pulang (Out)
+                      
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1024,7 +1024,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   ),
                 ],
                 const SizedBox(height: 10),
-                // Card Bottom Info & Detail trigger
+                
                 Row(
                   children: [
                     Container(
@@ -1180,8 +1180,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
   }
 }
 
-/// Stitch "Detail Bukti Presensi": digital verification stamp, punch timestamps,
-/// Verifikasi biometrik & integritas perangkat, skor risiko, dan ledger ID.
+
+
 class _DetailSheet extends StatelessWidget {
   const _DetailSheet({
     required this.item,
@@ -1220,7 +1220,7 @@ class _DetailSheet extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Drag Handle
+              
               const SizedBox(height: 10),
               Container(
                 width: 44,
@@ -1231,7 +1231,7 @@ class _DetailSheet extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 10),
-              // Sheet Header Bar
+              
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
                 child: Row(
@@ -1296,23 +1296,23 @@ class _DetailSheet extends StatelessWidget {
                 height: 1,
                 color: AppColors.border.withOpacity(0.3),
               ),
-              // Scrollable Detail Body
+              
               Flexible(
                 child: SingleChildScrollView(
                   padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Semantic Big Status Badge
+                      
                       _buildVerificationBanner(lowRisk),
                       const SizedBox(height: 14),
-                      // Section 1: Detail Waktu & Server Stamp
+                      
                       _buildTimeSection(duration),
                       const SizedBox(height: 14),
-                      // Section 3: Biometrik & Hardware Device Integrity
+                      
                       _buildBiometricSection(lowRisk),
                       const SizedBox(height: 14),
-                      // Section 4: Catatan & Ledger ID
+                      
                       _buildLedgerSection(),
                       if (corrections != null) ...[
                         const SizedBox(height: 14),
@@ -1337,7 +1337,7 @@ class _DetailSheet extends StatelessWidget {
                   ),
                 ),
               ),
-              // Action Buttons Footer in Bottom Sheet
+              
               Container(
                 padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
                 decoration: BoxDecoration(

@@ -67,9 +67,9 @@ export class ShiftsController {
     return this.shifts.listSchedules(query, user.userId, user.roles);
   }
 
-  // Own roster only — any authenticated employee, no schedule:manage needed.
-  // MUST be declared before `schedules/:id`, otherwise `/schedules/me` is
-  // swallowed by the `:id` route and hits the ADMIN guard.
+  
+  
+  
   @Get('schedules/me')
   mySchedules(@Query() query: ListSchedulesQuery, @CurrentUser() user: AuthContext) {
     return this.shifts.listMineFor(user.userId, query);

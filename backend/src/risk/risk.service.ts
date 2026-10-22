@@ -3,9 +3,9 @@ import { ConfigService } from '@nestjs/config';
 
 export type RiskCategory = 'LOW' | 'MEDIUM' | 'HIGH';
 
-/** Per-signal evidence. Unknown/unreached gates score 0 (fail-closed). */
+ 
 export interface RiskInput {
-  faceScore: number | null; // 0..1 cosine, null when never evaluated
+  faceScore: number | null; 
   livenessOk: boolean;
   deviceOk: boolean;
   integrityOk: boolean;
@@ -20,11 +20,7 @@ export interface RiskWeights {
   signature: number;
 }
 
-/**
- * STEP 13 — Anti-titip-absen risk engine (PRD §23-§24, §58).
- * Fixed 100-point table; every weight and threshold is env-configurable
- * (documented in .env.example) for post-deployment calibration.
- */
+ 
 @Injectable()
 export class RiskService {
   readonly weights: RiskWeights;
@@ -64,7 +60,7 @@ export class RiskService {
     return { score, category };
   }
 
-  /** MEDIUM passes but is flagged for supervisor review (queue: STEP 17). */
+   
   needsReview(category: RiskCategory): boolean {
     return category === 'MEDIUM' && this.mediumReview;
   }

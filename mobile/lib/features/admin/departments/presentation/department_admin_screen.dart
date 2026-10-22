@@ -7,10 +7,10 @@ import '../../presentation/admin_widgets.dart';
 import '../data/department_admin_repository.dart';
 import 'unit_members_screen.dart';
 
-/// Kelola master data Unit rumah sakit.
-///
-/// ADMIN dapat menambah/mengubah/menghapus Unit. SUPERVISOR hanya melihat
-/// unitnya sendiri beserta anggotanya (`canManageAll = false`).
+
+
+
+
 class DepartmentAdminScreen extends StatefulWidget {
   const DepartmentAdminScreen({
     super.key,
@@ -60,15 +60,15 @@ class _DepartmentAdminScreenState extends State<DepartmentAdminScreen> {
     await _loadHospitals();
   }
 
-  /// Pemilih rumah sakit hanya dibutuhkan saat menambah Unit, jadi
-  /// kegagalannya tidak boleh menutupi daftar yang sudah tampil.
+  
+  
   Future<void> _loadHospitals() async {
     try {
       final List<DepartmentHospital> hospitals = await _repo.hospitals();
       if (!mounted) return;
       setState(() => _hospitals = hospitals);
     } catch (_) {
-      // Dicoba lagi saat tombol tambah ditekan.
+      
     }
   }
 

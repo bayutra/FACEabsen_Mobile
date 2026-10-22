@@ -11,8 +11,8 @@ import '../data/auth_repository.dart';
 import '../../device/data/device_repository.dart';
 import 'register_screen.dart';
 
-/// Stitch "Login Karyawan - Autentikasi" (design/stitch_rs_absen_mobile_app)
-/// Clinical hospital authentication with automatic device binding.
+
+
 class LoginScreen extends StatefulWidget {
   const LoginScreen({
     super.key,
@@ -26,8 +26,8 @@ class LoginScreen extends StatefulWidget {
   final DeviceRepository devices;
   final VoidCallback onDone;
 
-  /// Bila diisi, layar menampilkan tombol kecil untuk mengganti alamat API
-  /// (dipakai saat pengujian di jaringan berbeda). `null` menyembunyikannya.
+  
+  
   final ServerSettings? servers;
 
   @override
@@ -43,7 +43,7 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _rememberMe = true;
   String? _error;
   bool _busy = false;
-  // Langkah kedua TOTP: diisi saat login melempar TotpChallengeException.
+  
   String? _totpToken;
   bool _useRecovery = false;
 
@@ -94,9 +94,9 @@ class _LoginScreenState extends State<LoginScreen> {
         _busy = false;
       });
     } catch (e) {
-      // Non-Dio throwables (parse/state bugs, never server verdicts).
-      // Logged in debug builds only — the message below stays generic and
-      // carries no request data.
+      
+      
+      
       if (kDebugMode) debugPrint('login failed: $e');
       if (!mounted) return;
       setState(() {
@@ -106,16 +106,16 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  /// Jalur pasca-login bersama: registrasi perangkat (best-effort) lalu
-  /// [onDone]. Perangkat kini boleh lebih dari satu dan tidak ada lagi
-  /// persetujuan admin, sehingga tidak ada layar perantara — pengguna
-  /// langsung masuk ke dashboard.
+  
+  
+  
+  
   Future<void> _finishSession() async {
     try {
       await widget.devices.register();
     } catch (_) {
-      // Kegagalan menyiapkan perangkat tidak menahan login; presensi akan
-      // menampilkan pesannya sendiri bila perangkat belum siap.
+      
+      
     }
     if (!mounted) return;
     widget.onDone();
@@ -195,7 +195,7 @@ class _LoginScreenState extends State<LoginScreen> {
     return 'Gagal masuk (${code ?? 'tanpa kode'}).';
   }
 
-  /// Kartu langkah kedua TOTP: kode autentikator + alih kode pemulihan.
+  
   Widget _totpCard() {
     return AppCard(
       padding: const EdgeInsets.all(20),
@@ -320,7 +320,7 @@ class _LoginScreenState extends State<LoginScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // Top Medical Accent Bar — spec h-6px primary→primaryContainer→secondaryContainer
+            
             Container(
               height: 6,
               width: double.infinity,
@@ -343,7 +343,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    // Hospital Branding Header
+                    
                     Row(
                       children: [
                         const HospitalMark(size: 48),
@@ -396,7 +396,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     const SizedBox(height: 24),
 
-                    // Welcome Text
+                    
                     Text(
                       'Selamat Datang',
                       style: AppText.displayMobile.copyWith(
@@ -412,7 +412,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     const SizedBox(height: 24),
 
-                    // Credential Form Card
+                    
                     if (_totpToken == null)
                     AppCard(
                       padding: const EdgeInsets.all(20),
@@ -578,7 +578,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     if (_totpToken != null) _totpCard(),
                     const SizedBox(height: 16),
 
-                    // Security Notice Card: Device Binding
+                    
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
@@ -653,7 +653,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     const SizedBox(height: 12),
 
-                    // Biometric quick badge — spec pill face aktif
+                    
                     const Center(
                       child: AppPill(
                         'Verifikasi Wajah Biometrik aktif',
@@ -663,8 +663,8 @@ class _LoginScreenState extends State<LoginScreen> {
                         border: AppColors.tealBadgeBorder,
                       ),
                     ),
-                    // Alamat backend aktif — bisa diubah tanpa build ulang
-                    // saat pengujian di jaringan berbeda (ngrok/Tailscale).
+                    
+                    
                     if (widget.servers != null) ...[
                       const SizedBox(height: 8),
                       Center(
@@ -699,7 +699,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ),
 
-            // Sticky footer
+            
             Container(
               padding: const EdgeInsets.symmetric(horizontal: AppColors.pageMargin, vertical: 10),
               decoration: const BoxDecoration(

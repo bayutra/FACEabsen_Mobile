@@ -4,8 +4,8 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/stitch.dart';
 import '../data/schedule_repository.dart';
 
-/// Stitch "Jadwal Dinas Mingguan & Shift Nakes": weekly range header,
-/// per-day shift timeline with semantic chips, legend, and a leave CTA.
+
+
 class ScheduleScreen extends StatefulWidget {
   const ScheduleScreen({super.key, required this.schedules, this.onRequestLeave});
 
@@ -71,12 +71,12 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Compute roster metrics from entries
+    
     final int dutyDays = _entries.length;
     final int offDays = (7 - dutyDays).clamp(0, 7);
     final int nightShifts = _entries.where((e) => e.overnight || e.kind == ShiftKind.malam).length;
-    // Total load sums only entries whose real window parses; entries with
-    // unknown windows contribute nothing instead of a guessed 8/10h.
+    
+    
     final List<int> knownHours =
         _entries.map((e) => e.durationHours).whereType<int>().toList();
     final int totalHours = knownHours.fold(0, (sum, h) => sum + h);
@@ -123,7 +123,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            // Title & Context Header
+            
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -179,7 +179,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
 
             const SizedBox(height: 14),
 
-            // Period Navigator Card with Bento Strip
+            
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
@@ -196,7 +196,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
               ),
               child: Column(
                 children: [
-                  // Week navigation row
+                  
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -268,7 +268,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                   const Divider(height: 1),
                   const SizedBox(height: 10),
 
-                  // Metric Bento Strip (3 stats)
+                  
                   Row(
                     children: [
                       Expanded(
@@ -338,7 +338,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
 
             const SizedBox(height: 16),
 
-            // Section Header
+            
             const Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -422,7 +422,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Date box
+                
                 Container(
                   width: 44,
                   height: 48,
@@ -458,7 +458,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                   ),
                 ),
                 const SizedBox(width: 12),
-                // Shift Details
+                
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -474,10 +474,10 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                               color: AppColors.ink,
                             ),
                           ),
-                          // Status chip: HARI INI when today carries a shift,
-                          // Selesai for past days, Mendatang for future ones,
-                          // Libur when no schedule exists. Collapse Resmi/Rutin:
-                          // the roster data cannot distinguish them.
+                          
+                          
+                          
+                          
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                             decoration: BoxDecoration(
@@ -525,8 +525,8 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                                 ],
                               ),
                             ),
-                            // Real shift length only; omitted when the entry
-                            // window does not parse (never guessed).
+                            
+                            
                             if (e.durationHours != null) ...[
                               const SizedBox(width: 6),
                               Text(

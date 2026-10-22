@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_colors.dart';
 
-/// Shared helpdesk affordance reused by the face-capture guidance card, the
-/// device helpdesk card, the replacement-status escalation card, and the
-/// profile helpdesk row.
-///
-/// Contact is the one already used elsewhere in the app (login reset-password
-/// + footer: `SIMRS & SDM Kepegawaian (Ext. 104)`), plus the `Ruang Server
-/// Lt. 2` location from the device mockup. No new numbers are invented here.
+
+
+
+
+
+
+
 Future<void> showHelpdeskSheet(BuildContext context) {
   return showModalBottomSheet<void>(
     context: context,

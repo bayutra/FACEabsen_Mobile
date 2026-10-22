@@ -11,7 +11,7 @@ import { FaceService } from './face.service.js';
 export class FaceController {
   constructor(private readonly face: FaceService) {}
 
-  @Throttle({ default: { limit: 10, ttl: 60_000 } }) // biometric writes are expensive
+  @Throttle({ default: { limit: 10, ttl: 60_000 } }) 
   @HttpCode(HttpStatus.OK)
   @Post('register')
   register(@Body() dto: RegisterFaceDto, @CurrentUser() user: AuthContext, @Req() req: Request) {

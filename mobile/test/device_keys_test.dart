@@ -7,7 +7,7 @@ void main() {
   test('generate → 44-char Ed25519 public key', () async {
     final pair = await DeviceKeys.generate();
     final pub = await DeviceKeys.publicKeyBase64(pair);
-    expect(pub.length, 44); // 32 bytes base64
+    expect(pub.length, 44); 
     expect(base64Decode(pub).length, 32);
   });
 

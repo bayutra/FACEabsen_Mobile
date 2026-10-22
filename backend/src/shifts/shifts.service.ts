@@ -18,12 +18,7 @@ import type {
   UpdateShiftDto,
 } from './dto.js';
 
-/**
- * STEP 6 — Shift & Schedule (PRD §20, §51).
- * - HH:mm validated at the boundary; overnight consistency enforced in service.
- * - One roster row per (employee, workDate); night shifts anchor on start date.
- * - Schedules with attendance can never be unassigned (history protection).
- */
+ 
 @Injectable()
 export class ShiftsService {
   constructor(
@@ -31,12 +26,12 @@ export class ShiftsService {
     private readonly audit: AuditService,
   ) {}
 
-  // ---------- shifts ----------
+  
 
   async createShift(dto: CreateShiftDto, actorId: string, meta: { ip?: string } = {}) {
     const hospital = await this.prisma.hospital.findUnique({ where: { id: dto.hospitalId } });
     if (!hospital) throw new NotFoundException('Hospital not found');
-    // Facility gate: an ADMIN of hospital A cannot define shifts for B.
+    
     await this.assertSameFacility(actorId, dto.hospitalId, 'Hospital not found');
     if (dto.startTime === dto.endTime) {
       throw new BadRequestException('Shift start and end cannot be equal');
@@ -53,8 +48,8 @@ export class ShiftsService {
     if (existing) throw new ConflictException('Shift name already exists for this hospital');
 
     try {
-      // Data + audit in one transaction: a failed audit must roll the insert
-      // back, otherwise the caller sees 500 while the row is already there.
+      
+      
       return await this.prisma.$transaction(async (tx) => {
         const shift = await tx.shift.create({
           data: {
@@ -87,7 +82,7 @@ export class ShiftsService {
   }
 
   async listShifts(query: ListShiftsQuery, userId: string, roles: string[]) {
-    // Facility scoping: ADMIN callers always list their own hospital.
+    
     let hospitalId = query.hospitalId;
     if (!satisfiesRole(roles, 'SUPER_ADMIN')) {
       const scope = await resolveHospitalScope(this.prisma, userId, roles);
@@ -119,7 +114,7 @@ export class ShiftsService {
     const startTime = dto.startTime ?? existing.startTime;
     const endTime = dto.endTime ?? existing.endTime;
     if (startTime === endTime) throw new BadRequestException('Shift start and end cannot be equal');
-    // validate format even when values come from the DB row
+    
     parseHHmm(startTime);
     parseHHmm(endTime);
     const derived = isOvernightRange(startTime, endTime);
@@ -155,11 +150,7 @@ export class ShiftsService {
     }
   }
 
-  /**
-   * Shifts are referenced by `EmployeeSchedule.shiftId` and `Attendance`, both
-   * Restrict. Rather than let a FK violation surface, refuse while a roster row
-   * still points at the shift so the admin unassigns first (PRD §51).
-   */
+   
   async deleteShift(id: string, actorId: string, meta: { ip?: string } = {}) {
     const existing = await this.prisma.shift.findUnique({ where: { id } });
     if (!existing) throw new NotFoundException('Shift not found');
@@ -182,13 +173,9 @@ export class ShiftsService {
     return { removed: true };
   }
 
-  // ---------- schedules ----------
+  
 
-  /**
-   * Employee-facing: own roster for a date range (mobile "Jadwal" tab).
-   * Scoped to the caller's own employee row, so an EMPLOYEE never needs
-   * `schedule:manage` to see their own shift (PRD §20, §28).
-   */
+   
   async listMineFor(userId: string, query: ListSchedulesQuery) {
     const employee = await this.prisma.employee.findUnique({ where: { userId }, select: { id: true } });
     if (!employee) return { data: [], pagination: { page: 1, pageSize: query.pageSize ?? 20, totalItems: 0, totalPages: 0 } };
@@ -209,8 +196,8 @@ export class ShiftsService {
         skip: (page - 1) * pageSize,
         take: pageSize,
         include: {
-          // Thresholds travel with the roster so the mobile app can show the
-          // on-time/late/early verdict the server will record (PRD §20).
+          
+          
           shift: {
             select: {
               id: true,
@@ -240,7 +227,7 @@ export class ShiftsService {
     if (!employee) throw new NotFoundException('Employee not found');
     const shift = await this.prisma.shift.findUnique({ where: { id: dto.shiftId } });
     if (!shift) throw new NotFoundException('Shift not found');
-    // Both sides of the roster row must sit in the actor's facility.
+    
     await this.assertSameFacility(actorId, employee.department?.hospitalId, 'Employee not found');
     await this.assertSameFacility(actorId, shift.hospitalId, 'Shift not found');
 
@@ -280,8 +267,8 @@ export class ShiftsService {
     const page = query.page ?? 1;
     const pageSize = query.pageSize ?? 20;
     const AND: Array<Record<string, unknown>> = [];
-    // Facility scoping via the rostered shift (a foreign employeeId filter
-    // intersects to empty naturally).
+    
+    
     if (!satisfiesRole(roles, 'SUPER_ADMIN')) {
       const scope = await resolveHospitalScope(this.prisma, userId, roles);
       if (scope.kind !== 'hospital') {
@@ -382,11 +369,7 @@ export class ShiftsService {
     return e;
   }
 
-  /**
-   * Facility gate for shift/schedule writes and single-row reads.
-   * SUPER_ADMIN bypasses; everyone else must act inside their own hospital.
-   * Mismatches surface as 404 so foreign ids stay unenumerable.
-   */
+   
   private async assertSameFacility(
     actorId: string,
     targetHospitalId: string | null | undefined,

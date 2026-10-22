@@ -15,7 +15,7 @@ export class AppController {
     return this.appService.health();
   }
 
-  /** Liveness probe (L4): no DB. Readiness stays on `GET /health`. */
+   
   @Get('health/live')
   live() {
     return this.appService.live();

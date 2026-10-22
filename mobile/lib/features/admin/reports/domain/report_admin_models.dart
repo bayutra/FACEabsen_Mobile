@@ -1,11 +1,11 @@
-// Model laporan untuk layar admin Laporan.
-//
-// Semua endpoint `/reports/*` mengembalikan bentuk tabular yang sama
-// (judul, waktu dibuat, ringkasan, header, dan baris) meski isi setiap
-// laporan berbeda. Parsing dilakukan defensif karena backend bisa
-// membungkus objek di dalam `{report: {...}}` pada sebagian format.
 
-/// Jenis laporan yang bisa diminta ke backend.
+
+
+
+
+
+
+
 enum ReportKind {
   daily('daily', 'Harian'),
   monthly('monthly', 'Bulanan'),
@@ -16,10 +16,10 @@ enum ReportKind {
 
   const ReportKind(this.code, this.label);
 
-  /// Kode yang dipakai di URL query / path.
+  
   final String code;
 
-  /// Label yang ditampilkan pada chip pemilih.
+  
   final String label;
 
   static ReportKind fromCode(String? code) => ReportKind.values.firstWhere(
@@ -28,7 +28,7 @@ enum ReportKind {
       );
 }
 
-/// Satu baris ringkasan: label + angka.
+
 class ReportSummaryItem {
   const ReportSummaryItem({required this.label, required this.value});
 
@@ -36,7 +36,7 @@ class ReportSummaryItem {
   final String value;
 }
 
-/// Karyawan untuk dropdown "Per Karyawan".
+
 class AdminEmployeeOption {
   const AdminEmployeeOption({
     required this.id,
@@ -58,7 +58,7 @@ class AdminEmployeeOption {
       );
 }
 
-/// Isi satu laporan tabular.
+
 class AdminReport {
   const AdminReport({
     required this.title,

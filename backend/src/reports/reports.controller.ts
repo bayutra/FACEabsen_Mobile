@@ -16,7 +16,7 @@ function fmt(value: unknown): ReportFormat {
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 const MONTH_RE = /^\d{4}-(0[1-9]|1[0-2])$/;
 
-/** Validated from/to range (malformed dates 400 instead of NaN downstream). */
+ 
 export class ReportRangeQuery {
   @Matches(DATE_RE)
   from!: string;
@@ -29,7 +29,7 @@ export class ReportRangeQuery {
   format?: string;
 }
 
-/** Validated single-day query. */
+ 
 export class ReportDateQuery {
   @Matches(DATE_RE)
   date!: string;
@@ -39,7 +39,7 @@ export class ReportDateQuery {
   format?: string;
 }
 
-/** Validated month query (YYYY-MM). */
+ 
 export class ReportMonthQuery {
   @Matches(MONTH_RE)
   month!: string;

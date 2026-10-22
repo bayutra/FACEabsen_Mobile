@@ -1,7 +1,7 @@
-// TOTP second-factor endpoints. setup/enable/disable are authenticated
-// self-service (JwtAuthGuard only, like change-password); verify/recover are
-// public challenge completions (like login/refresh). verify/recover carry the
-// login-strength throttle: 6-digit codes are brute-forceable.
+
+
+
+
 import { Body, Controller, HttpCode, HttpStatus, Post, Req, UseGuards } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import type { Request } from 'express';

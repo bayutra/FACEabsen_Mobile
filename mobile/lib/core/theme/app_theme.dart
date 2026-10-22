@@ -3,12 +3,12 @@ import 'package:flutter/services.dart';
 
 import 'app_colors.dart';
 
-/// Material theme implementing the Stitch clinical design export in
-/// `design/stitch_rs_absen_mobile_app`.
-///
-/// Inter is not bundled: ward devices run offline, so the system stack is used
-/// and only the metrics from the spec (size / weight / tracking / line height)
-/// are honoured. See [AppText].
+
+
+
+
+
+
 ThemeData buildAppTheme() {
   const ColorScheme scheme = ColorScheme.light(
     primary: AppColors.primary,
@@ -58,7 +58,7 @@ ThemeData buildAppTheme() {
       fillColor: AppColors.surfaceLowest,
       contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
       constraints: const BoxConstraints(minHeight: AppColors.inputHeight),
-      // Spec: border #CBD5E1 -> focus #0EA5E9 + ring 3px 15%, error #EF4444.
+      
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(AppColors.radiusInput),
         borderSide: const BorderSide(color: AppColors.inputBorder),
@@ -85,17 +85,17 @@ ThemeData buildAppTheme() {
     ),
     filledButtonTheme: FilledButtonThemeData(
       style: FilledButton.styleFrom(
-        // Spec: primary attendance button solid #0F766E (primary-container),
-        // hover/active #0D9488, 52px, radius 16, body-lg-medium.
-        // NOTE: min width stays finite (64) — Size.fromHeight(infinity)
-        // crashes any button placed directly in a Row (unbounded width).
-        // Full-width CTAs already wrap in SizedBox(width: double.infinity).
+        
+        
+        
+        
+        
         backgroundColor: AppColors.primaryContainer,
         foregroundColor: Colors.white,
         disabledBackgroundColor: AppColors.surfaceContainer,
         disabledForegroundColor: AppColors.inkDisabled,
         minimumSize: const Size(64, AppColors.buttonHeight),
-        // Spec: active state compresses to 0.98 (handled by Pressable wrapper).
+        
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppColors.radiusButton),
         ),
@@ -136,7 +136,7 @@ ThemeData buildAppTheme() {
     bottomSheetTheme: const BottomSheetThemeData(
       backgroundColor: AppColors.surfaceLowest,
       surfaceTintColor: Colors.transparent,
-      // Spec: bottom-sheet rounded-t 28px + handle + scrim 45%.
+      
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppColors.radiusSheet)),
       ),

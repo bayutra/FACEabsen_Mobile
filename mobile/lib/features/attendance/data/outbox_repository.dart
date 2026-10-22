@@ -2,13 +2,13 @@ import 'dart:convert';
 
 import '../../../core/storage/secure_store.dart';
 
-/// Punch-outbox for transient outages (basement Wi-Fi, dead spots).
-///
-/// Dependency-free: persistence is a JSON list in the existing [SecureStore]
-/// (key [SecureStore.outboxKey]), so queued embeddings are encrypted at rest
-/// for free. Capped at [OutboxRepository.maxEntries] entries; the oldest is
-/// dropped when the cap is exceeded. Corrupt entries are dropped on load and
-/// never crash the caller.
+
+
+
+
+
+
+
 enum PunchKind { checkIn, checkOut }
 
 class OutboxEntry {
@@ -41,7 +41,7 @@ class OutboxEntry {
         'queuedAt': queuedAt.toUtc().toIso8601String(),
       };
 
-  /// Returns null for corrupt entries — callers drop them, never throw.
+  
   static OutboxEntry? fromJson(Map<String, dynamic> json) {
     try {
       final Object? kindRaw = json['kind'];
@@ -85,8 +85,8 @@ class OutboxEntry {
     }
   }
 
-  /// Drops values `jsonEncode` cannot represent (DateTime stays a string via
-  /// toString; arbitrary objects are stringified rather than lost).
+  
+  
   static Object? _jsonSafe(Object? value) {
     if (value == null || value is String || value is num || value is bool) {
       return value;
@@ -108,8 +108,8 @@ class OutboxRepository {
 
   final SecureStore _store;
 
-  /// Hard cap: the outbox covers transient blips, not hours-long offline.
-  /// When full, the oldest entry is evicted to make room.
+  
+  
   static const int maxEntries = 10;
 
   Future<List<OutboxEntry>> load() async {
@@ -134,11 +134,11 @@ class OutboxRepository {
         }
       }
       if (dropped > 0) {
-        // Self-heal: persist the cleaned list so corruption cannot grow.
+        
         try {
           await replaceAll(entries);
         } catch (_) {
-          // Best effort only; the in-memory list is still valid.
+          
         }
       }
       return entries;

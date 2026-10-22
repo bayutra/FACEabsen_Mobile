@@ -2,9 +2,9 @@ import 'package:face_absen_mobile/core/navigation/startup_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-/// BootstrapGate routing without pumping the real repositories: offline at
-/// launch surfaces `hasError`, which must map to the error panel — never to
-/// the infinite spinner the old `!snap.hasData` check produced.
+
+
+
 void main() {
   group('resolveStartupState', () {
     test('waiting tanpa data → loading', () {

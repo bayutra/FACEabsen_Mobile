@@ -14,8 +14,8 @@ export interface TabularReport {
 const cell = (v: string | number | null | undefined): string => {
   if (v === null || v === undefined) return '';
   let s = String(v);
-  // M10: neutralize CSV formula injection — prefix values starting with
-  // = + - @ tab CR with a single-quote so Excel treats them as text.
+  
+  
   if (/^[=+\-@\t\r]/.test(s)) s = `'${s}`;
   return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
 };

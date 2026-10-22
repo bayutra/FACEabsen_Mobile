@@ -14,8 +14,8 @@ import '../../schedule/data/schedule_repository.dart';
 import '../../schedule/domain/shift_status.dart';
 import '../../../core/theme/app_colors.dart';
 
-/// STEP 12 presensi flow (Stitch "Presensi"): liveness →
-/// wajah → tanda tangan → kirim. Check-in dan check-out satu alur.
+
+
 class AttendanceScreen extends StatefulWidget {
   const AttendanceScreen({
     super.key,
@@ -31,12 +31,12 @@ class AttendanceScreen extends StatefulWidget {
   final FaceRepository faces;
   final DeviceRepository devices;
 
-  /// Identity shown on the result screen's evidence block.
+  
   final String displayName;
   final String employeeNo;
 
-  /// Today's roster row (from the pre-flight gate), used to preview the
-  /// shift-master tolerances. Null when the caller has no roster context.
+  
+  
   final ScheduleEntry? shift;
 
   @override
@@ -47,20 +47,20 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   String? _phase;
   String? _error;
 
-  /// Offline-queue receipt: the punch is stored on-device and flushes later.
-  /// Rendered as a success banner, never as a red error.
+  
+  
   String? _queued;
   AttendanceResult? _result;
   bool _busy = false;
 
-  /// Genuine cancellation: the button flips [_cancelled] AND aborts the
-  /// in-flight Dio socket via [_cancelToken], so a "cancelled" punch can
-  /// never come back later as a success receipt.
+  
+  
+  
   CancelToken? _cancelToken;
   bool _cancelled = false;
 
-  /// Honest pipeline position: 0 face scan, 1 payload sent, 2 result received.
-  /// Drives the step widget — never hardcoded to done.
+  
+  
   int _step = 0;
 
   static String _initials(String name) {
@@ -92,16 +92,16 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       _step = 0;
       _phase = 'Verifikasi wajah…';
     });
-    // Punch inputs hoisted so a transport failure can queue them in the
-    // outbox from the `on AttendanceOffline` handler below.
+    
+    
     List<double>? embedding;
     Map<String, Object>? live;
     String? deviceId;
     bool compromised = false;
     try {
       if (!mounted || _cancelled) return;
-      // Face ID-style: hold the phone and look at the camera. No commands, and
-      // the passing frame carries the embedding, so there is no second capture.
+      
+      
       final Map<String, Object>? att = await Navigator.of(context).push<Map<String, Object>>(
         MaterialPageRoute(
           builder: (_) => PassiveScanScreen(faces: widget.faces, displayName: widget.displayName),
@@ -150,8 +150,8 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
           : await widget.attendance.checkOut(
               embedding: embedding, liveness: live, deviceId: deviceId, compromised: compromised, cancelToken: _cancelToken);
       if (!mounted || _cancelled) return;
-      // A successful punch also drains any backlog queued during an earlier
-      // outage — but only when there is one, so the happy path stays cheap.
+      
+      
       FlushResult? flushed;
       try {
         final OutboxRepository box = widget.attendance.outbox();
@@ -159,7 +159,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
           flushed = await widget.attendance.flushOutbox(outbox: box);
         }
       } catch (_) {
-        // Best effort only: this punch already succeeded.
+        
       }
       if (!mounted || _cancelled) return;
       setState(() {
@@ -171,8 +171,8 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
           _queued = '${flushed.sent} presensi tertunda berhasil dikirim.';
         }
       });
-      // Stitch "Presensi - Hasil Verifikasi": a dedicated result screen rather
-      // than an inline card, so the evidence block gets full attention.
+      
+      
       if (mounted) {
         await Navigator.of(context).push<void>(
           MaterialPageRoute(
@@ -186,10 +186,10 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
         );
       }
     } on AttendanceOffline {
-      // The punch never reached the server (transport failure): queue it in
-      // the outbox for automatic retry instead of showing a dead error.
-      // Validation rejections (AttendanceRejected below) keep their current
-      // behavior and are never queued.
+      
+      
+      
+      
       if (!mounted || _cancelled) return;
       if (embedding != null && live != null && deviceId != null) {
         try {
@@ -204,7 +204,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                 ),
               );
         } catch (_) {
-          // Queue write failed: still report the punch as unsent below.
+          
         }
       }
       setState(() {
@@ -213,8 +213,8 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
         _phase = null;
       });
     } on AttendanceRejected catch (e) {
-      // A late rejection after cancel stays silent: the user already saw
-      // "dibatalkan" and must never get a conflicting receipt or error.
+      
+      
       if (!mounted || _cancelled) return;
       setState(() {
         _error = e.message;
@@ -223,7 +223,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       });
     } catch (e) {
       if (!mounted || _cancelled) return;
-      // Aborting our own CancelToken surfaces here as a Dio cancel error.
+      
       if (e is DioException && e.type == DioExceptionType.cancel) return;
       setState(() {
         _error = 'Presensi gagal. Periksa koneksi server. (${describeError(e)})';
@@ -279,7 +279,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Employee Identity Context
+            
             Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
@@ -344,7 +344,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
 
             const SizedBox(height: 16),
 
-            // Attendance Action Hero Card
+            
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
@@ -529,7 +529,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // Top Header: RS Absen • SIMRS Mobile
+            
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               color: Colors.white,
@@ -608,14 +608,14 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 child: Column(
                   children: [
-                    // Radar Biometric Component
+                    
                     SizedBox(
                       height: 180,
                       child: Center(
                         child: Stack(
                           alignment: Alignment.center,
                           children: [
-                            // Outer pulse ring
+                            
                             Container(
                               width: 170,
                               height: 170,
@@ -627,7 +627,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                                 ),
                               ),
                             ),
-                            // Inner pulse ring
+                            
                             Container(
                               width: 140,
                               height: 140,
@@ -639,7 +639,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                                 ),
                               ),
                             ),
-                            // User verification target avatar
+                            
                             Container(
                               width: 100,
                               height: 100,
@@ -659,7 +659,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                                 child: Icon(Icons.person, size: 56, color: Colors.white),
                               ),
                             ),
-                            // Floating face badge
+                            
                             Positioned(
                               bottom: 35,
                               right: 35,
@@ -683,7 +683,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                       ),
                     ),
 
-                    // Status Titles
+                    
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                       decoration: BoxDecoration(
@@ -732,7 +732,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
 
                     const SizedBox(height: 14),
 
-                    // Progress bar module
+                    
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
@@ -783,10 +783,10 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
 
                     const SizedBox(height: 12),
 
-                    // 3-Step Verification Pipeline, driven by the real [_step]:
-                    // the face scan runs before the payload is sent, so while
-                    // the processing screen is visible step 1 is already done
-                    // only after the scan returns — never before.
+                    
+                    
+                    
+                    
                     Container(
                       decoration: BoxDecoration(
                         color: Colors.white,
@@ -828,7 +828,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
 
                     const SizedBox(height: 12),
 
-                    // Security reassuring card
+                    
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
@@ -860,7 +860,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
               ),
             ),
 
-            // Bottom cancel button
+            
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
               child: Column(
@@ -877,8 +877,8 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                         ),
                       ),
                       onPressed: () {
-                        // Genuine cancel: stop the state machine AND abort the
-                        // socket, so no late success can surface afterwards.
+                        
+                        
                         _cancelled = true;
                         _cancelToken?.cancel();
                         if (!mounted) return;
@@ -905,9 +905,9 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     );
   }
 
-  /// Live preview of the shift-master tolerances (PRD §20): the same verdict
-  /// the server will record, so "Toleransi" and "Ambang telat"/"Ambang pulang
-  /// cepat" are visible before the punch. Purely informational — never blocks.
+  
+  
+  
   Widget _shiftStatusCard(ScheduleEntry shift) {
     final DateTime now = DateTime.now();
     final DateTime end =

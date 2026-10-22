@@ -69,7 +69,7 @@ describe('LeavesService review', () => {
     const prisma = makePrisma({ leave: { findMany } });
     await svcOf(prisma).listQueue('u-sup', ['SUPERVISOR'], {});
     const where = findMany.mock.calls[0][0].where as { AND: unknown[] };
-    expect(where.AND).toHaveLength(1); // team scope, no other filters
+    expect(where.AND).toHaveLength(1); 
 
     const done = makePrisma({ leave: { findUnique: vi.fn(async () => ({ ...pending, status: 'APPROVED' })) } });
     await expect(svcOf(done).approve('l1', 'u-sup', ['SUPERVISOR'])).rejects.toThrow('already reviewed');
@@ -101,6 +101,6 @@ describe('LeavesService extras (STEP 23 coverage)', () => {
     expect(findMany).toHaveBeenCalledWith(expect.objectContaining({ where: expect.objectContaining({ employeeId: 'e-emp' }) }));
     await svc.listQueue('u-sup', ['SUPERVISOR'], { status: 'PENDING' });
     const q = findMany.mock.calls[1][0].where as { AND: unknown[] };
-    expect(q.AND.length).toBeGreaterThanOrEqual(2); // team scope + status
+    expect(q.AND.length).toBeGreaterThanOrEqual(2); 
   });
 });

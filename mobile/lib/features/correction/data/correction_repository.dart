@@ -2,7 +2,7 @@ import 'package:dio/dio.dart';
 
 import '../domain/correction_models.dart';
 
-/// STEP 15 — correction requests (PRD §36): create, own list, cancel.
+
 class CorrectionRepository {
   CorrectionRepository({required Dio dio}) : _dio = dio;
 

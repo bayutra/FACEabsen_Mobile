@@ -3,7 +3,7 @@ import { IsIn, IsOptional, IsString, MaxLength, MinLength } from 'class-validato
 export const REPLACEMENT_REASONS = ['BROKEN', 'LOST', 'STOLEN', 'UPGRADE', 'OTHER'] as const;
 
 export class CreateChangeRequestDto {
-  /** Already-registered PENDING device on the new phone (register first). */
+   
   @IsString()
   newDeviceId!: string;
 
@@ -15,7 +15,7 @@ export class CreateChangeRequestDto {
   @MaxLength(500)
   reasonNote?: string;
 
-  /** Identity verification (PRD §11.3). Face verification joins in STEP 9. */
+   
   @IsString()
   @MinLength(1)
   @MaxLength(256)

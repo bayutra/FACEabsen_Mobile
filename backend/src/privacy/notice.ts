@@ -1,7 +1,4 @@
-/** Versioned privacy notice (Bahasa Indonesia). Legal final review by the
- * hospital/DPO is REQUIRED before production (PRD §66). This text is a
- * technical placeholder implementing the delivery mechanism, not legal advice.
- */
+ 
 export const PRIVACY_NOTICE_ID = {
   version: '2026-10-01',
   lang: 'id',

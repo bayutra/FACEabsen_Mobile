@@ -47,7 +47,7 @@ export class AuthController {
     return this.auth.refresh(dto.refreshToken, metaOf(req));
   }
 
-  /** Pendaftaran mandiri; akun baru selalu berperan EMPLOYEE. */
+   
   @Public()
   @Throttle({ default: { limit: AUTH_POLICY.loginThrottle.limit, ttl: AUTH_POLICY.loginThrottle.ttl } })
   @HttpCode(HttpStatus.CREATED)

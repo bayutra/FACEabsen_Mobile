@@ -3,9 +3,9 @@ import * as argon2 from 'argon2';
 import type { PrismaService } from '../prisma/prisma.service.js';
 import { UsersService } from './users.service.js';
 
-// Real Argon2 hashing (m=64MiB, t=3) in every case starves the parallel workers
-// and times out auth.service.spec.ts. The crypto itself is covered there; here
-// we only care that the service hashes and never stores plaintext.
+
+
+
 vi.mock('argon2', () => ({
   hash: vi.fn(async (password: string) => `hashed::${password}`),
   verify: vi.fn(async (hash: string, password: string) => hash === `hashed::${password}`),
@@ -15,10 +15,7 @@ const HASH = 'hashed::Password123!';
 
 const auditStub = { log: vi.fn(async () => undefined) } as never;
 
-/**
- * `rolesByUserId` drives the rank guard, so each test can stage exactly which
- * roles the actor and the target hold.
- */
+ 
 function makePrisma(
   rolesByUserId: Record<string, string[]> = {},
   over: Record<string, Record<string, unknown>> = {},
@@ -52,8 +49,8 @@ function makePrisma(
       ...over.role,
     },
     session: { updateMany: vi.fn(async () => ({ count: 0 })), ...over.session },
-    // Facility checks default to employeeless rows (no facility), so the
-    // pre-existing rank-guard tests exercise the legacy path unchanged.
+    
+    
     employee: { findUnique: vi.fn(async () => null), ...over.employee },
   };
   return {
@@ -217,7 +214,7 @@ describe('UsersService.updateUser rank guard', () => {
         data: { isActive: true, failedLoginAttempts: 0, lockedUntil: null },
       }),
     );
-    // Re-enable must not revoke; that is the deactivate path.
+    
     expect(sessionUpdate).not.toHaveBeenCalled();
   });
 
@@ -261,7 +258,7 @@ describe('UsersService.resetPassword', () => {
     ).resolves.toEqual({ reset: true });
 
     const data = (update.mock.calls[0]?.[0] as { data: { passwordHash: string; lockedUntil: null } }).data;
-    // The stored value is the hash output, never the plaintext.
+    
     expect(data.passwordHash).toBe(HASH);
     expect(data.passwordHash).not.toBe('Password123!');
     await expect(argon2.verify(data.passwordHash, 'Password123!')).resolves.toBe(true);
@@ -334,8 +331,8 @@ describe('UsersService.listUsers', () => {
   });
 });
 
-// Tahap 2 — facility scoping: an ADMIN of h1 cannot administer h2's accounts,
-// but employeeless IT-desk accounts stay manageable under the rank guard.
+
+
 describe('UsersService facility scoping (ADMIN)', () => {
   it('foreign employee-linked account reads as 404 on update', async () => {
     const prisma = makePrisma(
@@ -373,7 +370,7 @@ describe('UsersService facility scoping (ADMIN)', () => {
         },
       },
     );
-    // Rank guard passes (EMPLOYEE < ADMIN) and no facility blocks an IT desk row.
+    
     await expect(
       svc(prisma).updateUser('u-desk', { isActive: false }, 'u-adm'),
     ).resolves.toBeDefined();

@@ -1,7 +1,7 @@
-/// Model & label untuk antrean cuti/izin (ADMIN / SUPERVISOR).
-///
-/// Backend: `GET /leaves` mengembalikan array `LeaveRequest` dengan relasi
-/// `employee` (lihat `leaves.service.ts`).
+
+
+
+
 library;
 
 const Map<String, String> leaveTypeLabels = <String, String>{
@@ -57,7 +57,7 @@ class AdminLeave {
 
   String get statusLabel => leaveStatusLabel(status);
 
-  /// Jumlah hari inklusif; `null` bila tanggal tidak lengkap/tidak valid.
+  
   int? get dayCount {
     final DateTime? start = startDate;
     final DateTime? end = endDate;

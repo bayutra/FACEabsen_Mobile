@@ -7,7 +7,7 @@ import '../../../../core/widgets/stitch.dart';
 import '../../presentation/admin_widgets.dart';
 import '../data/shift_admin_repository.dart';
 
-/// Kelola shift kerja: rentang jam, lintas hari, dan ambang toleransi.
+
 class ShiftAdminScreen extends StatefulWidget {
   const ShiftAdminScreen({super.key, required this.dio});
 

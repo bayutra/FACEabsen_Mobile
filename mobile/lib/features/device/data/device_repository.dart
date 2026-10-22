@@ -11,7 +11,7 @@ import '../../../core/crypto/device_keys.dart';
 import '../../../core/storage/secure_store.dart';
 import '../domain/device_models.dart';
 
-/// Device binding flow (PRD STEP 7): keypair + install id + registration.
+
 class DeviceRepository {
   DeviceRepository({required Dio dio, required SecureStore store})
       : _dio = dio,
@@ -39,26 +39,26 @@ class DeviceRepository {
     return DeviceKeys.publicKeyBase64(pair);
   }
 
-  /// Basic local integrity signals (offline-capable). A full Play Integrity
-  /// verdict is a production task (STEP 22) — the server already stores
-  /// platform/appVersion and validates status on every sensitive call.
+  
+  
+  
   Future<bool> isCompromised() => FlutterJailbreakDetection.jailbroken;
 
-  /// Binds this install to the employee account (PRD STEP 7 + H7).
-  ///
-  /// Registration proves possession of the device seed key: the server mints
-  /// a short-lived challenge nonce (`GET /devices/register-challenge`), this
-  /// method signs the raw nonce string with the same [DeviceKeys.sign] path
-  /// used for attendance signing, and the server verifies the signature
-  /// against `devicePublicKey` before storing it.
+  
+  
+  
+  
+  
+  
+  
   Future<BoundDevice> register() async {
     try {
       return await _registerOnce();
     } on DioException catch (e) {
-      // 409 = installation id / public key sudah terikat ke akun LAIN
-      // (mis. HP dipakai bergantian). Buang identitas akun ini lalu daftar
-      // ulang dengan installation id + keypair baru; backend mengizinkan
-      // banyak perangkat per karyawan.
+      
+      
+      
+      
       if (e.response?.statusCode == 409) {
         await _store.clearDeviceIdentity();
         return _registerOnce();
@@ -79,7 +79,7 @@ class DeviceRepository {
     }
     final PackageInfo pkg = await PackageInfo.fromPlatform();
 
-    // Ensure the seed key exists, then prove possession of it.
+    
     final String pub = await publicKeyBase64();
     final String? seed = await _store.readPrivateSeed();
     if (seed == null || seed.isEmpty) {
@@ -108,8 +108,8 @@ class DeviceRepository {
     return device;
   }
 
-  /// Device id yang siap dipakai presensi. Bila belum ada (login lama,
-  /// pergantian akun, atau storage baru), daftarkan dulu.
+  
+  
   Future<String> ensureDeviceId() async {
     final String? bound = await _store.readDeviceId();
     if (bound != null && bound.isNotEmpty) return bound;
@@ -132,8 +132,8 @@ class DeviceRepository {
 
   Future<String?> currentDeviceId() => _store.readDeviceId();
 
-  /// Replacement request (PRD STEP 8). Runs on the NEW phone: newDeviceId is
-  /// this install's device id; the server derives the old ACTIVE device.
+  
+  
   Future<ChangeRequest> requestReplacement({
     required String newDeviceId,
     required String reason,

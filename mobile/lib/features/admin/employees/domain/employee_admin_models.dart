@@ -1,4 +1,4 @@
-/// Model karyawan & Unit untuk layar admin SDM.
+
 class AdminEmployee {
   const AdminEmployee({
     required this.id,
@@ -63,7 +63,7 @@ class AdminEmployeePage {
   final int totalItems;
 }
 
-/// Unit ringkas untuk pemilih pada formulir karyawan.
+
 class AdminDepartment {
   const AdminDepartment({required this.id, required this.name, this.hospitalId});
 

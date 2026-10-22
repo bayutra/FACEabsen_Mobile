@@ -8,8 +8,8 @@ import '../data/user_admin_repository.dart';
 import '../domain/user_admin_models.dart';
 import 'user_admin_form_screen.dart';
 
-/// Kelola akun pengguna (SUPER_ADMIN): daftar, ubar peran, aktifkan/
-/// nonaktifkan, reset password, dan tambah akun baru.
+
+
 class UserAdminScreen extends StatefulWidget {
   const UserAdminScreen({super.key, required this.dio});
 

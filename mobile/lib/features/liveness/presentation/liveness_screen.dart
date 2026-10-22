@@ -13,8 +13,8 @@ import '../domain/liveness_engine.dart';
 import '../../face/data/face_detector.dart';
 import '../../../core/theme/app_colors.dart';
 
-/// ML Kit contour points -> normalized points for the eye-aspect-ratio.
-/// Coordinates are pixels; the ratio itself is scale-invariant.
+
+
 List<EyePoint> contourOf(Face face, FaceContourType type) {
   final FaceContour? contour = face.contours[type];
   if (contour == null) return const [];
@@ -23,9 +23,9 @@ List<EyePoint> contourOf(Face face, FaceContourType type) {
       .toList();
 }
 
-/// Stitch "Presensi - Liveness Challenge Biometrik": progress header, a
-/// countdown, the active instruction, per-challenge chips, the guided camera
-/// viewport, live signal tiles, and the capture / re-roll actions.
+
+
+
 class LivenessScreen extends StatefulWidget {
   const LivenessScreen(
       {super.key,
@@ -55,7 +55,7 @@ class _LivenessScreenState extends State<LivenessScreen>
   )..repeat(reverse: true);
   Timer? _timer;
 
-  // Live signals derived from the last analysed frame (never fabricated).
+  
   int _faceCount = 0;
   double _relativeFaceWidth = 0;
 
@@ -63,8 +63,8 @@ class _LivenessScreenState extends State<LivenessScreen>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    // Contours only matter where the classifier cannot report eye-open
-    // probability (iOS); on Android they are pure overhead on a 400 ms loop.
+    
+    
     final bool needsContours = defaultTargetPlatform == TargetPlatform.iOS;
     _detector = FaceDetectorService(
       classification: true,
@@ -72,8 +72,8 @@ class _LivenessScreenState extends State<LivenessScreen>
       performanceMode: FaceDetectorMode.fast,
       minFaceSize: 0.05,
       onError: (String message) {
-        // Surface ML Kit setup failures instead of leaving the user on an
-        // endless "face not detected" loop with no cause.
+        
+        
         _timer?.cancel();
         if (mounted) setState(() => _error = message);
       },
@@ -86,9 +86,9 @@ class _LivenessScreenState extends State<LivenessScreen>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    // Same hazard as the passive scan: release the session + frame timer on
-    // background; rebuild and re-arm (fresh timeout window, stale error
-    // cleared) on resume.
+    
+    
+    
     if (state == AppLifecycleState.paused ||
         state == AppLifecycleState.inactive) {
       _timer?.cancel();
@@ -132,14 +132,14 @@ class _LivenessScreenState extends State<LivenessScreen>
         enableAudio: false,
       );
       await controller.initialize();
-      // Default kamera adalah FlashMode.auto. Pada kamera depan iOS itu
-      // memicu Retina Flash setiap takePicture(), sehingga layar berkedip
-      // menyilaukan selama pemindaian. Pengguna menyalakannya sendiri lewat
-      // tombol lampu kilat.
+      
+      
+      
+      
       try {
         await controller.setFlashMode(FlashMode.off);
       } on CameraException {
-        // Perangkat tanpa lampu kilat: abaikan.
+        
       }
       if (!mounted) return;
       setState(() {
@@ -177,8 +177,8 @@ class _LivenessScreenState extends State<LivenessScreen>
       if (!mounted) return;
       LivenessStatus status;
       if (faces.length != 1) {
-        // Wrong face count pauses progress without failing (forgiving UX);
-        // timeout still bounds replay attempts.
+        
+        
         setState(() => _faceCount = faces.length);
         status = _session.process(FrameObservation(
           eyeOpenLeft: null,
@@ -187,8 +187,8 @@ class _LivenessScreenState extends State<LivenessScreen>
         ));
       } else {
         final Face f = faces.single;
-        // Header-only decode: we only need the pixel width to express the face
-        // box as a fraction. A full decode every 400ms would be too expensive.
+        
+        
         final Uint8List bytes = await File(shot.path).readAsBytes();
         if (!mounted) return;
         final img.Decoder? decoder = img.findDecoderForData(bytes);
@@ -196,8 +196,8 @@ class _LivenessScreenState extends State<LivenessScreen>
         if (info == null || info.width <= 0) return;
         final double rel = f.boundingBox.width / info.width;
 
-        // Android gives classifier probability; iOS returns null there, so we
-        // fall back to the eye contour aspect ratio (see eye_geometry.dart).
+        
+        
         final double? leftProb = f.leftEyeOpenProbability;
         final double? rightProb = f.rightEyeOpenProbability;
         final bool hasProbability = leftProb != null && rightProb != null;
@@ -235,7 +235,7 @@ class _LivenessScreenState extends State<LivenessScreen>
         }
       });
     } catch (_) {
-      // Transient frame errors are ignored; the timeout bounds the session.
+      
     } finally {
       _processing = false;
       if (shotPath != null) {
@@ -246,9 +246,9 @@ class _LivenessScreenState extends State<LivenessScreen>
     }
   }
 
-  /// Menyalakan/mematikan lampu kilat hanya atas permintaan pengguna.
-  /// Kamera depan banyak perangkat tidak punya LED; kegagalan ditampilkan
-  /// apa adanya, bukan didiamkan.
+  
+  
+  
   Future<void> _toggleFlash() async {
     final CameraController? controller = _controller;
     if (controller == null || !controller.value.isInitialized) return;
@@ -333,7 +333,7 @@ class _LivenessScreenState extends State<LivenessScreen>
     final double progress = _session.progress;
     final bool finished = _doneMessage != null;
 
-    // Inverse Surface theme: #213145 (Dark Clinical Hospital Theme)
+    
     const Color inverseSurface = AppColors.inverseSurface;
     const Color primaryFixed = AppColors.primaryFixed;
     const Color tertiaryFixed = Color(0xFF89F5E7);
@@ -343,7 +343,7 @@ class _LivenessScreenState extends State<LivenessScreen>
       body: SafeArea(
         child: Column(
           children: [
-            // Top Bar: Task-focused Header
+            
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
@@ -429,7 +429,7 @@ class _LivenessScreenState extends State<LivenessScreen>
               ),
             ),
 
-            // Sub-Header Progress & Challenge Context
+            
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 10, 16, 6),
               child: Column(
@@ -479,7 +479,7 @@ class _LivenessScreenState extends State<LivenessScreen>
               ),
             ),
 
-            // Scrollable Content
+            
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -487,7 +487,7 @@ class _LivenessScreenState extends State<LivenessScreen>
                   children: [
                     const SizedBox(height: 8),
 
-                    // Active Challenge Directive Banner
+                    
                     Container(
                       width: double.infinity,
                       padding: const EdgeInsets.all(12),
@@ -597,7 +597,7 @@ class _LivenessScreenState extends State<LivenessScreen>
 
                     const SizedBox(height: 10),
 
-                    // Challenge Switcher Pills
+                    
                     SizedBox(
                       height: 36,
                       child: ListView.separated(
@@ -663,17 +663,17 @@ class _LivenessScreenState extends State<LivenessScreen>
 
                     const SizedBox(height: 12),
 
-                    // Main Viewfinder
+                    
                     _viewport(controller),
 
                     const SizedBox(height: 10),
 
-                    // Telemetry Indicator Array
+                    
                     _signalTiles(progress),
 
                     const SizedBox(height: 8),
 
-                    // ISO Compliance Footnote
+                    
                     const Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -724,7 +724,7 @@ class _LivenessScreenState extends State<LivenessScreen>
               ),
             ),
 
-            // Sticky Bottom Ergonomic Controls
+            
             Container(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
               decoration: BoxDecoration(
@@ -810,7 +810,7 @@ class _LivenessScreenState extends State<LivenessScreen>
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 420),
           child: AspectRatio(
-            // Match the wide portrait scan frame from the mobile design.
+            
             aspectRatio: 0.8,
             child: Container(
               decoration: BoxDecoration(
@@ -847,7 +847,7 @@ class _LivenessScreenState extends State<LivenessScreen>
                           fit: StackFit.expand,
                           children: [
                             CameraPreview(controller),
-                            // Dark gradient vignette
+                            
                             DecoratedBox(
                               decoration: BoxDecoration(
                                 gradient: LinearGradient(
@@ -861,10 +861,10 @@ class _LivenessScreenState extends State<LivenessScreen>
                                 ),
                               ),
                             ),
-                            // Custom biometric HUD and face mesh
+                            
                             const CustomPaint(painter: _BiometricHudPainter()),
-                            // Garis pindai bergerak: menandakan kamera aktif
-                            // mengambil sampel, tanpa menyalakan flash.
+                            
+                            
                             Positioned.fill(
                               child: IgnorePointer(
                                 child: AnimatedBuilder(
@@ -903,7 +903,7 @@ class _LivenessScreenState extends State<LivenessScreen>
                                 ),
                               ),
                             ),
-                            // Lampu kilat manual — default mati, tidak pernah auto.
+                            
                             Align(
                               alignment: Alignment.topRight,
                               child: Padding(
@@ -938,7 +938,7 @@ class _LivenessScreenState extends State<LivenessScreen>
                                 ),
                               ),
                             ),
-                            // Top status badge
+                            
                             Align(
                               alignment: Alignment.topCenter,
                               child: Padding(
@@ -980,7 +980,7 @@ class _LivenessScreenState extends State<LivenessScreen>
                                 ),
                               ),
                             ),
-                            // Bottom hint badge
+                            
                             Align(
                               alignment: Alignment.bottomCenter,
                               child: Padding(
@@ -1125,13 +1125,13 @@ class _LivenessScreenState extends State<LivenessScreen>
   }
 }
 
-/// Precision HUD brackets, biometric oval mesh & landmark crosshairs.
+
 class _BiometricHudPainter extends CustomPainter {
   const _BiometricHudPainter();
 
   @override
   void paint(Canvas canvas, Size size) {
-    // 1. Oval face contour (dashed cyan)
+    
     final Rect oval = Rect.fromCenter(
       center: Offset(size.width / 2, size.height * 0.48),
       width: size.width * 0.56,
@@ -1143,7 +1143,7 @@ class _BiometricHudPainter extends CustomPainter {
       ..strokeWidth = 1.3;
     canvas.drawOval(oval, ovalPaint);
 
-    // 2. Eye landmarks
+    
     final Paint eyePaint = Paint()
       ..color = const Color(0xFF00D2B7).withOpacity(0.65)
       ..style = PaintingStyle.stroke
@@ -1159,7 +1159,7 @@ class _BiometricHudPainter extends CustomPainter {
     canvas.drawCircle(rightEye, 12, eyePaint);
     canvas.drawCircle(rightEye, 3.5, eyeDotPaint);
 
-    // 3. Nose & Mouth landmarks
+    
     final Paint mouthPaint = Paint()
       ..color = const Color(0xFF89F5E7).withOpacity(0.55)
       ..style = PaintingStyle.stroke
@@ -1170,7 +1170,7 @@ class _BiometricHudPainter extends CustomPainter {
       mouthPaint,
     );
 
-    // 4. Corner HUD brackets
+    
     final Paint bracketPaint = Paint()
       ..color = const Color(0xFF89F5E7)
       ..style = PaintingStyle.stroke
@@ -1180,25 +1180,25 @@ class _BiometricHudPainter extends CustomPainter {
     const double bracketSize = 18;
     const double pad = 12;
 
-    // Top-Left
+    
     canvas.drawLine(const Offset(pad, pad),
         const Offset(pad + bracketSize, pad), bracketPaint);
     canvas.drawLine(const Offset(pad, pad),
         const Offset(pad, pad + bracketSize), bracketPaint);
 
-    // Top-Right
+    
     canvas.drawLine(Offset(size.width - pad, pad),
         Offset(size.width - pad - bracketSize, pad), bracketPaint);
     canvas.drawLine(Offset(size.width - pad, pad),
         Offset(size.width - pad, pad + bracketSize), bracketPaint);
 
-    // Bottom-Left
+    
     canvas.drawLine(Offset(pad, size.height - pad),
         Offset(pad + bracketSize, size.height - pad), bracketPaint);
     canvas.drawLine(Offset(pad, size.height - pad),
         Offset(pad, size.height - pad - bracketSize), bracketPaint);
 
-    // Bottom-Right
+    
     canvas.drawLine(
         Offset(size.width - pad, size.height - pad),
         Offset(size.width - pad - bracketSize, size.height - pad),

@@ -2,10 +2,10 @@ import 'package:dio/dio.dart';
 
 import '../domain/team_admin_models.dart';
 
-/// Endpoint tim supervisor.
-///
-/// Backend: GET /supervisor/team, /supervisor/summary?from&to,
-/// /supervisor/attendance?from&to&status, /supervisor/team/:id.
+
+
+
+
 class TeamAdminRepository {
   TeamAdminRepository({required Dio dio}) : _dio = dio;
 
@@ -55,8 +55,8 @@ class TeamAdminRepository {
         .toList();
   }
 
-  /// Detail anggota. Mengembalikan `null` bila backend tidak mengembalikan
-  /// bentuk `{member, recent}` sehingga pemanggil bisa memakai fallback.
+  
+  
   Future<TeamMemberDetail?> memberDetail(String id) async {
     final Response<dynamic> res =
         await _dio.get<dynamic>('/supervisor/team/$id');

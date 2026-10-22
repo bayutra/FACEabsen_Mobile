@@ -89,12 +89,12 @@ const dto = (over: Record<string, unknown> = {}) => ({
 
 interface PassiveOptions {
   passed?: boolean;
-  /** `null` omits the key entirely, which the server must reject. */
+   
   padScore?: number | null;
   completedAt?: string;
 }
 
-/** Builds a Face-ID style passive attestation: no challenges, padScore set. */
+ 
 function passiveLiveness(options: PassiveOptions = {}) {
   const passed = options.passed ?? true;
   const completedAt = options.completedAt ?? new Date().toISOString();
@@ -181,7 +181,7 @@ describe('AttendanceService.checkIn', () => {
     await expect(
       makeDeps({ openAttendance: { id: 'a0' } }).svc.checkIn(dto(), 'u1'),
     ).rejects.toMatchObject({ response: { reason: 'ALREADY_CHECKED_IN' } });
-    // GPS removed entirely — no geofence gate.
+    
     const out = await makeDeps().svc.checkIn(dto(), 'u1');
     expect(out).toMatchObject({
       risk: { score: 96, category: 'LOW', needsReview: false },
@@ -201,14 +201,14 @@ describe('AttendanceService.checkIn', () => {
   });
 
   it('a passive (Face-ID style) liveness run passes the server gate', async () => {
-    // No challenges at all - the whole point of the passive mode.
+    
     await expect(
       makeDeps().svc.checkIn(dto({ liveness: passiveLiveness() }), 'u1'),
     ).resolves.toBeDefined();
   });
 
   it('a passive run that omits padScore is rejected as empty evidence', async () => {
-    // Otherwise a client could post `passed: true` with no proof whatsoever.
+    
     const body = dto();
     (body.liveness as Record<string, unknown>) = passiveLiveness({ padScore: null });
     await expect(makeDeps().svc.checkIn(body, 'u1')).rejects.toMatchObject({
@@ -235,7 +235,7 @@ describe('AttendanceService.checkIn', () => {
   });
 
   it('rejections carry risk score + category in audit and response', async () => {
-    // face 0.1 → 4.5 + 55 = 59.5 → 60 HIGH even though rejected
+    
     await expect(makeDeps({ faceScore: 0.1 }).svc.checkIn(dto(), 'u1')).rejects.toMatchObject({
       response: { reason: 'FACE_MISMATCH', riskScore: 60, riskCategory: 'HIGH' },
     });
@@ -275,7 +275,7 @@ describe('AttendanceService.checkOut', () => {
     const out = (await svc.checkOut(dto(), 'u1')) as {
       risk: { score: number; category: string; needsReview: boolean };
     };
-    // Checkout alone scores 96/LOW, but the row keeps the worse check-in flag.
+    
     expect(out.risk).toEqual({ score: 96, category: 'MEDIUM', needsReview: true });
     expect(prisma.attendance.update).toHaveBeenCalledWith(
       expect.objectContaining({

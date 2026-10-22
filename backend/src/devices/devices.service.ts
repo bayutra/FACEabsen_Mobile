@@ -18,18 +18,12 @@ export type DeviceCheck =
   | { ok: true; device: { id: string; status: string } }
   | { ok: false; reason: 'UNKNOWN_DEVICE' | 'WRONG_OWNER' | 'NOT_ACTIVE' };
 
-/** Purpose pin for the stateless registration challenge JWT (H7). */
+ 
 export const DEVICE_REGISTER_PURPOSE = 'device-register';
-/** Challenge lifetime: 5 minutes (same order as the attendance skew window). */
+ 
 export const DEVICE_REGISTER_CHALLENGE_TTL_SEC = 300;
 
-/**
- * STEP 7 — Device binding (PRD §9-§10, §52).
- * - First device of an employee activates immediately; further devices stay
- *   PENDING until the replacement flow (STEP 8) or admin approval (STEP 18).
- * - Server never trusts client device claims: validateDeviceFor() is the gate
- *   the attendance engine (STEP 12) must call.
- */
+ 
 @Injectable()
 export class DevicesService {
   constructor(
@@ -38,11 +32,7 @@ export class DevicesService {
     private readonly jwt: JwtService,
   ) {}
 
-  /**
-   * Stateless proof-of-possession challenge (H7): a short-lived JWT binding
-   * the nonce to the caller. No DB row and no Redis — expiry and subject are
-   * enforced cryptographically at `register()` time.
-   */
+   
   async issueRegisterChallenge(userId: string): Promise<{ nonce: string; expiresAt: string }> {
     const nonce = await this.jwt.signAsync(
       { sub: userId, purpose: DEVICE_REGISTER_PURPOSE, jti: randomUUID() },
@@ -58,11 +48,7 @@ export class DevicesService {
     };
   }
 
-  /**
-   * Karyawan kini boleh memakai lebih dari satu perangkat sekaligus
-   * (mis. HP pribadi + tablet ruangan), jadi nomor karyawan tidak lagi
-   * "mengikat" satu perangkat ACTIVE. Perangkat baru langsung ACTIVE.
-   */
+   
   async register(dto: RegisterDeviceDto, userId: string, meta: { ip?: string } = {}) {
     await this.verifyRegistrationProof(dto, userId);
     const employee = await this.prisma.employee.findUnique({ where: { userId } });
@@ -72,11 +58,11 @@ export class DevicesService {
       where: { OR: [{ installationId: dto.installationId }, { devicePublicKey: dto.devicePublicKey }] },
     });
     if (clash) {
-      // Idempotent re-registration: the same install+keypair coming back
-      // (fresh login, app reinstall with restored backup) resolves to the
-      // existing row instead of a misleading "other account" 409 — the
-      // nonce proof above already established possession. Only a clash with
-      // ANOTHER employee's device stays a conflict.
+      
+      
+      
+      
+      
       if (clash.employeeId === employee.id) return clash;
       throw new ConflictException('Device already registered');
     }
@@ -110,11 +96,7 @@ export class DevicesService {
     }
   }
 
-  /**
-   * Verifies the challenge JWT (purpose + expiry + subject match) and then the
-   * Ed25519 signature over the raw nonce. Every failure is a bare 401 that
-   * reveals nothing about which half failed.
-   */
+   
   private async verifyRegistrationProof(dto: RegisterDeviceDto, userId: string): Promise<void> {
     let payload: { sub?: string; purpose?: string };
     try {
@@ -175,7 +157,7 @@ export class DevicesService {
     });
   }
 
-  /** Server-side gate for sensitive flows (attendance, replacement). */
+   
   async validateDeviceFor(employeeId: string, deviceId: string): Promise<DeviceCheck> {
     const device = await this.prisma.device.findUnique({ where: { id: deviceId } });
     if (!device) return { ok: false, reason: 'UNKNOWN_DEVICE' };
@@ -184,7 +166,7 @@ export class DevicesService {
     return { ok: true, device: { id: device.id, status: device.status } };
   }
 
-  // ---------- admin (STEP 18) ----------
+  
 
   async listAll(query: ListDevicesQuery, userId: string, roles: string[]) {
     const page = query.page ?? 1;
@@ -228,7 +210,7 @@ export class DevicesService {
       include: { employee: { select: { department: { select: { hospitalId: true } } } } },
     });
     if (!device) throw new NotFoundException('Device not found');
-    // Facility gate: an ADMIN of hospital A cannot revoke hospital B's device.
+    
     if (!satisfiesRole(roles, 'SUPER_ADMIN')) {
       const scope = await resolveHospitalScope(this.prisma, adminId, roles);
       if (scope.kind !== 'hospital' || device.employee?.department?.hospitalId !== scope.hospitalId) {
@@ -256,16 +238,7 @@ export class DevicesService {
     return updated;
   }
 
-  /**
-   * Admin direct activation (STEP 18): a PENDING device — typically the one a
-   * nurse registered while waiting at the counter — can be trusted without the
-   * full replacement request, but never blindly:
-   * - only PENDING devices are activatable (revoked/lost/active → 409);
-   * - facility gate identical to revoke (ADMIN stays inside its hospital).
-   *
-   * Catatan: aturan "1 karyawan = 1 perangkat ACTIVE" sudah dihapus. Perangkat
-   * aktif lain TIDAK lagi dicabut otomatis; admin mencabut manual bila perlu.
-   */
+   
   async activate(
     id: string,
     adminId: string,
@@ -304,7 +277,7 @@ export class DevicesService {
     return updated;
   }
 
-  /** Owner (from another session) or admin marks a device LOST. */
+   
   async markLost(id: string, userId: string, roles: string[], meta: { ip?: string } = {}) {    const device = await this.prisma.device.findUnique({
       where: { id },
       include: { employee: { select: { userId: true, department: { select: { hospitalId: true } } } } },

@@ -36,7 +36,7 @@ describe('PrivacyService consent', () => {
     expect(g.granted).toBe(true);
     expect(auditStub.log).toHaveBeenCalledWith(expect.objectContaining({ action: 'CONSENT_GRANTED' }));
 
-    expect(await svc.hasActiveConsent('e1', 'BIOMETRIC_ATTENDANCE')).toBe(false); // mock has no row
+    expect(await svc.hasActiveConsent('e1', 'BIOMETRIC_ATTENDANCE')).toBe(false); 
 
     const prisma2 = makePrisma({ id: 'c1', revokedAt: null });
     const svc2 = new PrivacyService(prisma2, auditStub, configStub);

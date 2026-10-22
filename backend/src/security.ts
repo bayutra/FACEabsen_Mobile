@@ -8,10 +8,7 @@ export interface EnvLike {
   HOSPITAL_TZ?: string;
 }
 
-/**
- * STEP 22 — fail-closed production boot (PRD §67). Weak/default secrets must
- * never reach production. Pure + unit-tested.
- */
+ 
 export function assertProductionEnv(env: EnvLike): void {
   if (env.NODE_ENV !== 'production') return;
   const problems: string[] = [];

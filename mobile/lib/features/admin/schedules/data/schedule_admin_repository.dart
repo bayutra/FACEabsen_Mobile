@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 
-/// Satu baris jadwal dinas beserta shift dan karyawannya (GET /schedules).
+
 class AdminScheduleEntry {
   const AdminScheduleEntry({
     required this.id,
@@ -41,7 +41,7 @@ class AdminScheduleEntry {
   }
 }
 
-/// Halaman jadwal dari backend (pagination 1-based).
+
 class AdminSchedulePage {
   const AdminSchedulePage({
     required this.items,
@@ -56,7 +56,7 @@ class AdminSchedulePage {
   final int totalItems;
 }
 
-/// Karyawan aktif untuk pemilih jadwal.
+
 class AdminScheduleEmployee {
   const AdminScheduleEmployee({
     required this.id,
@@ -85,7 +85,7 @@ class AdminScheduleEmployee {
   }
 }
 
-/// Shift ringkas untuk pemilih jadwal.
+
 class AdminShiftOption {
   const AdminShiftOption({
     required this.id,
@@ -123,11 +123,11 @@ class AdminShiftOption {
   }
 }
 
-/// Endpoint penugasan jadwal untuk ADMIN.
-///
-/// Backend: GET /schedules?from&to&page&pageSize, POST /schedules,
-/// DELETE /schedules/:id, ditambah GET /employees (karyawan aktif) dan
-/// GET /shifts untuk pilihan pada formulir.
+
+
+
+
+
 class ScheduleAdminRepository {
   ScheduleAdminRepository({required Dio dio}) : _dio = dio;
 
@@ -167,8 +167,8 @@ class ScheduleAdminRepository {
     );
   }
 
-  /// Memuat seluruh karyawan aktif, mengikuti pagination backend (maks. 20
-  /// halaman) supaya pemilih tidak terpotong di 100 orang pertama.
+  
+  
   Future<List<AdminScheduleEmployee>> activeEmployees() async {
     final List<AdminScheduleEmployee> items = <AdminScheduleEmployee>[];
     int page = 1;
@@ -236,8 +236,8 @@ String _dateKey(DateTime date) => '${date.year.toString().padLeft(4, '0')}-'
     '${date.month.toString().padLeft(2, '0')}-'
     '${date.day.toString().padLeft(2, '0')}';
 
-/// Tanggal dari backend bisa berupa ISO datetime; ambil komponen tanggalnya
-/// tanpa konversi zona waktu agar `workDate` tidak bergeser satu hari.
+
+
 DateTime? _dateOf(Object? value) {
   if (value is! String || value.isEmpty) return null;
   final List<String> parts = value.split('T').first.split('-');

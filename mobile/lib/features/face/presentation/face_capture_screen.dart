@@ -7,8 +7,8 @@ import '../domain/face_quality.dart';
 import 'face_guidance_card.dart';
 import 'face_scan_issue_screen.dart';
 
-/// STEP 12 face-verify capture: same viewport as registration but returns the
-/// embedding for attendance instead of uploading a template.
+
+
 class FaceCaptureScreen extends StatefulWidget {
   const FaceCaptureScreen({super.key, required this.faces});
 
@@ -24,8 +24,8 @@ class _FaceCaptureScreenState extends State<FaceCaptureScreen>
   String? _error;
   bool _busy = false;
 
-  /// Real failing quality gate for the last shot (null = no failure or a
-  /// non-capture error). Drives the guidance card; never a guessed diagnosis.
+  
+  
   FaceGate? _failGate;
 
   @override
@@ -37,8 +37,8 @@ class _FaceCaptureScreenState extends State<FaceCaptureScreen>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    // Backgrounding with an open session resumes to a dead preview whose
-    // takePicture throws (frozen scan). Drop the session; rebuild on resume.
+    
+    
     if (state == AppLifecycleState.paused ||
         state == AppLifecycleState.inactive) {
       final CameraController? controller = _controller;
@@ -70,11 +70,11 @@ class _FaceCaptureScreenState extends State<FaceCaptureScreen>
         enableAudio: false,
       );
       await controller.initialize();
-      // Default AUTO memicu Retina Flash saat menangkap frame; matikan.
+      
       try {
         await controller.setFlashMode(FlashMode.off);
       } on CameraException {
-        // Perangkat tanpa lampu kilat.
+        
       }
       if (mounted) setState(() => _controller = controller);
     } on CameraException catch (e) {
@@ -121,9 +121,9 @@ class _FaceCaptureScreenState extends State<FaceCaptureScreen>
     }
   }
 
-  /// Buka layar panduan Stitch yang sesuai diagnosis pipeline terakhir.
-  /// "Coba Pindai Ulang" kembali ke viewport ini; "Bantuan Manual"
-  /// membuka info helpdesk SIMRS.
+  
+  
+  
   Future<void> _openIssueGuide(FaceGate gate) async {
     final bool? retry = await Navigator.of(context).push<bool>(
       MaterialPageRoute(

@@ -3,7 +3,7 @@ import 'dart:math' as math;
 import 'package:face_absen_mobile/features/liveness/domain/liveness_engine.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-/// Synthetic closed-contour ring with a chosen aspect ratio (w:h).
+
 List<EyePoint> ring(double cx, double cy, double width, double height, {int n = 12}) {
   return List<EyePoint>.generate(n, (i) {
     final double a = 2 * math.pi * i / n;

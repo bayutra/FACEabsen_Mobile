@@ -39,7 +39,7 @@ function makePrisma(over: Record<string, Record<string, unknown>> = {}) {
       ...over.correction,
     },
   };
-  // Transaction stand-in: hands the same models back as `tx`.
+  
   return { ...base, $transaction: vi.fn(async (fn: (tx: unknown) => unknown) => fn(base)) } as unknown as PrismaService;
 }
 
@@ -94,11 +94,11 @@ describe('CorrectionsService review scope', () => {
     });
     const out = (await svcOf(prisma).approve('c1', 'u-sup', ['SUPERVISOR'], 'ok')) as { status: string };
     expect(out.status).toBe('APPROVED');
-    // 15:05 vs 15:00 end, threshold 15 → NORMAL_CHECKOUT
+    
     expect(attUpdate).toHaveBeenCalledWith(
       expect.objectContaining({ data: expect.objectContaining({ checkOutStatus: 'NORMAL_CHECKOUT' }) }),
     );
-    // Audit rides inside the same transaction (atomic approve).
+    
     expect(auditStub.log).toHaveBeenCalledWith(
       expect.objectContaining({ action: 'CORRECTION_APPROVED' }),
       expect.anything(),
@@ -108,15 +108,15 @@ describe('CorrectionsService review scope', () => {
   it('stranger supervisor and employee cannot review; double review blocked', async () => {
     const prisma = makePrisma({ correction: { findUnique: vi.fn(async () => pending) } });
     const svc = svcOf(prisma);
-    // u-other is not e-emp's supervisor and not admin
+    
     const other = makePrisma({ correction: { findUnique: vi.fn(async () => pending) } });
     await expect(svcOf(other).approve('c1', 'u-other', ['SUPERVISOR'])).rejects.toThrow('Not authorized');
     await expect(svc.approve('c1', 'u-emp', ['EMPLOYEE'])).rejects.toThrow();
   });
 
   it('off-day correction instants are rejected (Tahap 3 L5)', async () => {
-    // 06:55 WIB Oct 5 == 23:55Z Oct 4: the UTC day differs from the bucket,
-    // but the hospital day matches — a UTC-naive check would wrongly reject.
+    
+    
     const wibMorning = {
       ...pending,
       requestedCheckIn: new Date('2026-10-04T23:55:00.000Z'),
@@ -127,7 +127,7 @@ describe('CorrectionsService review scope', () => {
 
     const offDay = {
       ...pending,
-      requestedCheckIn: new Date('2026-10-06T01:00:00.000Z'), // 08:00 WIB Oct 6 ≠ workDate Oct 5
+      requestedCheckIn: new Date('2026-10-06T01:00:00.000Z'), 
       requestedCheckOut: null,
     };
     const prisma2 = makePrisma({ correction: { findUnique: vi.fn(async () => offDay) } });

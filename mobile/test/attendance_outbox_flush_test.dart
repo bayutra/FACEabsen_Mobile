@@ -10,7 +10,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'fakes.dart';
 
-/// Records every POST body; always answers 200 with a minimal check-in shape.
+
 class _CapturingAdapter implements HttpClientAdapter {
   final List<Map<String, dynamic>> bodies = <Map<String, dynamic>>[];
   final List<String> paths = <String>[];
@@ -39,7 +39,7 @@ class _CapturingAdapter implements HttpClientAdapter {
   void close({bool force = false}) {}
 }
 
-/// Answers every POST with [status] + a server `reason` payload.
+
 class _StatusAdapter implements HttpClientAdapter {
   _StatusAdapter(this.status, this.reason);
 
@@ -63,7 +63,7 @@ class _StatusAdapter implements HttpClientAdapter {
   void close({bool force = false}) {}
 }
 
-/// Fails every POST as if the network is down (no HTTP response).
+
 class _ThrowAdapter implements HttpClientAdapter {
   _ThrowAdapter(this.type);
 
@@ -158,7 +158,7 @@ void main() {
       dio.httpClientAdapter = baseline;
       final AttendanceRepository repo = await _repoWithSeed(dio);
 
-      // Baseline: satu punch sukses mencantumkan requestId A.
+      
       await repo.checkIn(
         embedding: List<double>.filled(192, 0.1),
         liveness: _passiveLiveness(),
@@ -167,7 +167,7 @@ void main() {
       );
       final String idA = baseline.bodies.single['requestId'] as String;
 
-      // Outage: punch gagal offline → layar mengantrekan entry.
+      
       dio.httpClientAdapter = _ThrowAdapter(DioExceptionType.connectionError);
       try {
         await repo.checkIn(
@@ -182,7 +182,7 @@ void main() {
       }
       expect(await repo.outbox().count(), 1);
 
-      // Online lagi: flush mengirim ulang dengan tanda tangan BARU.
+      
       final _CapturingAdapter flushed = _CapturingAdapter();
       dio.httpClientAdapter = flushed;
       final FlushResult result =
@@ -194,7 +194,7 @@ void main() {
       expect(await repo.outbox().count(), 0);
       final String idB = flushed.bodies.single['requestId'] as String;
       expect(idB, isNot(idA));
-      // Timestamp juga fresh (bisa di-parse, bukan bytes antrean lama).
+      
       expect(
           DateTime.tryParse(
               flushed.bodies.single['requestTimestamp'] as String),

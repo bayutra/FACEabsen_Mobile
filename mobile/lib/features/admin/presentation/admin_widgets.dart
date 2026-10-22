@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/stitch.dart';
 
-/// Pesan error ringkas dari respons NestJS (`{message: string | string[]}`).
+
 String adminErrorText(Object error) {
   if (error is DioException) {
     final Object? data = error.response?.data;
@@ -31,7 +31,7 @@ void showAdminSnack(BuildContext context, String message, {bool error = false}) 
   );
 }
 
-/// Konfirmasi untuk aksi yang mengubah data (aktifkan, cabut, nonaktifkan).
+
 Future<bool> confirmAdminAction(
   BuildContext context, {
   required String title,
@@ -62,7 +62,7 @@ Future<bool> confirmAdminAction(
   return ok == true;
 }
 
-/// Kerangka layar admin: header standar + body yang bisa di-refresh.
+
 class AdminScaffold extends StatelessWidget {
   const AdminScaffold({
     super.key,
@@ -94,7 +94,7 @@ class AdminScaffold extends StatelessWidget {
   }
 }
 
-/// Kartu baris untuk daftar admin.
+
 class AdminTile extends StatelessWidget {
   const AdminTile({
     super.key,
@@ -166,7 +166,7 @@ class AdminTile extends StatelessWidget {
   }
 }
 
-/// Filter status horizontal (mis. PENDING / ACTIVE / REVOKED).
+
 class AdminFilterChips extends StatelessWidget {
   const AdminFilterChips({
     super.key,
@@ -176,7 +176,7 @@ class AdminFilterChips extends StatelessWidget {
     this.labels = const <String, String>{},
   });
 
-  /// `null` sebagai nilai pertama berarti "Semua".
+  
   final List<String?> values;
   final String? selected;
   final ValueChanged<String?> onChanged;
@@ -283,7 +283,7 @@ class AdminPager extends StatelessWidget {
   }
 }
 
-/// Isi layar saat daftar kosong.
+
 class AdminEmpty extends StatelessWidget {
   const AdminEmpty({
     super.key,
@@ -302,7 +302,7 @@ class AdminEmpty extends StatelessWidget {
   }
 }
 
-/// Isi layar saat pemuatan gagal — selalu ada tombol coba lagi.
+
 class AdminError extends StatelessWidget {
   const AdminError({super.key, required this.message, required this.onRetry});
 
@@ -333,13 +333,13 @@ class AdminError extends StatelessWidget {
   }
 }
 
-/// Tiket tanggal `yyyy-MM-dd` untuk query laporan.
+
 String adminDate(DateTime d) =>
     '${d.year.toString().padLeft(4, '0')}-'
     '${d.month.toString().padLeft(2, '0')}-'
     '${d.day.toString().padLeft(2, '0')}';
 
-/// Tanggal ringkas untuk ditampilkan (`20 Okt 2026`).
+
 String adminShortDate(DateTime? dt) {
   if (dt == null) return '—';
   const List<String> months = <String>[

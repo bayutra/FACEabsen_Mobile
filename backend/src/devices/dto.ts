@@ -2,7 +2,7 @@ import { Type } from 'class-transformer';
 import { IsIn, IsInt, IsOptional, IsString, Max, MaxLength, Min, MinLength } from 'class-validator';
 
 export class RegisterDeviceDto {
-  /** Client-generated stable install identifier (uuid). */
+   
   @IsString()
   @MinLength(8)
   @MaxLength(128)
@@ -21,24 +21,19 @@ export class RegisterDeviceDto {
   @MaxLength(32)
   appVersion?: string;
 
-  /** Ed25519 public key (base64). Private key never leaves the device. */
+   
   @IsString()
   @MinLength(32)
   @MaxLength(256)
   devicePublicKey!: string;
 
-  /**
-   * Stateless registration challenge (proof-of-possession, H7): a JWT with
-   * `purpose:'device-register'` minted by `GET /devices/register-challenge`.
-   * The raw nonce string is signed below so the server knows the caller holds
-   * the private key matching `devicePublicKey`.
-   */
+   
   @IsString()
   @MinLength(8)
   @MaxLength(2048)
   nonce!: string;
 
-  /** Base64 Ed25519 signature over the raw `nonce` string. */
+   
   @IsString()
   @MinLength(32)
   @MaxLength(256)
@@ -79,9 +74,9 @@ export class RevokeDeviceDto {
   reason?: string;
 }
 
-/** STEP 18 — admin direct activation of a PENDING device. */
+ 
 export class ActivateDeviceDto {
-  /** Why this device is being trusted without a replacement request. */
+   
   @IsOptional()
   @IsString()
   @MaxLength(500)

@@ -25,10 +25,10 @@ import '../../features/preflight/presentation/preflight_screen.dart';
 import '../../features/schedule/data/schedule_repository.dart';
 import '../../features/schedule/presentation/schedule_screen.dart';
 
-/// Stitch "RS Absen Mobile App" shell: 5 bottom-nav destinations
-/// Beranda, Riwayat, Jadwal, Perangkat, Profil (spec §3).
-/// Presensi & pengajuan berjalan sebagai alur linear (CTA → pra-validasi →
-/// liveness → hasil), bukan tab — persis seperti code.html.
+
+
+
+
 class HomeShell extends StatefulWidget {
   const HomeShell({
     super.key,
@@ -45,7 +45,7 @@ class HomeShell extends StatefulWidget {
     required this.dio,
   });
 
-  /// Klien API yang sama dengan repositori; dipakai layar admin "Kelola".
+  
   final Dio dio;
 
   final AuthRepository auth;
@@ -72,8 +72,8 @@ class _HomeShellState extends State<HomeShell> {
 
   void _go(int i) => setState(() => _index = i);
 
-  /// Real change-password flow (PRD §35). The server also revokes every other
-  /// session, so the user is asked to sign in again on other devices.
+  
+  
   Future<void> _showChangePassword() async {
     final TextEditingController current = TextEditingController();
     final TextEditingController next = TextEditingController();
@@ -167,11 +167,11 @@ class _HomeShellState extends State<HomeShell> {
     }
   }
 
-  /// Real logout: revokes the server session AND clears local tokens.
-  ///
-  /// Navigating alone is NOT logout — BootstrapGate treats a stored refresh
-  /// token as a live session, so the user would be silently signed back in
-  /// the next time the app starts.
+  
+  
+  
+  
+  
   Future<void> _logout() async {
     final bool? confirmed = await showDialog<bool>(
       context: context,
@@ -198,12 +198,12 @@ class _HomeShellState extends State<HomeShell> {
     try {
       await widget.auth.logout();
     } catch (_) {
-      // AuthRepository clears local tokens in a finally block regardless.
+      
     }
     if (mounted) widget.onLogout();
   }
 
-  /// Loads the greeting name + consent flag so the dashboard is truthful.
+  
   Future<void> _syncConsent() async {
     try {
       final ProfileSnapshot snap = await widget.profiles.load();
@@ -216,15 +216,15 @@ class _HomeShellState extends State<HomeShell> {
         });
       }
     } catch (_) {
-      // Keep the optimistic defaults; the dashboard surfaces its own error.
+      
     }
   }
 
-  /// Optimistic biometric-consent toggle: the switch flips immediately, and
-  /// on server failure the previous value is restored so the UI never
-  /// disagrees with the server. The future always completes normally with
-  /// the error surfaced via Snackbar (rethrows so the dashboard caller can
-  /// tell success from failure without double-reporting).
+  
+  
+  
+  
+  
   Future<void> _toggleBiometric(bool granted) async {
     final bool previous = _biometricConsent;
     setState(() => _biometricConsent = granted);
@@ -276,7 +276,7 @@ class _HomeShellState extends State<HomeShell> {
         displayName: _displayName,
         biometricConsent: _biometricConsent,
         onToggleBiometric: _toggleBiometric,
-        // Spec: CTA primer langsung ke pra-validasi, bukan tab Presensi.
+        
         onStartAttendance: () => _push(_preflight()),
         onOpenCorrections: () => _push(CorrectionListScreen(
           corrections: widget.corrections,
@@ -296,8 +296,8 @@ class _HomeShellState extends State<HomeShell> {
             ? () => _push(AdminHomeScreen(dio: widget.dio, roles: _roles))
             : null,
       ),
-      // Riwayat: presensi + detail bottom-sheet (28px). Izin/cuti & koreksi
-      // dibuka dari Beranda quick-grid, sesuai Stitch.
+      
+      
       HistoryScreen(
         attendance: widget.attendance,
         corrections: widget.corrections,

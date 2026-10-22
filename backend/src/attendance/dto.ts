@@ -22,7 +22,7 @@ export class LivenessAttestationDto {
   @IsBoolean()
   passed!: boolean;
 
-  /** Active challenge list. Omitted in passive (Face-ID style) runs. */
+   
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
@@ -36,12 +36,12 @@ export class LivenessAttestationDto {
   @Max(1)
   score!: number;
 
-  /** `active` = blink/head-turn commands, `passive` = no user commands. */
+   
   @IsOptional()
   @IsIn(['active', 'passive'])
   mode?: 'active' | 'passive';
 
-  /** Anti-spoofing confidence from the on-device analyser (0..1). */
+   
   @IsOptional()
   @IsNumber()
   @Min(0)
@@ -53,7 +53,7 @@ class AttendanceSignalsDto {
   @IsString()
   deviceId!: string;
 
-  /** Live 192-d embedding (never stored). */
+   
   @IsArray()
   @ArrayMinSize(192)
   @ArrayMaxSize(192)
@@ -64,14 +64,14 @@ class AttendanceSignalsDto {
   @Type(() => LivenessAttestationDto)
   liveness!: LivenessAttestationDto;
 
-  /** Anti-replay: uuid v4, single use (idempotency_keys). */
+   
   @Matches(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)
   requestId!: string;
 
   @IsISO8601()
   requestTimestamp!: string;
 
-  /** Ed25519 base64 over "<requestId>.<requestTimestamp>" by device key. */
+   
   @IsString()
   @MinLength(10)
   @MaxLength(256)
@@ -80,10 +80,7 @@ class AttendanceSignalsDto {
   @IsBoolean()
   deviceCompromised!: boolean;
 
-  /**
-   * Play Integrity / App Attest token (opaque JWT, short-lived).
-   * Optional untuk kompatibilitas klien lama; wajib bila INTEGRITY_STRICT=true.
-   */
+   
   @IsOptional()
   @IsString()
   @MinLength(10)
@@ -145,7 +142,7 @@ export class AdminHistoryQuery extends MyHistoryQuery {
   needsReview?: boolean;
 }
 
-/** Antrean tinjauan presensi berisiko (MEDIUM) untuk supervisor/admin. */
+ 
 export class ReviewQueueQuery {
   @IsOptional()
   @Type(() => Number)

@@ -1,7 +1,7 @@
 import { BadRequestException } from '@nestjs/common';
 import { AUTH_POLICY } from './constants.js';
 
-/** Minimum password policy (PRD §35). Returns unmet rules; throws on violation. */
+ 
 export function validatePasswordPolicy(password: string): void {
   const problems: string[] = [];
   if (password.length < AUTH_POLICY.password.minLength) {

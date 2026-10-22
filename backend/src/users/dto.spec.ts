@@ -1,6 +1,6 @@
-// class-transformer/validator decorators read design:type metadata, which the
-// Nest bootstrap normally installs. This spec runs outside the bootstrap, so it
-// has to be loaded first.
+
+
+
 import 'reflect-metadata';
 import { plainToInstance } from 'class-transformer';
 import { validateSync } from 'class-validator';
@@ -8,7 +8,7 @@ import { describe, expect, it } from 'vitest';
 
 import { CreateUserDto, ListUsersQuery, UpdateUserDto } from './dto.js';
 
-/** Mirrors the app's global ValidationPipe config exactly. */
+ 
 const PIPE_OPTS = {
   whitelist: true,
   forbidNonWhitelisted: true,
@@ -19,19 +19,14 @@ function validate<T extends object>(
   cls: new () => T,
   input: Record<string, unknown>,
 ) {
-  // Mirrors the app pipe (transform without implicit conversion):
-  // explicit @Type/@Transform handle coercion, garbage stays garbage.
+  
+  
   const dto = plainToInstance(cls, input);
   return validateSync(dto, PIPE_OPTS).map((e) => `${e.property}: ${e.constraints}`);
 }
 
 describe('UpdateUserDto roles array', () => {
-  /**
-   * Regression: `@MinLength` was on `roles`, but class-validator only applies
-   * it to strings — `typeof [] === 'object'`, so every role change was rejected
-   * with "roles must be longer than or equal to 1 characters". Non-emptiness
-   * lives in UsersService instead.
-   */
+   
   it('accepts a single-element role array', () => {
     expect(validate(UpdateUserDto, { roles: ['SUPERVISOR'] })).toHaveLength(0);
   });
@@ -52,9 +47,9 @@ describe('UpdateUserDto roles array', () => {
   });
 
   it('coerces rather than rejects a non-boolean isActive', () => {
-    // class-transformer's implicit conversion turns truthy input into a
-    // boolean. The BFF route only forwards a real boolean, so this is a
-    // defence-in-depth looseness rather than a reachable path.
+    
+    
+    
     const dto = plainToInstance(UpdateUserDto, { isActive: 'yes' }, {
       enableImplicitConversion: true,
     });

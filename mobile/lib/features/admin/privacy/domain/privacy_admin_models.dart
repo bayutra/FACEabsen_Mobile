@@ -1,4 +1,4 @@
-/// Model pemberitahuan privasi untuk layar admin SUPER_ADMIN.
+
 class PrivacyNotice {
   const PrivacyNotice({
     required this.version,

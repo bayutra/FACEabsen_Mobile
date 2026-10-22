@@ -24,8 +24,8 @@ function makePrisma(over: Record<string, Record<string, unknown>> = {}) {
     },
     department: { findUnique: vi.fn(async () => null), ...over.department },
     session: { updateMany: vi.fn(async () => ({ count: 0 })), ...over.session },
-    // Default actor is SUPER_ADMIN (facility bypass), so the pre-existing
-    // tests keep exercising the global path unchanged.
+    
+    
     userRole: {
       findMany: vi.fn(async () => [{ role: { name: 'SUPER_ADMIN' } }]),
       ...over.userRole,
@@ -81,7 +81,7 @@ describe('EmployeesService.create', () => {
 
   it('creates user + EMPLOYEE role + employee and audits', async () => {
     const prisma = base();
-    // findUnique: null for uniqueness probes (by employeeNo), row for final findOne (by id)
+    
     prisma.employee.findUnique = vi.fn(async (a: { where: Record<string, unknown> }) =>
       'id' in a.where ? empRow({ id: 'e9', userId: 'u9' }) : null,
     ) as never;
@@ -91,7 +91,7 @@ describe('EmployeesService.create', () => {
     expect(auditStub.log).toHaveBeenCalledWith(
       expect.objectContaining({ action: 'EMPLOYEE_CREATED', actorId: 'actor-admin' }),
     );
-    // password hashed, never stored plain
+    
     const createdUser = (prisma.user.create as ReturnType<typeof vi.fn>).mock.calls[0][0].data;
     expect(createdUser.passwordHash).not.toBe('Password123!');
   });
@@ -156,7 +156,7 @@ describe('EmployeesService.update/deactivate', () => {
     const prisma = makePrisma({
       employee: {
         findUnique: vi.fn(async (a: { where: Record<string, unknown> }) => {
-          // Actor lookup (by userId) resolves to the same facility as the target.
+          
           if ('userId' in a.where) return { id: 'e-adm', department: { hospitalId: 'h1' } };
           return a.where.id === 'e1'
             ? empRow({ status: dead ? 'INACTIVE' : 'ACTIVE', department: { hospitalId: 'h1' } })
@@ -166,7 +166,7 @@ describe('EmployeesService.update/deactivate', () => {
       },
       user: { update: userUpdate },
       session: { updateMany: sessRevoke },
-      // M7: actor is ADMIN acting on an EMPLOYEE — rank guard allows it.
+      
       userRole: {
         findMany: vi.fn(async (a: { where: { userId: string } }) =>
           a.where.userId === 'actor-admin'
@@ -262,9 +262,9 @@ describe('EmployeesService extras (STEP 23 coverage)', () => {
   });
 });
 
-// Tahap 2 — facility scoping: an ADMIN of h1 sees and touches only h1.
+
 describe('EmployeesService facility scoping (ADMIN)', () => {
-  // Actor u-adm belongs to hospital h1.
+  
   function scopedPrisma(over: Record<string, Record<string, unknown>> = {}) {
     return makePrisma({
       userRole: { findMany: vi.fn(async () => [{ role: { name: 'ADMIN' } }]) },
@@ -306,8 +306,8 @@ describe('EmployeesService facility scoping (ADMIN)', () => {
   });
 });
 
-// Tahap 3 — supervisor scoping: only direct reports and the same unit are
-// visible/editable, and only contact fields may change.
+
+
 describe('EmployeesService supervisor scoping', () => {
   function supervisorPrisma(over: Record<string, Record<string, unknown>> = {}) {
     return makePrisma({
@@ -434,11 +434,11 @@ describe('EmployeesService supervisor scoping', () => {
   });
 });
 
-// M7 — rank guard: a non-SUPER_ADMIN cannot touch accounts ranked at or above
-// their own, even inside their own facility.
+
+
 describe('EmployeesService rank guard (ADMIN vs SUPER_ADMIN)', () => {
-  // Actor u-adm is ADMIN of h1. e-victim belongs to a SUPER_ADMIN in h1,
-  // e-junior to an EMPLOYEE in h1, e-far to a SUPER_ADMIN in h2.
+  
+  
   function rankPrisma() {
     return makePrisma({
       userRole: {
@@ -489,8 +489,8 @@ describe('EmployeesService rank guard (ADMIN vs SUPER_ADMIN)', () => {
     await expect(svc.update('e-junior', { name: 'Ok' }, 'u-adm')).resolves.toMatchObject({
       id: 'e-junior',
     });
-    // loadOne re-reads via findUnique (stub returns the stored ACTIVE row);
-    // the guard passing (no throw) is what this case proves.
+    
+    
     await expect(svc.deactivate('e-nouser', 'u-adm')).resolves.toMatchObject({
       id: 'e-nouser',
     });

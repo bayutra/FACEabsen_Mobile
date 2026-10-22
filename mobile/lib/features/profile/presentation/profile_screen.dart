@@ -8,9 +8,9 @@ import '../../../core/theme/app_colors.dart';
 import '../data/profile_repository.dart';
 import 'edit_profile_screen.dart';
 
-/// Stitch "Profil Karyawan & Pengaturan Akun" (profil_karyawan_pengaturan_akun):
-/// clinical bento identity header, security & biometric verification status,
-/// registered devices management, general settings, and account actions.
+
+
+
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({
     super.key,
@@ -28,8 +28,8 @@ class ProfileScreen extends StatefulWidget {
   final VoidCallback onLogout;
   final VoidCallback onChangePassword;
 
-  /// Diisi hanya untuk SUPERVISOR/ADMIN/SUPER_ADMIN; menampilkan pintu masuk
-  /// area "Kelola" (fitur admin di dalam aplikasi mobile).
+  
+  
   final VoidCallback? onOpenAdmin;
 
   @override
@@ -41,7 +41,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   bool _busy = true;
   String? _error;
 
-  /// Local-only shift/presensi reminder toggle. Default ON, no backend.
+  
   bool _notifShift = true;
 
   late final Future<String> _appVersion = _loadVersion();
@@ -399,7 +399,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Top hospital clinical accent line
+            
             Container(
               height: 5,
               color: AppColors.primaryContainer,
@@ -409,7 +409,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Avatar + Identity
+                  
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -534,7 +534,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ],
                   ),
                   const SizedBox(height: 14),
-                  // Hospital and Unit Meta
+                  
                   Container(
                     padding: const EdgeInsets.only(top: 12),
                     decoration: const BoxDecoration(
@@ -592,7 +592,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ],
                     ),
                   ),
-                  // Quick Attendance Metric strip
+                  
                   Container(
                     margin: const EdgeInsets.only(top: 14),
                     padding: const EdgeInsets.symmetric(
@@ -708,7 +708,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           clipBehavior: Clip.antiAlias,
           child: Column(
             children: [
-              // Item 1: Face biometric verification
+              
               _buildSecurityTile(
                 icon: Icons.face_retouching_natural,
                 iconColor: AppColors.primary,
@@ -732,7 +732,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ),
               const Divider(height: 1, thickness: 1, color: AppColors.surfaceLow),
-              // Item 2: Biometric Consent
+              
               _buildSecurityTile(
                 icon: Icons.privacy_tip_outlined,
                 iconColor: AppColors.secondary,
@@ -758,7 +758,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ),
               const Divider(height: 1, thickness: 1, color: AppColors.surfaceLow),
-              // Item 3: Registered Devices Status
+              
               _buildSecurityTile(
                 icon: Icons.devices_other_outlined,
                 iconColor: AppColors.primary,
@@ -904,7 +904,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  /// Kartu pintu masuk area Kelola (hanya untuk peran yang berhak).
+  
   Widget _adminEntry() => Container(
         decoration: BoxDecoration(
           color: Colors.white,
@@ -988,7 +988,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             clipBehavior: Clip.antiAlias,
             child: Column(
               children: [
-                // Shift Notification Switch
+                
                 Padding(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 14,
@@ -1050,7 +1050,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   thickness: 1,
                   color: AppColors.surfaceLow,
                 ),
-                // Language
+                
                 InkWell(
                   onTap: () {
                     ScaffoldMessenger.of(context).showSnackBar(
@@ -1140,7 +1140,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   thickness: 1,
                   color: AppColors.surfaceLow,
                 ),
-                // Helpdesk
+                
                 InkWell(
                   onTap: () => showHelpdeskSheet(context),
                   child: Padding(
@@ -1362,7 +1362,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ),
           const SizedBox(height: 14),
-          // Danger Logout Button
+          
           Material(
             color: Colors.white,
             borderRadius: BorderRadius.circular(16),

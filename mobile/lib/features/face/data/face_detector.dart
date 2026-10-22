@@ -4,15 +4,15 @@ import 'package:flutter/foundation.dart';
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 import 'package:image/image.dart' as img;
 
-/// On-device face detection (ML Kit, offline after first model fetch).
+
 class FaceDetectorService {
-  /// Set [classification] for eye-open probabilities (liveness, STEP 10) and
-  /// [contours] for eye outline geometry.
-  ///
-  /// Classification is **Android-only** in ML Kit; on iOS
-  /// `leftEyeOpenProbability` is always null. Contours ARE available on both,
-  /// so enabling them keeps blink liveness workable on iOS via
-  /// `eye_geometry.dart` (see docs/IOS_SETUP.md).
+  
+  
+  
+  
+  
+  
+  
   FaceDetectorService({
     bool classification = false,
     bool contours = false,
@@ -34,20 +34,20 @@ class FaceDetectorService {
   final FaceDetector _detector;
   final void Function(String message)? _onError;
 
-  /// Throws [StateError] with a user-actionable message when ML Kit is
-  /// unavailable (no/outdated Google Play Services, model not yet
-  /// downloaded). Callers surface this instead of a generic failure.
+  
+  
+  
   Future<List<Face>> detect(String filePath) async {
     try {
-      // Percobaan pertama: langsung dari file (cepat).
+      
       final List<Face> first = await _detector.processImage(
         InputImage.fromFilePath(filePath),
       );
       if (first.isNotEmpty) return first;
 
-      // Fallback: beberapa device (terutama iOS) menyimpan orientasi EXIF
-      // yang tidak terbaca ML Kit, sehingga wajah tidak terdeteksi. Re-encode
-      // gambar dalam orientasi tegak lalu coba lagi.
+      
+      
+      
       final File file = File(filePath);
       final Uint8List bytes = await file.readAsBytes();
       final img.Image? decoded = img.decodeImage(bytes);

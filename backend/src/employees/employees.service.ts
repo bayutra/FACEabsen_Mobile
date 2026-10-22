@@ -20,12 +20,7 @@ import type {
   UpdateMyProfileDto,
 } from './dto.js';
 
-/**
- * STEP 5 — Employee CRUD (PRD §26, §50).
- * - Ex-employees are deactivated (status + login), never deleted: history stays.
- * - Role grants on create go through canAssignRole (ADMIN can't mint ADMINs).
- * - Every mutation is audit-logged; passwords never touch audit metadata.
- */
+ 
 @Injectable()
 export class EmployeesService {
   constructor(
@@ -92,8 +87,8 @@ export class EmployeesService {
       const contains = { contains: query.search, mode: 'insensitive' as const };
       AND.push({ OR: [{ name: contains }, { email: contains }, { employeeNo: contains }] });
     }
-    // Facility scoping: ADMIN callers only list their own hospital. A foreign
-    // departmentId filter intersects to empty naturally.
+    
+    
     if (!satisfiesRole(roles, 'SUPER_ADMIN')) {
       const scope = await resolveHospitalScope(this.prisma, userId, roles);
       if (scope.kind !== 'hospital') {
@@ -101,8 +96,8 @@ export class EmployeesService {
       }
       AND.push({ department: { hospitalId: scope.hospitalId } });
     }
-    // Supervisor hanya melihat bawahan langsung dan anggota unitnya sendiri.
-    // ADMIN/SUPER_ADMIN tetap melihat seluruh fasilitas.
+    
+    
     if (!satisfiesRole(roles, 'ADMIN')) {
       const me = await this.prisma.employee.findUnique({
         where: { userId },
@@ -137,8 +132,8 @@ export class EmployeesService {
 
   async findOne(id: string, userId: string, roles: string[]) {
     const employee = await this.loadOne(id);
-    // Facility scoping: ADMIN callers only read their own hospital. Foreign
-    // rows read as 404 so facility membership stays unenumerable.
+    
+    
     if (!satisfiesRole(roles, 'SUPER_ADMIN')) {
       const scope = await resolveHospitalScope(this.prisma, userId, roles);
       if (scope.kind !== 'hospital' || employee.department?.hospitalId !== scope.hospitalId) {
@@ -171,11 +166,7 @@ export class EmployeesService {
     return this.loadOne(employee.id);
   }
 
-  /**
-   * Profil milik sendiri: nama, email login, dan nomor HP saja. Unit kerja,
-   * peran, dan atasan tetap wewenang admin supaya endpoint ini tidak menjadi
-   * jalur eskalasi.
-   */
+   
   async updateMyProfile(
     userId: string,
     dto: UpdateMyProfileDto,
@@ -232,13 +223,13 @@ export class EmployeesService {
       include: { department: { select: { hospitalId: true } } },
     });
     if (!existing) throw new NotFoundException('Employee not found');
-    // Facility gate first: an ADMIN of hospital A cannot edit hospital B's
-    // staff at all (nor deactivate a SUPER_ADMIN's employee record).
+    
+    
     await this.assertSameFacility(actorId, existing.department?.hospitalId, 'Employee not found');
     await this.assertRankBelow(actorId, existing.userId);
 
-    // Supervisor hanya boleh merapikan data kontak anggota unit/timnya. Unit,
-    // atasan, NIP, email login, dan peran tetap wewenang ADMIN.
+    
+    
     const actorRoles = await this.getRoles(actorId);
     const supervisorOnly = !satisfiesRole(actorRoles, 'ADMIN');
     if (supervisorOnly) {
@@ -304,7 +295,7 @@ export class EmployeesService {
     });
     if (existing.userId) {
       await this.prisma.user.update({ where: { id: existing.userId }, data: { isActive: false } });
-      // Containment: kill all sessions so the account cannot linger anywhere.
+      
       await this.prisma.session.updateMany({
         where: { userId: existing.userId, revokedAt: null },
         data: { revokedAt: new Date() },
@@ -321,11 +312,11 @@ export class EmployeesService {
     return this.loadOne(employee.id);
   }
 
-  // ---------- departments (STEP 14 filter support; full CRUD: admin flows) ----------
+  
 
   async listDepartments(hospitalId: string | undefined, userId: string, roles: string[]) {
-    // Supervisor hanya melihat unitnya sendiri; ADMIN melihat seluruh
-    // fasilitas. Query string hospitalId tidak pernah dipercaya.
+    
+    
     if (!satisfiesRole(roles, 'ADMIN')) {
       const me = await this.prisma.employee.findUnique({
         where: { userId },
@@ -349,11 +340,7 @@ export class EmployeesService {
     });
   }
 
-  /**
-   * Daftar unit untuk formulir pendaftaran publik. Hanya id + nama + rumah
-   * sakit induk; tidak ada data kepegawaian yang terbuka. Dibatasi 500 baris
-   * karena ini hanya untuk dropdown.
-   */
+   
   async listPublicDepartments() {
     const rows = await this.prisma.department.findMany({
       take: 500,
@@ -373,10 +360,7 @@ export class EmployeesService {
     }));
   }
 
-  /**
-   * Reference list for the master-data pickers (department/shift forms).
-   * Pickers only need id/code/name.
-   */
+   
   async listHospitals() {
     return this.prisma.hospital.findMany({
       orderBy: { code: 'asc' },
@@ -399,8 +383,8 @@ export class EmployeesService {
     if (clash) throw new ConflictException('Department name already exists for this hospital');
 
     try {
-      // Data + audit in one transaction so a failed audit cannot leave an
-      // orphan row behind while the caller sees an error.
+      
+      
       return await this.prisma.$transaction(async (tx) => {
         const dept = await tx.department.create({
           data: { hospitalId: dto.hospitalId, name: dto.name },
@@ -461,11 +445,7 @@ export class EmployeesService {
     }
   }
 
-  /**
-   * Departments are never cascade-dropped: `Employee.departmentId` is
-   * Restrict, so removing one that still has staff would break the roster.
-   * Fail with a count instead of surfacing a raw FK violation.
-   */
+   
   async deleteDepartment(id: string, actorId: string, meta: { ip?: string } = {}) {
     const existing = await this.prisma.department.findUnique({ where: { id } });
     if (!existing) throw new NotFoundException('Department not found');
@@ -490,7 +470,7 @@ export class EmployeesService {
     return { removed: true };
   }
 
-  // ---------- internals ----------
+  
 
   private async assertUnique(ignoreId: string | null, email?: string, employeeNo?: string) {
     if (email) {
@@ -510,11 +490,7 @@ export class EmployeesService {
     return emp?.id ?? null;
   }
 
-  /**
-   * Supervisor hanya boleh menyentuh bawahan langsungnya atau anggota unit
-   * yang sama. Di luar itu hasilnya 404 agar daftar karyawan tidak bisa
-   * dienumerasi dari luar wewenang.
-   */
+   
   private async assertSupervisorScope(
     actorId: string,
     target: { supervisorId: string | null; departmentId: string | null },
@@ -530,11 +506,7 @@ export class EmployeesService {
     if (!directReport && !sameUnit) throw new NotFoundException(message);
   }
 
-  /**
-   * Facility gate shared by employee/department/shift writes: SUPER_ADMIN
-   * bypasses; everyone else must act inside their own hospital. Mismatches
-   * surface as 404 so foreign ids stay unenumerable.
-   */
+   
   private async assertSameFacility(actorId: string, targetHospitalId: string | null | undefined, message: string) {
     const actorRoles = await this.getRoles(actorId);
     if (satisfiesRole(actorRoles, 'SUPER_ADMIN')) return;
@@ -562,12 +534,7 @@ export class EmployeesService {
     await this.assertSameFacility(actorId, sup.department?.hospitalId, 'Supervisor not found');
   }
 
-  /**
-   * M7 rank guard (mirrors UsersService.loadManageable): a non-SUPER_ADMIN
-   * actor may only touch accounts ranked strictly below their own. The target
-   * rank comes from its login row; a target with no user row counts as rank 0.
-   * Runs AFTER the facility gate so cross-facility rows keep their 404 shape.
-   */
+   
   private async assertRankBelow(actorId: string, targetUserId: string | null | undefined) {
     const actorRoles = await this.getRoles(actorId);
     if (actorRoles.includes('SUPER_ADMIN')) return;

@@ -7,20 +7,12 @@ import { CONTENT_TYPES, toCSV, toPDF, toXLSX, type ExportFormat, type TabularRep
 
 export type ReportFormat = ExportFormat;
 
-/**
- * STEP 20 — Reporting (PRD §65). Every report is permission-scoped:
- * supervisors see only their team, admins see all. Export formats share one
- * tabular model (JSON/CSV/XLSX/PDF).
- */
+ 
 @Injectable()
 export class ReportsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  /**
-   * null = system-global (SUPER_ADMIN only); otherwise confined employee ids.
-   * ADMIN is facility-scoped: an admin of hospital A never sees hospital B's
-   * payroll, lateness, or leave data.
-   */
+   
   async scopeOf(userId: string, roles: string[]): Promise<string[] | null> {
     if (satisfiesRole(roles, 'SUPER_ADMIN')) return null;
     if (satisfiesRole(roles, 'ADMIN')) {
@@ -91,7 +83,7 @@ export class ReportsService {
         att?.riskScore !== null && att?.riskScore !== undefined ? String(att.riskScore) : '-',
       ]);
     }
-    // ad-hoc rows without roster
+    
     for (const a of rows) {
       if (schedules.some((s) => s.employeeId === a.employeeId)) continue;
       const emp = byEmp.get(a.employeeId);

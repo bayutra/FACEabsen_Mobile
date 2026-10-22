@@ -2,15 +2,15 @@ import 'dart:convert';
 
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-/// Typed wrapper over platform secure storage (Keystore/Keychain).
-/// Tokens and the device private-key seed live here — never in plain prefs.
-///
-/// STORAGE_VERSION 2 (2026-10): Android uses EncryptedSharedPreferences
-/// (AES-256/GCM via Tink) instead of the legacy AES-CBC default file. The
-/// encrypted-prefs file differs from the legacy one, so EXISTING installs
-/// lose stored tokens/keys on upgrade: one forced re-login + device
-/// re-register. Acceptable pre-go-live; do NOT change these options silently
-/// post-launch without a read-old/write-new migration.
+
+
+
+
+
+
+
+
+
 class SecureStore {
   SecureStore([FlutterSecureStorage? storage])
       : _storage = storage ??
@@ -32,10 +32,10 @@ class SecureStore {
     await _storage.write(key: _refreshKey, value: refresh);
   }
 
-  /// Session-only write for logins with "Ingat Saya" unchecked: the access
-  /// token works for this app run, but no refresh token is persisted, so
-  /// [BootstrapGate._hasSession] (refresh == null → no session) routes the
-  /// next launch back to login. Any stale refresh is deleted defensively.
+  
+  
+  
+  
   Future<void> writeSessionOnly(String access) async {
     await _storage.write(key: _accessKey, value: access);
     await _storage.delete(key: _refreshKey);
@@ -49,10 +49,10 @@ class SecureStore {
     await _storage.delete(key: _refreshKey);
   }
 
-  /// Identitas perangkat HARUS terpisah per akun. Satu HP bisa dipakai
-  /// bergantian oleh beberapa karyawan (mis. HP ruangan), dan backend
-  /// mengikat `installationId` + public key ke satu karyawan. Kunci storage
-  /// karena itu diberi sufiks subjek token (user id), bukan global.
+  
+  
+  
+  
   Future<String> _deviceScope() async {
     final String? sub = _jwtSubject(await readAccessToken());
     return sub ?? 'anon';
@@ -70,7 +70,7 @@ class SecureStore {
         return sub.isEmpty ? null : sub;
       }
     } catch (_) {
-      // Token uji/opaque: pakai scope 'anon'.
+      
     }
     return null;
   }
@@ -90,15 +90,15 @@ class SecureStore {
   Future<void> writeDeviceId(String v) async =>
       _storage.write(key: '${_deviceIdKey}_${await _deviceScope()}', value: v);
 
-  /// Override alamat backend, diisi dari layar "Server API". `null` berarti
-  /// memakai default compile-time (`Env.apiBaseUrl`). Dipakai untuk pengujian
-  /// di jaringan berbeda (ngrok/Tailscale) tanpa build ulang.
+  
+  
+  
   Future<String?> readApiBaseUrl() => _storage.read(key: _baseUrlKey);
   Future<void> writeApiBaseUrl(String v) => _storage.write(key: _baseUrlKey, value: v);
   Future<void> clearApiBaseUrl() => _storage.delete(key: _baseUrlKey);
 
-  /// Punch-outbox backlog (JSON list, see `OutboxRepository`). Lives in secure
-  /// storage so queued embeddings are encrypted at rest — no new plugin.
+  
+  
   static const outboxKey = 'attendance_outbox_v1';
 
   Future<String?> readOutbox() => _storage.read(key: outboxKey);
@@ -109,9 +109,9 @@ class SecureStore {
     await _storage.delete(key: '${_deviceIdKey}_${await _deviceScope()}');
   }
 
-  /// Dipakai saat server menolak identitas perangkat (409): buang installation
-  /// id, keypair, dan device id akun ini supaya registrasi berikutnya memakai
-  /// identitas baru yang tidak bentrok.
+  
+  
+  
   Future<void> clearDeviceIdentity() async {
     final String scope = await _deviceScope();
     await _storage.delete(key: '${_installKey}_$scope');

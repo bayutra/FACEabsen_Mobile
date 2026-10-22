@@ -2,9 +2,9 @@ import 'package:dio/dio.dart';
 
 import '../../../core/storage/secure_store.dart';
 
-/// Thrown by [AuthRepository.login] when the password is correct but the
-/// account requires a TOTP second factor. No session exists yet — complete it
-/// with [AuthRepository.verifyTotp] or [AuthRepository.recoverTotp].
+
+
+
 class TotpChallengeException implements Exception {
   TotpChallengeException({required this.totpToken, required this.expiresIn});
 
@@ -12,7 +12,7 @@ class TotpChallengeException implements Exception {
   final int expiresIn;
 }
 
-/// Satu unit kerja pada formulir pendaftaran mandiri.
+
 class RegistrationUnit {
   const RegistrationUnit({
     required this.id,
@@ -35,8 +35,8 @@ class RegistrationUnit {
   }
 }
 
-/// Minimal auth calls needed for device binding (PRD STEP 7).
-/// Full session UI arrives with attendance history (STEP 14).
+
+
 class AuthRepository {
   AuthRepository({required Dio dio, required SecureStore store})
       : _dio = dio,
@@ -64,8 +64,8 @@ class AuthRepository {
     return _storeSession(body, rememberMe);
   }
 
-  /// Daftar unit untuk dropdown pendaftaran. Endpoint ini publik karena
-  /// dipanggil sebelum pengguna punya sesi.
+  
+  
   Future<List<RegistrationUnit>> listUnits() async {
     final Response res = await _dio.get('/departments/public');
     final List<dynamic> rows = (res.data as List<dynamic>?) ?? const [];
@@ -74,9 +74,9 @@ class AuthRepository {
         .toList();
   }
 
-  /// Pendaftaran mandiri: membuat akun login + profil karyawan sekaligus.
-  /// Server selalu memberi peran EMPLOYEE; peran administratif hanya dapat
-  /// diberikan admin lewat menu Pengguna.
+  
+  
+  
   Future<Map<String, dynamic>> register({
     required String name,
     required String email,
@@ -103,7 +103,7 @@ class AuthRepository {
     return _storeSession(Map<String, dynamic>.from(res.data as Map), rememberMe);
   }
 
-  /// Second-factor login with a 6-digit authenticator code.
+  
   Future<Map<String, dynamic>> verifyTotp({
     required String totpToken,
     required String code,
@@ -116,7 +116,7 @@ class AuthRepository {
     return _storeSession(Map<String, dynamic>.from(res.data as Map), rememberMe);
   }
 
-  /// Second-factor login with a single-use recovery code (consumed server-side).
+  
   Future<Map<String, dynamic>> recoverTotp({
     required String totpToken,
     required String recoveryCode,
@@ -129,11 +129,11 @@ class AuthRepository {
     return _storeSession(Map<String, dynamic>.from(res.data as Map), rememberMe);
   }
 
-  /// Persists the fresh session. With [rememberMe] the refresh token is
-  /// stored as before (survives restarts); without it only the access token
-  /// is kept, so the current run keeps working but the next launch finds no
-  /// refresh token and [BootstrapGate] routes to login. Logout always clears
-  /// both via [logout] regardless of this flag.
+  
+  
+  
+  
+  
   Future<Map<String, dynamic>> _storeSession(
     Map<String, dynamic> body,
     bool rememberMe,
@@ -160,8 +160,8 @@ class AuthRepository {
     }
   }
 
-  /// Revokes the current session and clears local tokens. Re-throwing is
-  /// suppressed by callers; local state is always cleared.
+  
+  
   Future<void> logout() async {
     try {
       await _dio.post('/auth/logout');
@@ -170,7 +170,7 @@ class AuthRepository {
     }
   }
 
-  /// Password change (PRD §35): also kills every other session server-side.
+  
   Future<void> changePassword({
     required String currentPassword,
     required String newPassword,

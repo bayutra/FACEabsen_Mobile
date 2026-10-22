@@ -36,7 +36,7 @@ export class EmployeesController {
     return this.employees.findMyEmployee(user.userId);
   }
 
-  /** Pemilik akun merapikan namanya sendiri, email login, dan nomor HP. */
+   
   @Patch('me')
   updateMe(
     @Body() dto: UpdateMyProfileDto,

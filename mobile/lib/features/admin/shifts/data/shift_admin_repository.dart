@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 
-/// Rumah sakit ringkas untuk pemilih pada formulir shift.
+
 class ShiftHospital {
   const ShiftHospital({
     required this.id,
@@ -21,7 +21,7 @@ class ShiftHospital {
       );
 }
 
-/// Shift kerja beserta ambang toleransi waktunya (GET /shifts).
+
 class AdminShift {
   const AdminShift({
     required this.id,
@@ -71,10 +71,10 @@ class AdminShift {
   }
 }
 
-/// Endpoint master shift untuk ADMIN.
-///
-/// Backend: GET /shifts?hospitalId=, POST /shifts, PATCH /shifts/:id,
-/// DELETE /shifts/:id, ditambah GET /hospitals untuk pemilih fasilitas.
+
+
+
+
 class ShiftAdminRepository {
   ShiftAdminRepository({required Dio dio}) : _dio = dio;
 
@@ -161,7 +161,7 @@ class ShiftAdminRepository {
     );
   }
 
-  /// Server menolak (409) bila shift masih dipakai pada jadwal karyawan.
+  
   Future<void> delete(String id) async {
     await _dio.delete<dynamic>('/shifts/$id');
   }

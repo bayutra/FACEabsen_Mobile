@@ -2,7 +2,7 @@ import 'package:dio/dio.dart';
 
 import '../domain/employee_admin_models.dart';
 
-/// Endpoint SDM untuk ADMIN: daftar/kirim karyawan, Unit, nonaktifkan.
+
 class EmployeeAdminRepository {
   EmployeeAdminRepository({required Dio dio}) : _dio = dio;
 
@@ -86,7 +86,7 @@ class EmployeeAdminRepository {
     });
   }
 
-  /// Nonaktifkan karyawan: login dimatikan, riwayat tetap tersimpan.
+  
   Future<void> deactivate(String id) async {
     await _dio.post('/employees/$id/deactivate');
   }

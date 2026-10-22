@@ -7,12 +7,12 @@ import '../../../core/widgets/stitch.dart';
 import '../../device/data/device_repository.dart';
 import '../data/auth_repository.dart';
 
-/// Pendaftaran mandiri akun karyawan.
-///
-/// Server membuat akun login + profil karyawan sekaligus dan langsung
-/// menerbitkan sesi, sehingga pengguna tidak perlu login dua kali. Peran akun
-/// baru selalu EMPLOYEE — akun supervisor/admin dibuat oleh admin lewat menu
-/// Pengguna di Mode Admin.
+
+
+
+
+
+
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({
     super.key,
@@ -126,8 +126,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
         departmentId: _unitId,
       );
 
-      // Sesi sudah aktif. Daftarkan perangkat tanpa menahan pengguna masuk:
-      // bila gagal, presensi akan menampilkan pesannya sendiri.
+      
+      
       try {
         await widget.devices.register();
       } catch (_) {}

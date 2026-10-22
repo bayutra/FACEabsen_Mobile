@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:image/image.dart' as img;
 
-/// Synthetic 112px fixtures: checkerboard (sharp) vs flat (blur-like).
+
 img.Image _checkerboard() {
   final im = img.Image(width: 112, height: 112);
   for (var y = 0; y < 112; y++) {
@@ -49,7 +49,7 @@ void main() {
       assessQuality(grayFace: img.grayscale(_flat(10)), relativeWidth: 0.4).gate,
       FaceGate.tooDark,
     );
-    // near-white flat is blurry first (variance 0) — brightness gate needs texture:
+    
     final brightTex = _checkerboard();
     for (var y = 0; y < 112; y++) {
       for (var x = 0; x < 112; x++) {
@@ -65,7 +65,7 @@ void main() {
     final out = preprocess112(_checkerboard());
     expect(out.length, 112 * 112 * 3);
     expect(out.every((v) => v >= -1.0 && v <= 1.0), isTrue);
-    // checkerboard starts white at (0,0), black at (8,0)
+    
     expect(out[0], closeTo(0.99609375, 1e-9));
     expect(out[8 * 3], closeTo(-0.99609375, 1e-9));
   });
@@ -90,7 +90,7 @@ void main() {
     expect(out.gate, FaceGate.ok);
     expect(out.modelInput, isNotNull);
     expect(out.modelInput!.length, 112 * 112 * 3);
-    // Identical math to the former inline pipeline (crop → gray → gate → preprocess).
+    
     final expectedCrop = cropFace(src, left: 28, top: 28, width: 56, height: 56);
     expect(out.modelInput, preprocess112(expectedCrop));
     final quality = assessQuality(grayFace: img.grayscale(expectedCrop), relativeWidth: 0.5);

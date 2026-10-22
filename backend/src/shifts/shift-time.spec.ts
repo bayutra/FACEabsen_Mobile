@@ -18,7 +18,7 @@ const PAGI: ShiftLike = {
   earlyCheckoutThresholdMin: 15,
 };
 
-// PRD §51 special test: 23:00 → 07:00 night shift
+
 const MALAM: ShiftLike = {
   startTime: '23:00',
   endTime: '07:00',
@@ -76,19 +76,19 @@ describe('evaluateCheckOut (night shift)', () => {
   it('07:05 next-day checkout is NORMAL, 06:30 is EARLY', () => {
     const normal = evaluateCheckOut(new Date('2026-09-24T07:05:00.000Z'), '2026-09-23', MALAM);
     expect(normal).toEqual({ status: 'NORMAL_CHECKOUT', earlyMinutes: 0 });
-    // 07:00 end vs 07:05 checkout clamps early minutes to 0
+    
     const early = evaluateCheckOut(new Date('2026-09-24T06:30:00.000Z'), '2026-09-23', MALAM);
     expect(early).toEqual({ status: 'EARLY_CHECKOUT', earlyMinutes: 30 });
   });
 });
 
-// Tahap 2 — hospital zone (WIB, UTC+7). A 07:00 wall-clock shift anchors at
-// 00:00Z, and punches between 00:00–07:00 WIB belong to the LOCAL date.
+
+
 describe('hospital timezone (Asia/Jakarta)', () => {
   const TZ = 'Asia/Jakarta';
 
   it('workDateKeyIn resolves the local calendar day', () => {
-    // 06:30 WIB on Oct 13 == 23:30Z on Oct 12.
+    
     expect(workDateKeyIn(new Date('2026-10-12T23:30:00.000Z'), TZ)).toBe('2026-10-13');
     expect(workDateKeyIn(new Date('2026-10-12T16:59:00.000Z'), TZ)).toBe('2026-10-12');
   });
@@ -119,7 +119,7 @@ describe('hospital timezone (Asia/Jakarta)', () => {
     const w = shiftWindow('2026-10-13', MALAM, TZ);
     expect(w.start.toISOString()).toBe('2026-10-13T16:00:00.000Z');
     expect(w.end.toISOString()).toBe('2026-10-14T00:00:00.000Z');
-    // 23:10 WIB check-in (grace), 23:30 WIB is LATE; 06:55 WIB checkout next morning.
+    
     expect(evaluateCheckIn(new Date('2026-10-13T16:10:00.000Z'), '2026-10-13', MALAM, TZ)).toEqual({
       status: 'ON_TIME',
       lateMinutes: 10,

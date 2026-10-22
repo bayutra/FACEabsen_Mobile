@@ -17,12 +17,7 @@ interface AccessPayload {
   sid: string;
 }
 
-/**
- * Server as source of truth: a valid JWT signature is NOT enough —
- * the session must still exist, be unrevoked/unexpired, and the account active.
- * This makes logout/revoke/lockout effective immediately (no stale-token window
- * beyond the short access TTL).
- */
+ 
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
   constructor(
@@ -47,7 +42,7 @@ export class JwtAuthGuard implements CanActivate {
 
     let payload: AccessPayload;
     try {
-      // Algorithm + issuer pinned (STEP 22): foreign/alg-confused tokens die here.
+      
       payload = await this.jwt.verifyAsync<AccessPayload>(token, {
         algorithms: [AUTH_POLICY.jwtAlgorithm],
         issuer: AUTH_POLICY.jwtIssuer,

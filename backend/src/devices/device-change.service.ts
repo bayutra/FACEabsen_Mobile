@@ -11,13 +11,7 @@ import { resolveHospitalScope } from '../auth/tenant-scope.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import type { CreateChangeRequestDto, ListChangeRequestsQuery } from './change-request.dto.js';
 
-/**
- * STEP 8 — Device replacement (PRD §11, §53).
- * Flow: perangkat pengganti terdaftar (kini langsung ACTIVE) → karyawan
- * mengajukan dengan bukti kata sandi → admin menyetujui/menolak → perangkat
- * lama REVOKED + perangkat baru dipastikan ACTIVE secara atomik.
- * Sesi perangkat lama berakhir saat disetujui (containment).
- */
+ 
 @Injectable()
 export class DeviceChangeService {
   constructor(
@@ -44,8 +38,8 @@ export class DeviceChangeService {
       throw new UnauthorizedException('Identity verification failed');
     }
 
-    // Multi-perangkat: perangkat lama yang diganti adalah perangkat ACTIVE
-    // LAIN, bukan perangkat yang sedang dipakai mengajukan (newDeviceId).
+    
+    
     const oldDevice = await this.prisma.device.findFirst({
       where: { employeeId: employee.id, status: 'ACTIVE', id: { not: dto.newDeviceId } },
     });
@@ -100,7 +94,7 @@ export class DeviceChangeService {
 
   async listAll(query: ListChangeRequestsQuery, userId: string, roles: string[]) {
     const AND: Array<Record<string, unknown>> = [];
-    // Facility scoping: ADMIN callers only see their own hospital's requests.
+    
     if (!satisfiesRole(roles, 'SUPER_ADMIN')) {
       const scope = await resolveHospitalScope(this.prisma, userId, roles);
       if (scope.kind !== 'hospital') return [];
@@ -110,7 +104,7 @@ export class DeviceChangeService {
     return this.prisma.deviceChangeRequest.findMany({
       where: AND.length > 0 ? { AND } : {},
       orderBy: { requestedAt: 'desc' },
-      // Bound admin queues (M5): never return an unbounded list.
+      
       take: 200,
       include: {
         employee: { select: { id: true, name: true, employeeNo: true } },
@@ -203,7 +197,7 @@ export class DeviceChangeService {
     return updated;
   }
 
-  /** SUPER_ADMIN bypasses; ADMIN reviewers must share the request's facility. */
+   
   private async assertSameFacility(
     reviewerId: string,
     roles: string[],

@@ -10,12 +10,7 @@ import { PrivacyService } from '../privacy/privacy.service.js';
 import { TemplateCryptoService } from './crypto.service.js';
 import { FACE_DIM, MIN_QUALITY, type RegisterFaceDto } from './dto.js';
 
-/**
- * STEP 9 — Face registration server side (PRD §12-§13, §54).
- * - Raw images NEVER reach the server (privacy by design); only embeddings.
- * - Templates stored AES-256-GCM encrypted, one row per employee, versioned.
- * - Template bytes are never returned by any endpoint.
- */
+ 
 @Injectable()
 export class FaceService {
   constructor(
@@ -89,16 +84,13 @@ export class FaceService {
     };
   }
 
-  /** Internal: decrypt for the matcher (STEP 12). Never exposed via HTTP. */
+   
   async loadCipher(employeeId: string): Promise<Buffer | null> {
     const row = await this.prisma.faceTemplate.findUnique({ where: { employeeId } });
     return row ? Buffer.from(row.templateCipher) : null;
   }
 
-  /**
-   * Cosine similarity between a live embedding and the stored template.
-   * Returns null when no template is registered.
-   */
+   
   async matchScore(employeeId: string, live: number[]): Promise<number | null> {
     const blob = await this.loadCipher(employeeId);
     if (!blob) return null;
@@ -120,7 +112,7 @@ export class FaceService {
 
 export { FACE_DIM };
 
-/** Prisma Bytes wants Uint8Array<ArrayBuffer>; node Buffers may be views. */
+ 
 function toBytes(buf: Uint8Array): Uint8Array<ArrayBuffer> {
   if (buf.buffer instanceof ArrayBuffer) {
     return new Uint8Array(buf.buffer, buf.byteOffset, buf.byteLength);

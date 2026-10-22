@@ -3,9 +3,9 @@ import 'dart:math' as math;
 import 'package:face_absen_mobile/features/liveness/domain/passive_liveness.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-/// A well-behaved live frame: frontal, open eyes, slight jitter, and a slow
-/// lean-in (face grows ~5% of frame width per tick) — what a hand-held phone
-/// naturally produces. Both gates need this combination.
+
+
+
 PassiveFrame live(int i, {int count = 1}) => PassiveFrame(
       faceCount: count,
       relativeWidth: 0.22 + i * 0.05,
@@ -16,7 +16,7 @@ PassiveFrame live(int i, {int count = 1}) => PassiveFrame(
       landmarkY: 100 + (i.isEven ? 1.5 : -1.5),
     );
 
-/// A held-up printed photo: identical pixels every frame.
+
 PassiveFrame print_() => const PassiveFrame(
       faceCount: 1,
       relativeWidth: 0.4,
@@ -27,8 +27,8 @@ PassiveFrame print_() => const PassiveFrame(
       landmarkY: 100,
     );
 
-/// The dangerous adversary: a print wobbled by a trembling hand. It jitters
-/// exactly like a live face (±2 px) but never changes distance.
+
+
 PassiveFrame wobbledPrint(int i) => PassiveFrame(
       faceCount: 1,
       relativeWidth: 0.35,
@@ -39,7 +39,7 @@ PassiveFrame wobbledPrint(int i) => PassiveFrame(
       landmarkY: 100 + (i.isEven ? 1.5 : -1.5),
     );
 
-/// A rigid photo slid toward the camera: depth change without any motion.
+
 PassiveFrame approachingPrint(int i) => PassiveFrame(
       faceCount: 1,
       relativeWidth: 0.22 + i * 0.05,
@@ -105,16 +105,16 @@ void main() {
     });
 
     test('a hand-wobbled print jitters but never changes distance: rejected', () {
-      // This is the attack micro-motion alone cannot stop — hand tremor sits
-      // inside the acceptance band, so the run must stay scanning forever.
+      
+      
       final PassiveLiveness l = PassiveLiveness();
       PassiveVerdict last = PassiveVerdict.scanning;
       for (int i = 0; i < 30; i++) {
         last = l.add(wobbledPrint(i)).verdict;
       }
       expect(last, isNot(PassiveVerdict.passed));
-      // The analyser really saw motion (so this is not the rigid-print case)
-      // but recorded zero depth evidence.
+      
+      
       expect(l.motionScore, greaterThan(0));
       expect(l.depthScore, 0);
     });
@@ -166,8 +166,8 @@ void main() {
     test('progress climbs and reports total', () {
       final PassiveLiveness l = PassiveLiveness();
       expect(l.progress, 0);
-      // The first frame has nothing to compare against, so motion (and thus
-      // progress) cannot start until the second frame arrives.
+      
+      
       expect(l.add(live(0)).progress, 0);
       expect(l.add(live(1)).progress, greaterThan(0));
       for (int i = 2; i < 6; i++) {
@@ -180,7 +180,7 @@ void main() {
       final PassiveLiveness l = PassiveLiveness();
       l.add(live(0));
       l.add(live(1));
-      // rejection
+      
       l.add(const PassiveFrame(faceCount: 0, relativeWidth: 0));
       expect(l.progress, 0);
     });
@@ -189,7 +189,7 @@ void main() {
       final PassiveLiveness l = PassiveLiveness();
       l.add(live(0));
       l.reset();
-      // Motion evidence is gone: a rigid print cannot piggyback on the past.
+      
       PassiveVerdict last = PassiveVerdict.scanning;
       for (int i = 0; i < 10; i++) {
         last = l.add(print_()).verdict;
@@ -199,7 +199,7 @@ void main() {
   });
 
   test('micro-motion thresholds exclude sub-pixel noise', () {
-    // A 0.1 px wobble is sensor noise, not a living face.
+    
     final PassiveLiveness l = PassiveLiveness();
     PassiveVerdict last = PassiveVerdict.scanning;
     for (int i = 0; i < 20; i++) {

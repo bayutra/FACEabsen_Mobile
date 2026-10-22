@@ -5,11 +5,11 @@ import '../domain/device_models.dart';
 import 'helpdesk_sheet.dart';
 import '../../../core/theme/app_colors.dart';
 
-/// Device binding detail: which handset is trusted, its heartbeat, and the
-/// full binding history.
-///
-/// Modernized to match the Stitch design "perangkat_saya_manajemen_perangkat"
-/// (clinical/hospital theme).
+
+
+
+
+
 class DeviceStatusSection extends StatefulWidget {
   const DeviceStatusSection({
     super.key,
@@ -68,7 +68,7 @@ class _DeviceStatusSectionState extends State<DeviceStatusSection> {
     return '${d.inDays} hari lalu';
   }
 
-  /// Status pill with pulsating indicator dot matching Stitch specifications.
+  
   static Widget _pulseStatusPill(DeviceStatus s) {
     final (String label, Color dotColor, Color glowColor, Color bg, Color text, Color border) = switch (s) {
       DeviceStatus.active => (
@@ -161,7 +161,7 @@ class _DeviceStatusSectionState extends State<DeviceStatusSection> {
     );
   }
 
-  /// History status pill without pulse dot, formatted per status color.
+  
   static Widget _historyStatusPill(DeviceStatus s) {
     final (String label, Color bg, Color fg, Color border) = switch (s) {
       DeviceStatus.active => (
@@ -253,7 +253,7 @@ class _DeviceStatusSectionState extends State<DeviceStatusSection> {
     }
   }
 
-  /// Policy card with hospital watermark and "1 Karyawan 1 Perangkat" policy.
+  
   Widget _buildPolicyCard() {
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
@@ -392,7 +392,7 @@ class _DeviceStatusSectionState extends State<DeviceStatusSection> {
     );
   }
 
-  /// 2x2 bento specs grid for active device.
+  
   Widget _buildBentoGrid(BoundDevice current, bool compromised) {
     return Column(
       children: [
@@ -487,7 +487,7 @@ class _DeviceStatusSectionState extends State<DeviceStatusSection> {
     );
   }
 
-  /// Security attestation status indicator.
+  
   Widget _buildAttestationIndicator(bool compromised) {
     if (compromised) {
       return Container(
@@ -541,7 +541,7 @@ class _DeviceStatusSectionState extends State<DeviceStatusSection> {
     );
   }
 
-  /// Active Primary Device card with gradient top accent, specs bento, and attestation.
+  
   Widget _buildActiveDeviceCard(BoundDevice current, bool compromised) {
     final String rawId = current.installationId.isNotEmpty ? current.installationId : current.id;
     final String displayId = rawId.length > 20
@@ -566,7 +566,7 @@ class _DeviceStatusSectionState extends State<DeviceStatusSection> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Gradient top accent
+          
           Container(
             height: 4,
             decoration: const BoxDecoration(
@@ -671,7 +671,7 @@ class _DeviceStatusSectionState extends State<DeviceStatusSection> {
     );
   }
 
-  /// History list cards for registered devices.
+  
   Widget _buildDeviceHistorySection(List<BoundDevice> devices) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -810,7 +810,7 @@ class _DeviceStatusSectionState extends State<DeviceStatusSection> {
     );
   }
 
-  /// IT Helpdesk card at the bottom.
+  
   Widget _helpdeskCard(BuildContext context) {
     return Container(
       margin: const EdgeInsets.only(top: 8),

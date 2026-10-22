@@ -5,7 +5,7 @@ import '../data/leave_repository.dart';
 import '../domain/leave_models.dart';
 import '../../../core/theme/app_colors.dart';
 
-/// Manual id-ID short date: `28 Okt 2024`.
+
 String _formatIdDate(DateTime d) {
   const List<String> bulan = [
     'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
@@ -14,7 +14,7 @@ String _formatIdDate(DateTime d) {
   return '${d.day} ${bulan[d.month - 1]} ${d.year}';
 }
 
-/// Manual id-ID weekday name: `Senin`.
+
 String _weekdayName(DateTime d) {
   const List<String> hari = [
     'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'
@@ -22,10 +22,10 @@ String _weekdayName(DateTime d) {
   return hari[d.weekday - 1];
 }
 
-/// Stitch "Pengajuan Izin & Cuti":
-/// Employee header card, remaining leave chip, 5-option radio bento grid,
-/// date range pickers with shift calculation, ward handover delegation,
-/// reason field, attachment preview, SOP agreement check, and 52px CTA.
+
+
+
+
 class LeaveFormScreen extends StatefulWidget {
   const LeaveFormScreen({
     super.key,
@@ -164,7 +164,7 @@ class _LeaveFormScreenState extends State<LeaveFormScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Employee Profile & Quota Context Card
+            
             Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
@@ -274,7 +274,7 @@ class _LeaveFormScreenState extends State<LeaveFormScreen> {
 
             const SizedBox(height: 16),
 
-            // Section 1: Jenis Pengajuan (Radio Bento Grid)
+            
             const Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -326,7 +326,7 @@ class _LeaveFormScreenState extends State<LeaveFormScreen> {
             ),
             const SizedBox(height: 8),
 
-            // Option 5: Lainnya (Full Width Compact)
+            
             InkWell(
               onTap: () => setState(() => _type = 'LAINNYA'),
               borderRadius: BorderRadius.circular(12),
@@ -359,7 +359,7 @@ class _LeaveFormScreenState extends State<LeaveFormScreen> {
 
             const SizedBox(height: 16),
 
-            // Section 2: Rentang Waktu Dispensasi
+            
             Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
@@ -460,7 +460,7 @@ class _LeaveFormScreenState extends State<LeaveFormScreen> {
                     ],
                   ),
                   const SizedBox(height: 10),
-                  // Calculated Summary Chip
+                  
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     decoration: BoxDecoration(
@@ -500,7 +500,7 @@ class _LeaveFormScreenState extends State<LeaveFormScreen> {
 
             const SizedBox(height: 16),
 
-            // Section 3: Handover Delegation Card
+            
             Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
@@ -588,7 +588,7 @@ class _LeaveFormScreenState extends State<LeaveFormScreen> {
 
             const SizedBox(height: 16),
 
-            // Section 4: Alasan / Keterangan Keperluan
+            
             Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
@@ -627,7 +627,7 @@ class _LeaveFormScreenState extends State<LeaveFormScreen> {
 
             const SizedBox(height: 16),
 
-            // Section 5: SOP Checkbox
+            
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
@@ -671,7 +671,7 @@ class _LeaveFormScreenState extends State<LeaveFormScreen> {
 
             const SizedBox(height: 18),
 
-            // Submit Button
+            
             SizedBox(
               height: 52,
               child: ElevatedButton.icon(

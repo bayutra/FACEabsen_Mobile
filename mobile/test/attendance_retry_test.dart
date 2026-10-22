@@ -10,11 +10,11 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'fakes.dart';
 
-/// Answers GET /protected with a scripted sequence of 429/200 responses.
+
 class _RateLimitAdapter implements HttpClientAdapter {
   _RateLimitAdapter(this.script);
 
-  /// (status, retryAfterHeader) per call, in order; repeats the last entry.
+  
   final List<(int, String?)> script;
   int hits = 0;
 
@@ -44,7 +44,7 @@ class _RateLimitAdapter implements HttpClientAdapter {
   void close({bool force = false}) {}
 }
 
-/// Answers every POST with [status] (+ optional retry-after).
+
 class _PostStatusAdapter implements HttpClientAdapter {
   _PostStatusAdapter(this.status, {this.retryAfter});
 
@@ -155,7 +155,7 @@ void main() {
       dio.httpClientAdapter = fake;
 
       await expectLater(dio.get('/protected'), throwsA(isA<DioException>()));
-      // First 429 waited + retried (hit 2), which 429s again → propagates.
+      
       expect(fake.hits, 2);
     });
   });

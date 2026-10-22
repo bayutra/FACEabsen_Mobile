@@ -5,15 +5,15 @@ import { DevicesService } from './devices.service.js';
 
 const auditStub = { log: vi.fn(async () => undefined) } as never;
 
-// Real Ed25519 proof material: the DTO carries a signature the production
-// `verifyDeviceSignature` helper accepts, so the "valid proof passes" test
-// exercises the real crypto path instead of a mocked boolean.
+
+
+
 const { privateKey: TEST_PRIV, publicKey: TEST_PUB } = generateKeyPairSync('ed25519');
 const TEST_RAW = (TEST_PUB.export({ format: 'der', type: 'spki' }) as Buffer).subarray(-32).toString('base64');
 const TEST_NONCE = 'challenge-nonce-for-tests-001';
 const signNonce = (nonce: string) => sign(null, Buffer.from(nonce, 'utf8'), TEST_PRIV).toString('base64');
 
-/** JwtService double resolving a challenge payload for `sub` (H7). */
+ 
 const jwtFor = (sub = 'u1', purpose = 'device-register') =>
   ({
     signAsync: vi.fn(async () => TEST_NONCE),
@@ -22,8 +22,8 @@ const jwtFor = (sub = 'u1', purpose = 'device-register') =>
 
 function makePrisma(over: Record<string, Record<string, unknown>> = {}) {
   return {
-    // Actor lookups (by userId) resolve to hospital h1; other shapes keep the
-    // legacy row. ADMIN callers therefore exercise the same-facility path.
+    
+    
     employee: {
       findUnique: vi.fn(async (a: { where: Record<string, unknown> }) =>
         'userId' in a.where ? { id: 'e-adm', department: { hospitalId: 'h1' } } : { id: 'e1' },
@@ -99,7 +99,7 @@ describe('DevicesService.register', () => {
       device: { findFirst: vi.fn(async () => ({ id: 'd1', employeeId: 'e1', status: 'ACTIVE' })), create },
     });
     const svc = new DevicesService(sameOwner, auditStub, jwtFor('u1'));
-    // Fresh login on the same phone: same install+keypair resolves to the row.
+    
     await expect(svc.register(dto(), 'u1')).resolves.toMatchObject({ id: 'd1', status: 'ACTIVE' });
     expect(create).not.toHaveBeenCalled();
 
@@ -232,8 +232,8 @@ describe('DevicesService.activate (STEP 18 — aktivasi langsung)', () => {
   }
 
   it('PENDING → ACTIVE tanpa mencabut perangkat aktif lain', async () => {
-    // auditStub dipakai bersama antar-tes; bersihkan agar asersi "tidak ada
-    // DEVICE_REVOKED" hanya menilai pemanggilan dari tes ini.
+    
+    
     (auditStub as unknown as { log: ReturnType<typeof vi.fn> }).log.mockClear();
     const prisma = activatePrisma({
       device: {
@@ -246,7 +246,7 @@ describe('DevicesService.activate (STEP 18 — aktivasi langsung)', () => {
     expect(out.status).toBe('ACTIVE');
 
     const update = (prisma as unknown as { device: { update: ReturnType<typeof vi.fn> } }).device.update;
-    // Multi-perangkat: hanya target yang berubah, perangkat ACTIVE lain tetap.
+    
     expect(update).toHaveBeenCalledTimes(1);
     expect(update).toHaveBeenCalledWith({ where: { id: 'd2' }, data: { status: 'ACTIVE' } });
     expect(auditStub.log).toHaveBeenCalledWith(expect.objectContaining({ action: 'DEVICE_ACTIVATED', targetId: 'd2' }));
@@ -327,7 +327,7 @@ describe('DevicesService.getOne/heartbeat/validate', () => {
   });
 });
 
-// Tahap 2 — facility scoping: an ADMIN of h1 cannot read or revoke h2's devices.
+
 describe('DevicesService facility scoping (ADMIN)', () => {
   const foreign = {
     id: 'd9',

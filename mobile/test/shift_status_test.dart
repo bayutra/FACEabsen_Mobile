@@ -2,7 +2,7 @@ import 'package:face_absen_mobile/features/schedule/domain/shift_status.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  // 2026-10-06 is the shift START date; the shift is PAGI 07:00 → 15:00.
+  
   final DateTime workDate = DateTime(2026, 10, 6);
 
   ShiftVerdict checkInAt(int hour, int minute) => evaluateCheckInStatus(
@@ -105,7 +105,7 @@ void main() {
     });
 
     test('rejects malformed or out-of-range input', () {
-      expect(minutesOfDay('7:00'), 420); // still parseable as h=7, m=0
+      expect(minutesOfDay('7:00'), 420); 
       expect(minutesOfDay('25:00'), isNull);
       expect(minutesOfDay('07:60'), isNull);
       expect(minutesOfDay('abc'), isNull);

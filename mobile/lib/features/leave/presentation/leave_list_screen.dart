@@ -6,14 +6,14 @@ import 'leave_form_screen.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/stitch.dart';
 
-/// Manual id-ID short month names (no intl dependency).
+
 const List<String> _bulanPendekId = [
   'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
   'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des',
 ];
 
-/// `28 Okt - 30 Okt 2024` style range; single day collapses to one date.
-/// Falls back to the raw ISO range when unparseable.
+
+
 String _formatLeaveRange(String startKey, String endKey) {
   final DateTime? s = DateTime.tryParse(startKey);
   final DateTime? e = DateTime.tryParse(endKey);
@@ -27,9 +27,9 @@ String _formatLeaveRange(String startKey, String endKey) {
   return '${s.day} $sm ${s.year} - ${e.day} $em ${e.year}';
 }
 
-/// Stitch "Riwayat & Kuota Cuti":
-/// Quota summary hero card with progress bar and 4-column bento metrics,
-/// horizontal status filter chips, and clinical request cards with review notes.
+
+
+
 class LeaveListScreen extends StatefulWidget {
   const LeaveListScreen({
     super.key,
@@ -48,7 +48,7 @@ class LeaveListScreen extends StatefulWidget {
 
 class _LeaveListScreenState extends State<LeaveListScreen> {
   late Future<List<LeaveItem>> _future;
-  String _selectedFilter = 'ALL'; // ALL, PENDING, APPROVED, REJECTED
+  String _selectedFilter = 'ALL'; 
 
   @override
   void initState() {
@@ -141,7 +141,7 @@ class _LeaveListScreenState extends State<LeaveListScreen> {
 
           final List<LeaveItem> allItems = snap.data!;
 
-          // Calculate Quota Statistics
+          
           const int totalAnnualQuota = 12;
           int usedLeaveDays = 0;
           int sickDays = 0;
@@ -164,7 +164,7 @@ class _LeaveListScreenState extends State<LeaveListScreen> {
           final int approvedCount = allItems.where((l) => l.status == 'APPROVED').length;
           final int rejectedCount = allItems.where((l) => l.status == 'REJECTED').length;
 
-          // Filter Items
+          
           final List<LeaveItem> filteredItems = allItems.where((l) {
             if (_selectedFilter == 'ALL') return true;
             return l.status == _selectedFilter;
@@ -175,7 +175,7 @@ class _LeaveListScreenState extends State<LeaveListScreen> {
             child: ListView(
               padding: const EdgeInsets.all(16),
               children: [
-                // Top Summary Card (Remaining Leave Quota)
+                
                 Container(
                   decoration: BoxDecoration(
                     color: Colors.white,
@@ -192,7 +192,7 @@ class _LeaveListScreenState extends State<LeaveListScreen> {
                   clipBehavior: Clip.antiAlias,
                   child: Column(
                     children: [
-                      // Accent Top Stripe
+                      
                       Container(height: 4, color: AppColors.primaryContainer),
                       Padding(
                         padding: const EdgeInsets.all(14),
@@ -259,7 +259,7 @@ class _LeaveListScreenState extends State<LeaveListScreen> {
 
                             const SizedBox(height: 12),
 
-                            // Progress Bar
+                            
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
@@ -288,7 +288,7 @@ class _LeaveListScreenState extends State<LeaveListScreen> {
                             const Divider(height: 1),
                             const SizedBox(height: 10),
 
-                            // Bento Mini Stats Row
+                            
                             Row(
                               children: [
                                 Expanded(child: _bentoStat('Terpakai', '$usedLeaveDays Hari')),
@@ -315,7 +315,7 @@ class _LeaveListScreenState extends State<LeaveListScreen> {
 
                 const SizedBox(height: 16),
 
-                // Section Header & Filter Track
+                
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -343,7 +343,7 @@ class _LeaveListScreenState extends State<LeaveListScreen> {
 
                 const SizedBox(height: 8),
 
-                // Horizontal Filter Chips — spec 28px pills
+                
                 SizedBox(
                   height: 44,
                   child: ListView(
@@ -362,7 +362,7 @@ class _LeaveListScreenState extends State<LeaveListScreen> {
 
                 const SizedBox(height: 12),
 
-                // List of items
+                
                 if (filteredItems.isEmpty)
                   Container(
                     padding: const EdgeInsets.all(32),
@@ -493,7 +493,7 @@ class _LeaveListScreenState extends State<LeaveListScreen> {
       clipBehavior: Clip.antiAlias,
       child: Column(
         children: [
-          // Color stripe top
+          
           Container(height: 3, color: stripeColor),
           Padding(
             padding: const EdgeInsets.all(12),

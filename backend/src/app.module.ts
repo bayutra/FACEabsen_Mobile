@@ -34,11 +34,11 @@ import { UsersModule } from './users/users.module.js';
         return env;
       },
     }),
-    // Global rate limit. Shared Redis store when REDIS_URL is set
-    // (multi-instance production); otherwise in-memory (single instance).
-    // Default 600/min: 500 nurses behind one hospital NAT IP share the IP
-    // fallback bucket, and UserThrottlerGuard keys real users per-account —
-    // the global cap is backstop, tight per-route caps do the real work.
+    
+    
+    
+    
+    
     ThrottlerModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => {

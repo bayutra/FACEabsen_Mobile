@@ -9,8 +9,8 @@ import '../../presentation/admin_widgets.dart';
 import '../data/audit_admin_repository.dart';
 import '../domain/audit_admin_models.dart';
 
-/// Jejak audit aktivitas sistem (SUPER_ADMIN): filter hasil/aksi/aktor/
-/// rentang tanggal, paginasi, dan detail lengkap per entri.
+
+
 class AuditAdminScreen extends StatefulWidget {
   const AuditAdminScreen({super.key, required this.dio});
 
@@ -46,8 +46,8 @@ class _AuditAdminScreenState extends State<AuditAdminScreen> {
       if (!mounted) return;
       setState(() => _actions = list.isEmpty ? null : list);
     } catch (_) {
-      // Chip aksi opsional: bila gagal dimuat, filter tetap jalan
-      // dari data daftar.
+      
+      
       if (mounted) setState(() => _actions = null);
     }
   }

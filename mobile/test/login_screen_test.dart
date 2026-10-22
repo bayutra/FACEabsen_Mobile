@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'fakes.dart';
 
-// STEP 23 â€” login UI flow with faked repositories (no network/plugins).
+
 void main() {
   testWidgets('successful login registers device and calls onDone', (tester) async {
     var done = false;
@@ -47,7 +47,7 @@ void main() {
   });
 
   testWidgets('tapping Daftar opens the registration screen', (tester) async {
-    // Layar uji default 600px membuat tautan tertutup footer sticky.
+    
     tester.view.physicalSize = const Size(1080, 2400);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.reset);
@@ -125,7 +125,7 @@ void main() {
     await tester.tap(find.text('Masuk'));
     await tester.pumpAndSettle();
 
-    // Langkah kedua menggantikan form kredensial.
+    
     expect(find.text('Verifikasi Dua Langkah'), findsOneWidget);
     expect(find.text('ID Karyawan / Email / NIP *'), findsNothing);
     expect(done, isFalse);

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../data/preflight_repository.dart';
 import '../domain/eligibility.dart';
 
-/// Healthcare biometric attendance preflight checklist.
+
 class PreflightScreen extends StatefulWidget {
   const PreflightScreen({super.key, required this.preflight, required this.onProceed});
 
@@ -747,8 +747,8 @@ class _PreflightScreenState extends State<PreflightScreen> {
                       ],
                     ),
                   ),
-                  // The server's tolerance/threshold verdict, previewed here so
-                  // the shift master settings are visible before the punch.
+                  
+                  
                   if (g.state != GateState.pass)
                     Padding(
                       padding: const EdgeInsets.only(top: 2),

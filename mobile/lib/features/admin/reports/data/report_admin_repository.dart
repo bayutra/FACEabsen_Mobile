@@ -2,11 +2,11 @@ import 'package:dio/dio.dart';
 
 import '../domain/report_admin_models.dart';
 
-/// Endpoint pelaporan untuk SUPERVISOR ke atas.
-///
-/// Backend mengembalikan objek tabular langsung untuk `format=json`
-/// (lihat `ReportsController.send`), sehingga respons bisa berupa objek
-/// laporan maupun `{report: {...}}` tergantung versi backend.
+
+
+
+
+
 class ReportAdminRepository {
   ReportAdminRepository({required Dio dio}) : _dio = dio;
 
@@ -49,11 +49,11 @@ class ReportAdminRepository {
     return AdminReport.fromResponse(res.data);
   }
 
-  /// Daftar karyawan untuk dropdown "Per Karyawan".
-  ///
-  /// `GET /employees` khusus ADMIN. Supervisor hanya boleh melihat timnya,
-  /// jadi bila server menolak (403) kami memakai `/supervisor/team` yang
-  /// memuat id, nama, dan NIP anggota tim.
+  
+  
+  
+  
+  
   Future<List<AdminEmployeeOption>> employees({int pageSize = 100}) async {
     final Response<dynamic> res;
     try {

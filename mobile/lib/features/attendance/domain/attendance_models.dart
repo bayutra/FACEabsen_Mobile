@@ -1,4 +1,4 @@
-/// STEP 12 — attendance result models (pure).
+
 class AttendanceResult {
   AttendanceResult({
     required this.id,
@@ -79,7 +79,7 @@ String riskCategoryLabel(String? category) {
   }
 }
 
-/// STEP 14 — history list item (mobile + detail sheet).
+
 class AttendanceHistoryItem {
   AttendanceHistoryItem({
     required this.id,
@@ -149,7 +149,7 @@ class AttendanceHistoryPage {
   }
 }
 
-/// Serializes history filters (drops empties).
+
 String toHistoryQueryString({int page = 1, String? checkInStatus, String? from, String? to}) {
   final params = <String, String>{};
   if (page > 1) params['page'] = '$page';
@@ -184,7 +184,7 @@ String checkOutStatusLabel(String? status) {
   }
 }
 
-/// Server rejection reasons → Indonesian messages.
+
 String attendanceRejectMessage(String? reason) {
   switch (reason) {
     case 'FACE_MISMATCH':

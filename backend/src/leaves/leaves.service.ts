@@ -11,11 +11,7 @@ import { resolveHospitalScope } from '../auth/tenant-scope.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import type { CreateLeaveDto, ListLeavesQuery } from './dto.js';
 
-/**
- * STEP 16 — Leave requests (PRD §37, §61).
- * Flow mirrors corrections: employee → request → supervisor/admin → decision.
- * Overlapping pending/approved leaves are rejected (one status per day).
- */
+ 
 @Injectable()
 export class LeavesService {
   constructor(
@@ -92,7 +88,7 @@ export class LeavesService {
     return this.prisma.leaveRequest.findMany({
       where: AND.length > 0 ? { AND } : {},
       orderBy: [{ startDate: 'desc' }],
-      // Bound admin queues (M5): never return an unbounded list.
+      
       take: 200,
       include: { employee: { select: { id: true, name: true, employeeNo: true } } },
     });

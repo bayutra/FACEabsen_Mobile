@@ -29,7 +29,7 @@ export class CreateShiftDto {
   @Matches(HHMM)
   endTime!: string;
 
-  /** If omitted, derived (end <= start means overnight). If given, must match. */
+   
   @IsOptional()
   @IsBoolean()
   overnight?: boolean;
@@ -103,7 +103,7 @@ export class CreateScheduleDto {
   @IsString()
   shiftId!: string;
 
-  /** Shift START date; a night shift still counts as this one day. */
+   
   @Matches(DATE)
   workDate!: string;
 }

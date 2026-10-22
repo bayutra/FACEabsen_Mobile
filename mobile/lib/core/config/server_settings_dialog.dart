@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import 'server_settings.dart';
 
-/// Dialog untuk mengganti alamat backend saat pengujian di jaringan lain
-/// (ngrok, Tailscale, IP LAN). Mengembalikan `true` bila alamat disimpan.
+
+
 Future<bool> showServerSettingsDialog(BuildContext context, ServerSettings settings) async {
   final TextEditingController controller = TextEditingController(text: settings.baseUrl);
   String? error;

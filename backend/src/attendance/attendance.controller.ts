@@ -20,14 +20,14 @@ import {
 export class AttendanceController {
   constructor(private readonly attendance: AttendanceService) {}
 
-  @Throttle({ default: { limit: 30, ttl: 60_000 } }) // anti-abuse on signed flows
+  @Throttle({ default: { limit: 30, ttl: 60_000 } }) 
   @HttpCode(HttpStatus.OK)
   @Post('check-in')
   checkIn(@Body() dto: CheckInDto, @CurrentUser() user: AuthContext, @Req() req: Request) {
     return this.attendance.checkIn(dto, user.userId, { ip: req.ip });
   }
 
-  @Throttle({ default: { limit: 30, ttl: 60_000 } }) // anti-abuse on signed flows
+  @Throttle({ default: { limit: 30, ttl: 60_000 } }) 
   @HttpCode(HttpStatus.OK)
   @Post('check-out')
   checkOut(@Body() dto: CheckOutDto, @CurrentUser() user: AuthContext, @Req() req: Request) {

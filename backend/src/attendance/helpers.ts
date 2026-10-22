@@ -1,14 +1,14 @@
 import { createPublicKey, verify } from 'node:crypto';
 import { workDateKeyIn } from '../shifts/shift-time.js';
 
-// SPKI DER prefix for Ed25519 (RFC 8410) + 32-byte raw key.
+
 const SPKI_PREFIX = Buffer.from('302a300506032b6570032100', 'hex');
 
 export function buildSignMessage(requestId: string, requestTimestamp: string): string {
   return `${requestId}.${requestTimestamp}`;
 }
 
-/** Verifies device Ed25519 signature (base64) over the sign message. */
+ 
 export function verifyDeviceSignature(
   devicePublicKeyB64: string,
   message: string,
@@ -44,29 +44,21 @@ export type LivenessReject =
   | 'LIVENESS_EMPTY'
   | 'LIVENESS_MODE_UNSUPPORTED';
 
-/** Attestation shapes the client may send (PRD §14, passive PAD rollout). */
+ 
 export interface LivenessAttestation {
   passed: boolean;
   challenges?: string[];
   completedAt: string;
   score?: number;
-  /** `active` = blink/head-turn challenges, `passive` = Face-ID-style. */
+   
   mode?: string;
-  /** Anti-spoofing confidence reported by the on-device analyser (0..1). */
+   
   padScore?: number;
 }
 
 const SUPPORTED_MODES = new Set(['active', 'passive']);
 
-/**
- * Shape + freshness check for the client liveness attestation.
- *
- * NOTE on trust: this value is client-asserted, so it is NOT a security
- * boundary by itself — a modified client can post `passed: true` directly.
- * The real anchors are the face-template match and the device
- * integrity token. Passive mode removes the *commands* the user must perform;
- * it does not add a new server-verifiable fact.
- */
+ 
 export function validateLiveness(
   att: LivenessAttestation,
   now: Date,
@@ -80,8 +72,8 @@ export function validateLiveness(
     return { ok: false, reason: 'LIVENESS_MODE_UNSUPPORTED' };
   }
   if (mode === 'passive') {
-    // Passive attestations carry no challenge list; require the analyser to
-    // report a confidence so an empty "passed" cannot be waved through.
+    
+    
     const pad = typeof att.padScore === 'number' ? att.padScore : 0;
     if (!(pad > 0)) {
       return { ok: false, reason: 'LIVENESS_EMPTY' };
@@ -96,16 +88,13 @@ export function validateLiveness(
   return { ok: true };
 }
 
-/** UTC calendar day anchor (legacy default; prefer hospitalWorkDate). */
+ 
 export function utcWorkDate(now = new Date()): { date: Date; key: string } {
   const key = now.toISOString().slice(0, 10);
   return { date: new Date(`${key}T00:00:00.000Z`), key };
 }
 
-/**
- * Throws when `timeZone` is not a valid IANA zone. Called at boot so a typo
- * in HOSPITAL_TZ fails fast instead of mis-scoring every punch.
- */
+ 
 export function assertTimeZone(timeZone: string): void {
   try {
     new Intl.DateTimeFormat('en-CA', { timeZone }).format(new Date());
@@ -114,12 +103,7 @@ export function assertTimeZone(timeZone: string): void {
   }
 }
 
-/**
- * Hospital-local calendar day for an instant. The stored `date` keeps the
- * UTC-midnight-of-key convention (same as schedule rows created from
- * `YYYY-MM-DD` strings), so exact-date lookups keep matching — only the
- * *key derivation* moves from UTC to the hospital zone.
- */
+ 
 export function hospitalWorkDate(now = new Date(), timeZone = 'Asia/Jakarta'): { date: Date; key: string } {
   const key = workDateKeyIn(now, timeZone);
   return { date: new Date(`${key}T00:00:00.000Z`), key };

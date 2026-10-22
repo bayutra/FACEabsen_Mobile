@@ -2,8 +2,8 @@ import 'package:dio/dio.dart';
 
 import '../domain/shift_status.dart';
 
-/// Own roster (Stitch "Jadwal Dinas Mingguan & Shift Nakes").
-/// Backend: GET /schedules/me?from&to — employee-scoped, no admin permission.
+
+
 class ScheduleRepository {
   ScheduleRepository({required Dio dio}) : _dio = dio;
 
@@ -26,7 +26,7 @@ class ScheduleRepository {
       '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
 }
 
-/// One roster row: the day plus its shift window.
+
 class ScheduleEntry {
   ScheduleEntry({
     required this.id,
@@ -47,8 +47,8 @@ class ScheduleEntry {
   final String endTime;
   final bool overnight;
 
-  /// Shift-master tolerances (PRD §20). Defaults mirror the DB, so an older
-  /// backend payload still yields sane verdicts.
+  
+  
   final int gracePeriodMin;
   final int lateThresholdMin;
   final int earlyCheckoutThresholdMin;
@@ -74,7 +74,7 @@ class ScheduleEntry {
 
   String get window => '$startTime → $endTime';
 
-  /// Check-in verdict for [now] using this shift's grace/late thresholds.
+  
   ShiftVerdict checkInStatusAt(DateTime now) => evaluateCheckInStatus(
         now: now,
         workDate: workDate,
@@ -83,7 +83,7 @@ class ScheduleEntry {
         lateThresholdMin: lateThresholdMin,
       );
 
-  /// Check-out verdict for [now] using this shift's early-checkout threshold.
+  
   ShiftVerdict checkOutStatusAt(DateTime now) => evaluateCheckOutStatus(
         now: now,
         workDate: workDate,
@@ -93,8 +93,8 @@ class ScheduleEntry {
         overnight: overnight,
       );
 
-  /// Whole-hour shift length derived from the real start/end window, or null
-  /// when either side is unparseable (never guessed from the shift name).
+  
+  
   int? get durationHours {
     final int? start = _minutes(startTime);
     final int? end = _minutes(endTime);
@@ -104,9 +104,9 @@ class ScheduleEntry {
     return mins ~/ 60;
   }
 
-  /// Shift kind drives the badge colour in the Stitch timeline.
-  /// Unparseable times fall back to [ShiftKind.pagi] rather than silently
-  /// becoming "malam" (00:00 would otherwise satisfy the night end-time rule).
+  
+  
+  
   ShiftKind get kind {
     final int? start = _minutes(startTime);
     final int? end = _minutes(endTime);

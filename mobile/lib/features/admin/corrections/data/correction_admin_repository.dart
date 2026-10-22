@@ -2,10 +2,10 @@ import 'package:dio/dio.dart';
 
 import '../domain/correction_admin_models.dart';
 
-/// Endpoint antrean koreksi presensi untuk ADMIN / SUPERVISOR.
-///
-/// Backend: `GET /corrections` (queue), `POST /corrections/:id/approve`,
-/// `POST /corrections/:id/reject` — semua memakai JWT pengguna aktif.
+
+
+
+
 class CorrectionAdminRepository {
   CorrectionAdminRepository({required Dio dio}) : _dio = dio;
 

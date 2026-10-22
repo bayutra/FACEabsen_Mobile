@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 
-/// Model rumah sakit ringkas untuk pemilih master data.
+
 class DepartmentHospital {
   const DepartmentHospital({
     required this.id,
@@ -22,7 +22,7 @@ class DepartmentHospital {
       );
 }
 
-/// Unit beserta rumah sakit induknya (GET /departments).
+
 class AdminDepartmentItem {
   const AdminDepartmentItem({
     required this.id,
@@ -59,10 +59,10 @@ class AdminDepartmentItem {
   }
 }
 
-/// Endpoint master data Unit untuk ADMIN.
-///
-/// Backend: GET /departments, POST /departments, PATCH /departments/:id,
-/// DELETE /departments/:id. Daftar rumah sakit diambil dari GET /hospitals.
+
+
+
+
 class DepartmentAdminRepository {
   DepartmentAdminRepository({required Dio dio}) : _dio = dio;
 
@@ -116,7 +116,7 @@ class DepartmentAdminRepository {
     );
   }
 
-  /// Server menolak (409) bila Unit masih memiliki karyawan.
+  
   Future<void> delete(String id) async {
     await _dio.delete<dynamic>('/departments/$id');
   }

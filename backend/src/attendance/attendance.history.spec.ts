@@ -54,7 +54,7 @@ describe('AttendanceService.listMine', () => {
     const prisma = makePrisma({ attendance: { findMany } });
     await svcOf(prisma).listMine('u1', { from: '2026-10-01', to: '2026-10-05', checkInStatus: 'LATE' });
     const where = findMany.mock.calls[0][0].where as { AND: unknown[] };
-    expect(where.AND).toHaveLength(4); // employee + from + to + status
+    expect(where.AND).toHaveLength(4); 
   });
 });
 
@@ -122,7 +122,7 @@ describe('AttendanceService.getOne', () => {
         ),
       },
     });
-    // Caller resolves to h1 (see makePrisma), the row sits in h2.
+    
     await expect(svcOf(prisma).getOne('a1', 'u-adm', ['ADMIN'])).rejects.toThrow('Attendance not found');
   });
 });

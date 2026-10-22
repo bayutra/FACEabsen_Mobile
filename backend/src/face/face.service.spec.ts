@@ -51,16 +51,16 @@ describe('TemplateCryptoService', () => {
     const cipher = createCipheriv('aes-256-gcm', key, iv);
     const ct = Buffer.concat([cipher.update(Buffer.from('legacy-bytes')), cipher.final()]);
     const tag = cipher.getAuthTag();
-    const legacy = Buffer.concat([iv, tag, ct]); // pre-M11 layout, no version byte
+    const legacy = Buffer.concat([iv, tag, ct]); 
     expect(crypto.decrypt(legacy, 'e1').toString()).toBe('legacy-bytes');
-    // Legacy path ignores the employee binding, exactly as before.
+    
     expect(crypto.decrypt(legacy, 'someone-else').toString()).toBe('legacy-bytes');
   });
 
   it('legacy blob whose IV starts with 0x01 still decrypts (no row is orphaned)', async () => {
     const { createCipheriv } = await import('node:crypto');
     const key = Buffer.from(KEY, 'base64');
-    // Force the 1/256 edge: a pre-M11 IV whose first byte is 0x01.
+    
     const iv = Buffer.concat([Buffer.from([0x01]), randomBytes(11)]);
     const cipher = createCipheriv('aes-256-gcm', key, iv);
     const ct = Buffer.concat([cipher.update(Buffer.from('legacy-bytes')), cipher.final()]);
@@ -90,12 +90,12 @@ describe('FaceService.register', () => {
     expect(out).not.toHaveProperty('templateCipher');
     const stored = create.mock.calls[0][0].data.templateCipher as Uint8Array;
     expect(Buffer.from(stored).toString()).not.toContain('NaN');
-    // decrypts back to the original floats
+    
     const plain = crypto.decrypt(Buffer.from(stored), 'e1');
     expect(new Float32Array(plain.buffer, plain.byteOffset, 48 * 4)[0]).toBeCloseTo(Math.sin(0) / 2, 5);
 
     const fp = createHash('sha256').update(Buffer.from(stored)).digest('hex');
-    expect(fp).toHaveLength(64); // opaque blob, auditable by hash only
+    expect(fp).toHaveLength(64); 
   });
 
   it('rejects: no profile, non-finite, low quality', async () => {
@@ -147,7 +147,7 @@ describe('FaceService.matchScore (STEP 23 coverage)', () => {
     const svc = new FaceService(makePrisma(), crypto, privacyStub, auditStub);
     expect(await svc.matchScore('ghost', [0.5])).toBeNull();
 
-    // craft a stored template of known vector via register, then match
+    
     const created: { templateCipher?: Uint8Array }[] = [];
     const prisma = makePrisma({
       faceTemplate: {

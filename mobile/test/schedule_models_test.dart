@@ -87,23 +87,23 @@ void main() {
     });
 
     test('boundary hours map to the expected kind', () {
-      // 13:59 is still morning, 14:00 starts afternoon.
+      
       expect(entry('13:59', '21:59').kind, ShiftKind.pagi);
       expect(entry('14:00', '22:00').kind, ShiftKind.siang);
-      // A shift ending at 06:00 counts as night even if it starts in the day.
+      
       expect(entry('10:00', '06:00', overnight: true).kind, ShiftKind.malam);
     });
 
     test('malformed or out-of-range times degrade to morning, never to night', () {
-      // Unparseable input must not be read as 00:00, which would otherwise
-      // satisfy the night end-time rule and mislabel the badge as MALAM.
+      
+      
       expect(entry('abc', 'def').kind, ShiftKind.pagi);
       expect(entry('', '').kind, ShiftKind.pagi);
       expect(entry('99:99', '99:99').kind, ShiftKind.pagi);
     });
 
     test('valid early-morning window is not mistaken for a night shift', () {
-      // start 00:00 with end 08:00 is a legitimate window, not malformed.
+      
       expect(entry('00:00', '08:00').kind, ShiftKind.pagi);
     });
   });

@@ -3,8 +3,8 @@ import 'dart:typed_data';
 
 import 'package:cryptography/cryptography.dart';
 
-/// Ed25519 device identity (PRD §9.3). Pure Dart — no native setup, works on
-/// old Android. The seed stays in secure storage; only the public key is sent.
+
+
 class DeviceKeys {
   static final Ed25519 _algo = Ed25519();
 

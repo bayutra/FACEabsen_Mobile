@@ -8,10 +8,10 @@ import '../data/employee_admin_repository.dart';
 import '../domain/employee_admin_models.dart';
 import 'employee_admin_form_screen.dart';
 
-/// Daftar & pengelolaan data karyawan.
-///
-/// ADMIN melihat seluruh fasilitas dan boleh menambah/menonaktifkan.
-/// SUPERVISOR hanya melihat unit/timnya dan mengubah nama, telepon, jabatan.
+
+
+
+
 class EmployeeAdminScreen extends StatefulWidget {
   const EmployeeAdminScreen({
     super.key,
@@ -51,7 +51,7 @@ class _EmployeeAdminScreenState extends State<EmployeeAdminScreen> {
       final List<AdminDepartment> units = await _repo.departments();
       if (mounted) setState(() => _units = units);
     } catch (_) {
-      // Filter unit bersifat opsional; daftar karyawan tetap bisa dipakai.
+      
     }
   }
 

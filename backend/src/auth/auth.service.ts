@@ -27,7 +27,7 @@ interface RoleRow {
   role: { name: string };
 }
 
-/** Dummy Argon2 hash so unknown-email logins cost the same as real ones. */
+ 
 const DUMMY_HASH =
   '$argon2id$v=19$m=65536,t=3,p=4$AAAAAAAAAAAAAAAAAAAAAA$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
 
@@ -54,7 +54,7 @@ export class AuthService {
     }
   }
 
-  // ---------- queries shared with guards ----------
+  
 
   async getRoles(userId: string): Promise<string[]> {
     const rows = await this.prisma.userRole.findMany({
@@ -78,7 +78,7 @@ export class AuthService {
     return [...out];
   }
 
-  // ---------- flows ----------
+  
 
   async login(dto: LoginDto, meta: RequestMeta = {}) {
     const user = await this.prisma.user.findUnique({
@@ -111,8 +111,8 @@ export class AuthService {
       data: { failedLoginAttempts: 0, lockedUntil: null },
     });
 
-    // Second factor pending: password was correct (counters reset above) but
-    // NO session is created yet â€” the client must complete /auth/totp/verify.
+    
+    
     if (user.totpEnabled) {
       const totpToken = await this.jwt.signAsync(
         { sub: user.id, purpose: TOTP_TOKEN_PURPOSE },
@@ -145,11 +145,7 @@ export class AuthService {
     };
   }
 
-  /**
-   * Pendaftaran mandiri: membuat User + Employee + peran EMPLOYEE dalam satu
-   * transaksi, lalu langsung menerbitkan sesi sehingga pengguna masuk tanpa
-   * login ulang. Peran administratif tidak pernah diberikan di sini.
-   */
+   
   async register(dto: RegisterDto, meta: RequestMeta = {}) {
     const email = dto.email.trim().toLowerCase();
     const name = dto.name.trim();
@@ -218,7 +214,7 @@ export class AuthService {
     };
   }
 
-  /** EMP-001, EMP-002, ... melewati nomor yang sudah terpakai. */
+   
   private async nextEmployeeNo(): Promise<string> {
     const count = await this.prisma.employee.count();
     for (let i = count + 1; i <= count + 50; i++) {
@@ -241,10 +237,10 @@ export class AuthService {
     }
     if (!prev.user.isActive) throw new UnauthorizedException('Account inactive');
 
-    // Atomic rotation (compare-and-swap on the presented hash): concurrent
-    // refreshes with the same token race on the predicate, so exactly one
-    // wins. The loser sees count 0 and gets a plain 401 instead of minting
-    // a second access token from an already-consumed credential.
+    
+    
+    
+    
     const next = newRefreshToken();
     const rotated = await this.prisma.session.updateMany({
       where: { id: prev.id, refreshTokenHash: sha256(refreshToken), revokedAt: null },
@@ -316,7 +312,7 @@ export class AuthService {
         lockedUntil: null,
       },
     });
-    // Containment: all other sessions die on password change.
+    
     await this.prisma.session.updateMany({
       where: { userId, revokedAt: null, NOT: { id: sessionId } },
       data: { revokedAt: new Date() },
@@ -355,7 +351,7 @@ export class AuthService {
     return { revoked: true };
   }
 
-  // ---------- internals ----------
+  
 
   private async registerFailedAttempt(userId: string | null, email: string, meta: RequestMeta) {
     if (userId) {
@@ -404,7 +400,7 @@ export class AuthService {
   }
 
   private signAccess(sub: string, email: string, roles: string[], sid: string) {
-    // Explicit alg/issuer (STEP 22): never rely on module defaults alone.
+    
     return this.jwt.signAsync(
       { sub, email, roles, sid },
       { algorithm: AUTH_POLICY.jwtAlgorithm, issuer: AUTH_POLICY.jwtIssuer, expiresIn: this.accessTtlSec },
@@ -428,7 +424,7 @@ function addMinutes(base: Date, minutes: number): Date {
   return new Date(base.getTime() + minutes * 60 * 1000);
 }
 
-// Structural subset of PrismaService used here â€” keeps unit tests DB-free.
+
 export interface PrismaServiceLike {
   user: {
     findUnique(args: unknown): Promise<any>;

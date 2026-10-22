@@ -1,21 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ThrottlerGuard } from '@nestjs/throttler';
 
-/**
- * Rush-hour throttle tracker (500 nurses, one hospital NAT IP).
- *
- * The default tracker keys on IP, so everyone on the RS Wi-Fi would share a
- * single bucket and legitimate punches would 429 each other at 07:00.
- * Instead buckets are per-identity:
- * - login: per account email (plus the method-level 10/min cap) — an
- *   attacker hammering one account is still capped, and a NAT full of nurses
- *   no longer shares one bucket.
- * - refresh: per token prefix (random per session, NAT-proof).
- * - everything else: per JWT `sub`, parsed WITHOUT verification — the bucket
- *   is abuse accounting only, never an auth decision. Forged tokens get their
- *   own buckets but die at JwtAuthGuard before any expensive work, so this
- *   cannot amplify database load. No token → fall back to IP.
- */
+ 
 @Injectable()
 export class UserThrottlerGuard extends ThrottlerGuard {
   protected async getTracker(req: Record<string, any>): Promise<string> {
@@ -42,7 +28,7 @@ function isRecord(v: unknown): v is Record<string, unknown> {
   return typeof v === 'object' && v !== null;
 }
 
-/** Extracts JWT `sub` for bucketing only — signature is NOT verified here. */
+ 
 function bearerSub(headers: unknown): string | undefined {
   if (!isRecord(headers)) return undefined;
   const auth = headers['authorization'];

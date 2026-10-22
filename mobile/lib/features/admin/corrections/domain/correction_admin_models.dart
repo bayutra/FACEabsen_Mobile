@@ -1,7 +1,7 @@
-/// Model & label untuk antrean koreksi presensi (ADMIN / SUPERVISOR).
-///
-/// Backend: `GET /corrections` mengembalikan array `CorrectionRequest` dengan
-/// relasi `employee` dan `attendance` (lihat `corrections.service.ts`).
+
+
+
+
 library;
 
 const Map<String, String> correctionTypeLabels = <String, String>{

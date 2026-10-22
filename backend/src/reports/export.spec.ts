@@ -33,14 +33,14 @@ describe('export renderers', () => {
       ],
     };
     const csv = toCSV(evil);
-    // Every dangerous cell is prefixed so Excel treats it as text.
+    
     expect(csv).toContain("'=cmd|'/c calc'!A0");
     expect(csv).toContain("'+1+1");
     expect(csv).toContain("'-2+3");
     expect(csv).toContain("'@SUM(A1:A2)");
-    // Tab-prefixed payload keeps its leading quote-escape and stays quoted.
+    
     expect(csv).toContain(`"'\t=HYPERLINK`);
-    // Benign cells are untouched.
+    
     expect(toCSV(report)).not.toContain("'Siti");
   });
 

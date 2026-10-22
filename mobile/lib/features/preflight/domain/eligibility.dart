@@ -1,8 +1,8 @@
-/// Pure eligibility evaluation for the Stitch "Pra-Validasi" screen.
-///
-/// Two gates must pass before a punch is meaningful (PRD §16-§21):
-/// account active and a roster row for today.
-/// Pure Dart so every rule is unit-testable without a device.
+
+
+
+
+
 library;
 
 import '../../schedule/data/schedule_repository.dart';
@@ -78,9 +78,9 @@ GateResult evaluateSchedule({
       detail: roster,
     );
   }
-  // Preview the same verdict the server records (PRD §20): grace minutes keep
-  // the punch ON_TIME, up to the late threshold is LATE, beyond it VERY_LATE.
-  // Lateness never blocks the punch — the server still records it.
+  
+  
+  
   final ShiftVerdict punch = shift.checkInStatusAt(now);
   switch (punch.status) {
     case PunchStatus.late:
@@ -110,19 +110,19 @@ GateResult evaluateSchedule({
   }
 }
 
-/// True when nothing blocks the punch: no FAIL gate. Warnings still allow it.
+
 bool canProceed(List<GateResult> gates) =>
     !gates.any((GateResult g) => g.state == GateState.fail);
 
 int passedCount(List<GateResult> gates) =>
     gates.where((GateResult g) => g.state == GateState.pass).length;
 
-/// Gates the punch must satisfy, mirroring what the server will actually
-/// reject. Both remaining gates are real server-side requirements.
+
+
 bool isBlocking(GateResult g) => switch (g.id) {
       GateId.schedule || GateId.account => true,
     };
 
-/// Gates that stopped the punch, for the "perbaiki yang gagal" hint.
+
 List<GateResult> blockingGates(List<GateResult> gates) =>
     gates.where(isBlocking).where((GateResult g) => g.state == GateState.fail).toList();

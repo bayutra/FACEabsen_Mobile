@@ -11,8 +11,8 @@ import 'face_registered_screen.dart';
 import '../../attendance/data/attendance_repository.dart';
 import '../../device/data/device_repository.dart';
 
-/// STEP 9 face registration (Stitch "Pendaftaran Wajah"): camera viewport
-/// with guide overlay, quality-gated capture, server upload of embedding only.
+
+
 class FaceRegistrationScreen extends StatefulWidget {
   const FaceRegistrationScreen({
     super.key,
@@ -25,11 +25,11 @@ class FaceRegistrationScreen extends StatefulWidget {
 
   final FaceRepository faces;
 
-  /// Identity shown on the confirmation receipt.
+  
   final String displayName;
   final String employeeNo;
 
-  /// Optional dependencies for the post-registration "Mulai Presensi" shortcut.
+  
   final AttendanceRepository? attendance;
   final DeviceRepository? devices;
 
@@ -50,8 +50,8 @@ class _FaceRegistrationScreenState extends State<FaceRegistrationScreen>
   bool _useScreenFlash = false;
   bool _flashOverlay = false;
 
-  /// Real failing quality gate for the last shot (null = no failure or a
-  /// non-capture error). Drives the guidance card; never a guessed diagnosis.
+  
+  
   FaceGate? _failGate;
 
   @override
@@ -63,8 +63,8 @@ class _FaceRegistrationScreenState extends State<FaceRegistrationScreen>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    // Same dead-preview hazard as the verify screen: release on background,
-    // rebuild + clear the stale error on resume.
+    
+    
     if (state == AppLifecycleState.paused ||
         state == AppLifecycleState.inactive) {
       final CameraController? controller = _controller;
@@ -96,12 +96,12 @@ class _FaceRegistrationScreenState extends State<FaceRegistrationScreen>
         enableAudio: false,
       );
       await controller.initialize();
-      // Default AUTO memicu Retina Flash (kamera depan iOS) saat menangkap
-      // frame; matikan agar pemindaian tidak berkedip menyilaukan.
+      
+      
       try {
         await controller.setFlashMode(FlashMode.off);
       } on CameraException {
-        // Perangkat tanpa lampu kilat.
+        
       }
       if (mounted) setState(() => _controller = controller);
     } on CameraException catch (e) {
@@ -146,15 +146,15 @@ class _FaceRegistrationScreenState extends State<FaceRegistrationScreen>
                 ? ' (skor ${(result.score! * 100).round()}%)'
                 : '');
         _success = result.ok;
-        // Guidance card only for real quality-gate failures; server/network
-        // failures (gate null/ok) keep the bare message.
+        
+        
         _failGate =
             (!result.ok && result.gate != null && result.gate != FaceGate.ok)
                 ? result.gate
                 : null;
         _busy = false;
       });
-      // Stitch "Pendaftaran Wajah - Berhasil": a dedicated confirmation screen.
+      
       if (result.ok) {
         final AttendanceRepository? att = widget.attendance;
         final DeviceRepository? dev = widget.devices;
@@ -284,7 +284,7 @@ class _FaceRegistrationScreenState extends State<FaceRegistrationScreen>
                                     child: Container(
                                         color: Colors.white.withOpacity(0.85)),
                                   ),
-                                // Badge status registrasi
+                                
                                 Align(
                                   alignment: Alignment.topCenter,
                                   child: Padding(
@@ -324,7 +324,7 @@ class _FaceRegistrationScreenState extends State<FaceRegistrationScreen>
                                     ),
                                   ),
                                 ),
-                                // Tombol cahaya layar (flood illuminator analog)
+                                
                                 Align(
                                   alignment: Alignment.topRight,
                                   child: Padding(
@@ -482,7 +482,7 @@ class _FaceRegistrationScreenState extends State<FaceRegistrationScreen>
   }
 }
 
-/// Rounded-square face framing guide for the registration camera.
+
 class _CameraFrameGuide extends CustomPainter {
   const _CameraFrameGuide();
 
@@ -498,7 +498,7 @@ class _CameraFrameGuide extends CustomPainter {
       frame,
       const Radius.circular(24),
     );
-    // Keep the camera visible inside a square target and dim the surrounding preview.
+    
     canvas.drawPath(
       Path()
         ..addRRect(roundedFrame)

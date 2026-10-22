@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
 
-/// Shared building blocks from the Stitch export
-/// `design/stitch_rs_absen_mobile_app` ("Clinical Attendance & Identity") so
-/// every screen speaks the same visual language.
 
-/// Status pill used for request/workflow states, mapped to the triage tiers in
-/// the design spec.
+
+
+
+
+
 class StatusPill extends StatelessWidget {
   const StatusPill(this.status, {super.key, this.label});
 
@@ -47,7 +47,7 @@ class StatusPill extends StatelessWidget {
   }
 }
 
-/// Pill badge: 28px tall, 12px horizontal padding, full radius, `label-md`.
+
 class AppPill extends StatelessWidget {
   const AppPill(
     this.label,
@@ -63,7 +63,7 @@ class AppPill extends StatelessWidget {
   final Color fg;
   final IconData? icon;
 
-  /// Optional 1px outline; the spec draws a border on every badge tier.
+  
   final Color? border;
 
   @override
@@ -97,8 +97,8 @@ class AppPill extends StatelessWidget {
       );
 }
 
-/// Pressable wrapper implementing spec active compress scale 0.98 for
-/// primary CTAs (52px, #0F766E, radius 16).
+
+
 class Pressable extends StatefulWidget {
   const Pressable({super.key, required this.child, required this.onTap});
 
@@ -126,9 +126,9 @@ class _PressableState extends State<Pressable> {
       );
 }
 
-/// Stitch sticky header — px-16 py-8, bg-surface/95 blur, border-b.
-/// Varian linear: back 40px circle + judul 18/600 + subtitle 11 + badge kanan.
-/// Varian home: avatar 40px + sapaan + trailing actions.
+
+
+
 class StitchHeader extends StatelessWidget implements PreferredSizeWidget {
   const StitchHeader({
     super.key,
@@ -149,8 +149,8 @@ class StitchHeader extends StatelessWidget implements PreferredSizeWidget {
   final String? greeting;
   final String? name;
 
-  /// 3 baris (sapaan + nama + subtitle) butuh slot lebih tinggi —
-  /// tanpa ini Column overflow 5px di layar 1080x2400.
+  
+  
   bool get _threeLines => greeting != null && subtitle != null;
 
   @override
@@ -229,7 +229,7 @@ class StitchHeader extends StatelessWidget implements PreferredSizeWidget {
       );
 }
 
-/// Stepper 1-2-3 ala Stitch (daftarkan perangkat, penggantian).
+
 class StitchStepper extends StatelessWidget {
   const StitchStepper({
     super.key,
@@ -319,7 +319,7 @@ class StitchStepper extends StatelessWidget {
   }
 }
 
-/// Section title with an optional trailing action.
+
 class SectionHeader extends StatelessWidget {
   const SectionHeader(this.title, {super.key, this.trailing});
 
@@ -338,15 +338,15 @@ class SectionHeader extends StatelessWidget {
       );
 }
 
-/// Elevation-1 card: white surface, 1px border, 16px radius, soft slate shadow.
+
 class AppCard extends StatelessWidget {
   const AppCard({super.key, required this.child, this.padding, this.accent, this.onTap});
 
   final Widget child;
   final EdgeInsetsGeometry? padding;
 
-  /// 4px accent line docked to the top border, used to encode a pass/fail
-  /// state at a glance.
+  
+  
   final Color? accent;
 
   final VoidCallback? onTap;
@@ -385,8 +385,8 @@ class AppCard extends StatelessWidget {
   }
 }
 
-/// Compact loading state that keeps the same clinical spacing as empty/error
-/// states instead of showing a bare spinner on a blank page.
+
+
 class LoadingState extends StatelessWidget {
   const LoadingState({super.key, this.label = 'Memuat data'});
 
@@ -413,7 +413,7 @@ class LoadingState extends StatelessWidget {
 
 }
 
-/// Shared list action row for settings, profile, and workflow hubs.
+
 class ActionTile extends StatelessWidget {
   const ActionTile({
     super.key,
@@ -493,7 +493,7 @@ class ActionTile extends StatelessWidget {
   }
 }
 
-/// Friendly zero-state with a call to action.
+
 class EmptyState extends StatelessWidget {
   const EmptyState({
     super.key,
@@ -543,7 +543,7 @@ class EmptyState extends StatelessWidget {
 
 enum InfoBannerTone { info, success, warning, error }
 
-/// Inline informational / warning banner.
+
 class InfoBanner extends StatelessWidget {
   const InfoBanner(this.text, {super.key, this.tone = InfoBannerTone.info, this.title});
 
@@ -609,8 +609,8 @@ class InfoBanner extends StatelessWidget {
   }
 }
 
-/// Label + value row used in receipt-style detail cards. Times render with
-/// tabular figures so a column of clock values stays aligned.
+
+
 class DetailRow extends StatelessWidget {
   const DetailRow(this.label, this.value, {super.key, this.bold = false, this.isTime = false});
 
@@ -649,7 +649,7 @@ class DetailRow extends StatelessWidget {
       );
 }
 
-/// Monospace-style readout for the live clock on the biometric screens.
+
 class MetricReadout extends StatelessWidget {
   const MetricReadout(this.text, {super.key, this.color, this.size = 32});
 

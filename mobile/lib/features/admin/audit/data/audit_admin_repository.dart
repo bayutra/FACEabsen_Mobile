@@ -2,17 +2,17 @@ import 'package:dio/dio.dart';
 
 import '../domain/audit_admin_models.dart';
 
-/// Endpoint audit untuk SUPER_ADMIN.
-///
-/// Backend: GET /audit (filter action/actorEmail/result/from/to/security),
-/// GET /audit/actions (array string nama aksi untuk filter).
+
+
+
+
 class AuditAdminRepository {
   AuditAdminRepository({required Dio dio}) : _dio = dio;
 
   final Dio _dio;
 
-  /// Daftar nama aksi untuk chip filter. Bila gagal dimuat, layar
-  /// menyembunyikan chip aksi (filter tetap jalan dari data daftar).
+  
+  
   Future<List<String>> actions() async {
     final Response res = await _dio.get('/audit/actions');
     final List<dynamic> list = res.data as List? ?? const <dynamic>[];

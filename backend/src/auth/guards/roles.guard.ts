@@ -3,7 +3,7 @@ import { Reflector } from '@nestjs/core';
 import { ROLES_KEY } from '../decorators.js';
 import { satisfiesRole } from '../rbac.js';
 
-/** Rank-inclusive role check (SUPER_ADMIN passes ADMIN routes). Must run after JwtAuthGuard. */
+ 
 @Injectable()
 export class RolesGuard implements CanActivate {
   constructor(private readonly reflector: Reflector) {}

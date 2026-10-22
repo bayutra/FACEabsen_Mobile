@@ -2,10 +2,10 @@ import 'package:dio/dio.dart';
 
 import '../domain/user_admin_models.dart';
 
-/// Endpoint pengguna untuk SUPER_ADMIN.
-///
-/// Backend: GET /users (search/role/isActive + paginasi), POST /users,
-/// PATCH /users/:id (roles/isActive), POST /users/:id/reset-password.
+
+
+
+
 class UserAdminRepository {
   UserAdminRepository({required Dio dio}) : _dio = dio;
 
@@ -58,7 +58,7 @@ class UserAdminRepository {
     );
   }
 
-  /// Ubah peran dan/atau status aktif akun.
+  
   Future<void> update(
     String id, {
     List<String>? roles,

@@ -5,7 +5,7 @@ import 'package:face_absen_mobile/features/device/data/device_repository.dart';
 import 'package:face_absen_mobile/features/device/domain/device_models.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-/// STEP 23 — hand-rolled test doubles (no plugins, no network).
+
 class FakeFlutterSecureStorage extends FlutterSecureStorage {
   final Map<String, String> box = {};
 
@@ -72,8 +72,8 @@ class FakeAuthRepository extends AuthRepository {
   final bool failTotp;
   final bool failRegister;
 
-  /// Unit yang dikembalikan [listUnits]; kosong untuk mensimulasikan
-  /// master data yang belum diisi admin.
+  
+  
   List<RegistrationUnit> units = const <RegistrationUnit>[
     RegistrationUnit(
       id: 'dept-1',
@@ -82,10 +82,10 @@ class FakeAuthRepository extends AuthRepository {
     ),
   ];
 
-  /// Unit yang dikirim pada pendaftaran terakhir (null bila tidak dipilih).
+  
   String? lastRegisterUnit;
 
-  /// Last `rememberMe` flag received (across login/TOTP paths).
+  
   bool? lastRememberMe;
 
   DioException _unauthorized(String path) => DioException(

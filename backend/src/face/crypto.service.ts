@@ -2,13 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createCipheriv, createDecipheriv, randomBytes } from 'node:crypto';
 
-/**
- * STEP 9 — face template encryption (PRD §13). AES-256-GCM with per-row IV;
- * key comes ONLY from DATA_ENCRYPTION_KEY (base64, 32 bytes). No fallback —
- * fail-closed if misconfigured. M11: new rows are a versioned envelope
- * (0x01 || iv || tag || ct) with AAD = employeeId; legacy rows (iv|tag|ct,
- * no AAD) still decrypt via the legacy path.
- */
+ 
 @Injectable()
 export class TemplateCryptoService {
   private readonly key: Buffer;
@@ -30,16 +24,16 @@ export class TemplateCryptoService {
     cipher.setAAD(Buffer.from(employeeId, 'utf8'));
     const ct = Buffer.concat([cipher.update(plain), cipher.final()]);
     const tag = cipher.getAuthTag();
-    return Buffer.concat([Buffer.from([0x01]), iv, tag, ct]); // 0x01 | iv(12) | tag(16) | ct
+    return Buffer.concat([Buffer.from([0x01]), iv, tag, ct]); 
   }
 
   decrypt(blob: Buffer, employeeId?: string): Buffer {
-    // M11: versioned envelope. 0x01 → AAD-bound (employeeId); anything else
-    // is a legacy row (iv | tag | ct, no AAD) decrypted exactly as before.
-    // A legacy IV starts with 0x01 with p=1/256 — those rows fail the v1
-    // auth check and fall through to the legacy path below, so no stored
-    // row ever becomes undecryptable. A genuine v1 mismatch fails BOTH
-    // paths (the shifted legacy parse never authenticates).
+    
+    
+    
+    
+    
+    
     if (blob.length > 0 && blob[0] === 0x01) {
       if (!employeeId) throw new Error('employeeId (AAD) is required for v1 face templates');
       try {
@@ -51,7 +45,7 @@ export class TemplateCryptoService {
         decipher.setAuthTag(tag);
         return Buffer.concat([decipher.update(ct), decipher.final()]);
       } catch {
-        // Fall through to the legacy parse.
+        
       }
     }
     const iv = blob.subarray(0, 12);

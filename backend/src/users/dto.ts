@@ -44,11 +44,7 @@ export class ListUsersQuery {
   pageSize?: number;
 }
 
-/**
- * A login account WITHOUT an employee record — e.g. a pure IT/admin desk that
- * never clocks in. Staff who need attendance are provisioned through
- * `POST /employees`, which creates the account and the employee row together.
- */
+ 
 export class CreateUserDto {
   @IsEmail()
   @MaxLength(255)
@@ -59,7 +55,7 @@ export class CreateUserDto {
   @MaxLength(256)
   password!: string;
 
-  /** Grant-checked with canAssignRole; EMPLOYEE is always added implicitly. */
+   
   @IsOptional()
   @IsArray()
   @IsIn(ROLE_NAMES, { each: true })
@@ -67,11 +63,7 @@ export class CreateUserDto {
 }
 
 export class UpdateUserDto {
-  /**
-   * No `@MinLength` here: class-validator only applies it to strings, so it
-   * rejects every array outright. Non-emptiness is enforced in UsersService with
-   * a clearer message ("At least one role is required").
-   */
+   
   @IsOptional()
   @IsArray()
   @IsIn(ROLE_NAMES, { each: true })

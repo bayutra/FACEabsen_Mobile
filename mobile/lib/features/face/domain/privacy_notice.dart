@@ -1,6 +1,6 @@
-/// STEP 21 — bundled privacy notice fallback (shown when offline).
-/// Server truth: GET /privacy/notice. Legal final review by hospital/DPO
-/// required before production (PRD §66).
+
+
+
 class PrivacyNotice {
   const PrivacyNotice({
     required this.version,

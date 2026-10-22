@@ -2,9 +2,9 @@ import 'package:dio/dio.dart';
 
 import '../domain/attendance_review_models.dart';
 
-/// Endpoint tinjauan presensi berisiko untuk SUPERVISOR / ADMIN.
-///
-/// Backend: `GET /attendance/review`, `POST /attendance/:id/review`.
+
+
+
 class AttendanceReviewRepository {
   AttendanceReviewRepository({required Dio dio}) : _dio = dio;
 

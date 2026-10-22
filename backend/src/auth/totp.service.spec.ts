@@ -1,4 +1,4 @@
-// TotpService: enrollment, verification, and single-use recovery (DB-free fakes).
+
 import { JwtService } from '@nestjs/jwt';
 import * as argon2 from 'argon2';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
@@ -26,7 +26,7 @@ function userRow(over: Record<string, unknown> = {}) {
   };
 }
 
-/** Minimal in-memory Prisma double with real CAS semantics on updateMany. */
+ 
 function makeDb() {
   const users = new Map<string, any>();
   const codes = new Map<string, any>();
@@ -135,7 +135,7 @@ describe('TotpService.setup/enable', () => {
     }
     expect(new Set(out.recoveryCodes).size).toBe(8);
     expect(users.get('u1').totpEnabled).toBe(true);
-    // Only hashes persisted — plaintext never touches the store.
+    
     expect(codes.size).toBe(8);
     for (const row of codes.values()) {
       expect(row.codeHash).toMatch(/^[0-9a-f]{64}$/);
@@ -211,7 +211,7 @@ describe('TotpService challenge tokens', () => {
       { algorithm: 'HS256', issuer: 'face-absen', expiresIn: 300 },
     );
     await expect(svc.verifyTotpToken(foreign)).rejects.toThrow('Invalid or expired token');
-    // A normal access token (no totp purpose) must NOT pass as a challenge.
+    
     const accessLike = await jwt.signAsync(
       { sub: 'u1', email: 'e@rs.test', roles: [], sid: 's1' },
       { algorithm: 'HS256', issuer: 'face-absen', expiresIn: 900 },

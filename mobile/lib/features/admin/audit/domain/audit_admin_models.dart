@@ -1,4 +1,4 @@
-/// Model entitas audit untuk layar admin SUPER_ADMIN.
+
 class AdminAuditLog {
   const AdminAuditLog({
     required this.id,
@@ -26,7 +26,7 @@ class AdminAuditLog {
   final Map<String, dynamic>? metadata;
   final String result;
 
-  /// Label target ringkas untuk daftar (`LOGIN · EMP-001`).
+  
   String get targetSummary {
     final String? t = targetType;
     final String? id = targetId;
@@ -38,7 +38,7 @@ class AdminAuditLog {
     return t ?? id!;
   }
 
-  /// Label aktor: email bila ada, bila tidak ID mentah.
+  
   String get actorLabel {
     final String? email = actorEmail;
     if (email != null && email.isNotEmpty) return email;

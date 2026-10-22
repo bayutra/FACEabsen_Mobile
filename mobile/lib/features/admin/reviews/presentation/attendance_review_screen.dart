@@ -7,10 +7,10 @@ import '../../presentation/admin_widgets.dart';
 import '../data/attendance_review_repository.dart';
 import '../domain/attendance_review_models.dart';
 
-/// Antrean validasi presensi berisiko (mis. skor kecocokan wajah borderline).
-///
-/// Presensi tetap tercatat di server; antrean ini hanya meminta atasan
-/// mengonfirmasi bahwa hasil verifikasi biometrik wajar.
+
+
+
+
 class AttendanceReviewScreen extends StatefulWidget {
   const AttendanceReviewScreen({super.key, required this.dio});
 

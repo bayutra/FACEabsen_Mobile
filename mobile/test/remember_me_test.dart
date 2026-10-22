@@ -9,10 +9,10 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'fakes.dart';
 
-/// L1 — "Ingat Saya" semantics: checked = persist refresh (restart stays
-/// logged in); unchecked = session-only, no refresh persisted, so
-/// BootstrapGate (refresh == null → no session) routes the next launch to
-/// login. Logout always clears everything.
+
+
+
+
 class _SessionFakeAdapter implements HttpClientAdapter {
   Map<String, List<String>> get _json => {
         Headers.contentTypeHeader: [Headers.jsonContentType],
@@ -60,10 +60,10 @@ void main() {
         password: 'pw',
         rememberMe: false,
       );
-      // Current run still authenticated via the access token …
+      
       expect(await store.readAccessToken(), 'access-123');
-      // … but a restart finds no refresh token, so BootstrapGate._hasSession
-      // (readRefreshToken() == null → false) routes to login.
+      
+      
       expect(await store.readRefreshToken(), isNull);
     });
 

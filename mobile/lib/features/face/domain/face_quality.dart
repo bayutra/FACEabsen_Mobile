@@ -2,8 +2,8 @@ import 'dart:math';
 
 import 'package:image/image.dart' as img;
 
-/// STEP 9 — pure face-quality gates (PRD §54 acceptance).
-/// Tested without camera/ML Kit: synthetic images + injected face counts.
+
+
 enum FaceGate { ok, noFace, multipleFaces, tooSmall, tooBlurry, tooDark, tooBright, eyesClosed }
 
 String faceGateMessage(FaceGate gate) {
@@ -27,7 +27,7 @@ String faceGateMessage(FaceGate gate) {
   }
 }
 
-/// Count + size gate. relativeWidth = box.width / image.width.
+
 FaceGate decideFaces({required int count, required double relativeWidth}) {
   if (count == 0) return FaceGate.noFace;
   if (count > 1) return FaceGate.multipleFaces;
@@ -35,7 +35,7 @@ FaceGate decideFaces({required int count, required double relativeWidth}) {
   return FaceGate.ok;
 }
 
-/// Mean brightness 0..1 of a grayscale image.
+
 double meanBrightness(img.Image gray) {
   double sum = 0;
   for (var y = 0; y < gray.height; y++) {
@@ -46,8 +46,8 @@ double meanBrightness(img.Image gray) {
   return sum / (gray.width * gray.height * 255.0);
 }
 
-/// Variance of Laplacian — higher means sharper. Computed on grayscale.
-/// Calibrated scale: uniform image ≈ 0, checkerboard 112px ≈ thousands.
+
+
 double laplacianVariance(img.Image gray) {
   double sum = 0;
   double sumSq = 0;
@@ -73,10 +73,10 @@ double laplacianVariance(img.Image gray) {
 class QualityResult {
   QualityResult({required this.gate, required this.score});
   final FaceGate gate;
-  final double score; // 0..1 composite
+  final double score; 
 }
 
-/// Full pixel gate. Thresholds are tunable; server also enforces >= 0.6.
+
 QualityResult assessQuality({
   required img.Image grayFace,
   required double relativeWidth,
@@ -84,7 +84,7 @@ QualityResult assessQuality({
 }) {
   final double variance = laplacianVariance(grayFace);
   final double brightness = meanBrightness(grayFace);
-  // Lighting first: most actionable for flat frames (which also lack texture).
+  
   if (brightness < 0.05) {
     return QualityResult(gate: FaceGate.tooDark, score: _score(variance, brightness, relativeWidth, blurThreshold));
   }
@@ -104,7 +104,7 @@ double _score(double variance, double brightness, double relativeWidth, double b
   return (sharp + bright + size) / 3.0;
 }
 
-/// Crop face box expanded by margin, clamped to the frame.
+
 img.Image cropFace(img.Image src, {required int left, required int top, required int width, required int height, double margin = 0.2}) {
   final int mx = (width * margin).round();
   final int my = (height * margin).round();
@@ -115,8 +115,8 @@ img.Image cropFace(img.Image src, {required int left, required int top, required
   return img.copyCrop(src, x: x, y: y, width: w, height: h);
 }
 
-/// 112×112 RGB normalized to [-1, 1] (MobileFaceNet convention).
-/// Returns flat Float32-length list [37632].
+
+
 List<double> preprocess112(img.Image faceCrop) {
   final img.Image resized = img.copyResize(faceCrop, width: 112, height: 112);
   final List<double> out = List<double>.filled(112 * 112 * 3, 0);
@@ -132,19 +132,19 @@ List<double> preprocess112(img.Image faceCrop) {
   return out;
 }
 
-/// Single-pass pixel pipeline result: gate verdict plus (on success) the
-/// MobileFaceNet model input. Pure — no I/O, safe to run in a background
-/// isolate via `compute()`.
+
+
+
 class FacePrepOutcome {
   FacePrepOutcome.rejected({required this.gate, required this.score}) : modelInput = null;
   FacePrepOutcome.accepted({required this.score, required this.modelInput}) : gate = FaceGate.ok;
   final FaceGate gate;
   final double score;
-  final List<double>? modelInput; // 37632 floats when gate == ok
+  final List<double>? modelInput; 
 }
 
-/// Pure pixel pipeline: crop → grayscale → gates → preprocess.
-/// Same math as the inline repository pipeline (no algorithm change).
+
+
 FacePrepOutcome evaluateFaceCapture({
   required img.Image decoded,
   required int left,
@@ -167,7 +167,7 @@ FacePrepOutcome evaluateFaceCapture({
   return FacePrepOutcome.accepted(score: quality.score, modelInput: preprocess112(crop));
 }
 
-/// L2-normalize an embedding (unit length for cosine similarity).
+
 List<double> l2normalize(List<double> v) {
   double sum = 0;
   for (final x in v) {

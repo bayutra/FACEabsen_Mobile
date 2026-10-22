@@ -194,7 +194,7 @@ describe('DeviceChangeService.approve/reject/cancel', () => {
   });
 });
 
-// Tahap 2 — facility scoping: an ADMIN of h1 cannot review h2's requests.
+
 describe('DeviceChangeService facility scoping (ADMIN)', () => {
   const ADMIN = ['ADMIN'];
   const foreign = {

@@ -11,8 +11,8 @@ void main() {
     final a = generateChallenges(random: Random(1));
     final b = generateChallenges(random: Random(2));
     expect(a, hasLength(3));
-    expect(a.toSet(), hasLength(3)); // no repeats
-    expect(a == b, isFalse); // order varies
+    expect(a.toSet(), hasLength(3)); 
+    expect(a == b, isFalse); 
     for (final c in ChallengeType.values) {
       expect(challengeInstruction(c).isNotEmpty, isTrue);
     }

@@ -1,4 +1,4 @@
-/// Model perangkat untuk layar admin (memuat data karyawan pemilik).
+
 class AdminDevice {
   const AdminDevice({
     required this.id,

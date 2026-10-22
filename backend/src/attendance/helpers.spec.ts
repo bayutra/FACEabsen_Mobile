@@ -87,8 +87,8 @@ describe('validateLiveness', () => {
     });
 
     it('the declared mode governs, not the challenge list', () => {
-      // An empty challenge array is fine in passive mode, and a populated one
-      // does not let a passive claim skip the padScore requirement.
+      
+      
       expect(validateLiveness({ ...passive, challenges: [] }, now, 10)).toEqual({ ok: true });
       expect(validateLiveness({ ...passive, challenges: ['blink'] }, now, 10)).toEqual({ ok: true });
       const noScore = { passed: true, mode: 'passive', challenges: ['blink'], completedAt: now.toISOString() };
@@ -107,7 +107,7 @@ describe('utcWorkDate', () => {
 
 describe('hospitalWorkDate', () => {
   it('resolves the hospital-local day but keeps the UTC-midnight storage convention', () => {
-    // 23:30Z Oct 12 == 06:30 WIB Oct 13: the night-shift punch belongs to Oct 13.
+    
     const { date, key } = hospitalWorkDate(new Date('2026-10-12T23:30:00.000Z'), 'Asia/Jakarta');
     expect(key).toBe('2026-10-13');
     expect(date.toISOString()).toBe('2026-10-13T00:00:00.000Z');

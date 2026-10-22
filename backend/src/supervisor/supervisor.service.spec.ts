@@ -95,7 +95,7 @@ describe('SupervisorService.summary', () => {
     const svc = new SupervisorService(makePrisma());
     const team = (await svc.teamOf('u-adm', ['ADMIN'])) as Array<{ id: string }>;
     expect(team.map((m) => m.id).sort()).toEqual(['e-a', 'e-adm']);
-    // Cross-facility member detail reads as forbidden for a plain ADMIN.
+    
     await expect(svc.memberDetail('e-b', 'u-adm', ['ADMIN'])).rejects.toThrow('Not in your facility');
     await expect(svc.memberDetail('e-a', 'u-adm', ['ADMIN'])).resolves.toBeDefined();
   });

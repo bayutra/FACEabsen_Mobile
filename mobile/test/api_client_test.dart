@@ -7,8 +7,8 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'fakes.dart';
 
-/// Fake transport: protected GETs 401 until the caller presents the
-/// rotated token; /auth/refresh mints that pair (counted).
+
+
 class RefreshFakeAdapter implements HttpClientAdapter {
   RefreshFakeAdapter({
     this.failRefresh = false,

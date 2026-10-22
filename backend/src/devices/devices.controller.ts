@@ -23,11 +23,7 @@ export class DevicesController {
     return this.devices.register(dto, user.userId, { ip: req.ip });
   }
 
-  /**
-   * Stateless proof-of-possession challenge (H7): mint a short-lived nonce
-   * bound to the caller. The client signs the raw nonce with its device seed
-   * key and returns it as `nonce` + `nonceSignature` on POST /devices/register.
-   */
+   
   @Throttle(registerThrottle)
   @Get('register-challenge')
   registerChallenge(@CurrentUser() user: AuthContext) {
@@ -72,12 +68,7 @@ export class DevicesController {
     return this.devices.revoke(id, user.userId, user.roles, dto.reason, { ip: req.ip });
   }
 
-  /**
-   * Activasi langsung perangkat yang minta aktifasi (status PENDING).
-   * SUPER_ADMIN: bebas scope. ADMIN: hanya perangkat RS-nya sendiri.
-   * Token permission: device:approve-replacement (satu ranah sama dengan
-   * persetujuan penggantian — aktifasi memercayakan perangkat baru).
-   */
+   
   @UseGuards(RolesGuard, PermissionsGuard)
   @Roles('SUPER_ADMIN', 'ADMIN')
   @RequirePermissions('device:approve-replacement')

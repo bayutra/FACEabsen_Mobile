@@ -173,8 +173,8 @@ describe('AuthService.refresh/logout', () => {
         findUnique: vi.fn(async (a: { where: { refreshTokenHash: string } }) =>
           a.where.refreshTokenHash === storedHash ? sessionRow() : null,
         ),
-        // Compare-and-swap emulation: only the first writer holding the
-        // presented hash wins; a replayed hash matches nothing.
+        
+        
         updateMany: vi.fn(async (a: { where: { refreshTokenHash: string }; data: { refreshTokenHash: string } }) => {
           if (a.where.refreshTokenHash !== storedHash) return { count: 0 };
           storedHash = a.data.refreshTokenHash;
@@ -184,7 +184,7 @@ describe('AuthService.refresh/logout', () => {
       user: { findUnique: vi.fn(), update: vi.fn() },
     });
     const svc = new AuthService(prisma, jwt, configStub, auditStub);
-    // bootstrap: simulate a login-created session
+    
     const { createHash, randomBytes } = await import('node:crypto');
     const first = randomBytes(48).toString('base64url');
     storedHash = createHash('sha256').update(first).digest('hex');
@@ -221,7 +221,7 @@ describe('AuthService.refresh/logout', () => {
     const winner = (a.status === 'fulfilled' ? a.value : (b as PromiseFulfilledResult<{ refreshToken: string }>).value) as {
       refreshToken: string;
     };
-    // The loser's token is dead; the winner's rotates normally.
+    
     await expect(svc.refresh(first, {})).rejects.toThrow('Invalid refresh token');
     await expect(svc.refresh(winner.refreshToken, {})).resolves.toBeDefined();
   });

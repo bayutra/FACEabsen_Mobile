@@ -14,10 +14,7 @@ export interface AuditEvent {
   result?: string;
 }
 
-/**
- * Security-relevant actions feed (PRD §41). Granular *_FAILED variants from
- * PRD §30 materialize as ATTENDANCE_REJECTED rows with a reason in metadata.
- */
+ 
 export const SECURITY_ACTIONS = [
   'LOGIN_FAILED',
   'ATTENDANCE_REJECTED',
@@ -28,21 +25,14 @@ export const SECURITY_ACTIONS = [
   'EMPLOYEE_DEACTIVATED',
 ] as const;
 
-/** Anything that can create an AuditLog row (client or an interactive tx). */
+ 
 export type AuditWriter = Pick<PrismaService, 'auditLog'>;
 
 @Injectable()
 export class AuditService {
   constructor(private readonly prisma: PrismaService) {}
 
-  /**
-   * Fail-closed: audit write errors propagate so silent gaps are impossible.
-   *
-   * IMPORTANT: propagating keeps the HTTP call failing, but a plain `log()`
-   * called *after* a data write still leaves that write committed. Pass the
-   * transaction client of the surrounding `$transaction` instead so the data
-   * write and its audit row commit or roll back together.
-   */
+   
   async log(event: AuditEvent, client?: AuditWriter): Promise<void> {
     const target = client ?? this.prisma;
     await target.auditLog.create({
@@ -59,7 +49,7 @@ export class AuditService {
     });
   }
 
-  /** Read-only viewer query. No update/delete API exists by design. */
+   
   async list(query: ListAuditQuery) {
     const page = query.page ?? 1;
     const pageSize = query.pageSize ?? 20;

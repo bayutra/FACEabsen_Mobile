@@ -4,12 +4,7 @@ import { AuditService } from '../audit/audit.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { PRIVACY_NOTICE_ID } from './notice.js';
 
-/**
- * STEP 21 — Privacy & PDP foundations (PRD §66).
- * Consent gates biometric USE (face register + attendance matching).
- * Retention purges expired operational data; biometric erasure on demand.
- * Every privacy action is audited.
- */
+ 
 @Injectable()
 export class PrivacyService {
   private readonly sessionRetentionDays: number;
@@ -76,7 +71,7 @@ export class PrivacyService {
     return !!row && row.revokedAt === null;
   }
 
-  /** Portable self-data export (access right). Never includes template bytes. */
+   
   async exportMine(userId: string, meta: { ip?: string } = {}) {
     const employee = await this.prisma.employee.findUnique({
       where: { userId },
@@ -100,7 +95,7 @@ export class PrivacyService {
     };
   }
 
-  /** Deletes own face template (erasure). Attendance history is retained. */
+   
   async eraseFace(userId: string, meta: { ip?: string } = {}) {
     const employee = await this.prisma.employee.findUnique({ where: { userId } });
     if (!employee) throw new NotFoundException('No employee profile for this account');
@@ -109,7 +104,7 @@ export class PrivacyService {
     return { deleted: true };
   }
 
-  /** Retention sweep (SUPER_ADMIN, system:manage). Returns purge counts. */
+   
   async runRetention(adminId: string, meta: { ip?: string } = {}) {
     const now = new Date();
     const sessionCutoff = new Date(now.getTime() - this.sessionRetentionDays * 86_400_000);

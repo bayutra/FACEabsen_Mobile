@@ -1,22 +1,22 @@
-// TOTP core (RFC 6238 / RFC 4226, SHA-1, 6 digits, 30s step).
-// Pure functions only: no Nest, no Prisma, no I/O — safe for unit tests and
-// shared by AuthService (challenge issuance) and TotpService (verification).
+
+
+
 
 import { createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
 
 export const TOTP_PERIOD_SEC = 30;
 export const TOTP_DIGITS = 6;
 export const TOTP_ALGORITHM = 'SHA1';
-/** Acceptance window: codes from the previous, current, and next step verify. */
+ 
 export const TOTP_WINDOW_STEPS = 1;
 export const TOTP_SECRET_BYTES = 20;
-/** Lifetime of the short-lived challenge token issued at password login. */
+ 
 export const TOTP_TOKEN_TTL_SEC = 300;
 export const TOTP_TOKEN_PURPOSE = 'totp';
 
 const BASE32_ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
 
-/** Random 20-byte secret, base32-encoded without padding (for otpauth export). */
+ 
 export function generateTotpSecret(bytes: number = TOTP_SECRET_BYTES): string {
   return base32Encode(randomBytes(bytes));
 }
@@ -37,10 +37,7 @@ export function base32Encode(data: Uint8Array): string {
   return out;
 }
 
-/**
- * Case-insensitive, padding-optional base32 decode.
- * @throws on any character outside the base32 alphabet or bad trailing length.
- */
+ 
 export function base32Decode(input: string): Buffer {
   const clean = input.replace(/=+$/, '').replace(/\s+/g, '').toUpperCase();
   if (clean.length === 0) throw new Error('Invalid base32 secret: empty');
@@ -66,7 +63,7 @@ export function base32Decode(input: string): Buffer {
   return Buffer.from(out);
 }
 
-/** HOTP (RFC 4226 §5.3): HMAC-SHA1 + dynamic truncation, zero-padded. */
+ 
 export function hotp(secret: Uint8Array, counter: number | bigint, digits: number = TOTP_DIGITS): string {
   const msg = Buffer.alloc(8);
   msg.writeBigUInt64BE(BigInt(counter));
@@ -80,7 +77,7 @@ export function hotp(secret: Uint8Array, counter: number | bigint, digits: numbe
   return (code % 10 ** digits).toString().padStart(digits, '0');
 }
 
-/** Current TOTP code for a base32 secret at `atMs` (default: now). */
+ 
 export function totp(
   secretBase32: string,
   atMs: number = Date.now(),
@@ -91,10 +88,7 @@ export function totp(
   return hotp(base32Decode(secretBase32), counter, digits);
 }
 
-/**
- * Verify a code within ±`window` steps of `atMs`, using a constant-time
- * comparison so valid/invalid codes take the same time to reject.
- */
+ 
 export function verifyTotp(
   secretBase32: string,
   code: string,
@@ -117,11 +111,7 @@ export function verifyTotp(
   return ok;
 }
 
-/**
- * Constant-time string equality. Buffers are zero-padded to equal length
- * before `timingSafeEqual` (which throws on length mismatch), and the length
- * check is folded into the result so prefixes never compare equal.
- */
+ 
 export function safeEqual(a: string, b: string): boolean {
   const ba = Buffer.from(a, 'utf8');
   const bb = Buffer.from(b, 'utf8');
@@ -133,7 +123,7 @@ export function safeEqual(a: string, b: string): boolean {
   return timingSafeEqual(pa, pb) && ba.length === bb.length;
 }
 
-/** otpauth:// URI for QR enrollment in authenticator apps. */
+ 
 export function buildOtpauthUri(issuer: string, email: string, secret: string): string {
   return (
     `otpauth://totp/${issuer}:${email}` +

@@ -2,9 +2,9 @@ import 'dart:async';
 
 import 'package:dio/dio.dart';
 
-/// Short human-readable cause for generic catch-alls (pilot/dev builds).
-/// Turns "Periksa koneksi server" dead-ends into actionable info like
-/// "(timeout)", "(HTTP 404)", "(Connection refused)".
+
+
+
 String describeError(Object e) {
   if (e is TimeoutException) return 'timeout';
   if (e is DioException) {

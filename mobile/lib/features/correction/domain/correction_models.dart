@@ -1,4 +1,4 @@
-/// STEP 15 — correction models (pure) + form helpers.
+
 const Map<String, String> correctionTypes = {
   'MISSED_CHECK_IN': 'Lupa Check-in',
   'MISSED_CHECK_OUT': 'Lupa check-out',
@@ -13,8 +13,8 @@ const Map<String, String> correctionStatusLabels = {
   'CANCELLED': 'Dibatalkan',
 };
 
-/// Combines a workDate (YYYY-MM-DD) with an HH:mm input into an ISO string.
-/// Returns null when the time input is empty/invalid.
+
+
 String? combineWorkDateTime(String workDate, String hhmm) {
   final String t = hhmm.trim();
   if (t.isEmpty) return null;

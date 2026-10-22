@@ -33,7 +33,7 @@ describe('UserThrottlerGuard.getTracker', () => {
       headers: { authorization: `Bearer ${jwt('u1')}` },
     });
     expect(a).toBe('user-u1');
-    // Forged sub still buckets (abuse accounting only — auth decides later).
+    
     const forged = await guard.getTracker({
       path: '/api/v1/attendance/check-in',
       headers: { authorization: `Bearer ${jwt('attacker')}` },

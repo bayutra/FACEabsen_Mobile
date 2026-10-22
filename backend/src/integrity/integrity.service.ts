@@ -4,28 +4,11 @@ import { ConfigService } from '@nestjs/config';
 export interface IntegrityVerdict {
   ok: boolean;
   reason?: 'MISSING_TOKEN' | 'MALFORMED' | 'EXPIRED' | 'WRONG_PACKAGE' | 'DEVICE_NOT_TRUSTED' | 'APP_NOT_RECOGNIZED';
-  /**
-   * Structural validation only. The token signature is NEVER verified here —
-   * that requires Google/Apple server-to-server calls (fase-2 hook below).
-   * A structurally-valid token proves format, not authenticity.
-   */
+   
   signatureVerified: false;
 }
 
-/**
- * Play Integrity (Android) + App Attest (iOS) structural verifier.
- * Offline check: JWT shape, REQUIRED expiry, package/bundle, REQUIRED
- * device+app verdicts (Android). Anything missing or mismatched fails closed.
- * Online check (Google/Apple server-to-server) is the fase-2 hardening hook:
- * pass the token to Play Integrity Decrypt+Verify API before trusting
- * high-risk actions.
- *
- * Security posture: because the signature is unverified, a structurally-valid
- * verdict is a weak signal. Strict mode therefore only fails *absent* tokens
- * loudly; present-but-unverifiable tokens still resolve per the rules below.
- * Do NOT enable INTEGRITY_STRICT in production until the mobile app actually
- * sends tokens — with the current client every punch would brick.
- */
+ 
 @Injectable()
 export class IntegrityService {
   private readonly strict: boolean;
@@ -36,8 +19,8 @@ export class IntegrityService {
     this.strict = String(config.get('INTEGRITY_STRICT', 'false')).toLowerCase() !== 'false'
       ? String(config.get('INTEGRITY_STRICT', 'false')).toLowerCase() === 'true'
       : false;
-    // Default false (dev-friendly); .env.production.example keeps false
-    // until mobile sends tokens AND signatures verify server-to-server.
+    
+    
     this.androidPackage = String(config.get('ANDROID_PACKAGE_NAME', ''));
     this.iosBundle = String(config.get('IOS_BUNDLE_ID', ''));
   }
@@ -62,8 +45,8 @@ export class IntegrityService {
       signatureVerified: false,
     });
     const nowSec = Math.floor(Date.now() / 1000);
-    // Expiry is REQUIRED: a token without exp never expires, so its absence
-    // is treated as expired rather than skipped.
+    
+    
     const exp = Number((payload as { exp?: unknown }).exp);
     if (!Number.isFinite(exp) || exp < nowSec) return fail('EXPIRED');
 
@@ -74,18 +57,18 @@ export class IntegrityService {
     const pkg = typeof rawPkg === 'string' ? rawPkg : '';
     const expected = platform === 'IOS' ? this.iosBundle : this.androidPackage;
     if (!expected) {
-      // No expected package configured: in strict mode this misconfiguration
-      // must not silently pass every token.
+      
+      
       if (this.strict) return fail('WRONG_PACKAGE');
     } else if (pkg !== expected) {
       return fail('WRONG_PACKAGE');
     }
 
-    // Verdict arrays are REQUIRED on Android: omitting deviceIntegrity
-    // entirely used to pass. iOS App Attest payloads carry different claims,
-    // so the requirement only applies to the Play Integrity shape.
-    // Note the genuine Play shapes: deviceIntegrity.deviceVerdict is an
-    // ARRAY, appIntegrity.appRecognitionVerdict is a STRING.
+    
+    
+    
+    
+    
     if (platform !== 'IOS') {
       const deviceVerdicts = readStrings((payload as { deviceIntegrity?: unknown }).deviceIntegrity);
       if (!deviceVerdicts.includes('MEETS_DEVICE_INTEGRITY')) {
@@ -107,12 +90,7 @@ export class IntegrityService {
     return { ok: true, signatureVerified: false };
   }
 
-  /**
-   * Resolve the integrityOk risk signal.
-   * - Token valid → true (stronger than client jailbreak claim).
-   * - No token + non-strict → fallback to !deviceCompromised (legacy clients).
-   * - No token + strict → false (caller must reject INTEGRITY_FAILED).
-   */
+   
   resolveSignal(opts: { integrityToken?: string; deviceCompromised: boolean; platform?: string }): { ok: boolean; verdict: IntegrityVerdict | null } {
     if (opts.integrityToken) {
       const verdict = this.verify(opts.integrityToken, opts.platform ?? 'ANDROID');
@@ -133,7 +111,7 @@ function readStrings(v: unknown): string[] {
   return [];
 }
 
-/** Genuine Play shape carries the app verdict as a plain string. */
+ 
 function appRecognized(v: unknown): boolean {
   if (v === 'PLAY_RECOGNIZED') return true;
   if (Array.isArray(v)) return v.includes('PLAY_RECOGNIZED');

@@ -1,4 +1,4 @@
-/// Peran yang bisa dimiliki akun pengguna.
+
 const List<String> kAdminRoles = <String>[
   'EMPLOYEE',
   'SUPERVISOR',
@@ -6,7 +6,7 @@ const List<String> kAdminRoles = <String>[
   'SUPER_ADMIN',
 ];
 
-/// Model akun pengguna untuk layar admin SUPER_ADMIN.
+
 class AdminUser {
   const AdminUser({
     required this.id,
@@ -34,7 +34,7 @@ class AdminUser {
   final String? employeeStatus;
   final String? departmentName;
 
-  /// Akun terkunci sementara karena berulang kali gagal login.
+  
   bool get locked =>
       lockedUntil != null && lockedUntil!.isAfter(DateTime.now());
 

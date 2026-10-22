@@ -33,13 +33,7 @@ import {
   verifyDeviceSignature,
 } from './helpers.js';
 
-/**
- * STEP 12 — Attendance engine (PRD §21, §57) + STEP 13 risk scoring.
- * Every signal is verified server-side; any gate failure rejects WITHOUT
- * writing an attendance row (but WITH a scored ATTENDANCE_REJECTED audit).
- * Successful rows carry riskScore/riskCategory; MEDIUM is flagged for
- * supervisor review (queue UI: STEP 17).
- */
+ 
 @Injectable()
 export class AttendanceService {
   private readonly faceThreshold: number;
@@ -184,9 +178,9 @@ export class AttendanceService {
     const flaggedOut = this.risk.needsReview(verdict.category);
     const workKey = open.workDate.toISOString().slice(0, 10);
     const evalOut = evaluateCheckOut(now, workKey, open.shift, this.hospitalTz);
-    // Preserve the check-in verdict: the stored score/category/flag is the
-    // WORSE of the two punches, so a suspicious check-in can never be washed
-    // clean by an uneventful check-out (and vanish from the review queue).
+    
+    
+    
     const score = Math.max(open.riskScore ?? 0, verdict.score);
     const category = worseCategory(open.riskCategory, verdict.category);
     const flagged = (open.needsReview ?? false) || flaggedOut;
@@ -221,7 +215,7 @@ export class AttendanceService {
     };
   }
 
-  // ---------- history (STEP 14) ----------
+  
 
   async listMine(userId: string, query: MyHistoryQuery) {
     const employee = await this.requireEmployee(userId);
@@ -265,7 +259,7 @@ export class AttendanceService {
     const AND: Array<Record<string, unknown>> = [{ needsReview: true }];
 
     if (!satisfiesRole(roles, 'ADMIN')) {
-      // Supervisor hanya melihat bawahan langsungnya.
+      
       const me = await this.prisma.employee.findUnique({
         where: { userId },
         select: { id: true },
@@ -273,7 +267,7 @@ export class AttendanceService {
       if (!me) return emptyPage(page, pageSize);
       AND.push({ employee: { supervisorId: me.id } });
     } else if (!satisfiesRole(roles, 'SUPER_ADMIN')) {
-      // Admin melihat seluruh fasilitasnya.
+      
       const scope = await resolveHospitalScope(this.prisma, userId, roles);
       if (scope.kind !== 'hospital') return emptyPage(page, pageSize);
       AND.push({ employee: { department: { hospitalId: scope.hospitalId } } });
@@ -341,11 +335,7 @@ export class AttendanceService {
     return updated;
   }
 
-  /**
-   * Supervisor hanya boleh meninjau bawahan langsungnya; admin dibatasi
-   * fasilitasnya; super admin bebas. 404/403 sengaja tidak membocorkan
-   * keberadaan data di luar wewenang.
-   */
+   
   private async requireReviewScope(id: string, userId: string, roles: string[]) {
     const row = await this.prisma.attendance.findUnique({
       where: { id },
@@ -385,9 +375,9 @@ export class AttendanceService {
     const page = query.page ?? 1;
     const pageSize = query.pageSize ?? 20;
     const AND: Array<Record<string, unknown>> = [];
-    // Facility scoping: ADMIN callers only see their own hospital. The
-    // department filter is verified against the caller's facility instead
-    // of being trusted (department ids are enumerable via /departments).
+    
+    
+    
     if (!satisfiesRole(roles, 'SUPER_ADMIN')) {
       const scope = await resolveHospitalScope(this.prisma, userId, roles);
       if (scope.kind !== 'hospital') return emptyPage(page, pageSize);
@@ -458,8 +448,8 @@ export class AttendanceService {
     if (!row) throw new NotFoundException('Attendance not found');
     const owner = row.employee.userId === userId;
     if (owner || satisfiesRole(roles, 'SUPER_ADMIN')) return row;
-    // ADMIN is facility-scoped: a row from another hospital reads as 404
-    // (same shape as "not found" so facility ids stay unenumerable).
+    
+    
     if (satisfiesRole(roles, 'ADMIN')) {
       const scope = await resolveHospitalScope(this.prisma, userId, roles);
       if (scope.kind === 'hospital' && row.employee?.department?.hospitalId === scope.hospitalId) {
@@ -469,7 +459,7 @@ export class AttendanceService {
     throw new NotFoundException('Attendance not found');
   }
 
-  // ---------- gates ----------
+  
 
   private async requireEmployee(userId: string) {
     const employee = await this.prisma.employee.findUnique({ where: { userId } });
@@ -559,7 +549,7 @@ export class AttendanceService {
     risk: RiskInput,
   ) {
     if (!this.integrity) {
-      // Pre-integrity wiring fallback (unit doubles): legacy jailbreak claim.
+      
       risk.integrityOk = !dto.deviceCompromised;
       (risk as unknown as Record<string, unknown>).__integrityReason = dto.deviceCompromised ? 'MISSING_TOKEN' : undefined;
       return;
@@ -583,8 +573,8 @@ export class AttendanceService {
     const strict = this.integrity?.strictMode ?? false;
     const reason = (risk as unknown as Record<string, unknown>).__integrityReason as string | undefined;
     if (reason === 'MISSING_TOKEN' && !strict) {
-      // Lax legacy path: jailbreak claim already folded into integrityOk=false
-      // only when compromised; reaching here means compromised without token.
+      
+      
       return this.reject(userId, 'DEVICE_COMPROMISED', 'Perangkat terindikasi kompromi', meta, risk);
     }
     return this.reject(userId, 'INTEGRITY_FAILED', 'Verifikasi integritas perangkat gagal', meta, risk, {
@@ -592,7 +582,7 @@ export class AttendanceService {
     });
   }
 
-  /** Audit-only denial (preserves the original HTTP shape of the caller). */
+   
   private async denyAudit(
     userId: string,
     reason: string,
@@ -648,7 +638,7 @@ function emptyPage(page: number, pageSize: number) {
   return { data: [], pagination: { page, pageSize, totalItems: 0, totalPages: 0 } };
 }
 
-/** Worse of two risk categories (null-safe: a missing verdict never wins). */
+ 
 function worseCategory(
   a: string | null | undefined,
   b: 'LOW' | 'MEDIUM' | 'HIGH',

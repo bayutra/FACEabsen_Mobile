@@ -2,7 +2,7 @@ import 'package:dio/dio.dart';
 
 import '../domain/leave_models.dart';
 
-/// STEP 16 — leave requests (PRD §37): create, own list, cancel.
+
 class LeaveRepository {
   LeaveRepository({required Dio dio}) : _dio = dio;
 

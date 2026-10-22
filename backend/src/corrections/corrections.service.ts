@@ -15,11 +15,7 @@ import { evaluateCheckIn, evaluateCheckOut, workDateKeyIn } from '../shifts/shif
 import { assertTimeZone } from '../attendance/helpers.js';
 import type { CreateCorrectionDto, ListCorrectionsQuery } from './dto.js';
 
-/**
- * STEP 15 — Correction requests (PRD §36, §60).
- * Employee → request → supervisor/admin → approve/reject → attendance updated.
- * History rows are never silently edited: every mutation writes an audit log.
- */
+ 
 @Injectable()
 export class CorrectionsService {
   private readonly hospitalTz: string;
@@ -84,7 +80,7 @@ export class CorrectionsService {
     });
   }
 
-  /** Team queue: supervisors see only their subordinates; admins see their facility. */
+   
   async listQueue(userId: string, roles: string[], query: ListCorrectionsQuery) {
     const reviewer = await this.prisma.employee.findUnique({ where: { userId } });
     const isAdmin = satisfiesRole(roles, 'ADMIN');
@@ -102,7 +98,7 @@ export class CorrectionsService {
     return this.prisma.correctionRequest.findMany({
       where: AND.length > 0 ? { AND } : {},
       orderBy: { requestedAt: 'desc' },
-      // Bound admin queues (M5): never return an unbounded list.
+      
       take: 200,
       include: {
         employee: { select: { id: true, name: true, employeeNo: true } },
@@ -121,10 +117,10 @@ export class CorrectionsService {
     await this.assertCanReview(req.employeeId, reviewerId, roles);
 
     const workKey = req.attendance.workDate.toISOString().slice(0, 10);
-    // A correction may not move a punch onto another calendar day: the row
-    // stays bucketed under its own workDate, so an off-day instant would
-    // silently disagree with every daily/monthly report. Compare in hospital
-    // time — a 06:55 WIB punch is 23:55Z the day before in UTC.
+    
+    
+    
+    
     if (req.requestedCheckIn && workDateKeyIn(req.requestedCheckIn, this.hospitalTz) !== workKey) {
       throw new UnprocessableEntityException({
         reason: 'CORRECTION_OFF_DAY',
@@ -146,8 +142,8 @@ export class CorrectionsService {
       patch.checkOutAt = req.requestedCheckOut;
       patch.checkOutStatus = evaluateCheckOut(req.requestedCheckOut, workKey, req.attendance.shift, this.hospitalTz).status;
     }
-    // Both writes plus the audit row commit atomically: an approved correction
-    // with an unapplied attendance change (or vice versa) must be impossible.
+    
+    
     const updated = await this.prisma.$transaction(async (tx) => {
       await tx.attendance.update({ where: { id: req.attendanceId }, data: patch });
       const correction = await tx.correctionRequest.update({

@@ -20,14 +20,14 @@ function makePrisma(over: Record<string, Record<string, unknown>> = {}) {
       ...over.department,
     },
     employee: { count: vi.fn(async () => 0), ...over.employee },
-    // Default actor is SUPER_ADMIN (facility bypass), so the pre-existing
-    // tests keep exercising the global path unchanged.
+    
+    
     userRole: {
       findMany: vi.fn(async () => [{ role: { name: 'SUPER_ADMIN' } }]),
       ...over.userRole,
     },
   };
-  // Interactive-transaction stand-in: same models back as `tx`.
+  
   return {
     ...base,
     $transaction: vi.fn(async (fn: (tx: unknown) => Promise<unknown>) => fn(base)),
@@ -82,8 +82,8 @@ describe('EmployeesService.createDepartment', () => {
 
 describe('EmployeesService.updateDepartment', () => {
   it('renames and audits', async () => {
-    // Existence lookup keys on `id`; the clash probe keys on
-    // `hospitalId_name`, so the stub answers null to the latter.
+    
+    
     const findUnique = vi.fn(async (a: { where: Record<string, unknown> }) =>
       'id' in a.where ? { id: 'd1', name: 'IGD', hospitalId: 'h1' } : null,
     );
@@ -162,8 +162,8 @@ describe('EmployeesService.listHospitals', () => {
   });
 });
 
-// Tahap 2 — facility scoping: an ADMIN of h1 cannot manage h2's departments,
-// and listDepartments always resolves to the caller's own hospital.
+
+
 describe('EmployeesService department facility scoping (ADMIN)', () => {
   function scopedPrisma(over: Record<string, Record<string, unknown>> = {}) {
     return makePrisma({

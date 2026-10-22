@@ -2,10 +2,10 @@ import 'package:dio/dio.dart';
 
 import '../domain/leave_admin_models.dart';
 
-/// Endpoint antrean cuti/izin untuk ADMIN / SUPERVISOR.
-///
-/// Backend: `GET /leaves` (queue), `POST /leaves/:id/approve`,
-/// `POST /leaves/:id/reject`.
+
+
+
+
 class LeaveAdminRepository {
   LeaveAdminRepository({required Dio dio}) : _dio = dio;
 

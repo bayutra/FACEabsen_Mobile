@@ -5,10 +5,10 @@ import '../data/correction_repository.dart';
 import '../domain/correction_models.dart';
 import '../../../core/theme/app_colors.dart';
 
-/// Stitch "Pengajuan Koreksi Presensi":
-/// 3x24h policy banner, employee shift context, quota indicator (2/3),
-/// 4-card radio bento grid (Lupa Check-in, Lupa Check-out, Kesalahan Waktu, Masalah Teknis),
-/// time inputs, and 52px submission CTA.
+
+
+
+
 class CorrectionFormScreen extends StatefulWidget {
   const CorrectionFormScreen({
     super.key,
@@ -29,7 +29,7 @@ class CorrectionFormScreen extends StatefulWidget {
   State<CorrectionFormScreen> createState() => _CorrectionFormScreenState();
 }
 
-/// Manual id-ID date: `Kamis, 24 Okt 2024`. Falls back to [ymd].
+
 String _formatWorkDate(String ymd) {
   final DateTime? d = DateTime.tryParse(ymd);
   if (d == null) return ymd;
@@ -127,7 +127,7 @@ class _CorrectionFormScreenState extends State<CorrectionFormScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Policy Notice Banner (3x24h SLA)
+            
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
@@ -166,7 +166,7 @@ class _CorrectionFormScreenState extends State<CorrectionFormScreen> {
 
             const SizedBox(height: 14),
 
-            // Employee & Shift Context Card
+            
             Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
@@ -249,7 +249,7 @@ class _CorrectionFormScreenState extends State<CorrectionFormScreen> {
 
             const SizedBox(height: 16),
 
-            // 1. Shift Date Context Tile
+            
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
@@ -299,7 +299,7 @@ class _CorrectionFormScreenState extends State<CorrectionFormScreen> {
 
             const SizedBox(height: 16),
 
-            // 2. Radio Bento Grid (4 Correction Types)
+            
             const Text(
               'JENIS KOREKSI PRESENSI',
               style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 0.6, color: AppColors.inkSecondary),
@@ -343,7 +343,7 @@ class _CorrectionFormScreenState extends State<CorrectionFormScreen> {
 
             const SizedBox(height: 16),
 
-            // 3. Waktu yang Dikoreksi
+            
             Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
@@ -396,7 +396,7 @@ class _CorrectionFormScreenState extends State<CorrectionFormScreen> {
 
             const SizedBox(height: 16),
 
-            // 4. Alasan / Keterangan Keperluan
+            
             Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
@@ -445,7 +445,7 @@ class _CorrectionFormScreenState extends State<CorrectionFormScreen> {
 
             const SizedBox(height: 20),
 
-            // 52px CTA Button
+            
             SizedBox(
               height: 52,
               child: ElevatedButton.icon(

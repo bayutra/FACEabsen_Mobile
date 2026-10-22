@@ -7,7 +7,7 @@ import '../domain/correction_models.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/stitch.dart';
 
-/// Manual id-ID date: `Kamis, 24 Okt 2024`. Falls back to [ymd] or [fallback].
+
 String _formatWorkDate(String? ymd, {String fallback = 'Presensi Terkait'}) {
   if (ymd == null || ymd.isEmpty) return fallback;
   final DateTime? d = DateTime.tryParse(ymd);
@@ -22,7 +22,7 @@ String _formatWorkDate(String? ymd, {String fallback = 'Presensi Terkait'}) {
   return '${hari[d.weekday - 1]}, ${d.day} ${bulan[d.month - 1]} ${d.year}';
 }
 
-/// Manual id-ID month badge: `Oktober 2024`.
+
 String _monthBadge(DateTime d) {
   const List<String> bulan = [
     'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
@@ -31,14 +31,14 @@ String _monthBadge(DateTime d) {
   return '${bulan[d.month - 1]} ${d.year}';
 }
 
-/// Stitch "Riwayat & Status Koreksi":
-/// Nakes profile & month badge, 4-column Bento KPI summary cards (Total, Menunggu, Disetujui, Ditolak),
-/// horizontal status filter tabs, detailed correction cards with time comparison, and review notes.
-///
-/// A correction always attaches to one attendance row (attendanceId+workDate),
-/// so filing starts from the attendance history: the FAB below opens
-/// [HistoryScreen], where each record's detail sheet carries the
-/// "Ajukan Koreksi Presensi" action.
+
+
+
+
+
+
+
+
 class CorrectionListScreen extends StatefulWidget {
   const CorrectionListScreen({
     super.key,
@@ -50,7 +50,7 @@ class CorrectionListScreen extends StatefulWidget {
 
   final CorrectionRepository corrections;
 
-  /// Needed to open the history picker for new filings. Null only in previews.
+  
   final AttendanceRepository? attendance;
   final String displayName;
   final String employeeNo;
@@ -61,7 +61,7 @@ class CorrectionListScreen extends StatefulWidget {
 
 class _CorrectionListScreenState extends State<CorrectionListScreen> {
   late Future<List<CorrectionItem>> _future;
-  String _selectedFilter = 'ALL'; // ALL, PENDING, APPROVED, REJECTED
+  String _selectedFilter = 'ALL'; 
 
   @override
   void initState() {
@@ -71,8 +71,8 @@ class _CorrectionListScreenState extends State<CorrectionListScreen> {
 
   void _reload() => setState(() => _future = widget.corrections.myCorrections());
 
-  /// Filing entry point: pick the attendance record in history, then use its
-  /// detail sheet action. Reloads the queue on return (a filing may exist).
+  
+  
   Future<void> _openHistoryPicker() async {
     final AttendanceRepository? attendance = widget.attendance;
     if (attendance == null) {
@@ -161,13 +161,13 @@ class _CorrectionListScreenState extends State<CorrectionListScreen> {
 
           final List<CorrectionItem> allItems = snap.data!;
 
-          // Calculate KPI metrics
+          
           final int total = allItems.length;
           final int pending = allItems.where((c) => c.status == 'PENDING').length;
           final int approved = allItems.where((c) => c.status == 'APPROVED').length;
           final int rejected = allItems.where((c) => c.status == 'REJECTED').length;
 
-          // Filter Items
+          
           final List<CorrectionItem> filteredItems = allItems.where((c) {
             if (_selectedFilter == 'ALL') return true;
             return c.status == _selectedFilter;
@@ -178,7 +178,7 @@ class _CorrectionListScreenState extends State<CorrectionListScreen> {
             child: ListView(
               padding: const EdgeInsets.all(16),
               children: [
-                // User & Shift Banner
+                
                 Container(
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
@@ -247,7 +247,7 @@ class _CorrectionListScreenState extends State<CorrectionListScreen> {
 
                 const SizedBox(height: 14),
 
-                // KPI Bento Metrics (4 Columns)
+                
                 Row(
                   children: [
                     Expanded(
@@ -298,7 +298,7 @@ class _CorrectionListScreenState extends State<CorrectionListScreen> {
 
                 const SizedBox(height: 14),
 
-                // Horizontal Filter Tabs — spec 28px pills
+                
                 SizedBox(
                   height: 44,
                   child: ListView(
@@ -317,7 +317,7 @@ class _CorrectionListScreenState extends State<CorrectionListScreen> {
 
                 const SizedBox(height: 12),
 
-                // List Items
+                
                 if (filteredItems.isEmpty)
                   Container(
                     padding: const EdgeInsets.all(32),
@@ -439,7 +439,7 @@ class _CorrectionListScreenState extends State<CorrectionListScreen> {
       clipBehavior: Clip.antiAlias,
       child: Column(
         children: [
-          // Semantic top stripe
+          
           Container(height: 3.5, color: stripeColor),
           Padding(
             padding: const EdgeInsets.all(12),
@@ -476,7 +476,7 @@ class _CorrectionListScreenState extends State<CorrectionListScreen> {
                   ],
                 ),
                 const SizedBox(height: 8),
-                // Type chip & shift info
+                
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(

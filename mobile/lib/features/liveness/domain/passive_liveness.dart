@@ -1,29 +1,29 @@
 import 'dart:math' as math;
 
-/// Passive (no-command) liveness — the Face ID-style flow.
-///
-/// The user simply holds the phone and looks at the camera; there is no
-/// "blink / turn your head" instruction. Accepting a run requires several
-/// *simultaneous* signals, because any single one is trivially spoofable:
-///
-///  * exactly one face, large enough and roughly frontal
-///  * both eyes detected as open
-///  * **micro-motion**: the landmark jitters a little between frames
-///  * **depth change**: the face's relative size must vary across the run —
-///    the user naturally drifts/leans while holding the phone. A printed
-///    photo held in a trembling hand jitters laterally (defeating micro-motion
-///    alone) but keeps a near-constant distance, so it fails the depth gate.
-///    A photo taped to a wall fails both.
-///  * temporal persistence: the verdict needs a short run of good frames, so a
-///    single lucky frame cannot pass
-///
-/// Honesty note: micro-motion ALONE does not stop a hand-wobbled print —
-/// hand tremor (2–20 px) sits comfortably inside the acceptance band. The
-/// depth gate is what rejects it. Neither signal is a certified PAD; the
-/// on-device verdict remains a pre-filter and the server treats `padScore`
-/// as one input among face match and device integrity.
-///
-/// Pure Dart: every rule is unit-testable without a device.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class PassiveFrame {
   const PassiveFrame({
     required this.faceCount,
@@ -37,15 +37,15 @@ class PassiveFrame {
 
   final int faceCount;
 
-  /// Face box width / image width. Mirrors the enrollment quality gate.
+  
   final double relativeWidth;
 
   final double? yaw;
   final double? eyeOpenLeft;
   final double? eyeOpenRight;
 
-  /// A single stable landmark point (e.g. nose base) in pixels, used to
-  /// measure micro-motion between frames.
+  
+  
   final double? landmarkX;
   final double? landmarkY;
 }
@@ -70,12 +70,12 @@ class PassiveLivenessResult {
   final double progress;
   final PassiveRejection? rejection;
 
-  /// Guidance while scanning (e.g. which gate is still missing). Null when
-  /// the UI should keep showing the previous message.
+  
+  
   final String? hint;
 }
 
-/// Tunables for the passive gate.
+
 class PassivePolicy {
   const PassivePolicy({
     this.minWidth = 0.15,
@@ -93,20 +93,20 @@ class PassivePolicy {
   final double eyeClosedBelow;
   final double eyeOpenAbove;
 
-  /// Hand tremor defeats this band on its own — it only proves *something*
-  /// moved, and pairs with [depthChangeMin] to prove a living holder.
+  
+  
   final double microMotionMin;
   final double microMotionMax;
 
-  /// Minimum max-min spread of [PassiveFrame.relativeWidth] across the run
-  /// (≈4% of frame width: a slow lean-in). A rigid plane held at a fixed
-  /// distance cannot produce it; a live holder does it without thinking.
+  
+  
+  
   final double depthChangeMin;
 
   final int requiredGoodFrames;
 }
 
-/// Stateful analyser over a stream of frames.
+
 class PassiveLiveness {
   PassiveLiveness({this.policy = const PassivePolicy()});
 
@@ -116,8 +116,8 @@ class PassiveLiveness {
   double? _lastY;
   bool _sawMotion = false;
 
-  /// Cumulative landmark path length in pixels (continuous evidence, feeds
-  /// [motionScore]). Resets with the run.
+  
+  
   double _pathLength = 0;
 
   double? _minWidth;
@@ -126,15 +126,15 @@ class PassiveLiveness {
 
   double get progress => (_goodRun / policy.requiredGoodFrames).clamp(0.0, 1.0);
 
-  /// 0..1 depth evidence: observed width spread relative to the requirement.
+  
   double get depthProgress {
     if (_minWidth == null || _maxWidth == null) return 0;
     return ((_maxWidth! - _minWidth!) / policy.depthChangeMin).clamp(0.0, 1.0);
   }
 
-  /// Continuous 0..1 components for the reported anti-spoof confidence.
-  /// Calibrated so a genuine run lands near 1 and a marginal one near the
-  /// server's acceptance floor — never a constant.
+  
+  
+  
   double get motionScore => (_pathLength / 12.0).clamp(0.0, 1.0);
   double get depthScore => depthProgress;
 
@@ -156,8 +156,8 @@ class PassiveLiveness {
       return PassiveLivenessResult(verdict: PassiveVerdict.rejected, rejection: hard);
     }
 
-    // Micro-motion accumulates across the session, not per frame, so a still
-    // frame never fails on its own.
+    
+    
     final double? x = frame.landmarkX;
     final double? y = frame.landmarkY;
     if (x != null && y != null && _lastX != null && _lastY != null) {
@@ -172,7 +172,7 @@ class PassiveLiveness {
       _lastY = y;
     }
 
-    // Depth change: track the face-size envelope over all usable frames.
+    
     final double w = frame.relativeWidth;
     if (w > 0) {
       _minWidth = _minWidth == null ? w : math.min(_minWidth!, w);
@@ -221,9 +221,9 @@ class PassiveLiveness {
     if (l < policy.eyeClosedBelow && r < policy.eyeClosedBelow) {
       return const PassiveRejection('EYES_CLOSED', 'Mata tertutup. Buka kedua mata.');
     }
-    // NB: a high eye-open value is NOT evidence of a photo — 0.7 is normal for
-    // a real face. The genuine anti-print signals are micro-motion + depth
-    // change over a multi-frame run, both handled above.
+    
+    
+    
     return null;
   }
 }

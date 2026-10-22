@@ -19,11 +19,11 @@ import '../supervisor/presentation/team_admin_screen.dart';
 import '../users/presentation/user_admin_screen.dart';
 import 'admin_widgets.dart';
 
-/// Beranda area "Kelola": daftar modul admin sesuai peran pengguna.
-///
-/// Tiap modul memanggil endpoint yang sama dengan SIMRS, jadi tidak ada
-/// logika bisnis yang diduplikasi di aplikasi. Peran yang tidak berhak tidak
-/// pernah melihat modulnya.
+
+
+
+
+
 class AdminHomeScreen extends StatelessWidget {
   const AdminHomeScreen({super.key, required this.dio, required this.roles});
 

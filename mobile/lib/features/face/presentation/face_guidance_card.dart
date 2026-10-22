@@ -4,10 +4,10 @@ import '../../../core/theme/app_colors.dart';
 import '../domain/face_quality.dart';
 import '../../device/presentation/helpdesk_sheet.dart';
 
-/// Honest banner title for a failing quality gate. Only the blur gate gets
-/// the `Buram` title; lighting and detection gates get their own category so
-/// the UI never shows a wrong diagnosis (e.g. `tooBright` must not read as
-/// "cahaya kurang", `multipleFaces` gets its detail from the gate message).
+
+
+
+
 String guidanceTitle(FaceGate gate) {
   switch (gate) {
     case FaceGate.tooBlurry:
@@ -26,13 +26,13 @@ String guidanceTitle(FaceGate gate) {
   }
 }
 
-/// Quality tiles derived ONLY from what the pipeline actually evaluated.
-///
-/// `evaluateFaceCapture` runs count/size gates before the pixel gates, and
-/// `assessQuality` checks lighting before blur. So when the failing gate is a
-/// pixel gate, the count gate already passed (face detected, distance ok);
-/// when it is `tooBlurry`, lighting already passed. Metrics the pipeline
-/// never reached are omitted — never faked.
+
+
+
+
+
+
+
 List<GuidanceTile> guidanceTiles(FaceGate gate) {
   switch (gate) {
     case FaceGate.noFace:
@@ -73,7 +73,7 @@ List<GuidanceTile> guidanceTiles(FaceGate gate) {
   }
 }
 
-/// One quality tile: label + real state derived from the failing gate.
+
 class GuidanceTile {
   const GuidanceTile(this.label, this.value, this.ok);
   final String label;
@@ -81,12 +81,12 @@ class GuidanceTile {
   final bool ok;
 }
 
-/// Capture-failure guidance card (mockup `pendaftaran_wajah_kendala_pemindaian`).
-///
-/// Shown ONLY on quality-gate failure ([gate] != ok/null). Server/network
-/// errors keep their bare text — they are not capture problems. No simulation
-/// toggles, no fake sensor readouts (no ISO/lux/BSSID); tiles come from
-/// [guidanceTiles], steps are static instructional copy.
+
+
+
+
+
+
 class FaceGuidanceCard extends StatelessWidget {
   const FaceGuidanceCard({
     super.key,

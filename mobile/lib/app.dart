@@ -22,15 +22,15 @@ import 'features/schedule/data/schedule_repository.dart';
 import 'features/preflight/data/preflight_repository.dart';
 import 'core/navigation/home_shell.dart';
 
-/// Root gate: memeriksa sesi sekali, lalu menampilkan Login atau HomeShell
-/// secara deklaratif.
-///
-/// Sebelumnya gate ini bernavigasi dengan `pushReplacement` dari method milik
-/// State-nya sendiri. Begitu route-nya diganti, State tersebut dibuang,
-/// sehingga closure `onDone`/`onLogout` yang dipegang LoginScreen/HomeShell
-/// memanggil `Navigator` dari context yang sudah mati: login berakhir di
-/// "Terjadi kesalahan sistem" dan logout tidak kembali ke menu login.
-/// Menukar widget lewat state menghilangkan seluruh kelas bug itu.
+
+
+
+
+
+
+
+
+
 class App extends StatelessWidget {
   const App({super.key});
 
@@ -65,7 +65,7 @@ class _BootstrapGateState extends State<BootstrapGate> {
   late final ProfileRepository _profiles;
   late final PreflightRepository _preflight;
 
-  /// `null` selama pemeriksaan sesi awal belum selesai.
+  
   bool? _authed;
   Object? _startupError;
 
@@ -99,8 +99,8 @@ class _BootstrapGateState extends State<BootstrapGate> {
     _restore();
   }
 
-  /// Pulihkan alamat server yang pernah diubah pengguna sebelum request
-  /// pertama, lalu periksa sesi.
+  
+  
   Future<void> _restore() async {
     setState(() {
       _authed = null;

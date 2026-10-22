@@ -1,7 +1,7 @@
 import { IsString, MaxLength, MinLength } from 'class-validator';
 
-// Lenient shapes on purpose: any wrong code/token surfaces as 401 from the
-// service (never a 400 that distinguishes "malformed" from "incorrect").
+
+
 
 export class EnableTotpDto {
   @IsString()

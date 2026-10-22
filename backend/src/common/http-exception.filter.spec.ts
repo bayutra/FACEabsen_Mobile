@@ -23,14 +23,14 @@ describe('GlobalHttpExceptionFilter', () => {
     const filter = new GlobalHttpExceptionFilter();
     const { host, status, json } = mockHost();
 
-    // Object body — the e2e contract shape ({ reason, ... }).
+    
     const body = { reason: 'DUPLICATE_REQUEST', message: 'Request sudah diproses' };
     filter.catch(new UnprocessableEntityException(body), host);
     expect(status).toHaveBeenCalledWith(422);
     expect(json).toHaveBeenCalledWith(body);
     expect(json.mock.calls[0][0]).toBe(body);
 
-    // Standard Nest error shape is preserved as-is.
+    
     const { host: h2, status: s2, json: j2 } = mockHost();
     filter.catch(new NotFoundException('Attendance not found'), h2);
     expect(s2).toHaveBeenCalledWith(404);

@@ -1,7 +1,7 @@
 import '../../profile/data/profile_repository.dart';
 import '../../schedule/data/schedule_repository.dart';
 
-/// Everything the pre-flight screen needs, fetched in parallel.
+
 class PreflightSnapshot {
   const PreflightSnapshot({
     required this.displayName,
@@ -20,7 +20,7 @@ class PreflightSnapshot {
   final ScheduleEntry? shift;
 }
 
-/// Loads identity + roster for the pre-flight gate.
+
 class PreflightRepository {
   PreflightRepository({
     required ProfileRepository profiles,
@@ -49,7 +49,7 @@ class PreflightRepository {
       active = p.isActive;
       hasProfile = true;
     } catch (_) {
-      // Left at defaults; the account gate reports the failure.
+      
     }
 
     ScheduleEntry? shift;
@@ -67,7 +67,7 @@ class PreflightRepository {
         }
       }
     } catch (_) {
-      // Treated as "no roster" by the schedule gate.
+      
     }
 
     return PreflightSnapshot(

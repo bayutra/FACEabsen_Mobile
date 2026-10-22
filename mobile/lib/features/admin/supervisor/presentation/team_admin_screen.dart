@@ -7,9 +7,9 @@ import '../../presentation/admin_widgets.dart';
 import '../data/team_admin_repository.dart';
 import '../domain/team_admin_models.dart';
 
-/// Tim supervisor: ringkasan kehadiran anggota tim per rentang tanggal.
-/// Data diambil dari `/supervisor/summary`, `/supervisor/team`, dan
-/// `/supervisor/attendance` â€” tanpa data tiruan.
+
+
+
 class TeamAdminScreen extends StatefulWidget {
   const TeamAdminScreen({super.key, required this.dio});
 
@@ -238,7 +238,7 @@ class _TeamAdminScreenState extends State<TeamAdminScreen> {
   }
 }
 
-/// Kartu pemilih tanggal yang membuka date picker.
+
 class _DateField extends StatelessWidget {
   const _DateField({
     required this.label,
@@ -290,7 +290,7 @@ class _DateField extends StatelessWidget {
   }
 }
 
-/// Bottom sheet detail anggota tim.
+
 class _MemberSheet extends StatefulWidget {
   const _MemberSheet({
     required this.repo,
@@ -338,8 +338,8 @@ class _MemberSheetState extends State<_MemberSheet> {
       return;
     }
 
-    // Fallback: pakai daftar presensi tim bila endpoint detail tidak
-    // mengembalikan bentuk `{member, recent}`.
+    
+    
     try {
       final List<TeamAttendance> all = await widget.repo.attendance(
         from: widget.from,

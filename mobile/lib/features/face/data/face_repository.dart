@@ -18,10 +18,10 @@ class FaceCapture {
   final double qualityScore;
 }
 
-/// Registration result: ok carries server version; otherwise a gate message.
-/// [gate] is the real failing quality gate when the failure came from the
-/// on-device quality gates (null for server/network failures, where no gate
-/// ran). UI must only show gate-specific guidance when [gate] is non-null.
+
+
+
+
 class FaceResult {
   FaceResult._({required this.ok, required this.message, this.score, this.version, this.gate});
 
@@ -41,12 +41,12 @@ class FaceResult {
   final FaceGate? gate;
 }
 
-/// STEP 9 pipeline: detect → quality gates → embed → POST /face/register.
-/// Raw photos never leave the device (only the 192-d embedding is uploaded).
-///
-/// M2: JPEG decode → crop → gates → preprocess runs in a background isolate
-/// via [compute] ([_decodeGatePreprocess]). The UI isolate only does file I/O,
-/// ML Kit detection (platform channel) and TFLite inference.
+
+
+
+
+
+
 class FaceRepository {
   FaceRepository({required Dio dio, required FaceDetectorService detector, required FaceEmbedder embedder})
       : _dio = dio,
@@ -57,10 +57,10 @@ class FaceRepository {
   final FaceDetectorService _detector;
   final FaceEmbedder _embedder;
 
-  /// Last gate recorded by [captureEmbedding], keyed by file path, so
-  /// [rejectionMessage]/[rejectionGate] for the same shot return it without
-  /// re-running the gates a second time. Null after a passing capture means
-  /// "no failure"; [FaceGate.ok] after a pass, null only before any capture.
+  
+  
+  
+  
   String? _lastRejectionPath;
   String? _lastRejectionMessage;
   FaceGate? _lastRejectionGate;
@@ -80,8 +80,8 @@ class FaceRepository {
     await ensureConsent(noticeVersion: noticeVersion);
     final FaceCapture? capture = await captureEmbedding(path);
     if (capture == null) {
-      // Single-pass pipeline already recorded the gate + message; these are
-      // cache hits, not a second evaluation.
+      
+      
       final String m = await rejectionMessage(path);
       final FaceGate? g = await rejectionGate(path);
       return FaceResult.failed(m, gate: g);
@@ -101,10 +101,10 @@ class FaceRepository {
     }
   }
 
-  /// Shared capture pipeline (detect → gates → embed). Returns null when any
-  /// gate rejects; the gate message is recorded for [rejectionMessage] so the
-  /// gates are evaluated once, not twice.
-  /// Attendance verify (STEP 12) uses this without uploading.
+  
+  
+  
+  
   Future<FaceCapture?> captureEmbedding(String path) async {
     final _EvaluatedPicture eval = await _evaluatePicture(path);
     if (eval.gate != FaceGate.ok || eval.modelInput == null) {
@@ -121,9 +121,9 @@ class FaceRepository {
     return FaceCapture(embedding: embedding, qualityScore: eval.score);
   }
 
-  /// Human-readable rejection for a failing capture. Returns the message
-  /// recorded by the preceding [captureEmbedding] for the same file without
-  /// re-running the gates; only evaluates directly on a cache miss.
+  
+  
+  
   Future<String> rejectionMessage(String path) async {
     if (_lastRejectionPath == path && _lastRejectionMessage != null) {
       return _lastRejectionMessage!;
@@ -135,10 +135,10 @@ class FaceRepository {
     return eval.message;
   }
 
-  /// Real failing gate for the same shot (cache hit when [captureEmbedding]
-  /// ran first). Null only when no evaluation has run yet; [FaceGate.ok]
-  /// means the shot passed. Used to render honest gate-specific guidance —
-  /// never a guessed diagnosis.
+  
+  
+  
+  
   Future<FaceGate?> rejectionGate(String path) async {
     if (_lastRejectionPath == path && _lastRejectionGate != null) {
       return _lastRejectionGate;
@@ -150,12 +150,12 @@ class FaceRepository {
     return eval.gate;
   }
 
-  /// Single pass: file I/O + detection on this isolate, decode → gates →
-  /// preprocess in a background isolate. Throws from detection as before.
+  
+  
   Future<_EvaluatedPicture> _evaluatePicture(String path) async {
     final Uint8List jpeg = await File(path).readAsBytes();
-    // Header-only validity check (no pixel decode, negligible cost), so
-    // undecodable files short-circuit before detection, as before.
+    
+    
     final img.Decoder? decoder = img.findDecoderForData(jpeg);
     final img.DecodeInfo? info = decoder?.startDecode(jpeg);
     if (info == null || info.width <= 0) {
@@ -166,9 +166,9 @@ class FaceRepository {
       );
     }
     final faces = await _detector.detect(path);
-    // Gate mata tertutup (analog flood illuminator/TrueDepth: mata harus
-    // terlihat). Classification hanya tersedia bila detector diaktifkan dengan
-    // classification:true (lihat app.dart).
+    
+    
+    
     if (faces.isNotEmpty) {
       final Face face = faces.first;
       final double? leftOpen = face.leftEyeOpenProbability;
@@ -219,9 +219,9 @@ class FaceRepository {
     );
   }
 
-  /// STEP 21 — records biometric consent (idempotent server-side).
-  /// [noticeVersion] is the privacy-notice version the user actually read;
-  /// the server falls back to its current version when omitted (offline).
+  
+  
+  
   Future<void> ensureConsent({String? noticeVersion}) async {
     await _dio.post(
       '/privacy/consent',
@@ -233,7 +233,7 @@ class FaceRepository {
     );
   }
 
-  /// Versioned notice with offline fallback.
+  
   Future<PrivacyNotice> fetchNotice() async {
     try {
       final Response res = await _dio.get('/privacy/notice');
@@ -244,7 +244,7 @@ class FaceRepository {
   }
 }
 
-/// Main-isolate view of one evaluated picture.
+
 class _EvaluatedPicture {
   _EvaluatedPicture({
     required this.gate,
@@ -258,8 +258,8 @@ class _EvaluatedPicture {
   final List<double>? modelInput;
 }
 
-/// Background-isolate job: raw JPEG bytes (zero-copy) + detected face box.
-/// All fields are isolate-sendable.
+
+
 class _PrepJob {
   _PrepJob({
     required this.jpeg,
@@ -279,8 +279,8 @@ class _PrepJob {
   final double boxWidth;
 }
 
-/// Background-isolate result. Large model-input buffer travels back zero-copy
-/// as Float64 bytes (exact round-trip, no precision change); null on reject.
+
+
 class _PrepWire {
   _PrepWire({required this.gateIndex, required this.score, required this.message, this.modelInputBytes});
   final int gateIndex;
@@ -289,8 +289,8 @@ class _PrepWire {
   final TransferableTypedData? modelInputBytes;
 }
 
-/// Top-level entry for [compute]: JPEG decode → count gate → pixel gates →
-/// preprocess. Pure move of the former inline pipeline (same math).
+
+
 _PrepWire _decodeGatePreprocess(_PrepJob job) {
   final Uint8List bytes = job.jpeg.materialize().asUint8List();
   final img.Image? raw = img.decodeImage(bytes);
@@ -301,8 +301,8 @@ _PrepWire _decodeGatePreprocess(_PrepJob job) {
       message: faceGateMessage(FaceGate.noFace),
     );
   }
-  // Percepat gate kualitas: turunkan resolusi gambar sebelum evaluasi
-  // (rasio wajah tetap dihitung dari ukuran asli).
+  
+  
   final double relativeWidth =
       job.boxWidth > 0 && raw.width > 0 ? job.boxWidth / raw.width : 0.0;
   img.Image decoded = raw;

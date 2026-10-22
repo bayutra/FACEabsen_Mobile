@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/stitch.dart';
 
-/// Stitch `daftarkan_perangkat` — stepper 1 Login done, 2 Perangkat aktif,
-/// 3 Wajah upcoming. Nav disuppress, footer sticky.
+
+
 class DeviceRegisterScreen extends StatelessWidget {
   const DeviceRegisterScreen({
     super.key,
@@ -26,9 +26,9 @@ class DeviceRegisterScreen extends StatelessWidget {
   final VoidCallback? onContinue;
   final VoidCallback? onUseOther;
 
-  /// Dibuka saat HP ini masih PENDING: ajukan HP ini sebagai pengganti
-  /// perangkat aktif lama (butuh password + persetujuan admin).
-  /// Null = sembunyikan tombol (mis. konteks tanpa sesi login).
+  
+  
+  
   final VoidCallback? onRequestReplacement;
 
   @override

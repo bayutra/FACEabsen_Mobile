@@ -7,8 +7,8 @@ import '../data/device_admin_repository.dart';
 import '../domain/device_admin_models.dart';
 import '../../presentation/admin_widgets.dart';
 
-/// Kelola perangkat karyawan: aktifkan perangkat baru (PENDING), cabut akses,
-/// atau tandai hilang. Setara `device:approve-replacement` di SIMRS.
+
+
 class DeviceAdminScreen extends StatefulWidget {
   const DeviceAdminScreen({super.key, required this.dio});
 

@@ -17,7 +17,7 @@ export class LoginDto {
   @MaxLength(256)
   password!: string;
 
-  /** Optional bound device (strict device checks arrive in STEP 7). */
+   
   @IsOptional()
   @IsString()
   @MaxLength(64)
@@ -31,11 +31,7 @@ export class RefreshDto {
   refreshToken!: string;
 }
 
-/**
- * Pendaftaran mandiri (self-service). Akun baru selalu mendapat peran
- * EMPLOYEE — peran administratif hanya bisa diberikan lewat `/users` oleh
- * ADMIN/SUPER_ADMIN, supaya pendaftaran publik tidak menjadi jalur eskalasi.
- */
+ 
 export class RegisterDto {
   @IsString()
   @MinLength(2)
@@ -61,7 +57,7 @@ export class RegisterDto {
   @MaxLength(120)
   position?: string;
 
-  /** Nomor karyawan opsional; bila kosong dibuat otomatis (EMP-###). */
+   
   @IsOptional()
   @Matches(/^[A-Za-z0-9-]+$/)
   @MaxLength(32)

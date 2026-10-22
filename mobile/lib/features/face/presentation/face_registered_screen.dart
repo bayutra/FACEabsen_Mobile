@@ -8,13 +8,13 @@ import '../../device/domain/device_models.dart' show formatIdDateTime;
 import '../../face/data/face_repository.dart';
 import '../../device/data/device_repository.dart';
 
-/// Stitch "Pendaftaran Wajah - Berhasil": confirmation hero, the biometric
-/// receipt (quality, encryption, registration time), the privacy notice, and
-/// the entry point back into attendance.
-///
-/// NB: no photo is shown — the hero stays an icon. The pipeline never stores
-/// raw images (privacy by design), only the encrypted template, so there is
-/// nothing to show. Deliberate privacy decision.
+
+
+
+
+
+
+
 class FaceRegisteredScreen extends StatelessWidget {
   const FaceRegisteredScreen({
     super.key,
@@ -36,8 +36,8 @@ class FaceRegisteredScreen extends StatelessWidget {
   final FaceRepository faces;
   final DeviceRepository devices;
 
-  /// Real registration timestamp (passed by the registration flow as
-  /// `DateTime.now()` on success). Null renders as `—` — never a sample date.
+  
+  
   final DateTime? registeredAt;
 
   void _goAttendance(BuildContext context, {bool popFirst = true}) {
@@ -85,8 +85,8 @@ class FaceRegisteredScreen extends StatelessWidget {
         ),
       );
     } catch (_) {
-      // Offline fetch falls back inside the repository; a hard failure here
-      // stays silent rather than showing a misleading error.
+      
+      
     }
   }
 

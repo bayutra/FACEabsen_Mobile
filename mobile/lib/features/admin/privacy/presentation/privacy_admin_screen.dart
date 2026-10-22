@@ -7,8 +7,8 @@ import '../../presentation/admin_widgets.dart';
 import '../data/privacy_admin_repository.dart';
 import '../domain/privacy_admin_models.dart';
 
-/// Kebijakan privasi & retensi data (SUPER_ADMIN): tampilkan pemberitahuan
-/// privasi dan jalankan pembersihan data melewati masa retensi.
+
+
 class PrivacyAdminScreen extends StatefulWidget {
   const PrivacyAdminScreen({super.key, required this.dio});
 

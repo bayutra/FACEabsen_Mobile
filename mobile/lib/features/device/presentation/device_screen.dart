@@ -5,10 +5,10 @@ import '../../../core/widgets/stitch.dart';
 import '../data/device_repository.dart';
 import 'device_sections.dart';
 
-/// Tab Perangkat — status semua perangkat yang terhubung ke akun.
-///
-/// Pengajuan penggantian perangkat sudah dihapus: akun boleh aktif di banyak
-/// perangkat, dan perangkat baru otomatis terdaftar saat login.
+
+
+
+
 class DeviceScreen extends StatefulWidget {
   const DeviceScreen({
     super.key,

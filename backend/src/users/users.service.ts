@@ -19,21 +19,7 @@ import type {
   UpdateUserDto,
 } from './dto.js';
 
-/**
- * Login-account administration (PRD §7, §8).
- *
- * Distinct from EmployeesService: employees are people who clock in, users are
- * accounts that can sign in. A user without an employee row is legitimate (an
- * IT or admin desk that never attends a shift).
- *
- * Privilege model:
- * - Route access needs `user:manage` (ADMIN and, by inheritance, SUPER_ADMIN).
- * - Roles may only be granted with rbac.canAssignRole, so an ADMIN can never
- *   mint an ADMIN or SUPER_ADMIN.
- * - An actor may only touch accounts ranked strictly below their own. Only
- *   SUPER_ADMIN may administer peers or higher. This is what stops delegation
- *   from becoming escalation.
- */
+ 
 @Injectable()
 export class UsersService {
   constructor(
@@ -46,9 +32,9 @@ export class UsersService {
     const pageSize = query.pageSize ?? 25;
     const AND: Prisma.UserWhereInput[] = [];
 
-    // Facility scoping: ADMIN callers see their own hospital's accounts plus
-    // employeeless IT-desk accounts (which belong to no facility and stay
-    // under the rank guard). SUPER_ADMIN stays global.
+    
+    
+    
     if (!satisfiesRole(roles, 'SUPER_ADMIN')) {
       const scope = await resolveHospitalScope(this.prisma, userId, roles);
       if (scope.kind !== 'hospital') {
@@ -148,10 +134,7 @@ export class UsersService {
     }
   }
 
-  /**
-   * Role and/or activation changes. Deactivating revokes live sessions; the
-   * JWT guard re-checks `isActive` per request, so access stops immediately.
-   */
+   
   async updateUser(id: string, dto: UpdateUserDto, actorId: string, meta: { ip?: string } = {}) {
     const target = await this.loadManageable(id, actorId);
     const actorRoles = await this.getRoles(actorId);
@@ -159,14 +142,14 @@ export class UsersService {
     if (dto.isActive === false && id === actorId) {
       throw new BadRequestException('You cannot deactivate your own account');
     }
-    // Losing your last ADMIN/SUPER_ADMIN seat would lock everyone out.
+    
     if (dto.roles && id === actorId) {
       throw new BadRequestException('You cannot change your own roles');
     }
     if (dto.roles) {
       const next = this.assertGrantable(actorRoles, dto.roles);
-      // Never strip every role: a roleless account can never be re-granted by
-      // a non-SUPER_ADMIN and would be stranded.
+      
+      
       if (next.length === 0) throw new BadRequestException('At least one role is required');
     }
 
@@ -180,7 +163,7 @@ export class UsersService {
           where: { id },
           data: {
             isActive: dto.isActive,
-            // Re-enabling also clears a lockout left by failed logins.
+            
             ...(dto.isActive ? { failedLoginAttempts: 0, lockedUntil: null } : {}),
           },
         });
@@ -212,10 +195,7 @@ export class UsersService {
     return { id, email: target.email, isActive: dto.isActive ?? target.isActive, roles };
   }
 
-  /**
-   * Administrative reset: sets a known password, clears the lockout counter,
-   * and kills every live session so a stolen token dies with the old password.
-   */
+   
   async resetPassword(
     id: string,
     dto: ResetPasswordDto,
@@ -254,9 +234,9 @@ export class UsersService {
     return { reset: true };
   }
 
-  // ---------- internals ----------
+  
 
-  /** Loads the target and refuses anyone an actor outranks or out-facilities. */
+   
   private async loadManageable(id: string, actorId: string) {
     const user = await this.prisma.user.findUnique({
       where: { id },
@@ -273,9 +253,9 @@ export class UsersService {
         if (highestRoleRank(targetRoles) >= highestRoleRank(actorRoles)) {
           throw new ForbiddenException('Cannot administer an account at or above your own rank');
         }
-        // Facility check for employee-linked accounts: an ADMIN of hospital A
-        // cannot touch hospital B's staff accounts. Employeeless IT-desk
-        // accounts stay under the rank guard only.
+        
+        
+        
         const [targetEmp, scope] = await Promise.all([
           this.prisma.employee.findUnique({
             where: { userId: id },
@@ -292,7 +272,7 @@ export class UsersService {
     return user;
   }
 
-  /** EMPLOYEE is implicit; every other role must pass canAssignRole. */
+   
   private assertGrantable(actorRoles: string[], requested?: string[]) {
     const roles = [...new Set(['EMPLOYEE', ...(requested ?? [])])];
     for (const role of roles) {

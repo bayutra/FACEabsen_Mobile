@@ -7,10 +7,10 @@ import '../../presentation/admin_widgets.dart';
 import '../data/employee_admin_repository.dart';
 import '../domain/employee_admin_models.dart';
 
-/// Formulir tambah/ubah karyawan.
-///
-/// `canEditAll = false` dipakai supervisor: hanya nama, telepon, dan jabatan
-/// yang dapat diubah; email login, unit, dan status tetap milik admin.
+
+
+
+
 class EmployeeAdminFormScreen extends StatefulWidget {
   const EmployeeAdminFormScreen({
     super.key,
@@ -65,7 +65,7 @@ class _EmployeeAdminFormScreenState extends State<EmployeeAdminFormScreen> {
       final List<AdminDepartment> list = await _repo.departments();
       if (mounted) setState(() => _departments = list);
     } catch (_) {
-      // Pemilih Unit opsional; form tetap bisa disimpan tanpa itu.
+      
     }
   }
 

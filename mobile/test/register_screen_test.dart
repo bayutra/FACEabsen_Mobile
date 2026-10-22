@@ -59,10 +59,10 @@ void main() {
 
     expect(find.text('Daftar Akun'), findsOneWidget);
 
-    // Pilih unit kerja (wajib) dari master data yang dimuat server.
+    
     await selectUnit(tester);
 
-    // Urutan kolom: nama, email, HP, NIP, kata sandi, ulangi kata sandi.
+    
     await tester.enterText(find.byType(TextField).at(0), 'Budi Baru');
     await tester.enterText(find.byType(TextField).at(1), 'budi@rs.test');
     await tester.enterText(find.byType(TextField).at(4), 'Password123!');

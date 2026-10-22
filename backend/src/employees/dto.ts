@@ -44,13 +44,13 @@ export class CreateEmployeeDto {
   @IsString()
   supervisorId?: string;
 
-  /** Initial login password (policy-checked, Argon2id-hashed, never logged). */
+   
   @IsString()
   @MinLength(8)
   @MaxLength(256)
   password!: string;
 
-  /** Extra roles beyond EMPLOYEE; grant-checked via canAssignRole. */
+   
   @IsOptional()
   @IsString({ each: true })
   roles?: string[];
@@ -87,10 +87,7 @@ export class UpdateEmployeeDto {
   supervisorId?: string;
 }
 
-/**
- * Perubahan profil oleh pemilik akun sendiri. Peran, unit kerja, dan atasan
- * tetap wewenang admin kepegawaian; karyawan hanya merapikan data kontak.
- */
+ 
 export class UpdateMyProfileDto {
   @IsOptional()
   @IsString()

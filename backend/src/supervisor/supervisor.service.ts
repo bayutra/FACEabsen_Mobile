@@ -16,7 +16,7 @@ export interface DayEvidence {
   checkInStatus?: string | null;
 }
 
-/** Pure day classifier (unit-tested). Leave wins over schedule. */
+ 
 export function classifyDay(ev: DayEvidence): DayStatus {
   if (ev.onLeave) return 'ON_LEAVE';
   if (!ev.scheduled) return 'OFF';
@@ -26,7 +26,7 @@ export function classifyDay(ev: DayEvidence): DayStatus {
 
 export const MAX_RANGE_DAYS = 400;
 
-/** Range guard for endpoints that query by date span without enumerating days. */
+ 
 export function assertRangeDays(from: string, to: string): void {
   const span =
     Math.floor(
@@ -53,18 +53,13 @@ export function eachDay(from: string, to: string): string[] {
   return days;
 }
 
-/**
- * STEP 17 — Supervisor team scope (PRD §62).
- * Every method is confined to the supervisor's subordinates unless the
- * caller is ADMIN+; team membership is resolved server-side, never trusted
- * from request parameters.
- */
+ 
 @Injectable()
 export class SupervisorService {
   constructor(private readonly prisma: PrismaService) {}
 
   async teamOf(userId: string, roles: string[]) {
-    // ADMIN is facility-scoped (SUPER_ADMIN alone sees every facility).
+    
     if (satisfiesRole(roles, 'ADMIN') && !satisfiesRole(roles, 'SUPER_ADMIN')) {
       const scope = await resolveHospitalScope(this.prisma, userId, roles);
       if (scope.kind !== 'hospital') return [];

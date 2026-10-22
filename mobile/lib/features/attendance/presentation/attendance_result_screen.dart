@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import '../../../core/widgets/hospital_mark.dart';
 import '../domain/attendance_models.dart';
 
-/// Stitch "Presensi - Hasil Verifikasi Presensi" (`design/stitch_rs_absen_mobile_app/presensi_hasil_verifikasi_presensi`)
-/// Complete hospital verification result screen with evidence bottom sheet.
-/// Modernized with Stitch hospital/clinical Material 3 design system tokens.
+
+
+
 class AttendanceResultScreen extends StatefulWidget {
   const AttendanceResultScreen({
     super.key,
@@ -32,7 +32,7 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
   @override
   void initState() {
     super.initState();
-    // Real default: review bila server menandai needsReview, selain itu sukses.
+    
     _tab = widget.result.needsReview ? 2 : 0;
   }
 
@@ -116,7 +116,7 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          // Segmented Berhasil/Ditolak/Review — surface-container-high background
+          
           Container(
             padding: const EdgeInsets.all(4),
             decoration: BoxDecoration(
@@ -152,7 +152,7 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
           ),
           const SizedBox(height: 12),
 
-          // Main Hero Card by State
+          
           if (_tab == 0) ...[
             _successHeroCard(title, timeIso, status),
           ] else if (_tab == 1) ...[
@@ -162,11 +162,11 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
           ],
           const SizedBox(height: 14),
 
-          // Shift & Biometric Verification Details Bento Card
+          
           _shiftDataCard(),
           const SizedBox(height: 20),
 
-          // Primary Button: 52px CTA with 16px radius
+          
           SizedBox(
             height: 52,
             child: FilledButton(
@@ -218,7 +218,7 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
           ),
           const SizedBox(height: 10),
 
-          // Secondary Outlined Button: 48px ghost
+          
           SizedBox(
             height: 48,
             child: OutlinedButton(
@@ -465,7 +465,7 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
         ),
         const SizedBox(height: 12),
 
-        // Failure Diagnosis Bento Card
+        
         _card(
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -509,7 +509,7 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
               ),
               const SizedBox(height: 12),
 
-              // Reason Alert Box
+              
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
@@ -551,7 +551,7 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
               ),
               const SizedBox(height: 10),
 
-              // Biometric face match status row
+              
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                 decoration: BoxDecoration(
@@ -589,7 +589,7 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
               ),
               const SizedBox(height: 10),
 
-              // Compliance rules note
+              
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
@@ -741,7 +741,7 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
         ),
         const SizedBox(height: 12),
 
-        // Review Details & Reason Card
+        
         _card(
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -787,7 +787,7 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
               ),
               const SizedBox(height: 12),
 
-              // Reason alert
+              
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
@@ -829,7 +829,7 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
               ),
               const SizedBox(height: 12),
 
-              // Detailed Manual Verification Workflow
+              
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
@@ -887,7 +887,7 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
               ),
               const SizedBox(height: 10),
 
-              // Informational Memo
+              
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
@@ -1131,7 +1131,7 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
           ),
           const SizedBox(height: 12),
 
-          // Staff Profile Mini Tile
+          
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
@@ -1181,7 +1181,7 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
           ),
           const SizedBox(height: 12),
 
-          // 2x2 Metric Grid
+          
           Row(
             children: [
               Expanded(
@@ -1231,7 +1231,7 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
           ),
           const SizedBox(height: 12),
 
-          // Audit Transaction Reference ID
+          
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(

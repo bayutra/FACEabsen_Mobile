@@ -46,7 +46,7 @@ describe('AppController', () => {
       await expect(ctrl.health()).resolves.toMatchObject({ status: 'degraded', db: 'down' });
     });
 
-    // L4 — liveness never touches the DB: a dead database still yields 200.
+    
     it('live needs no DB', async () => {
       const mod: TestingModule = await Test.createTestingModule({
         controllers: [AppController],

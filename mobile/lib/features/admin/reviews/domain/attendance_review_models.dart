@@ -1,7 +1,7 @@
-/// Model antrean tinjauan presensi berisiko (SUPERVISOR / ADMIN).
-///
-/// Backend: `GET /attendance/review` mengembalikan `{data, pagination}` dengan
-/// relasi `employee.department` dan `shift`.
+
+
+
+
 library;
 
 String attendanceCheckInLabel(String? status) => switch (status) {

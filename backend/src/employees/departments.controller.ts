@@ -25,7 +25,7 @@ import { EmployeesService } from './employees.service.js';
 export class DepartmentsController {
   constructor(private readonly employees: EmployeesService) {}
 
-  /** Dipakai layar pendaftaran mandiri sebelum pengguna punya sesi. */
+   
   @Public()
   @Get('public')
   listPublic() {

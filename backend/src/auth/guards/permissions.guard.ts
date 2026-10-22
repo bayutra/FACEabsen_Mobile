@@ -4,11 +4,7 @@ import { AuthService } from '../auth.service.js';
 import { PERMS_KEY } from '../decorators.js';
 import { hasAllPermissions } from '../rbac.js';
 
-/**
- * Permission check (resource:action). Permissions are resolved live from the
- * DB on every request — never trusted from the token — so role/permission
- * changes take effect immediately.
- */
+ 
 @Injectable()
 export class PermissionsGuard implements CanActivate {
   constructor(

@@ -6,8 +6,8 @@ import '../../attendance/data/attendance_repository.dart';
 import '../../attendance/domain/attendance_models.dart';
 import '../../schedule/data/schedule_repository.dart';
 
-/// Stitch "Beranda Presensi - Dashboard Nakes" (`design/stitch_rs_absen_mobile_app/beranda_presensi_dashboard_nakes`)
-/// Complete hospital nursing shift and attendance dashboard.
+
+
 class HomeDashboard extends StatefulWidget {
   const HomeDashboard({
     super.key,
@@ -37,9 +37,9 @@ class HomeDashboard extends StatefulWidget {
   final VoidCallback onOpenProfile;
   final VoidCallback? onOpenHistory;
 
-  /// Diisi hanya untuk SUPERVISOR/ADMIN/SUPER_ADMIN: membuka konsol kelola
-  /// (koreksi, izin, jadwal, karyawan, laporan, ...). Server tetap menegakkan
-  /// RBAC, jadi menyembunyikan tombol bukan satu-satunya pengaman.
+  
+  
+  
   final VoidCallback? onOpenAdmin;
 
   @override
@@ -110,9 +110,9 @@ class _HomeDashboardState extends State<HomeDashboard> {
         );
       }
     } catch (_) {
-      // HomeShell already reverted the switch and surfaced the Snackbar;
-      // swallowing here avoids a duplicate error banner (no unhandled gap:
-      // the future completes normally).
+      
+      
+      
     } finally {
       if (mounted) setState(() => _consentBusy = false);
     }
@@ -138,8 +138,8 @@ class _HomeDashboardState extends State<HomeDashboard> {
     return 'Selamat Malam,';
   }
 
-  /// Pintasan ke konsol admin — hanya muncul untuk peran yang berhak, supaya
-  /// pengelola tidak perlu mencari lewat tab Profil.
+  
+  
   Widget _adminBanner() {
     return Material(
       color: Colors.transparent,
@@ -303,7 +303,7 @@ class _HomeDashboardState extends State<HomeDashboard> {
               _adminBanner(),
               const SizedBox(height: 12),
             ],
-            // Sub-header Department Context Bar
+            
             Row(
               children: [
                 const Icon(Icons.local_hospital, size: 18, color: AppColors.primary),
@@ -344,23 +344,23 @@ class _HomeDashboardState extends State<HomeDashboard> {
             else if (_error != null)
               _errorBox()
             else ...[
-              // Shift Card: Shift Hari Ini
+              
               _shiftCard(),
               const SizedBox(height: 14),
 
-              // Status Presensi & Biometric Attendance Card
+              
               _statusCard(),
               const SizedBox(height: 14),
 
-              // Biometric Consent Switch Card
+              
               _biometricConsentCard(),
               const SizedBox(height: 14),
 
-              // Quick Action Grid (4 Columns)
+              
               _quickMenuGrid(),
               const SizedBox(height: 14),
 
-              // Hospital Ward Handover Announcement Widget
+              
               _handoverAnnouncement(),
             ],
           ],
@@ -451,7 +451,7 @@ class _HomeDashboardState extends State<HomeDashboard> {
           ),
           const SizedBox(height: 12),
 
-          // Unit / Ruang Kerja Details Box
+          
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
@@ -587,7 +587,7 @@ class _HomeDashboardState extends State<HomeDashboard> {
           ),
           const SizedBox(height: 14),
 
-          // Check-in & Check-out metric times
+          
           Row(
             children: [
               Expanded(
@@ -718,7 +718,7 @@ class _HomeDashboardState extends State<HomeDashboard> {
           ),
           const SizedBox(height: 12),
 
-          // APD & Protocol checklist banner
+          
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
@@ -757,7 +757,7 @@ class _HomeDashboardState extends State<HomeDashboard> {
           ),
           const SizedBox(height: 12),
 
-          // Primary Attendance CTA Button — spec 52px #0F766E radius 16.
+          
           SizedBox(
             height: AppColors.buttonHeight,
             child: FilledButton(

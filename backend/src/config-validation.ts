@@ -1,8 +1,4 @@
-/**
- * Numeric config bounds (M13). Validates raw string env at boot (ConfigModule
- * `validate` hook). Missing vars fall back to the same defaults the services
- * use, so local dev with a bare .env still boots.
- */
+ 
 export function validateEnv(env: Record<string, unknown>): void {
   const num = (key: string, dflt: number): number => {
     const raw = env[key];

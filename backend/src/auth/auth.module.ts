@@ -30,7 +30,7 @@ import { TotpService } from './totp.service.js';
   ],
   controllers: [AuthController, TotpController],
   providers: [AuthService, TotpService, JwtAuthGuard, RolesGuard, PermissionsGuard],
-  // JwtModule re-exported so feature modules using the guards resolve JwtService.
+  
   exports: [AuthService, TotpService, JwtAuthGuard, RolesGuard, PermissionsGuard, JwtModule],
 })
 export class AuthModule {}

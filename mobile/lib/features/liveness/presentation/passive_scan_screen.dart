@@ -17,14 +17,14 @@ import '../../face/data/face_detector.dart';
 import '../../face/data/face_repository.dart';
 import 'liveness_screen.dart' show contourOf;
 
-/// Face-ID-style verification: the user holds the phone and looks at the
-/// camera. There is no command to follow â€” no blinking, no head turns.
-///
-/// Liveness is decided by [PassiveLiveness]: exactly one frontal face with
-/// open eyes, measurable micro-motion, AND a change in face distance across
-/// a short run of frames. A photo taped to a wall fails on motion; a photo
-/// wobbled by hand fails on distance. The verdict stays a pre-filter — the
-/// server scores it alongside face match and device integrity.
+
+
+
+
+
+
+
+
 class PassiveScanScreen extends StatefulWidget {
   const PassiveScanScreen({
     super.key,
@@ -32,8 +32,8 @@ class PassiveScanScreen extends StatefulWidget {
     this.displayName = 'Karyawan',
   });
 
-  /// Used to embed the very frame that passed, so the user is never asked to
-  /// pose a second time in a separate capture screen.
+  
+  
   final FaceRepository faces;
   final String displayName;
 
@@ -51,8 +51,8 @@ class _PassiveScanScreenState extends State<PassiveScanScreen>
   String? _error;
   String? _hint;
 
-  /// Consecutive frames with no usable face before we call it a hardware or
-  /// permission problem rather than "the user needs to sit closer".
+  
+  
   static const int _blankLimit = 8;
 
   bool _processing = false;
@@ -62,7 +62,7 @@ class _PassiveScanScreenState extends State<PassiveScanScreen>
   double _progress = 0;
   double _relativeFaceWidth = 0;
 
-  /// Bounded attempt window, so a patient can retry without restarting.
+  
   static const Duration _timeout = Duration(seconds: 20);
   DateTime _startedAt = DateTime.now();
 
@@ -70,9 +70,9 @@ class _PassiveScanScreenState extends State<PassiveScanScreen>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    // Fast mode with no contours: on Android the classifier already returns
-    // eye-open probability, so contours would only cost time. Contours are
-    // still needed on iOS, where that probability is always null.
+    
+    
+    
     final bool needsContours = defaultTargetPlatform == TargetPlatform.iOS;
     _detector = FaceDetectorService(
       classification: true,
@@ -87,10 +87,10 @@ class _PassiveScanScreenState extends State<PassiveScanScreen>
     _initCamera();
   }
 
-  /// ML Kit failures (missing/outdated Play Services, model never downloaded)
-  /// used to be swallowed by the frame loop, leaving the user staring at
-  /// "face not detected" forever with no explanation. Show the real reason and
-  /// stop the loop.
+  
+  
+  
+  
   void _onDetectorError(String message) {
     _timer?.cancel();
     if (mounted) setState(() => _error = message);
@@ -98,9 +98,9 @@ class _PassiveScanScreenState extends State<PassiveScanScreen>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    // Backgrounding leaves the session open and resume yields a dead preview
-    // whose takePicture throws (swallowed → frozen scan to the 20s timeout).
-    // Release the session + frame timer; rebuild and re-arm on resume.
+    
+    
+    
     if (state == AppLifecycleState.paused ||
         state == AppLifecycleState.inactive) {
       _timer?.cancel();
@@ -145,11 +145,11 @@ class _PassiveScanScreenState extends State<PassiveScanScreen>
         imageFormatGroup: ImageFormatGroup.nv21,
       );
       await controller.initialize();
-      // Jangan pernah menyalakan flash otomatis selama pemindaian pasif.
+      
       try {
         await controller.setFlashMode(FlashMode.off);
       } on CameraException {
-        // Perangkat tanpa lampu kilat.
+        
       }
       if (!mounted) {
         await controller.dispose();
@@ -172,8 +172,8 @@ class _PassiveScanScreenState extends State<PassiveScanScreen>
     final CameraController? controller = _controller;
     if (controller == null || _processing || _passed) return;
     if (DateTime.now().difference(_startedAt) > _timeout) {
-      // Stop the loop: without this the 400 ms tick redraws forever with the
-      // camera still streaming until the user dismisses the screen.
+      
+      
       _timer?.cancel();
       if (mounted) {
         setState(() => _error =
@@ -192,9 +192,9 @@ class _PassiveScanScreenState extends State<PassiveScanScreen>
       PassiveFrame frame;
       if (faces.length != 1) {
         frame = PassiveFrame(faceCount: faces.length, relativeWidth: 0);
-        // A camera that never yields a face is the single most common failure
-        // (permission, covered lens, missing model). Say so instead of asking
-        // the user to keep adjusting a face that was never actually detected.
+        
+        
+        
         _blankFrames++;
         if (_blankFrames == _blankLimit) {
           _onDetectorError(
@@ -206,7 +206,7 @@ class _PassiveScanScreenState extends State<PassiveScanScreen>
         }
       } else {
         final Face f = faces.single;
-        // Header-only decode: we only need the pixel width, not the pixels.
+        
         final Uint8List bytes = await File(shot.path).readAsBytes();
         if (!mounted) return;
         final img.Decoder? decoder = img.findDecoderForData(bytes);
@@ -217,8 +217,8 @@ class _PassiveScanScreenState extends State<PassiveScanScreen>
         final double? leftProb = f.leftEyeOpenProbability;
         final double? rightProb = f.rightEyeOpenProbability;
         final bool hasProbability = leftProb != null && rightProb != null;
-        // Nose base is stable and always tracked, so it is a good motion probe.
-        // ML Kit exposes it through the landmark map, not as a getter.
+        
+        
         final FaceLandmark? nose = f.landmarks[FaceLandmarkType.noseBase];
         final double? noseX = nose?.position.x.toDouble();
         final double? noseY = nose?.position.y.toDouble();
@@ -250,8 +250,8 @@ class _PassiveScanScreenState extends State<PassiveScanScreen>
       });
 
       if (result.verdict == PassiveVerdict.passed) {
-        // Embed the same frame that proved liveness while the file still
-        // exists; `finally` deletes it right after this block.
+        
+        
         final FaceCapture? capture =
             await widget.faces.captureEmbedding(shot.path);
         if (capture == null) {
@@ -266,7 +266,7 @@ class _PassiveScanScreenState extends State<PassiveScanScreen>
         await _finish();
       }
     } catch (_) {
-      // Transient frame errors are ignored; the timeout bounds the attempt.
+      
     } finally {
       _processing = false;
       if (shotPath != null) {
@@ -284,8 +284,8 @@ class _PassiveScanScreenState extends State<PassiveScanScreen>
     _timer?.cancel();
     await Future<void>.delayed(const Duration(milliseconds: 450));
     if (!mounted) return;
-    // Matches what AttendanceRepository._livenessPayload expects for passive.
-    // `embedding` rides along so the caller does not open the camera again.
+    
+    
     Navigator.of(context).pop(<String, Object>{
       'passed': true,
       'mode': 'passive',
@@ -296,9 +296,9 @@ class _PassiveScanScreenState extends State<PassiveScanScreen>
     });
   }
 
-  /// Anti-spoofing confidence from the run's continuous evidence: landmark
-  /// path length (motion), face-size envelope (depth), and final face size.
-  /// Varies per run by construction — never a constant.
+  
+  
+  
   double _padScore() {
     final double size = (_relativeFaceWidth / 0.35).clamp(0.0, 1.0);
     return (_liveness.motionScore * 0.4 +

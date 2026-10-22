@@ -6,7 +6,7 @@ import '../../../../core/widgets/stitch.dart';
 import '../../presentation/admin_widgets.dart';
 import '../data/schedule_admin_repository.dart';
 
-/// Penugasan jadwal dinas karyawan per rentang tanggal (ADMIN).
+
 class ScheduleAdminScreen extends StatefulWidget {
   const ScheduleAdminScreen({super.key, required this.dio});
 

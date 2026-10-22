@@ -7,9 +7,9 @@ import '../../presentation/admin_widgets.dart';
 import '../data/report_admin_repository.dart';
 import '../domain/report_admin_models.dart';
 
-/// Laporan kehadiran (SUPERVISOR ke atas): harian, bulanan, keterlambatan,
-/// izin/cuti, per Unit, dan per karyawan. Semua data diambil dari
-/// endpoint `/reports/*` â€” tidak ada data tiruan.
+
+
+
 class ReportAdminScreen extends StatefulWidget {
   const ReportAdminScreen({super.key, required this.dio});
 
@@ -432,7 +432,7 @@ String _monthLabel(DateTime d) => '${_monthNames[d.month - 1]} ${d.year}';
 String _monthKey(DateTime d) =>
     '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}';
 
-/// Kartu pemilih tanggal/bulan yang membuka date picker.
+
 class _DateField extends StatelessWidget {
   const _DateField({
     required this.label,
@@ -484,7 +484,7 @@ class _DateField extends StatelessWidget {
   }
 }
 
-/// Dialog pemilih bulan-tahun (tanpa paket tambahan).
+
 class _MonthPickerDialog extends StatefulWidget {
   const _MonthPickerDialog({required this.year, required this.month});
 
@@ -552,7 +552,7 @@ class _MonthPickerDialogState extends State<_MonthPickerDialog> {
   }
 }
 
-/// Tabel laporan yang bisa di-scroll horizontal.
+
 class _ReportTable extends StatelessWidget {
   const _ReportTable({required this.headers, required this.rows});
 

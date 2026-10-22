@@ -97,25 +97,25 @@ void main() {
         42,
         'bukan-map',
         null,
-        {'kind': 'checkIn'}, // field tidak lengkap
+        {'kind': 'checkIn'}, 
         {
           ...valid,
-          'kind': 'checkSideways', // kind tak dikenal
+          'kind': 'checkSideways', 
         },
         {
           ...valid,
-          'embedding': ['nan-string'], // embedding korup
+          'embedding': ['nan-string'], 
         },
         {
           ...valid,
-          'queuedAt': 'kemarin-sore', // waktu tak terparse
+          'queuedAt': 'kemarin-sore', 
         },
       ]));
 
       final List<OutboxEntry> loaded = await box.load();
       expect(loaded, hasLength(1));
       expect(loaded.single.deviceId, 'd1');
-      // Self-heal: daftar yang dibersihkan ditulis ulang.
+      
       expect(await box.count(), 1);
     });
 
@@ -129,7 +129,7 @@ void main() {
       await store.writeOutbox(jsonEncode({'bukan': 'list'}));
       expect(await box.load(), isEmpty);
 
-      // Setelah korup, save tetap bisa dipakai lagi.
+      
       await box.save(_entry());
       expect(await box.count(), 1);
     });

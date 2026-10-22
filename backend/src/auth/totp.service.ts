@@ -1,7 +1,7 @@
-// TOTP enrollment + second-factor verification (single-use recovery codes).
-// Self-contained: owns its challenge-token signing and session issuance so
-// AuthService.login only branches on the `totpEnabled` flag (no new DI edges,
-// no behavior change for non-TOTP users).
+
+
+
+
 
 import {
   BadRequestException,
@@ -29,7 +29,7 @@ import {
 } from './totp.js';
 
 const RECOVERY_CODE_COUNT = 8;
-/** Unambiguous alphanumeric alphabet (no 0/O, no 1/I/L). */
+ 
 const RECOVERY_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 
 export function normalizeRecoveryCode(input: string): string {
@@ -65,7 +65,7 @@ export class TotpService {
     }
   }
 
-  /** Start enrollment: fresh random secret, stored PENDING (enabled stays false). */
+   
   async setup(userId: string) {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user) throw new NotFoundException('User not found');
@@ -74,12 +74,12 @@ export class TotpService {
       where: { id: userId },
       data: { totpSecret: secret, totpEnabled: false },
     });
-    // Fresh enrollment invalidates any codes from an aborted earlier attempt.
+    
     await this.prisma.totpRecoveryCode.deleteMany({ where: { userId } });
     return { secret, otpauthUri: buildOtpauthUri(this.totpIssuer, user.email, secret) };
   }
 
-  /** Confirm enrollment: code must match the pending secret; mints 8 one-time codes. */
+   
   async enable(userId: string, code: string) {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user) throw new NotFoundException('User not found');
@@ -111,7 +111,7 @@ export class TotpService {
     return { recoveryCodes };
   }
 
-  /** Remove second factor after re-authenticating with the current password. */
+   
   async disable(userId: string, password: string, meta: RequestMeta = {}) {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user) throw new NotFoundException('User not found');
@@ -126,7 +126,7 @@ export class TotpService {
     return { disabled: true as const };
   }
 
-  /** Short-lived challenge token minted by AuthService.login after password auth. */
+   
   signTotpToken(userId: string) {
     return this.jwt.signAsync(
       { sub: userId, purpose: TOTP_TOKEN_PURPOSE },
@@ -138,7 +138,7 @@ export class TotpService {
     );
   }
 
-  /** Resolve the challenge token to a userId; rejects access tokens and expiry. */
+   
   async verifyTotpToken(token: string): Promise<string> {
     let payload: { sub?: string; purpose?: string };
     try {
@@ -155,7 +155,7 @@ export class TotpService {
     return payload.sub;
   }
 
-  /** Second-factor login with a TOTP code: issues a full session on success. */
+   
   async verify(totpToken: string, code: string, meta: RequestMeta = {}) {
     const userId = await this.verifyTotpToken(totpToken);
     const user = await this.prisma.user.findUnique({
@@ -173,11 +173,7 @@ export class TotpService {
     return this.issueLogin(user, meta, 'totp');
   }
 
-  /**
-   * Second-factor login with a single-use recovery code. Consumed codes are
-   * marked used via compare-and-swap; failures are a bare 401 that never
-   * reveals how many codes remain.
-   */
+   
   async recover(totpToken: string, recoveryCode: string, meta: RequestMeta = {}) {
     const userId = await this.verifyTotpToken(totpToken);
     const user = await this.prisma.user.findUnique({
@@ -188,7 +184,7 @@ export class TotpService {
     const rows = user
       ? await this.prisma.totpRecoveryCode.findMany({ where: { userId: user.id, usedAt: null } })
       : [];
-    // Compare every stored hash (no early exit) so timing reveals nothing.
+    
     let matchId: string | null = null;
     for (const row of rows) {
       if (safeEqual(row.codeHash, presentedHash)) matchId = row.id;
@@ -208,7 +204,7 @@ export class TotpService {
     return this.issueLogin(user, meta, 'totp-recovery');
   }
 
-  // ---------- internals (mirror AuthService session issuance) ----------
+  
 
   private async fail(userId: string, meta: RequestMeta, stage: string) {
     await this.audit.log({

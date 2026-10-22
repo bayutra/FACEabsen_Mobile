@@ -1,24 +1,24 @@
 import 'package:dio/dio.dart';
 
-/// Own account/security summary (Stitch "Profil Karyawan & Pengaturan Akun").
-/// Composes existing endpoints; no new backend surface required.
+
+
 class ProfileRepository {
   ProfileRepository({required Dio dio}) : _dio = dio;
 
   final Dio _dio;
 
-  /// Loads identity + security state.
-  ///
-  /// Each source is fetched independently: one unavailable endpoint must not
-  /// blank the whole profile, so failures degrade to nulls (and the consent row
-  /// simply reads as "not granted", which is the safe direction).
+  
+  
+  
+  
+  
   Future<ProfileSnapshot> load() async {
     final List<Object?> results = await Future.wait([
       _try(() => _dio.get('/auth/me')),
       _try(() => _dio.get('/employees/me')),
       _try(() => _dio.get('/face/status')),
       _try(() => _dio.get('/devices/me')),
-      // NB: the route is /privacy/consents/me — not /privacy/consents.
+      
       _try(() => _dio.get('/privacy/consents/me')),
     ]);
 
@@ -29,7 +29,7 @@ class ProfileRepository {
     final List<dynamic>? consents = _list(results[4]);
 
     if (me == null) {
-      // Identity is the one thing the screen cannot work without.
+      
       throw const ProfileUnavailable();
     }
 
@@ -58,8 +58,8 @@ class ProfileRepository {
     );
   }
 
-  /// Runs [call], returning null instead of throwing so one failed source
-  /// cannot take down the screen.
+  
+  
   Future<Object?> _try(Future<Response> Function() call) async {
     try {
       return await call();
@@ -80,7 +80,7 @@ class ProfileRepository {
     return null;
   }
 
-  /// Grants or revokes biometric consent (Stitch dashboard toggle).
+  
   Future<void> setBiometricConsent(bool granted) async {
     await _dio.post(
       '/privacy/consent',
@@ -88,7 +88,7 @@ class ProfileRepository {
     );
   }
 
-  /// Employee display name for the dashboard greeting (name + title).
+  
   Future<String> displayName() async {
     final Response res = await _dio.get('/employees/me');
     if (res.data == null) return 'Karyawan';
@@ -98,8 +98,8 @@ class ProfileRepository {
     return position == null || position.isEmpty ? name : '$name, $position';
   }
 
-  /// Menyimpan perubahan profil milik sendiri (nama, email login, nomor HP).
-  /// Unit kerja dan peran tidak dapat diubah dari sini.
+  
+  
   Future<void> updateProfile({
     required String name,
     required String email,
@@ -113,7 +113,7 @@ class ProfileRepository {
   }
 }
 
-/// Raised only when the identity call itself fails (auth expired / offline).
+
 class ProfileUnavailable implements Exception {
   const ProfileUnavailable();
   @override

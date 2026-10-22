@@ -1,9 +1,9 @@
 import 'package:face_absen_mobile/core/validation/password_policy.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-/// L4 — client-side validators mirror the server policy exactly
-/// (`backend/src/auth/password.ts`: min-8 + lower + upper + digit,
-/// `AUTH_POLICY.password.minLength = 8`), with Indonesian messages.
+
+
+
 void main() {
   group('validateNewPassword', () {
     test('empty is required', () {

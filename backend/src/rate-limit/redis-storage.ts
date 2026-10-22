@@ -8,18 +8,14 @@ interface ThrottlerRecord {
   timeToBlockExpire: number;
 }
 
-/** Minimal surface the storage needs (ioredis satisfies this; fakes do too). */
+ 
 export interface RateStore {
   incr(key: string): Promise<number>;
   expire(key: string, seconds: number): Promise<unknown>;
   ttl(key: string): Promise<number>;
 }
 
-/**
- * STEP 25 — shared rate-limit storage for multi-instance production.
- * Fixed window per throttler key. Fails OPEN with a warning if Redis is
- * unreachable (a limiter outage must not become a self-inflicted DoS).
- */
+ 
 export class RedisThrottlerStorage implements ThrottlerStorage {
   private readonly logger = new Logger(RedisThrottlerStorage.name);
 

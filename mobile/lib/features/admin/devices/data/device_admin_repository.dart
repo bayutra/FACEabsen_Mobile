@@ -2,10 +2,10 @@ import 'package:dio/dio.dart';
 
 import '../domain/device_admin_models.dart';
 
-/// Endpoint perangkat untuk ADMIN / SUPER_ADMIN.
-///
-/// Backend: GET /devices (role SUPER_ADMIN untuk daftar), POST /devices/:id/
-/// activate (ADMIN), /revoke dan /mark-lost (SUPER_ADMIN).
+
+
+
+
 class DeviceAdminRepository {
   DeviceAdminRepository({required Dio dio}) : _dio = dio;
 
@@ -40,7 +40,7 @@ class DeviceAdminRepository {
     );
   }
 
-  /// Mengaktifkan perangkat PENDING; perangkat aktif lama otomatis dicabut.
+  
   Future<void> activate(String id) async {
     await _dio.post('/devices/$id/activate', data: <String, dynamic>{});
   }

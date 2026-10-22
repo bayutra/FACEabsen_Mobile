@@ -21,7 +21,7 @@ describe('IntegrityService', () => {
   it('accepts a trusted device+app verdict (genuine Play shapes)', () => {
     const svc = new IntegrityService(cfg({ ANDROID_PACKAGE_NAME: 'com.rs.face_absen' }));
     expect(svc.verify(token(good()), 'ANDROID')).toEqual({ ok: true, signatureVerified: false });
-    // Array form for the app verdict is accepted too.
+    
     expect(
       svc.verify(token(good({ appIntegrity: ['PLAY_RECOGNIZED'] })), 'ANDROID').ok,
     ).toBe(true);
@@ -59,14 +59,14 @@ describe('IntegrityService', () => {
 
   it('fail-closed gaps (Tahap 3): missing exp, missing verdicts, forged token', () => {
     const svc = new IntegrityService(cfg({ ANDROID_PACKAGE_NAME: 'com.rs.face_absen' }));
-    // No exp: never-expires tokens are treated as expired.
+    
     expect(svc.verify(token(good({ exp: undefined })), 'ANDROID').reason).toBe('EXPIRED');
-    // Omitted verdict arrays no longer pass.
+    
     const { deviceIntegrity: _d, ...noDevice } = good();
     expect(svc.verify(token(noDevice), 'ANDROID').reason).toBe('DEVICE_NOT_TRUSTED');
     const { appIntegrity: _a, ...noApp } = good();
     expect(svc.verify(token(noApp), 'ANDROID').reason).toBe('APP_NOT_RECOGNIZED');
-    // A hand-minted token with honest-looking claims but no package fails.
+    
     expect(svc.verify(token(good({ packageName: undefined })), 'ANDROID').reason).toBe(
       'WRONG_PACKAGE',
     );
@@ -74,7 +74,7 @@ describe('IntegrityService', () => {
 
   it('strict mode without a configured package rejects claimed tokens', () => {
     const strict = new IntegrityService(cfg({ INTEGRITY_STRICT: 'true' }));
-    // Misconfiguration must not silently pass every token.
+    
     expect(strict.verify(token(good()), 'ANDROID').reason).toBe('WRONG_PACKAGE');
   });
 

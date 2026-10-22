@@ -1,17 +1,8 @@
-/**
- * STEP 6 — pure shift time math (PRD §20). No I/O, fully unit-tested.
- * Night shifts (e.g. 23:00 → 07:00) span two calendar days but count as ONE
- * shift anchored on workDate (the shift START date).
- *
- * Hospital-timezone evaluation: `workDate` is a calendar date in the hospital
- * zone (default Asia/Jakarta, configurable via HOSPITAL_TZ). Day anchors are
- * the UTC instant of local midnight in that zone. Callers that omit
- * `timeZone` get legacy UTC behaviour (kept for unit-test compatibility).
- */
+ 
 
 export interface ShiftLike {
-  startTime: string; // HH:mm
-  endTime: string; // HH:mm
+  startTime: string; 
+  endTime: string; 
   overnight: boolean;
   gracePeriodMin: number;
   lateThresholdMin: number;
@@ -24,7 +15,7 @@ export function parseHHmm(value: string): number {
   return Number(m[1]) * 60 + Number(m[2]);
 }
 
-/** True when the wall-clock interval crosses midnight. */
+ 
 export function isOvernightRange(startTime: string, endTime: string): boolean {
   return parseHHmm(endTime) <= parseHHmm(startTime);
 }
@@ -33,8 +24,8 @@ function dayAnchor(workDate: string, timeZone = 'UTC'): number {
   const utcMidnight = Date.parse(`${workDate}T00:00:00.000Z`);
   if (Number.isNaN(utcMidnight)) throw new Error(`Invalid workDate: ${workDate}`);
   if (timeZone === 'UTC') return utcMidnight;
-  // UTC instant of local midnight in `timeZone`. Refined twice so DST
-  // transitions resolve to the correct offset.
+  
+  
   let guess = utcMidnight;
   for (let i = 0; i < 2; i++) {
     guess = utcMidnight - tzOffsetMs(timeZone, new Date(guess));
@@ -42,7 +33,7 @@ function dayAnchor(workDate: string, timeZone = 'UTC'): number {
   return guess;
 }
 
-/** Offset (ms) of `timeZone` ahead of UTC at `date` (negative when behind). */
+ 
 function tzOffsetMs(timeZone: string, date: Date): number {
   const dtf = new Intl.DateTimeFormat('en-US', {
     timeZone,
@@ -56,7 +47,7 @@ function tzOffsetMs(timeZone: string, date: Date): number {
   });
   const parts: Record<string, string> = {};
   for (const p of dtf.formatToParts(date)) parts[p.type] = p.value;
-  // Some ICU builds render midnight as 24:00 — normalise to 00:00.
+  
   const hour = parts.hour === '24' ? '00' : parts.hour;
   const asUTC = Date.parse(
     `${parts.year}-${parts.month}-${parts.day}T${hour}:${parts.minute}:${parts.second}Z`,
@@ -65,7 +56,7 @@ function tzOffsetMs(timeZone: string, date: Date): number {
   return asUTC - date.getTime();
 }
 
-/** Hospital-local calendar key (YYYY-MM-DD) for an instant. */
+ 
 export function workDateKeyIn(now: Date, timeZone = 'UTC'): string {
   return new Intl.DateTimeFormat('en-CA', {
     timeZone,
@@ -75,7 +66,7 @@ export function workDateKeyIn(now: Date, timeZone = 'UTC'): string {
   }).format(now);
 }
 
-/** Concrete [start, end) window for a shift on a workDate. */
+ 
 export function shiftWindow(workDate: string, shift: ShiftLike, timeZone = 'UTC'): { start: Date; end: Date } {
   const startMin = parseHHmm(shift.startTime);
   const endMin = parseHHmm(shift.endTime);

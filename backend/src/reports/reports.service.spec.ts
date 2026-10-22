@@ -52,7 +52,7 @@ describe('ReportsService scope + daily', () => {
     const all = (await svc.daily('2026-10-05', 'u-adm', ['ADMIN'], 'json')) as unknown as {
       report: { rows: string[][] };
     };
-    // admin scope includes everyone (e-x unscheduled → absent not listed; only roster rows)
+    
     expect(all.report.rows.length).toBeGreaterThanOrEqual(1);
 
     const csv = (await svc.daily('2026-10-05', 'u-sup', ['SUPERVISOR'], 'csv')) as { filename: string; body: string };
@@ -89,11 +89,11 @@ describe('ReportsService scope + daily', () => {
 
   it('ADMIN scope is confined to the caller facility (Tahap 2)', async () => {
     const svc = new ReportsService(makePrisma());
-    // u-adm sits in h1: e-x (h2) must be excluded, h1 staff included.
+    
     const ids = await svc.scopeOf('u-adm', ['ADMIN']);
     expect(ids).toEqual(expect.arrayContaining(['e-sup', 'e-a', 'e-adm']));
     expect(ids).not.toContain('e-x');
-    // SUPER_ADMIN stays global.
+    
     await expect(svc.scopeOf('u-adm', ['SUPER_ADMIN'])).resolves.toBeNull();
   });
 });

@@ -1,4 +1,4 @@
-/// STEP 16 — leave models (pure) + form helpers.
+
 const Map<String, String> leaveTypes = {
   'CUTI': 'Cuti Tahunan',
   'SAKIT': 'Cuti Sakit',
@@ -14,14 +14,14 @@ const Map<String, String> leaveStatusLabels = {
   'CANCELLED': 'Dibatalkan',
 };
 
-/// Formats a Date as YYYY-MM-DD for the API.
+
 String toDateKey(DateTime d) =>
     '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
 
-/// Client-side range check (server re-validates + overlap-guards).
+
 bool validLeaveRange(String startKey, String endKey) => endKey.compareTo(startKey) >= 0;
 
-/// Inclusive day count for the summary line.
+
 int leaveDays(String startKey, String endKey) {
   final DateTime s = DateTime.parse(startKey);
   final DateTime e = DateTime.parse(endKey);

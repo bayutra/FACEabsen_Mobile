@@ -1,9 +1,9 @@
-/// Client-side mirror of the server password policy
-/// (`backend/src/auth/password.ts` + `AUTH_POLICY.password.minLength`):
-/// minimal 8 karakter, wajib mengandung huruf kecil, huruf besar, dan angka.
-///
-/// Aturan ini hanya validasi awal agar pengguna mendapat umpan balik langsung;
-/// server tetap menjadi sumber kebenaran dan menolak password lemah.
+
+
+
+
+
+
 String? validateCurrentPassword(String? value) {
   if (value == null || value.isEmpty) return 'Password saat ini wajib diisi.';
   return null;

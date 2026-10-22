@@ -9,7 +9,7 @@ export class AppService {
     return 'Hello World!';
   }
 
-  /** Liveness + DB readiness for compose healthchecks and monitoring. */
+   
   async health(): Promise<{ status: string; db: string; uptimeSec: number }> {
     try {
       await this.prisma.$queryRaw`SELECT 1`;
@@ -19,11 +19,7 @@ export class AppService {
     }
   }
 
-  /**
-   * Liveness only (L4): no DB checkout, so a saturated/dead database never
-   * takes the liveness probe down with it. Readiness stays on `GET /health`,
-   * which docker-compose and scripts/smoke-api.sh depend on.
-   */
+   
   live(): { status: string } {
     return { status: 'ok' };
   }

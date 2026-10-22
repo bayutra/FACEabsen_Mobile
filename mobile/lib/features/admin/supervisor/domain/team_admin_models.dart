@@ -1,11 +1,11 @@
-// Model tim supervisor untuk layar admin Tim Supervisor.
-//
-// Anggota tim dipakai baik dari `GET /supervisor/team` (tanpa `days`)
-// maupun dari `GET /supervisor/summary` (dengan `days` berisi status per
-// tanggal). Parsing dibuat defensif karena bentuk respons backend bisa
-// berubah antar versi.
 
-/// Status satu hari kerja karyawan.
+
+
+
+
+
+
+
 class TeamMember {
   const TeamMember({
     required this.id,
@@ -22,8 +22,8 @@ class TeamMember {
   final String? position;
   final String departmentName;
 
-  /// Peta `yyyy-MM-dd` -> status (`PRESENT`, `LATE`, `ABSENT`, `ON_LEAVE`,
-  /// `OFF`). Kosong untuk respons `/supervisor/team`.
+  
+  
   final Map<String, String> days;
 
   String get subtitle {
@@ -42,7 +42,7 @@ class TeamMember {
   int get onLeaveCount => _count('ON_LEAVE');
   int get offCount => _count('OFF');
 
-  /// Ringkasan satu baris untuk subtitle daftar anggota.
+  
   String get daySummary {
     if (days.isEmpty) return '';
     return 'Hadir $presentCount Â· Terlambat $lateCount Â· Absen '
@@ -73,7 +73,7 @@ class TeamMember {
   }
 }
 
-/// Total agregat satu rentang pada `GET /supervisor/summary`.
+
 class TeamTotals {
   const TeamTotals({
     required this.members,
@@ -98,7 +98,7 @@ class TeamTotals {
       );
 }
 
-/// Respons `GET /supervisor/summary`.
+
 class TeamSummary {
   const TeamSummary({
     required this.from,
@@ -131,7 +131,7 @@ class TeamSummary {
   }
 }
 
-/// Satu baris presensi tim dari `GET /supervisor/attendance`.
+
 class TeamAttendance {
   const TeamAttendance({
     required this.id,
@@ -173,7 +173,7 @@ class TeamAttendance {
   }
 }
 
-/// Respons `GET /supervisor/team/{id}`: `{member, recent}`.
+
 class TeamMemberDetail {
   const TeamMemberDetail({required this.member, required this.recent});
 

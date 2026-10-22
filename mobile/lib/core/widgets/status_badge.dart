@@ -4,7 +4,7 @@ import '../theme/app_colors.dart';
 import 'stitch.dart';
 import '../../features/device/domain/device_models.dart';
 
-/// Stitch status pill (28px height, full radius, label-md).
+
 class StatusBadge extends StatelessWidget {
   const StatusBadge({super.key, required this.status});
 

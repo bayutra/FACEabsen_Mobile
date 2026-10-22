@@ -5,10 +5,10 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'fakes.dart';
 
-/// Pembagian layar per tab Stitch (Beranda, Riwayat, Jadwal, Perangkat,
-/// Profil): presensi & pengajuan berjalan sebagai alur linear, bukan tab.
-/// Test ini mengunci tiap entry point agar distribusi tidak diam-diam
-/// kembali menjadi junk drawer.
+
+
+
+
 void main() {
   group('perangkat (tab Perangkat)', () {
     testWidgets('menampilkan status perangkat, bukan pengajuan penggantian',

@@ -5,9 +5,9 @@ import '../../../core/widgets/stitch.dart';
 import '../domain/face_quality.dart';
 import 'face_guidance_card.dart';
 
-/// Stitch `pendaftaran_wajah_kendala_pemindaian` — 3 skenario
-/// Blur / Wajah Ganda / Wajah Hilang, viewport dark 24px, grid mutu 2x2,
-/// diagnostik amber, CTA 52px + ghost 48px.
+
+
+
 class FaceScanIssueScreen extends StatefulWidget {
   const FaceScanIssueScreen(
       {super.key,
@@ -20,13 +20,13 @@ class FaceScanIssueScreen extends StatefulWidget {
   final VoidCallback? onRetry;
   final VoidCallback? onHelp;
 
-  /// Tab awal 0=Blur, 1=Wajah Ganda, 2=Wajah Hilang.
+  
   final int initialTab;
   final FaceGate? gate;
   final String? message;
 
-  /// Petakan hasil diagnosis pipeline ke tab yang relevan — tidak menebak:
-  /// gate piksel/jarak masuk ke Blur, sisanya sesuai hitungan wajah.
+  
+  
   static int tabForGate(FaceGate gate) => switch (gate) {
         FaceGate.multipleFaces => 1,
         FaceGate.noFace => 2,
