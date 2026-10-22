@@ -10,6 +10,8 @@ const ROLE_PERMISSIONS = {
     'attendance:read:self',
     'correction:create:self',
     'leave:create:self',
+    'handover:create:self',
+    'handover:read:self',
   ],
   SUPERVISOR: [
     'attendance:read:team',
@@ -20,6 +22,8 @@ const ROLE_PERMISSIONS = {
     // SDM terbatas: service layer membatasi ke unit/tim sendiri.
     'employee:read',
     'employee:update',
+    'handover:read:team',
+    'handover:acknowledge:team',
   ],
   ADMIN: [
     'employee:create',

@@ -84,6 +84,7 @@ model Hospital {
   updatedAt            DateTime     @updatedAt @map("updated_at")
   departments          Department[]
   shifts               Shift[]
+  handovers            Handover[]
 
   @@map("hospitals")
 }
@@ -96,6 +97,7 @@ model Department {
   createdAt  DateTime   @default(now()) @map("created_at")
   updatedAt  DateTime   @updatedAt @map("updated_at")
   employees  Employee[]
+  handovers  Handover[]
 
   @@unique([hospitalId, name])
   @@index([hospitalId])
@@ -124,6 +126,7 @@ model User {
   reviewedDevChanges  DeviceChangeRequest[] @relation("ChangeReviewer")
   reviewedCorrections CorrectionRequest[]   @relation("CorrectionReviewer")
   reviewedLeaves      LeaveRequest[]        @relation("LeaveReviewer")
+  acknowledgedHandovers Handover[] @relation("HandoverAcknowledger")
 
   @@map("users")
 }
@@ -212,6 +215,8 @@ model Employee {
   attendances   Attendance[]
   corrections   CorrectionRequest[]
   leaves        LeaveRequest[]
+  handoversFrom Handover[] @relation("HandoverFrom")
+  handoversTo   Handover[] @relation("HandoverTo")
 
   @@index([departmentId])
   @@index([supervisorId])
@@ -466,4 +471,37 @@ model Consent {
   @@unique([employeeId, purpose])
   @@index([employeeId])
   @@map("consents")
+}
+
+
+// ---------------- Handover (operan bangsal jaga) ----------------
+
+model Handover {
+  id               String     @id @default(cuid())
+  hospitalId       String     @map("hospital_id")
+  hospital         Hospital   @relation(fields: [hospitalId], references: [id], onDelete: Restrict)
+  departmentId     String?    @map("department_id")
+  department       Department? @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  fromEmployeeId   String     @map("from_employee_id")
+  fromEmployee     Employee   @relation("HandoverFrom", fields: [fromEmployeeId], references: [id], onDelete: Restrict)
+  toEmployeeId     String?    @map("to_employee_id")
+  toEmployee       Employee?  @relation("HandoverTo", fields: [toEmployeeId], references: [id], onDelete: SetNull)
+  title            String
+  patientSummary   String?    @map("patient_summary")
+  pendingTasks     String?    @map("pending_tasks")
+  medications      String?    @map("medications")
+  incidents        String?    @map("incidents")
+  notes            String?
+  status           String     @default("PENDING")
+  acknowledgedById  String?    @map("acknowledged_by_id")
+  acknowledgedBy   User?      @relation("HandoverAcknowledger", fields: [acknowledgedById], references: [id], onDelete: SetNull)
+  acknowledgedAt   DateTime?  @map("acknowledged_at")
+  createdAt        DateTime   @default(now()) @map("created_at")
+  updatedAt        DateTime   @updatedAt @map("updated_at")
+
+  @@index([hospitalId])
+  @@index([departmentId])
+  @@index([fromEmployeeId])
+  @@index([status])
+  @@map("handovers")
 }

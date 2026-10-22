@@ -11,6 +11,8 @@ export const PERMISSIONS = [
   'attendance:read:self',
   'correction:create:self',
   'leave:create:self',
+  'handover:create:self',
+  'handover:read:self',
 
   'attendance:read:team',
   'attendance:approve:team',
@@ -44,6 +46,8 @@ export const ROLE_PERMISSIONS: Record<RoleName, string[]> = {
     'attendance:read:self',
     'correction:create:self',
     'leave:create:self',
+    'handover:create:self',
+    'handover:read:self',
   ],
   SUPERVISOR: [
     'attendance:read:team',
@@ -54,6 +58,8 @@ export const ROLE_PERMISSIONS: Record<RoleName, string[]> = {
 
     'employee:read',
     'employee:update',
+    'handover:read:team',
+    'handover:acknowledge:team',
   ],
   ADMIN: [
     'employee:create',

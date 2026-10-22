@@ -21,6 +21,7 @@ class HomeDashboard extends StatefulWidget {
     required this.onOpenProfile,
     this.onOpenHistory,
     this.onOpenAdmin,
+    this.onOpenHandovers,
   });
 
   final AttendanceRepository attendance;
@@ -36,6 +37,7 @@ class HomeDashboard extends StatefulWidget {
   final VoidCallback? onOpenHistory;
 
   final VoidCallback? onOpenAdmin;
+  final VoidCallback? onOpenHandovers;
 
   @override
   State<HomeDashboard> createState() => _HomeDashboardState();
@@ -893,6 +895,16 @@ class _HomeDashboardState extends State<HomeDashboard> {
                 bgColor: AppColors.surfaceLow,
                 onTap: widget.onOpenSchedule,
               ),
+              if (widget.onOpenHandovers != null) ...<Widget>[
+                const SizedBox(width: 8),
+                _gridItem(
+                  icon: Icons.swap_horiz,
+                  label: 'Operan Jaga',
+                  color: AppColors.secondary,
+                  bgColor: AppColors.infoTint,
+                  onTap: widget.onOpenHandovers!,
+                ),
+              ],
             ],
           ),
         ],

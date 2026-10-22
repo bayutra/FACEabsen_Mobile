@@ -9,6 +9,7 @@ import { AuditModule } from './audit/audit.module.js';
 import { AttendanceModule } from './attendance/attendance.module.js';
 import { AuthModule } from './auth/auth.module.js';
 import { CorrectionsModule } from './corrections/corrections.module.js';
+import { HandoversModule } from './handovers/handovers.module.js';
 import { LeavesModule } from './leaves/leaves.module.js';
 import { PrivacyModule } from './privacy/privacy.module.js';
 import { ReportsModule } from './reports/reports.module.js';
@@ -57,6 +58,7 @@ import { UsersModule } from './users/users.module.js';
     AuditModule,
     AttendanceModule,
     CorrectionsModule,
+    HandoversModule,
     LeavesModule,
     PrivacyModule,
     ReportsModule,

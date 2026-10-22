@@ -20,6 +20,7 @@ import '../../features/leave/presentation/leave_list_screen.dart';
 import '../../features/profile/data/profile_repository.dart';
 import '../../features/profile/presentation/profile_screen.dart';
 import '../../features/home/presentation/home_dashboard.dart';
+import '../../features/handovers/presentation/handover_list_screen.dart';
 import '../../features/preflight/data/preflight_repository.dart';
 import '../../features/preflight/presentation/preflight_screen.dart';
 import '../../features/schedule/data/schedule_repository.dart';
@@ -275,6 +276,7 @@ class _HomeShellState extends State<HomeShell> {
         onOpenAdmin: canOpenAdminArea(_roles)
             ? () => _push(AdminHomeScreen(dio: widget.dio, roles: _roles))
             : null,
+        onOpenHandovers: () => _push(HandoverListScreen(dio: widget.dio)),
       ),
       HistoryScreen(
         attendance: widget.attendance,
