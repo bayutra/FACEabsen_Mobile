@@ -1,156 +1,132 @@
 import 'dart:convert';
 
 import '../../../core/storage/secure_store.dart';
+import 'punch_models.dart';
+import 'signature_v1.dart';
 
-enum PunchKind { checkIn, checkOut }
+class OutboxFullException implements Exception {
+  OutboxFullException([this.message = 'Outbox penuh (maks 50)']);
+  final String message;
+  @override
+  String toString() => 'OutboxFullException: $message';
+}
 
 class OutboxEntry {
   OutboxEntry({
     required this.kind,
-    required this.embedding,
-    required this.liveness,
-    required this.deviceId,
-    required this.compromised,
-    this.integrityToken,
+    required this.payload,
+    required this.requestId,
+    required this.captureAt,
     required this.queuedAt,
+    this.attempts = 0,
+    this.lastError,
+    this.needsAction = false,
   });
 
+  factory OutboxEntry.fromPrepared(PreparedPunch prepared) => OutboxEntry(
+        kind: prepared.kind,
+        payload: Map<String, Object?>.from(prepared.payload),
+        requestId: prepared.requestId,
+        captureAt: prepared.captureAt,
+        queuedAt: prepared.queuedAt ?? DateTime.now().toUtc(),
+        attempts: 0,
+        needsAction: false,
+      );
+
   final PunchKind kind;
-  final List<double> embedding;
-  final Map<String, Object> liveness;
-  final String deviceId;
-  final bool compromised;
-  final String? integrityToken;
+  final Map<String, Object?> payload;
+  final String requestId;
+  final DateTime captureAt;
   final DateTime queuedAt;
+  int attempts;
+  String? lastError;
+  bool needsAction;
 
   Map<String, dynamic> toJson() => <String, dynamic>{
         'kind': kind.name,
-        'embedding': embedding,
-        'liveness': _jsonSafe(liveness),
-        'deviceId': deviceId,
-        'compromised': compromised,
-        if (integrityToken != null && integrityToken!.isNotEmpty)
-          'integrityToken': integrityToken,
+        'payload': payload,
+        'requestId': requestId,
+        'captureAt': captureAt.toUtc().toIso8601String(),
         'queuedAt': queuedAt.toUtc().toIso8601String(),
+        'attempts': attempts,
+        if (lastError != null) 'lastError': lastError,
+        'needsAction': needsAction,
       };
 
   static OutboxEntry? fromJson(Map<String, dynamic> json) {
-    try {
-      final Object? kindRaw = json['kind'];
-      if (kindRaw is! String) return null;
-      final PunchKind kind = PunchKind.values.byName(kindRaw);
-
-      final Object? embRaw = json['embedding'];
-      if (embRaw is! List || embRaw.isEmpty) return null;
-      final List<double> embedding = <double>[];
-      for (final Object? e in embRaw) {
-        if (e is! num || !e.isFinite) return null;
-        embedding.add(e.toDouble());
-      }
-
-      final Object? liveRaw = json['liveness'];
-      if (liveRaw is! Map) return null;
-      final Map<String, Object> liveness = Map<String, dynamic>.from(liveRaw)
-          .map((k, v) => MapEntry(k, v as Object));
-      if (liveness['passed'] is! bool) return null;
-
-      final Object? deviceRaw = json['deviceId'];
-      if (deviceRaw is! String || deviceRaw.isEmpty) return null;
-      final Object? compRaw = json['compromised'];
-      if (compRaw is! bool) return null;
-      final Object? tokenRaw = json['integrityToken'];
-      if (tokenRaw != null && tokenRaw is! String) return null;
-      final DateTime? queuedAt = DateTime.tryParse('${json['queuedAt']}');
-      if (queuedAt == null) return null;
-
-      return OutboxEntry(
-        kind: kind,
-        embedding: embedding,
-        liveness: liveness,
-        deviceId: deviceRaw,
-        compromised: compRaw,
-        integrityToken: tokenRaw as String?,
-        queuedAt: queuedAt,
-      );
-    } catch (_) {
-      return null;
-    }
-  }
-
-  static Object? _jsonSafe(Object? value) {
-    if (value == null || value is String || value is num || value is bool) {
-      return value;
-    }
-    if (value is List) return value.map(_jsonSafe).toList();
-    if (value is Map) {
-      final Map<String, Object?> out = <String, Object?>{};
-      value.forEach((k, v) {
-        if (k is String) out[k] = _jsonSafe(v);
-      });
-      return out;
-    }
-    return value.toString();
+    final Object? kindRaw = json['kind'];
+    final PunchKind? kind = PunchKind.values
+        .cast<PunchKind?>()
+        .firstWhere((k) => k?.name == kindRaw, orElse: () => null);
+    if (kind == null) return null;
+    final Object? payloadRaw = json['payload'];
+    final Map<String, Object?> payload = payloadRaw is Map
+        ? Map<String, Object?>.from(payloadRaw)
+        : <String, Object?>{};
+    final String requestId =
+        (json['requestId'] as String?) ?? (json['requestId'] as String? ?? '');
+    final String? captureRaw = json['captureAt'] as String?;
+    final DateTime captureAt = captureRaw != null
+        ? DateTime.parse(captureRaw).toUtc()
+        : DateTime.now().toUtc();
+    final String? queuedRaw = json['queuedAt'] as String?;
+    final DateTime queuedAt = queuedRaw != null
+        ? DateTime.parse(queuedRaw).toUtc()
+        : captureAt;
+    final bool legacy = payload.isEmpty && requestId.isEmpty;
+    return OutboxEntry(
+      kind: kind,
+      payload: payload,
+      requestId: requestId.isEmpty ? 'legacy-${captureAt.millisecondsSinceEpoch}' : requestId,
+      captureAt: captureAt,
+      queuedAt: queuedAt,
+      attempts: (json['attempts'] as num?)?.toInt() ?? 0,
+      lastError: json['lastError'] as String?,
+      needsAction: legacy ? true : (json['needsAction'] as bool? ?? false),
+    )..lastError = legacy ? 'LEGACY_ENTRY' : (json['lastError'] as String?);
   }
 }
 
 class OutboxRepository {
-  OutboxRepository({required SecureStore store}) : _store = store;
+  OutboxRepository({required this.store});
 
-  final SecureStore _store;
-
-  static const int maxEntries = 10;
+  final SecureStore store;
+  static const int maxEntries = 50;
 
   Future<List<OutboxEntry>> load() async {
-    final String? raw = await _store.readOutbox();
+    final String? raw = await store.readOutbox();
     if (raw == null || raw.isEmpty) return <OutboxEntry>[];
     try {
-      final Object? decoded = jsonDecode(raw);
+      final Object? decoded = json.decode(raw);
       if (decoded is! List) return <OutboxEntry>[];
-      final List<OutboxEntry> entries = <OutboxEntry>[];
-      var dropped = 0;
-      for (final Object? e in decoded) {
-        if (e is! Map) {
-          dropped++;
-          continue;
-        }
-        final OutboxEntry? entry =
-            OutboxEntry.fromJson(Map<String, dynamic>.from(e));
-        if (entry == null) {
-          dropped++;
-        } else {
-          entries.add(entry);
+      final List<OutboxEntry> out = <OutboxEntry>[];
+      for (final Object? item in decoded) {
+        if (item is Map<String, dynamic>) {
+          final OutboxEntry? e = OutboxEntry.fromJson(item);
+          if (e != null) out.add(e);
         }
       }
-      if (dropped > 0) {
-        try {
-          await replaceAll(entries);
-        } catch (_) {}
-      }
-      return entries;
+      return out;
     } catch (_) {
       return <OutboxEntry>[];
     }
   }
 
-  Future<int> count() async => (await load()).length;
-
   Future<void> save(OutboxEntry entry) async {
-    final List<OutboxEntry> entries = await load();
-    entries.add(entry);
-    while (entries.length > maxEntries) {
-      entries.removeAt(0);
+    final List<OutboxEntry> current = await load();
+    if (current.length >= maxEntries) {
+      throw OutboxFullException();
     }
-    await replaceAll(entries);
+    current.add(entry);
+    await store.writeOutbox(jsonEncode(current.map((e) => e.toJson()).toList()));
   }
 
   Future<void> replaceAll(List<OutboxEntry> entries) async {
-    final List<OutboxEntry> capped = entries.length <= maxEntries
-        ? entries
-        : entries.sublist(entries.length - maxEntries);
-    await _store.writeOutbox(
-      jsonEncode(capped.map((e) => e.toJson()).toList()),
-    );
+    if (entries.length > maxEntries) throw OutboxFullException();
+    await store.writeOutbox(jsonEncode(entries.map((e) => e.toJson()).toList()));
   }
 
-  Future<void> clear() => _store.clearOutbox();
+  Future<int> count() async => (await load()).length;
+
+  Future<void> clear() async => store.clearOutbox();
 }

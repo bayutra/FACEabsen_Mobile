@@ -77,12 +77,35 @@ class SecureStore {
       _storage.write(key: _baseUrlKey, value: v);
   Future<void> clearApiBaseUrl() => _storage.delete(key: _baseUrlKey);
 
-  static const outboxKey = 'attendance_outbox_v1';
+  static const _noncePoolKey = 'attendance_nonce_pool';
 
-  Future<String?> readOutbox() => _storage.read(key: outboxKey);
-  Future<void> writeOutbox(String v) =>
-      _storage.write(key: outboxKey, value: v);
-  Future<void> clearOutbox() => _storage.delete(key: outboxKey);
+  Future<String> _outboxKey() async => 'attendance_outbox_v1_${await _deviceScope()}';
+
+  Future<String?> readOutbox() async =>
+      _storage.read(key: await _outboxKey());
+
+  Future<void> writeOutbox(String v) async =>
+      _storage.write(key: await _outboxKey(), value: v);
+
+  Future<void> clearOutbox() async =>
+      _storage.delete(key: await _outboxKey());
+
+  Future<List<String>?> readNoncePool() async {
+    final String? raw =
+        await _storage.read(key: '$_noncePoolKey\_${await _deviceScope()}');
+    if (raw == null || raw.isEmpty) return null;
+    try {
+      final Object? decoded = json.decode(raw);
+      if (decoded is List) return decoded.cast<String>();
+    } catch (_) {}
+    return null;
+  }
+
+  Future<void> writeNoncePool(List<String> pool) async =>
+      _storage.write(key: '$_noncePoolKey\_${await _deviceScope()}', value: json.encode(pool));
+
+  Future<void> clearNoncePool() async =>
+      _storage.delete(key: '$_noncePoolKey\_${await _deviceScope()}');
 
   Future<void> clearDevice() async {
     await _storage.delete(key: '${_deviceIdKey}_${await _deviceScope()}');

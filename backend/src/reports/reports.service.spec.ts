@@ -173,7 +173,7 @@ describe('ReportsService scope + daily', () => {
         ['EMPLOYEE'],
         'json',
       ),
-    ).rejects.toThrow('Not authorized');
+    ).rejects.toThrow('Employee not found');
     await expect(
       svc.employee(
         'e-a',
