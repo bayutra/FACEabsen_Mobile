@@ -1,13 +1,66 @@
-import { createPublicKey, verify } from 'node:crypto';
+import { createHash, createPublicKey, verify } from 'node:crypto';
 import { workDateKeyIn } from '../shifts/shift-time.js';
 
 const SPKI_PREFIX = Buffer.from('302a300506032b6570032100', 'hex');
+
+export interface LivenessAttestation {
+  passed: boolean;
+  mode?: 'active' | 'passive';
+  completedAt: string;
+  score: number;
+  padScore?: number;
+  challenges?: string[];
+}
+
+export interface SignPayloadV1 {
+  action: 'check-in' | 'check-out';
+  deviceId: string;
+  requestId: string;
+  captureAt: string;
+  queuedAt?: string;
+  nonce: string;
+  faceEmbedding: number[];
+  liveness: LivenessAttestation;
+}
 
 export function buildSignMessage(
   requestId: string,
   requestTimestamp: string,
 ): string {
   return `${requestId}.${requestTimestamp}`;
+}
+
+export function canonicalEmbedding(values: number[]): string {
+  return values.map((v) => v.toFixed(6)).join(',');
+}
+
+export function canonicalLiveness(att: LivenessAttestation): string {
+  const mode = att.mode ?? 'active';
+  const score = typeof att.score === 'number' ? att.score : 0;
+  const pad = typeof att.padScore === 'number' ? att.padScore : 0;
+  return [
+    `mode:${mode}`,
+    `passed:${att.passed ? 1 : 0}`,
+    `completedAt:${att.completedAt}`,
+    `score:${score.toFixed(6)}`,
+    `padScore:${pad.toFixed(6)}`,
+    `challenges:${(att.challenges ?? []).join(',')}`,
+  ].join('|');
+}
+
+export function buildSignMessageV1(payload: SignPayloadV1): string {
+  const sha = (s: string) => createHash('sha256').update(s, 'utf8').digest('hex');
+  return [
+    'v1',
+    payload.action,
+    payload.deviceId,
+    payload.requestId,
+    payload.captureAt,
+    payload.queuedAt ?? '',
+    payload.nonce,
+    sha(canonicalEmbedding(payload.faceEmbedding)),
+    sha(canonicalLiveness(payload.liveness)),
+  ].join('|');
 }
 
 export function verifyDeviceSignature(
@@ -119,4 +172,45 @@ export function hospitalWorkDate(
 ): { date: Date; key: string } {
   const key = workDateKeyIn(now, timeZone);
   return { date: new Date(`${key}T00:00:00.000Z`), key };
+}
+
+export type PunchTimeReject = 'LIVENESS_STALE' | 'CAPTURE_IN_FUTURE' | 'QUEUED_TIME_INVALID';
+
+export function validatePunchTime(input: {
+  captureAt: string;
+  queuedAt?: string;
+  livenessCompletedAt: string;
+  now: Date;
+  maxOnlineAgeMin: number;
+  maxOfflineAgeHours: number;
+}): { ok: true; offline: boolean } | { ok: false; reason: PunchTimeReject } {
+  const capture = new Date(input.captureAt);
+  const completed = new Date(input.livenessCompletedAt);
+  if (Number.isNaN(capture.getTime()) || Number.isNaN(completed.getTime())) {
+    return { ok: false, reason: 'LIVENESS_STALE' };
+  }
+  if (capture.getTime() - input.now.getTime() > 2 * 60_000) {
+    return { ok: false, reason: 'CAPTURE_IN_FUTURE' };
+  }
+  const offline = Boolean(input.queuedAt);
+  let queued: Date | undefined;
+  if (input.queuedAt) {
+    queued = new Date(input.queuedAt);
+    if (Number.isNaN(queued.getTime())) {
+      return { ok: false, reason: 'QUEUED_TIME_INVALID' };
+    }
+    if (queued.getTime() < capture.getTime() || queued.getTime() > input.now.getTime()) {
+      return { ok: false, reason: 'QUEUED_TIME_INVALID' };
+    }
+  }
+  const maxAgeMs = offline
+    ? input.maxOfflineAgeHours * 3600_000
+    : input.maxOnlineAgeMin * 60_000;
+  if (input.now.getTime() - capture.getTime() > maxAgeMs) {
+    return { ok: false, reason: 'LIVENESS_STALE' };
+  }
+  if (offline && Math.abs(completed.getTime() - capture.getTime()) > 2 * 60_000) {
+    return { ok: false, reason: 'LIVENESS_STALE' };
+  }
+  return { ok: true, offline };
 }

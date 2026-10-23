@@ -165,3 +165,123 @@ describe('hospitalWorkDate', () => {
     expect(() => assertTimeZone('Jakarta')).toThrow('Invalid HOSPITAL_TZ');
   });
 });
+
+import {
+  buildSignMessageV1,
+  canonicalEmbedding,
+  canonicalLiveness,
+  validatePunchTime,
+} from './helpers.js';
+
+const liveness = {
+  passed: true,
+  mode: 'active' as const,
+  completedAt: '2026-10-23T07:00:00.000Z',
+  score: 0.987654321,
+  padScore: 0.5,
+  challenges: ['blink', 'turn_left'],
+};
+
+describe('signature v1', () => {
+  it('memformat embedding 6 desimal', () => {
+    expect(canonicalEmbedding([0.1, -0.25, 0.3333333333])).toBe(
+      '0.100000,-0.250000,0.333333',
+    );
+  });
+
+  it('memformat liveness deterministik', () => {
+    expect(canonicalLiveness(liveness)).toBe(
+      'mode:active|passed:1|completedAt:2026-10-23T07:00:00.000Z|score:0.987654|padScore:0.500000|challenges:blink,turn_left',
+    );
+  });
+
+  it('membangun pesan v1 persis', () => {
+    expect(
+      buildSignMessageV1({
+        action: 'check-in',
+        deviceId: 'd1',
+        requestId: '11111111-2222-3333-4444-555555555555',
+        captureAt: '2026-10-23T07:00:00.000Z',
+        nonce: 'nonce-abc',
+        faceEmbedding: [0.1, -0.25, 0.3333333333],
+        liveness,
+      }),
+    ).toBe(
+      'v1|check-in|d1|11111111-2222-3333-4444-555555555555|2026-10-23T07:00:00.000Z||nonce-abc|666a0811ed27009b72350c48071862ff9228939118c89672bc349194caef88fb|b019db2a3f847f4fc92123aaf7f1b77be6e5dd9a1ef9f1311a02d30bd0cde14f',
+    );
+  });
+});
+
+describe('validatePunchTime', () => {
+  const NOW = new Date('2026-10-23T08:00:00.000Z');
+  const at = (msAgo: number) => new Date(NOW.getTime() - msAgo).toISOString();
+  it('online 9 menit', () => {
+    expect(
+      validatePunchTime({
+        captureAt: at(9 * 60_000),
+        livenessCompletedAt: at(9 * 60_000),
+        now: NOW,
+        maxOnlineAgeMin: 10,
+        maxOfflineAgeHours: 24,
+      }),
+    ).toEqual({ ok: true, offline: false });
+  });
+  it('online 11 menit', () => {
+    expect(
+      validatePunchTime({
+        captureAt: at(11 * 60_000),
+        livenessCompletedAt: at(11 * 60_000),
+        now: NOW,
+        maxOnlineAgeMin: 10,
+        maxOfflineAgeHours: 24,
+      }),
+    ).toEqual({ ok: false, reason: 'LIVENESS_STALE' });
+  });
+  it('offline 23 jam', () => {
+    expect(
+      validatePunchTime({
+        captureAt: at(23 * 3600_000),
+        livenessCompletedAt: at(23 * 3600_000),
+        queuedAt: at(2 * 3600_000),
+        now: NOW,
+        maxOnlineAgeMin: 10,
+        maxOfflineAgeHours: 24,
+      }),
+    ).toEqual({ ok: true, offline: true });
+  });
+  it('offline 25 jam', () => {
+    expect(
+      validatePunchTime({
+        captureAt: at(25 * 3600_000),
+        livenessCompletedAt: at(25 * 3600_000),
+        queuedAt: at(2 * 3600_000),
+        now: NOW,
+        maxOnlineAgeMin: 10,
+        maxOfflineAgeHours: 24,
+      }),
+    ).toEqual({ ok: false, reason: 'LIVENESS_STALE' });
+  });
+  it('capture future 3 min', () => {
+    expect(
+      validatePunchTime({
+        captureAt: at(-3 * 60_000),
+        livenessCompletedAt: at(0),
+        now: NOW,
+        maxOnlineAgeMin: 10,
+        maxOfflineAgeHours: 24,
+      }),
+    ).toEqual({ ok: false, reason: 'CAPTURE_IN_FUTURE' });
+  });
+  it('queued before capture', () => {
+    expect(
+      validatePunchTime({
+        captureAt: at(2 * 3600_000),
+        livenessCompletedAt: at(2 * 3600_000),
+        queuedAt: at(3 * 3600_000),
+        now: NOW,
+        maxOnlineAgeMin: 10,
+        maxOfflineAgeHours: 24,
+      }),
+    ).toEqual({ ok: false, reason: 'QUEUED_TIME_INVALID' });
+  });
+});
