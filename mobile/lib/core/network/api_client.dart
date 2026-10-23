@@ -30,6 +30,13 @@ Duration parseRetryAfter(String? raw,
 
 Duration _rateJitter() => Duration(milliseconds: 100 + Random().nextInt(400));
 
+/// Header ini membuat ngrok (free plan) melewati halaman peringatan
+/// "You are about to visit..." yang berupa HTML 200, sehingga respons API
+/// tetap JSON. Aman dikirim ke server non-ngrok karena diabaikan.
+const Map<String, String> _ngrokBypassHeaders = <String, String>{
+  'ngrok-skip-browser-warning': 'true',
+};
+
 Dio createApiClient(
     {required SecureStore store, String baseUrl = Env.apiBaseUrl}) {
   final Dio dio = Dio(
@@ -37,7 +44,10 @@ Dio createApiClient(
       baseUrl: baseUrl,
       connectTimeout: const Duration(seconds: 10),
       receiveTimeout: const Duration(seconds: 15),
-      headers: {'Content-Type': 'application/json'},
+      headers: <String, String>{
+        'Content-Type': 'application/json',
+        ..._ngrokBypassHeaders,
+      },
     ),
   );
 
@@ -54,7 +64,10 @@ Dio createApiClient(
             baseUrl: dio.options.baseUrl,
             connectTimeout: const Duration(seconds: 10),
             receiveTimeout: const Duration(seconds: 15),
-            headers: {'Content-Type': 'application/json'},
+            headers: <String, String>{
+              'Content-Type': 'application/json',
+              ..._ngrokBypassHeaders,
+            },
           ),
         );
 
