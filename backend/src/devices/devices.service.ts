@@ -4,6 +4,7 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { randomUUID } from 'node:crypto';
 import { verifyDeviceSignature } from '../attendance/helpers.js';
@@ -28,7 +29,12 @@ export class DevicesService {
     private readonly prisma: PrismaService,
     private readonly audit: AuditService,
     private readonly jwt: JwtService,
+    private readonly config: ConfigService,
   ) {}
+  private get maxActive(): number {
+    const v = Number(this.config.get('MAX_ACTIVE_DEVICES_PER_EMPLOYEE', 2));
+    return Number.isFinite(v) && v > 0 ? v : 2;
+  }
 
   async issueRegisterChallenge(
     userId: string,
@@ -75,6 +81,10 @@ export class DevicesService {
     }
 
     try {
+      const activeCount = await this.prisma.device.count({
+        where: { employeeId: employee.id, status: 'ACTIVE' },
+      });
+      const status = activeCount === 0 ? 'ACTIVE' : 'PENDING';
       const device = await this.prisma.device.create({
         data: {
           employeeId: employee.id,
@@ -83,7 +93,7 @@ export class DevicesService {
           deviceName: dto.deviceName,
           appVersion: dto.appVersion,
           devicePublicKey: dto.devicePublicKey,
-          status: 'ACTIVE',
+          status,
         },
       });
       await this.audit.log({
@@ -343,6 +353,16 @@ export class DevicesService {
     }
     if (device.status !== 'PENDING') {
       throw new ConflictException('Only PENDING devices can be activated');
+    }
+
+    const activeCount = await this.prisma.device.count({
+      where: { employeeId: device.employeeId, status: 'ACTIVE', NOT: { id } },
+    });
+    if (activeCount >= this.maxActive) {
+      throw new ConflictException({
+        reason: 'DEVICE_LIMIT_REACHED',
+        message: 'Cabut salah satu device aktif terlebih dahulu',
+      });
     }
 
     const updated = await this.prisma.device.update({
