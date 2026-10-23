@@ -14,6 +14,7 @@ import '../../../core/theme/app_colors.dart';
 import '../domain/eye_geometry.dart';
 import '../domain/passive_liveness.dart';
 import '../../face/data/face_detector.dart';
+import '../../face/data/facial_landmark_embedder.dart';
 import '../../face/data/face_repository.dart';
 import 'liveness_screen.dart' show contourOf;
 
@@ -35,6 +36,7 @@ class _PassiveScanScreenState extends State<PassiveScanScreen>
     with WidgetsBindingObserver {
   CameraController? _controller;
   late final FaceDetectorService _detector;
+  late final FacialLandmarkEmbedder _landmarks;
   late final PassiveLiveness _liveness;
   Timer? _timer;
 
@@ -68,6 +70,7 @@ class _PassiveScanScreenState extends State<PassiveScanScreen>
       onError: _onDetectorError,
     );
     _liveness = PassiveLiveness();
+    _landmarks = FacialLandmarkEmbedder();
     _startedAt = DateTime.now();
     _initCamera();
   }
@@ -193,6 +196,18 @@ class _PassiveScanScreenState extends State<PassiveScanScreen>
         final FaceLandmark? nose = f.landmarks[FaceLandmarkType.noseBase];
         final double? noseX = nose?.position.x.toDouble();
         final double? noseY = nose?.position.y.toDouble();
+        FaceLandmarkCenter? landmarkCenter;
+        try {
+          landmarkCenter = await _landmarks.predict(
+            shot.path,
+            leftEdge: f.boundingBox.left,
+            topEdge: f.boundingBox.top,
+            faceWidth: f.boundingBox.width,
+            faceHeight: f.boundingBox.height,
+          );
+        } catch (_) {
+          // Keep attendance available through the existing ML Kit signal.
+        }
 
         _blankFrames = 0;
         frame = PassiveFrame(
@@ -207,8 +222,8 @@ class _PassiveScanScreenState extends State<PassiveScanScreen>
               ? rightProb
               : eyeOpenRatioFromLandmarks(
                   contourOf(f, FaceContourType.rightEye)),
-          landmarkX: noseX,
-          landmarkY: noseY,
+          landmarkX: landmarkCenter?.x ?? noseX,
+          landmarkY: landmarkCenter?.y ?? noseY,
         );
         if (mounted) setState(() => _relativeFaceWidth = rel);
       }
@@ -290,6 +305,7 @@ class _PassiveScanScreenState extends State<PassiveScanScreen>
     _timer?.cancel();
     _controller?.dispose();
     _detector.dispose();
+    _landmarks.close();
     super.dispose();
   }
 
