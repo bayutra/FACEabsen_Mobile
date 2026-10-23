@@ -28,15 +28,20 @@ import type {
 import {
   assertTimeZone,
   buildSignMessage,
+  buildSignMessageV1,
   hospitalWorkDate,
   validateLiveness,
+  validatePunchTime,
   verifyDeviceSignature,
 } from './helpers.js';
+import { ChallengeService } from './challenge.service.js';
+import { IdempotencyService } from './idempotency.service.js';
 
 @Injectable()
 export class AttendanceService {
   private readonly faceThreshold: number;
   private readonly livenessMaxAgeMin: number;
+  private readonly offlineMaxAgeHours: number;
   private readonly requestSkewMin: number;
   private readonly hospitalTz: string;
 
@@ -47,11 +52,14 @@ export class AttendanceService {
     private readonly risk: RiskService,
     private readonly privacy: PrivacyService,
     private readonly audit: AuditService,
+    private readonly challenge: ChallengeService,
+    private readonly idempotency: IdempotencyService,
     config: ConfigService,
     @Optional() private readonly integrity?: IntegrityService,
   ) {
     this.faceThreshold = Number(config.get('FACE_MATCH_THRESHOLD', 0.5));
     this.livenessMaxAgeMin = Number(config.get('LIVENESS_MAX_AGE_MIN', 10));
+    this.offlineMaxAgeHours = Number(config.get('OFFLINE_MAX_AGE_HOURS', 24));
     this.requestSkewMin = Number(config.get('REQUEST_MAX_SKEW_MIN', 5));
     const tz = config.get('HOSPITAL_TZ', 'Asia/Jakarta') || 'Asia/Jakarta';
     assertTimeZone(tz);
@@ -599,13 +607,13 @@ export class AttendanceService {
   }
 
   private async claimRequest(
-    dto: { requestId: string; requestTimestamp: string },
+    dto: { requestId: string; requestTimestamp?: string },
     now: Date,
     userId: string,
     meta: { ip?: string },
     risk: RiskInput,
   ) {
-    const ts = new Date(dto.requestTimestamp);
+    const ts = dto.requestTimestamp ? new Date(dto.requestTimestamp) : now;
     if (
       Number.isNaN(ts.getTime()) ||
       Math.abs(now.getTime() - ts.getTime()) > this.requestSkewMin * 60_000
@@ -683,14 +691,14 @@ export class AttendanceService {
 
   private async requireSignature(
     device: { devicePublicKey: string },
-    dto: { requestId: string; requestTimestamp: string; signature: string },
+    dto: { requestId: string; requestTimestamp?: string; signature: string },
     userId: string,
     meta: { ip?: string },
     risk: RiskInput,
   ) {
     const ok = verifyDeviceSignature(
       device.devicePublicKey,
-      buildSignMessage(dto.requestId, dto.requestTimestamp),
+      buildSignMessage(dto.requestId, dto.requestTimestamp ?? new Date().toISOString()),
       dto.signature,
     );
     if (!ok) {

@@ -3,15 +3,6 @@ import { workDateKeyIn } from '../shifts/shift-time.js';
 
 const SPKI_PREFIX = Buffer.from('302a300506032b6570032100', 'hex');
 
-export interface LivenessAttestation {
-  passed: boolean;
-  mode?: 'active' | 'passive';
-  completedAt: string;
-  score: number;
-  padScore?: number;
-  challenges?: string[];
-}
-
 export interface SignPayloadV1 {
   action: 'check-in' | 'check-out';
   deviceId: string;

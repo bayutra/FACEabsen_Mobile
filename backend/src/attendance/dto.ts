@@ -60,11 +60,24 @@ class AttendanceSignalsDto {
   @Type(() => LivenessAttestationDto)
   liveness!: LivenessAttestationDto;
 
-  @Matches(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)
-  requestId!: string;
+  @IsOptional()
+  @IsIn(['v1'])
+  signatureVersion?: 'v1';
 
   @IsISO8601()
-  requestTimestamp!: string;
+  captureAt!: string;
+
+  @IsOptional()
+  @IsISO8601()
+  queuedAt?: string;
+
+  @IsString()
+  @MinLength(16)
+  @MaxLength(4096)
+  challengeNonce!: string;
+
+  @Matches(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)
+  requestId!: string;
 
   @IsString()
   @MinLength(10)
