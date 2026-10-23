@@ -1,5 +1,7 @@
+import * as argon2 from 'argon2';
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
   UnprocessableEntityException,
@@ -9,6 +11,7 @@ import { PrismaService } from '../prisma/prisma.service.js';
 import { PrivacyService } from '../privacy/privacy.service.js';
 import { TemplateCryptoService } from './crypto.service.js';
 import { FACE_DIM, MIN_QUALITY, type RegisterFaceDto } from './dto.js';
+import { cosineSimilarity } from '../attendance/helpers.js';
 
 @Injectable()
 export class FaceService {
@@ -49,13 +52,49 @@ export class FaceService {
       throw new BadRequestException(`Quality too low (minimum ${MIN_QUALITY})`);
     }
 
+    const existing = await this.prisma.faceTemplate.findUnique({
+      where: { employeeId: employee.id },
+    });
+
+    if (existing) {
+      const user = await this.prisma.user.findUnique({
+        where: { id: userId },
+        select: { passwordHash: true },
+      });
+      const ok = dto.currentPassword
+        ? await argon2.verify(user?.passwordHash ?? '', dto.currentPassword)
+        : false;
+      if (!ok) {
+        throw new ForbiddenException({
+          reason: 'REAUTH_FAILED',
+          message: 'Kata sandi diperlukan untuk mengganti wajah',
+        });
+      }
+    }
+
     const floats = Float32Array.from(dto.template);
     const cipher = toBytes(
       this.crypto.encrypt(Buffer.from(floats.buffer), employee.id),
     );
-    const existing = await this.prisma.faceTemplate.findUnique({
-      where: { employeeId: employee.id },
-    });
+
+    let similarity: number | null = null;
+    if (existing) {
+      try {
+        const oldBuf = this.crypto.decrypt(
+          Buffer.from(existing.templateCipher),
+          employee.id,
+        );
+        const oldFloats = new Float32Array(
+          oldBuf.buffer,
+          oldBuf.byteOffset,
+          oldBuf.byteLength / 4,
+        );
+        similarity = cosineSimilarity(oldFloats, floats);
+      } catch {
+        similarity = null;
+      }
+    }
+
     const row = existing
       ? await this.prisma.faceTemplate.update({
           where: { employeeId: employee.id },
@@ -81,7 +120,12 @@ export class FaceService {
       targetType: 'face_template',
       targetId: row.id,
       ipAddress: meta.ip,
-      metadata: { version: row.version, qualityScore: dto.qualityScore },
+      deviceId: (meta as any).deviceId,
+      metadata: {
+        version: row.version,
+        qualityScore: dto.qualityScore,
+        similarity: similarity == null ? null : Math.round(similarity * 1000) / 1000,
+      },
     });
     return { registered: true, version: row.version, updatedAt: row.updatedAt };
   }
