@@ -1,6 +1,8 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 
+import 'verify_email_screen.dart';
+
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/hospital_mark.dart';
 import '../../../core/widgets/stitch.dart';
@@ -120,12 +122,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
         departmentId: _unitId,
       );
 
-      try {
-        await widget.devices.register();
-      } catch (_) {}
-
       if (!mounted) return;
-      Navigator.of(context).pop(true);
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute<void>(
+          builder: (_) => VerifyEmailScreen(email: email, auth: widget.auth),
+        ),
+      );
     } on DioException catch (e) {
       if (!mounted) return;
       setState(() {

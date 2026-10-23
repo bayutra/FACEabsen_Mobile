@@ -68,7 +68,7 @@ class AuthRepository {
         .toList();
   }
 
-  Future<Map<String, dynamic>> register({
+  Future<void> register({
     required String name,
     required String email,
     required String password,
@@ -78,7 +78,7 @@ class AuthRepository {
     String? departmentId,
     bool rememberMe = true,
   }) async {
-    final Response res = await _dio.post(
+    await _dio.post(
       '/auth/register',
       data: {
         'name': name,
@@ -92,8 +92,23 @@ class AuthRepository {
           'departmentId': departmentId,
       },
     );
-    return _storeSession(
-        Map<String, dynamic>.from(res.data as Map), rememberMe);
+  }
+
+  Future<void> verifyEmail({
+    required String email,
+    required String code,
+  }) async {
+    await _dio.post(
+      '/auth/verify-email',
+      data: {'email': email, 'code': code},
+    );
+  }
+
+  Future<void> resendVerification(String email) async {
+    await _dio.post(
+      '/auth/resend-verification',
+      data: {'email': email},
+    );
   }
 
   Future<Map<String, dynamic>> verifyTotp({
@@ -152,6 +167,8 @@ class AuthRepository {
     try {
       await _dio.post('/auth/logout');
     } finally {
+      await _store.clearOutbox();
+      await _store.clearNoncePool();
       await _store.clearTokens();
     }
   }
