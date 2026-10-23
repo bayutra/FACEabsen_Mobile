@@ -6,6 +6,9 @@ export interface EnvLike {
   DATABASE_URL?: string;
   DATA_ENCRYPTION_KEY?: string;
   HOSPITAL_TZ?: string;
+  SMTP_HOST?: string;
+  SMTP_FROM?: string;
+  EMAIL_CODE_SECRET?: string;
 }
 
 export function assertProductionEnv(env: EnvLike): void {
@@ -39,7 +42,8 @@ export function assertProductionEnv(env: EnvLike): void {
       );
     }
   }
-  if (problems.length > 0) {
-    throw new Error(`Refusing production boot:\n- ${problems.join('\n- ')}`);
-  }
+  if (!env.SMTP_HOST) problems.push('SMTP_HOST is missing');
+  if (!env.SMTP_FROM) problems.push('SMTP_FROM is missing');
+  const ecs = env.EMAIL_CODE_SECRET ?? '';
+  if (!ecs || ecs.length < 32) problems.push('EMAIL_CODE_SECRET must be at least 32 chars');
 }
