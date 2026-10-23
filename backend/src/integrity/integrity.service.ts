@@ -128,7 +128,7 @@ export class IntegrityService {
         },
       };
     }
-    return { ok: !opts.deviceCompromised, verdict: null };
+    return { ok: false, verdict: null };
   }
 }
 

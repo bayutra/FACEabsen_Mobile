@@ -858,9 +858,8 @@ export class AttendanceService {
     risk: RiskInput,
   ) {
     if (!this.integrity) {
-      risk.integrityOk = !dto.deviceCompromised;
-      (risk as unknown as Record<string, unknown>).__integrityReason =
-        dto.deviceCompromised ? 'MISSING_TOKEN' : undefined;
+      risk.integrityOk = false;
+      (risk as unknown as Record<string, unknown>).__integrityReason = 'UNVERIFIED';
       return;
     }
     const resolved = this.integrity.resolveSignal({
@@ -869,10 +868,14 @@ export class AttendanceService {
       platform,
     });
     risk.integrityOk = resolved.ok;
-    (risk as unknown as Record<string, unknown>).__integrityReason =
-      resolved.verdict && !resolved.verdict.ok
-        ? resolved.verdict.reason
-        : undefined;
+    if (!resolved.ok && !resolved.verdict) {
+      (risk as unknown as Record<string, unknown>).__integrityReason = 'UNVERIFIED';
+    } else {
+      (risk as unknown as Record<string, unknown>).__integrityReason =
+        resolved.verdict && !resolved.verdict.ok
+          ? resolved.verdict.reason
+          : undefined;
+    }
   }
 
   private async rejectIfBadIntegrity(
@@ -884,6 +887,9 @@ export class AttendanceService {
     const strict = this.integrity?.strictMode ?? false;
     const reason = (risk as unknown as Record<string, unknown>)
       .__integrityReason as string | undefined;
+    if (reason === 'UNVERIFIED' && !strict) {
+      return;
+    }
     if (reason === 'MISSING_TOKEN' && !strict) {
       return this.reject(
         userId,
