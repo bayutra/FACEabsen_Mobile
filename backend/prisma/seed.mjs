@@ -4,7 +4,10 @@
 import { PrismaClient } from '@prisma/client';
 import argon2 from 'argon2';
 
-const ROLE_PERMISSIONS = {
+const now = new Date();
+if (process.env.NODE_ENV === 'production') {
+  throw new Error('seed.mjs hanya untuk development; gunakan seed.prod.mjs di produksi');
+}
   EMPLOYEE: [
     'attendance:create:self',
     'attendance:read:self',
@@ -41,7 +44,7 @@ const ROLE_PERMISSIONS = {
     // Account provisioning is SUPER_ADMIN-only (backend /users guards);
     // ADMIN stops at staff records. 'user:manage' is intentionally absent.
   ],
-  SUPER_ADMIN: ['role:manage', 'security:manage', 'system:manage'],
+  SUPER_ADMIN: ['role:manage', 'security:manage', 'system:manage', 'user:manage'],
 };
 const RANK = { EMPLOYEE: 1, SUPERVISOR: 2, ADMIN: 3, SUPER_ADMIN: 4 };
 const effective = (role) =>
@@ -91,8 +94,8 @@ for (const d of demos) {
   const role = await prisma.role.findUniqueOrThrow({ where: { name: d.role } });
   const user = await prisma.user.upsert({
     where: { email: d.email },
-    update: {},
-    create: { email: d.email, passwordHash: hash },
+    update: { emailVerifiedAt: now, approvedAt: now, isActive: true },
+    create: { email: d.email, passwordHash: hash, emailVerifiedAt: now, approvedAt: now, isActive: true },
   });
   await prisma.userRole.upsert({
     where: { userId_roleId: { userId: user.id, roleId: role.id } },

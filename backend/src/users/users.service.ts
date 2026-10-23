@@ -6,6 +6,7 @@ import {
   ForbiddenException,
   Injectable,
   NotFoundException,
+  UnprocessableEntityException,
 } from '@nestjs/common';
 import { AuditService } from '../audit/audit.service.js';
 import { canAssignRole, highestRoleRank, satisfiesRole } from '../auth/rbac.js';
@@ -164,6 +165,18 @@ export class UsersService {
     if (dto.roles && id === actorId) {
       throw new BadRequestException('You cannot change your own roles');
     }
+    if (dto.email) {
+      if (target.emailVerifiedAt) {
+        throw new UnprocessableEntityException({
+          reason: 'EMAIL_ALREADY_VERIFIED',
+          message: 'Email yang sudah terverifikasi tidak dapat diubah',
+        });
+      }
+      const clash = await this.prisma.user.findUnique({ where: { email: dto.email } });
+      if (clash && clash.id !== id) {
+        throw new ConflictException('Email sudah dipakai');
+      }
+    }
     if (dto.roles) {
       const next = this.assertGrantable(actorRoles, dto.roles);
 
@@ -186,6 +199,12 @@ export class UsersService {
               ? { failedLoginAttempts: 0, lockedUntil: null }
               : {}),
           },
+        });
+      }
+      if (dto.email) {
+        await tx.user.update({
+          where: { id },
+          data: { email: dto.email },
         });
       }
       if (dto.isActive === false) {
@@ -214,10 +233,56 @@ export class UsersService {
     const roles = dto.roles ?? (await this.getRoles(id));
     return {
       id,
-      email: target.email,
+      email: dto.email ?? target.email,
       isActive: dto.isActive ?? target.isActive,
       roles,
     };
+  }
+
+  async approve(id: string, actorId: string, meta: { ip?: string } = {}) {
+    const target = await this.loadManageable(id, actorId);
+    const user = await this.prisma.user.findUnique({ where: { id } });
+    if (!user?.emailVerifiedAt) {
+      throw new UnprocessableEntityException({
+        reason: 'EMAIL_NOT_VERIFIED',
+        message: 'Email belum diverifikasi',
+      });
+    }
+    await this.prisma.user.update({
+      where: { id },
+      data: { approvedAt: new Date(), approvedById: actorId, isActive: true, failedLoginAttempts: 0, lockedUntil: null },
+    });
+    await this.audit.log({
+      actorId,
+      action: 'USER_APPROVED',
+      targetType: 'user',
+      targetId: id,
+      ipAddress: meta.ip,
+      metadata: { email: user.email },
+    });
+    return { id, email: user.email, isActive: true };
+  }
+
+  async verifyEmailOverride(id: string, reason: string, actorId: string, meta: { ip?: string } = {}) {
+    if (!reason || reason.trim().length < 10) {
+      throw new BadRequestException({ reason: 'REASON_REQUIRED', message: 'Alasan minimal 10 karakter' });
+    }
+    const target = await this.loadManageable(id, actorId);
+    const user = await this.prisma.user.findUnique({ where: { id } });
+    if (!user) throw new NotFoundException('User not found');
+    await this.prisma.user.update({
+      where: { id },
+      data: { emailVerifiedAt: new Date() },
+    });
+    await this.audit.log({
+      actorId,
+      action: 'USER_EMAIL_OVERRIDDEN',
+      targetType: 'user',
+      targetId: id,
+      ipAddress: meta.ip,
+      metadata: { email: user.email, reason },
+    });
+    return { id, email: user.email, emailVerifiedAt: new Date() };
   }
 
   async resetPassword(
@@ -261,7 +326,7 @@ export class UsersService {
   private async loadManageable(id: string, actorId: string) {
     const user = await this.prisma.user.findUnique({
       where: { id },
-      select: { id: true, email: true, isActive: true },
+      select: { id: true, email: true, isActive: true, emailVerifiedAt: true, approvedAt: true },
     });
     if (!user) throw new NotFoundException('User not found');
 

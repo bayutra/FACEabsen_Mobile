@@ -24,6 +24,7 @@ import {
   ListUsersQuery,
   ResetPasswordDto,
   UpdateUserDto,
+  VerifyEmailOverrideDto,
 } from './dto.js';
 import { UsersService } from './users.service.js';
 
@@ -72,5 +73,28 @@ export class UsersController {
     @Req() req: Request,
   ) {
     return this.users.resetPassword(id, dto, actor.userId, { ip: req.ip });
+  }
+
+  @Roles('SUPER_ADMIN')
+  @RequirePermissions('user:manage')
+  @Post(':id/approve')
+  approve(
+    @Param('id') id: string,
+    @CurrentUser() actor: AuthContext,
+    @Req() req: Request,
+  ) {
+    return this.users.approve(id, actor.userId, { ip: req.ip });
+  }
+
+  @Roles('SUPER_ADMIN')
+  @RequirePermissions('user:manage')
+  @Post(':id/verify-email-override')
+  verifyEmailOverride(
+    @Param('id') id: string,
+    @Body() dto: VerifyEmailOverrideDto,
+    @CurrentUser() actor: AuthContext,
+    @Req() req: Request,
+  ) {
+    return this.users.verifyEmailOverride(id, dto.reason, actor.userId, { ip: req.ip });
   }
 }

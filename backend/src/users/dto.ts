@@ -70,6 +70,11 @@ export class CreateUserDto {
 
 export class UpdateUserDto {
   @IsOptional()
+  @IsEmail()
+  @MaxLength(255)
+  email?: string;
+
+  @IsOptional()
   @IsArray()
   @IsIn(ROLE_NAMES, { each: true })
   roles?: string[];
@@ -84,4 +89,11 @@ export class ResetPasswordDto {
   @MinLength(8)
   @MaxLength(256)
   password!: string;
+}
+
+export class VerifyEmailOverrideDto {
+  @IsString()
+  @MinLength(10)
+  @MaxLength(500)
+  reason!: string;
 }
