@@ -70,135 +70,209 @@ export class AttendanceService {
     const now = new Date();
     const employee = await this.requireEmployee(userId);
     const risk = blankRisk(false);
-    await this.claimRequest(dto, now, userId, meta, risk);
-    await this.requireConsent(employee.id, userId, meta, risk);
 
-    const device = await this.requireDevice(
-      employee.id,
-      dto.deviceId,
-      userId,
-      meta,
-      risk,
-    );
-    risk.deviceOk = true;
-    await this.requireSignature(device, dto, userId, meta, risk);
-    risk.signatureOk = true;
-    this.applyIntegrity(dto, device.platform, userId, meta, risk);
-    await this.rejectIfBadIntegrity(userId, meta, risk);
-
-    const { key: workKey, date: workDate } = hospitalWorkDate(
-      now,
-      this.hospitalTz,
-    );
-    const schedule = await this.prisma.employeeSchedule.findUnique({
-      where: { employeeId_workDate: { employeeId: employee.id, workDate } },
-      include: { shift: true },
-    });
-    if (!schedule) {
-      return this.reject(
-        userId,
-        'NO_SCHEDULE',
-        'Tidak ada jadwal hari ini',
-        meta,
-        risk,
-        { workDate: workKey },
-      );
+    if (dto.signatureVersion !== 'v1') {
+      throw new UnprocessableEntityException({ reason: 'SIGNATURE_VERSION_REQUIRED', message: 'Versi tanda tangan tidak didukung' });
     }
 
-    const open = await this.prisma.attendance.findFirst({
-      where: { employeeId: employee.id, checkOutAt: null },
-      orderBy: { checkInAt: 'desc' },
-    });
-    if (open) {
-      return this.reject(
-        userId,
-        'ALREADY_CHECKED_IN',
-        'Sudah check-in, selesaikan check-out dulu',
-        meta,
-        risk,
-        { openId: open.id },
-      );
-    }
+    const idem = await this.idempotency.begin({ requestId: dto.requestId, employeeId: employee.id, action: 'check-in' });
+    if (idem.mode === 'replay') return idem.response as any;
 
-    const live = validateLiveness(dto.liveness, now, this.livenessMaxAgeMin);
-    if (!live.ok) {
-      return this.reject(
-        userId,
-        live.reason,
-        'Bukti liveness tidak valid',
-        meta,
-        risk,
-      );
-    }
-    risk.livenessOk = true;
+    let nonce: { jti: string } | undefined;
+    let committed = false;
+    try {
+      const time = validatePunchTime({
+        captureAt: dto.captureAt,
+        queuedAt: dto.queuedAt,
+        livenessCompletedAt: dto.liveness.completedAt,
+        now,
+        maxOnlineAgeMin: this.livenessMaxAgeMin,
+        maxOfflineAgeHours: this.offlineMaxAgeHours,
+      });
+      if (!time.ok) {
+        await this.idempotency.release(dto.requestId);
+        return this.reject(userId, time.reason, 'Waktu presensi tidak valid', meta, risk);
+      }
 
-    const match = await this.matchFace(employee.id, dto.faceEmbedding);
-    risk.faceScore = match.score < 0 ? 0 : match.score;
-    if (!match.matched) {
-      return this.reject(
-        userId,
-        match.reason,
-        'Verifikasi wajah gagal',
-        meta,
-        risk,
-        { score: match.score },
-      );
-    }
+      void this.idempotency.maybePurge(now);
 
-    const verdict = this.risk.score(risk);
-    const flagged = this.risk.needsReview(verdict.category);
-    const evalIn = evaluateCheckIn(
-      now,
-      workKey,
-      schedule.shift,
-      this.hospitalTz,
-    );
-    const row = await this.prisma.attendance.create({
-      data: {
+      await this.requireConsent(employee.id, userId, meta, risk);
+
+      const device = await this.requireDevice(employee.id, dto.deviceId, userId, meta, risk);
+      risk.deviceOk = true;
+
+      const msg = buildSignMessageV1({
+        action: 'check-in',
+        deviceId: dto.deviceId,
+        requestId: dto.requestId,
+        captureAt: dto.captureAt,
+        queuedAt: dto.queuedAt,
+        nonce: dto.challengeNonce,
+        faceEmbedding: dto.faceEmbedding,
+        liveness: dto.liveness,
+      });
+      const sigOk = verifyDeviceSignature(device.devicePublicKey, msg, dto.signature);
+      if (!sigOk) {
+        await this.idempotency.release(dto.requestId);
+        risk.signatureOk = false;
+        return this.reject(userId, 'INVALID_SIGNATURE', 'Tanda tangan device tidak valid', meta, risk);
+      }
+      risk.signatureOk = true;
+
+      nonce = await this.challenge.consume({
+        nonce: dto.challengeNonce,
+        userId,
+        deviceId: dto.deviceId,
         employeeId: employee.id,
-        shiftId: schedule.shiftId,
-        scheduleId: schedule.id,
-        workDate,
-        checkInAt: now,
-        checkInStatus: evalIn.status,
+        action: 'check-in',
+      });
+
+      this.applyIntegrity(dto, device.platform, userId, meta, risk);
+      await this.rejectIfBadIntegrity(userId, meta, risk);
+
+      const capture = new Date(dto.captureAt);
+      const { key: workKey, date: workDate } = hospitalWorkDate(capture, this.hospitalTz);
+
+      const schedule = await this.prisma.employeeSchedule.findUnique({
+        where: { employeeId_workDate: { employeeId: employee.id, workDate } },
+        include: { shift: true },
+      });
+      if (!schedule) {
+        await this.idempotency.release(dto.requestId);
+        return this.reject(userId, 'NO_SCHEDULE', 'Tidak ada jadwal hari ini', meta, risk, { workDate: workKey });
+      }
+
+      await this.closeStaleOpen(employee.id, now);
+
+      const open = await this.prisma.attendance.findFirst({
+        where: {
+          employeeId: employee.id,
+          checkOutAt: null,
+          staleAt: null,
+          workDate: { gte: new Date(workDate.getTime() - 86400_000) },
+        },
+        orderBy: { checkInAt: 'desc' },
+      });
+      if (open) {
+        await this.idempotency.release(dto.requestId);
+        return this.reject(userId, 'ALREADY_CHECKED_IN', 'Sudah check-in, selesaikan check-out dulu', meta, risk, { openId: open.id });
+      }
+
+      const live = validateLiveness(dto.liveness, now, time.offline ? this.offlineMaxAgeHours * 60 : this.livenessMaxAgeMin);
+      if (!live.ok) {
+        await this.idempotency.release(dto.requestId);
+        return this.reject(userId, live.reason, 'Bukti liveness tidak valid', meta, risk);
+      }
+      risk.livenessOk = true;
+
+      const match = await this.matchFace(employee.id, dto.faceEmbedding);
+      risk.faceScore = match.score < 0 ? 0 : match.score;
+      if (!match.matched) {
+        await this.idempotency.release(dto.requestId);
+        return this.reject(userId, match.reason, 'Verifikasi wajah gagal', meta, risk, { score: match.score });
+      }
+
+      const verdict = this.risk.score(risk);
+      const category = time.offline ? worseCategory(verdict.category, 'MEDIUM') : verdict.category;
+      const flagged = time.offline || this.risk.needsReview(category);
+
+      const evalIn = evaluateCheckIn(capture, workKey, schedule.shift, this.hospitalTz);
+
+      const row = await this.prisma.attendance.create({
+        data: {
+          employeeId: employee.id,
+          shiftId: schedule.shiftId,
+          scheduleId: schedule.id,
+          workDate,
+          checkInAt: capture,
+          captureAt: capture,
+          syncedAt: now,
+          offline: time.offline,
+          checkInStatus: evalIn.status,
+          deviceId: device.id,
+          riskScore: verdict.score,
+          riskCategory: category,
+          needsReview: flagged,
+          notes: time.offline ? 'OFFLINE_LATE_SYNC' : null,
+        },
+      });
+      committed = true;
+
+      await this.audit.log({
+        actorId: userId,
+        action: 'CHECK_IN',
+        targetType: 'attendance',
+        targetId: row.id,
+        ipAddress: meta.ip,
         deviceId: device.id,
-        riskScore: verdict.score,
-        riskCategory: verdict.category,
-        needsReview: flagged,
-      },
-    });
-    await this.audit.log({
-      actorId: userId,
-      action: 'CHECK_IN',
-      targetType: 'attendance',
-      targetId: row.id,
-      ipAddress: meta.ip,
-      deviceId: device.id,
-      metadata: {
-        status: evalIn.status,
-        lateMinutes: evalIn.lateMinutes,
-        matchScore: match.score,
-        riskScore: verdict.score,
-        riskCategory: verdict.category,
-      },
-    });
-    return {
-      id: row.id,
-      workDate: workKey,
-      checkInAt: row.checkInAt,
-      checkInStatus: row.checkInStatus,
-      shift: {
-        name: schedule.shift.name,
-        window: `${schedule.shift.startTime} → ${schedule.shift.endTime}`,
-      },
-      faceMatch: { score: match.score, matched: true },
-      risk: {
-        score: verdict.score,
-        category: verdict.category,
-        needsReview: flagged,
-      },
-    };
+        metadata: {
+          captureAt: dto.captureAt,
+          syncedAt: now.toISOString(),
+          offline: time.offline,
+          status: evalIn.status,
+          lateMinutes: evalIn.lateMinutes,
+          matchScore: match.score,
+          riskScore: verdict.score,
+          riskCategory: category,
+        },
+      });
+
+      const response = {
+        id: row.id,
+        workDate: workKey,
+        checkInAt: row.checkInAt,
+        checkInStatus: row.checkInStatus,
+        shift: {
+          name: schedule.shift.name,
+          window: `${schedule.shift.startTime} -> ${schedule.shift.endTime}`,
+        },
+        faceMatch: { score: match.score, matched: true },
+        risk: { score: verdict.score, category, needsReview: flagged },
+        offline: time.offline,
+      };
+
+      await this.idempotency.complete(dto.requestId, response);
+      return response;
+    } catch (err: any) {
+      if (!committed) {
+        await this.idempotency.release(dto.requestId);
+        if (nonce) await this.challenge.release(nonce.jti);
+      }
+      if (err?.code === 'P2002') {
+        throw new ConflictException({ reason: 'ALREADY_CHECKED_IN', message: 'Sudah check-in' });
+      }
+      throw err;
+    }
   }
+
+  private async closeStaleOpen(employeeId: string, now: Date): Promise<void> {
+    const rows = await this.prisma.attendance.findMany({
+      where: {
+        employeeId,
+        checkOutAt: null,
+        staleAt: null,
+        checkInAt: { lt: new Date(now.getTime() - 24 * 3600_000) },
+      },
+    });
+    for (const row of rows) {
+      await this.prisma.attendance.update({
+        where: { id: row.id },
+        data: {
+          staleAt: now,
+          needsReview: true,
+          notes: row.notes ? `${row.notes}\nAUTO_CLOSED_PREVIOUS_DAY` : 'AUTO_CLOSED_PREVIOUS_DAY',
+        },
+      });
+      await this.audit.log({
+        actorId: row.employeeId,
+        action: 'ATTENDANCE_AUTO_STALE',
+        targetType: 'attendance',
+        targetId: row.id,
+        metadata: { employeeId: row.employeeId },
+      });
+    }
+  }
+
 
   async checkOut(dto: CheckOutDto, userId: string, meta: { ip?: string } = {}) {
     const now = new Date();
