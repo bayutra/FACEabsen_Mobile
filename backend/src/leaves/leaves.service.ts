@@ -210,6 +210,16 @@ export class LeavesService {
     reviewerId: string,
     roles: string[],
   ) {
+    const reviewer = await this.prisma.employee.findUnique({
+      where: { userId: reviewerId },
+      select: { id: true },
+    });
+    if (reviewer?.id === employeeId) {
+      throw new ForbiddenException({
+        reason: 'SELF_APPROVAL_FORBIDDEN',
+        message: 'Tidak dapat menyetujui pengajuan sendiri',
+      });
+    }
     if (satisfiesRole(roles, 'SUPER_ADMIN')) return;
     if (satisfiesRole(roles, 'ADMIN')) {
       const scope = await resolveHospitalScope(this.prisma, reviewerId, roles);
@@ -227,13 +237,13 @@ export class LeavesService {
       }
       return;
     }
-    const reviewer = await this.prisma.employee.findUnique({
+    const reviewerEmployee = await this.prisma.employee.findUnique({
       where: { userId: reviewerId },
     });
     const target = await this.prisma.employee.findUnique({
       where: { id: employeeId },
     });
-    if (!reviewer || !target || target.supervisorId !== reviewer.id) {
+    if (!reviewerEmployee || !target || target.supervisorId !== reviewerEmployee.id) {
       throw new ForbiddenException('Not authorized to review this request');
     }
   }

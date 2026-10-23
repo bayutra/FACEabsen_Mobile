@@ -548,6 +548,10 @@ export class AttendanceService {
     meta: { ip?: string } = {},
   ) {
     const row = await this.requireReviewScope(id, userId, roles);
+    const reviewer = await this.prisma.employee.findUnique({ where: { userId }, select: { id: true } });
+    if (reviewer?.id === row.employeeId) {
+      throw new ForbiddenException({ reason: 'SELF_APPROVAL_FORBIDDEN', message: 'Tidak dapat mereview presensi sendiri' });
+    }
     const note = dto.note?.trim();
     const label = dto.decision === 'APPROVE' ? 'VALIDASI' : 'TOLAK';
     const notes = note
