@@ -15,7 +15,7 @@ import type { Request } from 'express';
 import { AuthService, type RequestMeta } from './auth.service.js';
 import { AUTH_POLICY } from './constants.js';
 import { CurrentUser, Public, type AuthContext } from './decorators.js';
-import { ChangePasswordDto, LoginDto, RefreshDto, RegisterDto } from './dto.js';
+import { ChangePasswordDto, LoginDto, RefreshDto, RegisterDto, ResendVerificationDto, VerifyEmailDto } from './dto.js';
 import { JwtAuthGuard } from './guards/jwt-auth.guard.js';
 
 const loginThrottle = {
@@ -57,10 +57,28 @@ export class AuthController {
       ttl: AUTH_POLICY.loginThrottle.ttl,
     },
   })
-  @HttpCode(HttpStatus.CREATED)
+  @Public()
+  @Throttle({ default: { limit: 5, ttl: 3600_000 } })
+  @HttpCode(HttpStatus.ACCEPTED)
   @Post('register')
   register(@Body() dto: RegisterDto, @Req() req: Request) {
     return this.auth.register(dto, metaOf(req));
+  }
+
+  @Public()
+  @Throttle({ default: { limit: 10, ttl: 900_000 } })
+  @HttpCode(HttpStatus.OK)
+  @Post('verify-email')
+  verifyEmail(@Body() dto: VerifyEmailDto, @Req() req: Request) {
+    return this.auth.verifyEmail(dto, metaOf(req));
+  }
+
+  @Public()
+  @Throttle({ default: { limit: 3, ttl: 900_000 } })
+  @HttpCode(HttpStatus.ACCEPTED)
+  @Post('resend-verification')
+  resendVerification(@Body() dto: ResendVerificationDto, @Req() req: Request) {
+    return this.auth.resendVerification(dto, metaOf(req));
   }
 
   @HttpCode(HttpStatus.OK)

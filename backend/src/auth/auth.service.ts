@@ -16,6 +16,7 @@ import { PrismaService } from '../prisma/prisma.service.js';
 import { AUTH_POLICY } from './constants.js';
 import type { ChangePasswordDto, LoginDto, RegisterDto } from './dto.js';
 import { validatePasswordPolicy } from './password.js';
+import { EmailVerificationService } from './email-verification.service.js';
 import { TOTP_TOKEN_PURPOSE, TOTP_TOKEN_TTL_SEC } from './totp.js';
 
 export interface RequestMeta {
@@ -43,6 +44,7 @@ export class AuthService {
     private readonly jwt: JwtService,
     private readonly config: ConfigService,
     private readonly audit: AuditService,
+    private readonly emailVerification: EmailVerificationService,
   ) {
     this.accessTtlSec = Number(
       config.get('JWT_ACCESS_TTL_SEC', AUTH_POLICY.accessTtlSec),
@@ -109,15 +111,31 @@ export class AuthService {
       await this.registerFailedAttempt(user?.id ?? null, dto.email, meta);
       throw new UnauthorizedException('Invalid credentials');
     }
+    if (!user.emailVerifiedAt) {
+      await this.audit.log({
+        actorId: user.id,
+        action: 'LOGIN_FAILED',
+        ipAddress: meta.ip,
+        result: 'DENIED',
+        metadata: { reason: 'EMAIL_NOT_VERIFIED' },
+      });
+      throw new ForbiddenException({
+        reason: 'EMAIL_NOT_VERIFIED',
+        message: 'Verifikasi email terlebih dahulu',
+      });
+    }
     if (!user.isActive) {
       await this.audit.log({
         actorId: user.id,
         action: 'LOGIN_FAILED',
         ipAddress: meta.ip,
         result: 'DENIED',
-        metadata: { reason: 'inactive' },
+        metadata: { reason: 'PENDING_APPROVAL' },
       });
-      throw new UnauthorizedException('Invalid credentials');
+      throw new ForbiddenException({
+        reason: 'PENDING_APPROVAL',
+        message: 'Akun menunggu persetujuan admin',
+      });
     }
 
     await this.prisma.user.update({
@@ -175,8 +193,15 @@ export class AuthService {
       this.prisma.user.findUnique({ where: { email } }),
       this.prisma.employee.findUnique({ where: { email } }),
     ]);
-    if (userClash || employeeClash) {
-      throw new ConflictException('Email sudah terdaftar');
+    if (userClash) {
+      if (!userClash.emailVerifiedAt) {
+        await this.emailVerification.issue(userClash.id, email);
+      }
+      return { status: 'VERIFICATION_SENT' };
+    }
+    if (employeeClash) {
+      // Jangan hijack profil karyawan yang dibuat admin; anti-enumeration.
+      return { status: 'VERIFICATION_SENT' };
     }
     if (dto.departmentId) {
       const department = await this.prisma.department.findUnique({
@@ -195,7 +220,7 @@ export class AuthService {
     let userId: string;
     try {
       userId = await this.prisma.$transaction(async (tx) => {
-        const user = await tx.user.create({ data: { email, passwordHash } });
+        const user = await tx.user.create({ data: { email, passwordHash, isActive: false } });
         await tx.userRole.create({
           data: { userId: user.id, roleId: role.id },
         });
@@ -232,19 +257,22 @@ export class AuthService {
       metadata: { email, employeeNo },
     });
 
-    const session = await this.createSession(userId, undefined, meta);
-    const accessToken = await this.signAccess(
-      userId,
-      email,
-      ['EMPLOYEE'],
-      session.id,
-    );
-    return {
-      accessToken,
-      refreshToken: session.refreshToken,
-      expiresIn: this.accessTtlSec,
-      user: { id: userId, email, roles: ['EMPLOYEE'], name, employeeNo },
-    };
+    await this.emailVerification.issue(userId, email);
+
+    return { status: 'VERIFICATION_SENT' };
+  }
+
+  async verifyEmail(dto: { email: string; code: string }, meta: RequestMeta = {}) {
+    const res = await this.emailVerification.verify(dto.email, dto.code);
+    return { status: 'PENDING_APPROVAL' as const, userId: res.userId };
+  }
+
+  async resendVerification(dto: { email: string }, meta: RequestMeta = {}) {
+    const user = await this.prisma.user.findUnique({ where: { email: dto.email } });
+    if (user && !user.emailVerifiedAt) {
+      await this.emailVerification.issue(user.id, dto.email);
+    }
+    return { status: 'VERIFICATION_SENT' as const };
   }
 
   private async nextEmployeeNo(): Promise<string> {
@@ -271,6 +299,8 @@ export class AuthService {
     }
     if (!prev.user.isActive)
       throw new UnauthorizedException('Account inactive');
+    if (!prev.user.emailVerifiedAt)
+      throw new UnauthorizedException('Email not verified');
 
     const next = newRefreshToken();
     const rotated = await this.prisma.session.updateMany({

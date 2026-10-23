@@ -77,3 +77,19 @@ export class ChangePasswordDto {
   @MaxLength(256)
   newPassword!: string;
 }
+
+export class VerifyEmailDto {
+  @IsEmail()
+  @MaxLength(255)
+  email!: string;
+
+  @IsString()
+  @Matches(/^\\d{6}$/)
+  code!: string;
+}
+
+export class ResendVerificationDto {
+  @IsEmail()
+  @MaxLength(255)
+  email!: string;
+}

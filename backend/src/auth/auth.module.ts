@@ -3,6 +3,8 @@ import { ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { AuthController } from './auth.controller.js';
 import { AuthService } from './auth.service.js';
+import { EmailVerificationService } from './email-verification.service.js';
+import { EmailModule } from '../email/email.module.js';
 import { AUTH_POLICY } from './constants.js';
 import { JwtAuthGuard } from './guards/jwt-auth.guard.js';
 import { PermissionsGuard } from './guards/permissions.guard.js';
@@ -29,11 +31,13 @@ import { TotpService } from './totp.service.js';
         },
       }),
     }),
+    EmailModule,
   ],
   controllers: [AuthController, TotpController],
   providers: [
     AuthService,
     TotpService,
+    EmailVerificationService,
     JwtAuthGuard,
     RolesGuard,
     PermissionsGuard,
@@ -42,6 +46,7 @@ import { TotpService } from './totp.service.js';
   exports: [
     AuthService,
     TotpService,
+    EmailVerificationService,
     JwtAuthGuard,
     RolesGuard,
     PermissionsGuard,
