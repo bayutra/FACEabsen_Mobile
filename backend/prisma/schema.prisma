@@ -115,6 +115,10 @@ model User {
   isActive            Boolean               @default(true) @map("is_active")
   totpSecret          String?               @map("totp_secret") // base32 TOTP secret, PENDING until totpEnabled
   totpEnabled         Boolean               @default(false) @map("totp_enabled")
+  emailVerifiedAt     DateTime?             @map("email_verified_at")
+  approvedAt          DateTime?             @map("approved_at")
+  approvedById        String?               @map("approved_by_id")
+  emailCodes          EmailVerificationCode[]
   createdAt           DateTime              @default(now()) @map("created_at")
   updatedAt           DateTime              @updatedAt @map("updated_at")
   employee            Employee?
@@ -144,6 +148,21 @@ model TotpRecoveryCode {
   @@unique([userId, codeHash])
   @@index([userId])
   @@map("totp_recovery_codes")
+}
+
+// Email verification codes (Phase 1, P0).
+model EmailVerificationCode {
+  id         String    @id @default(cuid())
+  userId     String    @map("user_id")
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  codeHash   String    @map("code_hash")
+  attempts   Int       @default(0)
+  expiresAt  DateTime  @map("expires_at")
+  consumedAt DateTime? @map("consumed_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
+
+  @@index([userId, createdAt])
+  @@map("email_verification_codes")
 }
 
 model Role {
@@ -346,6 +365,10 @@ model Attendance {
   checkOutAt      DateTime?           @map("check_out_at")
   checkInStatus   CheckInStatus?      @map("check_in_status")
   checkOutStatus  CheckOutStatus?     @map("check_out_status")
+  captureAt       DateTime?           @map("capture_at")
+  syncedAt        DateTime            @default(now()) @map("synced_at")
+  offline         Boolean             @default(false)
+  staleAt         DateTime?           @map("stale_at")
   riskScore        Int?            @map("risk_score") // 0-100, CHECK in migration SQL
   riskCategory     RiskCategory?   @map("risk_category")
   needsReview      Boolean         @default(false) @map("needs_review") // MEDIUM risk supervisor queue (STEP 13/17)
@@ -451,10 +474,15 @@ model Session {
 
 // STEP 12 — single-use request IDs (anti replay). Pruned opportunistically.
 model IdempotencyKey {
-  key       String   @id
-  createdAt DateTime @default(now()) @map("created_at")
+  key          String   @id
+  kind         String   @default("request") @map("kind")
+  employeeId   String?  @map("employee_id")
+  action       String?
+  responseJson Json?    @map("response_json")
+  createdAt    DateTime @default(now()) @map("created_at")
 
   @@index([createdAt])
+  @@index([kind])
   @@map("idempotency_keys")
 }
 
