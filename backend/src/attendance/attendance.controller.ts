@@ -22,6 +22,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
 import { PermissionsGuard } from '../auth/guards/permissions.guard.js';
 import { RolesGuard } from '../auth/guards/roles.guard.js';
 import { AttendanceService } from './attendance.service.js';
+import { ChallengeService } from './challenge.service.js';
 import {
   AdminHistoryQuery,
   CheckInDto,
@@ -34,7 +35,20 @@ import {
 @UseGuards(JwtAuthGuard)
 @Controller('attendance')
 export class AttendanceController {
-  constructor(private readonly attendance: AttendanceService) {}
+  constructor(
+    private readonly attendance: AttendanceService,
+    private readonly challengeService: ChallengeService,
+  ) {}
+
+  @Throttle({ default: { limit: 20, ttl: 60_000 } })
+  @HttpCode(HttpStatus.OK)
+  @Post('challenge')
+  challenge(
+    @Body() body: { deviceId?: string },
+    @CurrentUser() user: AuthContext,
+  ) {
+    return this.challengeService.issue(user.userId, body?.deviceId);
+  }
 
   @Throttle({ default: { limit: 30, ttl: 60_000 } })
   @HttpCode(HttpStatus.OK)

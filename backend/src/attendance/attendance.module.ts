@@ -9,6 +9,7 @@ import { PrivacyModule } from '../privacy/privacy.module.js';
 import { RiskModule } from '../risk/risk.module.js';
 import { AttendanceController } from './attendance.controller.js';
 import { AttendanceService } from './attendance.service.js';
+import { ChallengeService } from './challenge.service.js';
 
 @Module({
   imports: [
@@ -22,7 +23,7 @@ import { AttendanceService } from './attendance.service.js';
     RiskModule,
   ],
   controllers: [AttendanceController],
-  providers: [AttendanceService],
-  exports: [AttendanceService],
+  providers: [AttendanceService, ChallengeService],
+  exports: [AttendanceService, ChallengeService],
 })
 export class AttendanceModule {}
