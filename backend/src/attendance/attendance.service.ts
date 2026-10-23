@@ -278,106 +278,166 @@ export class AttendanceService {
     const now = new Date();
     const employee = await this.requireEmployee(userId);
     const risk = blankRisk(false);
-    await this.claimRequest(dto, now, userId, meta, risk);
-    await this.requireConsent(employee.id, userId, meta, risk);
 
-    const device = await this.requireDevice(
-      employee.id,
-      dto.deviceId,
-      userId,
-      meta,
-      risk,
-    );
-    risk.deviceOk = true;
-    await this.requireSignature(device, dto, userId, meta, risk);
-    risk.signatureOk = true;
-    this.applyIntegrity(dto, device.platform, userId, meta, risk);
-    await this.rejectIfBadIntegrity(userId, meta, risk);
-
-    const open = await this.prisma.attendance.findFirst({
-      where: { employeeId: employee.id, checkOutAt: null },
-      orderBy: { checkInAt: 'desc' },
-      include: { shift: true },
-    });
-    if (!open) {
-      return this.reject(
-        userId,
-        'NO_OPEN_ATTENDANCE',
-        'Belum check-in',
-        meta,
-        risk,
-      );
+    if (dto.signatureVersion !== 'v1') {
+      throw new UnprocessableEntityException({ reason: 'SIGNATURE_VERSION_REQUIRED', message: 'Versi tanda tangan tidak didukung' });
     }
 
-    const live = validateLiveness(dto.liveness, now, this.livenessMaxAgeMin);
-    if (!live.ok) {
-      return this.reject(
+    const idem = await this.idempotency.begin({ requestId: dto.requestId, employeeId: employee.id, action: 'check-out' });
+    if (idem.mode === 'replay') return idem.response as any;
+
+    let nonce: { jti: string } | undefined;
+    let committed = false;
+    try {
+      const time = validatePunchTime({
+        captureAt: dto.captureAt,
+        queuedAt: dto.queuedAt,
+        livenessCompletedAt: dto.liveness.completedAt,
+        now,
+        maxOnlineAgeMin: this.livenessMaxAgeMin,
+        maxOfflineAgeHours: this.offlineMaxAgeHours,
+      });
+      if (!time.ok) {
+        await this.idempotency.release(dto.requestId);
+        return this.reject(userId, time.reason, 'Waktu presensi tidak valid', meta, risk);
+      }
+
+      void this.idempotency.maybePurge(now);
+
+      await this.requireConsent(employee.id, userId, meta, risk);
+
+      const device = await this.requireDevice(employee.id, dto.deviceId, userId, meta, risk);
+      risk.deviceOk = true;
+
+      const msg = buildSignMessageV1({
+        action: 'check-out',
+        deviceId: dto.deviceId,
+        requestId: dto.requestId,
+        captureAt: dto.captureAt,
+        queuedAt: dto.queuedAt,
+        nonce: dto.challengeNonce,
+        faceEmbedding: dto.faceEmbedding,
+        liveness: dto.liveness,
+      });
+      const sigOk = verifyDeviceSignature(device.devicePublicKey, msg, dto.signature);
+      if (!sigOk) {
+        await this.idempotency.release(dto.requestId);
+        risk.signatureOk = false;
+        return this.reject(userId, 'INVALID_SIGNATURE', 'Tanda tangan device tidak valid', meta, risk);
+      }
+      risk.signatureOk = true;
+
+      nonce = await this.challenge.consume({
+        nonce: dto.challengeNonce,
         userId,
-        live.reason,
-        'Bukti liveness tidak valid',
-        meta,
-        risk,
-      );
+        deviceId: dto.deviceId,
+        employeeId: employee.id,
+        action: 'check-out',
+      });
+
+      this.applyIntegrity(dto, device.platform, userId, meta, risk);
+      await this.rejectIfBadIntegrity(userId, meta, risk);
+
+      await this.closeStaleOpen(employee.id, now);
+
+      const capture = new Date(dto.captureAt);
+      const captureWorkDate = hospitalWorkDate(capture, this.hospitalTz).date;
+
+      const open = await this.prisma.attendance.findFirst({
+        where: {
+          employeeId: employee.id,
+          checkOutAt: null,
+          staleAt: null,
+          workDate: { gte: new Date(captureWorkDate.getTime() - 86400_000) },
+        },
+        orderBy: { checkInAt: 'desc' },
+        include: { shift: true },
+      });
+      if (!open) {
+        await this.idempotency.release(dto.requestId);
+        return this.reject(userId, 'NO_OPEN_ATTENDANCE', 'Belum check-in', meta, risk);
+      }
+
+      const live = validateLiveness(dto.liveness, now, time.offline ? this.offlineMaxAgeHours * 60 : this.livenessMaxAgeMin);
+      if (!live.ok) {
+        await this.idempotency.release(dto.requestId);
+        return this.reject(userId, live.reason, 'Bukti liveness tidak valid', meta, risk);
+      }
+      risk.livenessOk = true;
+
+      const match = await this.matchFace(employee.id, dto.faceEmbedding);
+      risk.faceScore = match.score < 0 ? 0 : match.score;
+      if (!match.matched) {
+        await this.idempotency.release(dto.requestId);
+        return this.reject(userId, match.reason, 'Verifikasi wajah gagal', meta, risk, { score: match.score });
+      }
+
+      const verdict = this.risk.score(risk);
+      const workKey = open.workDate.toISOString().slice(0, 10);
+      const evalOut = evaluateCheckOut(capture, workKey, open.shift, this.hospitalTz);
+
+      const score = Math.max(open.riskScore ?? 0, verdict.score);
+      const category = worseCategory(open.riskCategory, time.offline ? worseCategory(verdict.category, 'MEDIUM') : verdict.category);
+      const flagged = (open.needsReview ?? false) || time.offline || this.risk.needsReview(verdict.category);
+
+      const row = await this.prisma.attendance.update({
+        where: { id: open.id },
+        data: {
+          checkOutAt: capture,
+          captureAt: capture,
+          syncedAt: now,
+          offline: (open.offline ?? false) || time.offline,
+          checkOutStatus: evalOut.status,
+          riskScore: score,
+          riskCategory: category,
+          needsReview: flagged,
+          notes: time.offline ? (open.notes ? `${open.notes}\nOFFLINE_LATE_SYNC` : 'OFFLINE_LATE_SYNC') : open.notes,
+        },
+      });
+      committed = true;
+
+      await this.audit.log({
+        actorId: userId,
+        action: 'CHECK_OUT',
+        targetType: 'attendance',
+        targetId: row.id,
+        ipAddress: meta.ip,
+        deviceId: device.id,
+        metadata: {
+          captureAt: dto.captureAt,
+          syncedAt: now.toISOString(),
+          offline: (open.offline ?? false) || time.offline,
+          status: evalOut.status,
+          earlyMinutes: evalOut.earlyMinutes,
+          matchScore: match.score,
+          riskScore: score,
+          riskCategory: category,
+        },
+      });
+
+      const response = {
+        id: row.id,
+        workDate: workKey,
+        checkInAt: row.checkInAt,
+        checkInStatus: row.checkInStatus,
+        checkOutAt: row.checkOutAt,
+        checkOutStatus: row.checkOutStatus,
+        faceMatch: { score: match.score, matched: true },
+        risk: { score, category, needsReview: flagged },
+        offline: (open.offline ?? false) || time.offline,
+      };
+
+      await this.idempotency.complete(dto.requestId, response);
+      return response;
+    } catch (err: any) {
+      if (!committed) {
+        await this.idempotency.release(dto.requestId);
+        if (nonce) await this.challenge.release(nonce.jti);
+      }
+      throw err;
     }
-    risk.livenessOk = true;
-
-    const match = await this.matchFace(employee.id, dto.faceEmbedding);
-    risk.faceScore = match.score < 0 ? 0 : match.score;
-    if (!match.matched) {
-      return this.reject(
-        userId,
-        match.reason,
-        'Verifikasi wajah gagal',
-        meta,
-        risk,
-        { score: match.score },
-      );
-    }
-
-    const verdict = this.risk.score(risk);
-    const flaggedOut = this.risk.needsReview(verdict.category);
-    const workKey = open.workDate.toISOString().slice(0, 10);
-    const evalOut = evaluateCheckOut(now, workKey, open.shift, this.hospitalTz);
-
-    const score = Math.max(open.riskScore ?? 0, verdict.score);
-    const category = worseCategory(open.riskCategory, verdict.category);
-    const flagged = (open.needsReview ?? false) || flaggedOut;
-    const row = await this.prisma.attendance.update({
-      where: { id: open.id },
-      data: {
-        checkOutAt: now,
-        checkOutStatus: evalOut.status,
-        riskScore: score,
-        riskCategory: category,
-        needsReview: flagged,
-      },
-    });
-    await this.audit.log({
-      actorId: userId,
-      action: 'CHECK_OUT',
-      targetType: 'attendance',
-      targetId: row.id,
-      ipAddress: meta.ip,
-      deviceId: device.id,
-      metadata: {
-        status: evalOut.status,
-        earlyMinutes: evalOut.earlyMinutes,
-        matchScore: match.score,
-        riskScore: score,
-        riskCategory: category,
-      },
-    });
-    return {
-      id: row.id,
-      workDate: workKey,
-      checkInAt: row.checkInAt,
-      checkInStatus: row.checkInStatus,
-      checkOutAt: row.checkOutAt,
-      checkOutStatus: row.checkOutStatus,
-      faceMatch: { score: match.score, matched: true },
-      risk: { score, category, needsReview: flagged },
-    };
   }
+
 
   async listMine(userId: string, query: MyHistoryQuery) {
     const employee = await this.requireEmployee(userId);
