@@ -376,12 +376,19 @@ export class ReportsService {
     });
     if (!target) throw new NotFoundException('Employee not found');
     const me = await this.prisma.employee.findUnique({ where: { userId } });
-    const allowed =
-      satisfiesRole(roles, 'ADMIN') ||
-      me?.id === id ||
-      target.supervisorId === me?.id;
-    if (!allowed)
-      throw new ForbiddenException('Not authorized for this report');
+    const scope = await resolveHospitalScope(this.prisma, userId, roles);
+    const sameHospital =
+      scope.kind === 'hospital' &&
+      target.department?.hospitalId === scope.hospitalId;
+    const isOwner = me?.id === id;
+    const isSupervisor = target.supervisorId === me?.id;
+    const sameHospitalAdmin = satisfiesRole(roles, 'ADMIN') && sameHospital;
+    if (
+      !satisfiesRole(roles, 'SUPER_ADMIN') &&
+      (!sameHospital || !(isOwner || isSupervisor || sameHospitalAdmin))
+    ) {
+      throw new NotFoundException('Employee not found');
+    }
 
     const rows = await this.prisma.attendance.findMany({
       where: {

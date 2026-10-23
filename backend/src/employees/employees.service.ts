@@ -418,8 +418,17 @@ export class EmployeesService {
     }));
   }
 
-  async listHospitals() {
+  async listHospitals(userId: string, roles: string[]) {
+    if (satisfiesRole(roles, 'SUPER_ADMIN')) {
+      return this.prisma.hospital.findMany({
+        orderBy: { code: 'asc' },
+        select: { id: true, code: true, name: true },
+      });
+    }
+    const scope = await resolveHospitalScope(this.prisma, userId, roles);
+    if (scope.kind !== 'hospital') return [];
     return this.prisma.hospital.findMany({
+      where: { id: scope.hospitalId },
       orderBy: { code: 'asc' },
       select: { id: true, code: true, name: true },
     });
