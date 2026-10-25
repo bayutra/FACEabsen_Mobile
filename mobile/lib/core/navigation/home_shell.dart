@@ -12,6 +12,7 @@ import '../../features/auth/data/auth_repository.dart';
 import '../../features/correction/data/correction_repository.dart';
 import '../../features/correction/presentation/correction_list_screen.dart';
 import '../../features/device/data/device_repository.dart';
+import '../../features/device/domain/device_models.dart';
 import '../../features/face/data/face_repository.dart';
 import '../../features/face/presentation/face_registration_screen.dart';
 import '../../features/leave/data/leave_repository.dart';
@@ -61,6 +62,7 @@ class HomeShell extends StatefulWidget {
 class _HomeShellState extends State<HomeShell> {
   int _index = 0;
   bool _biometricConsent = true;
+  int _pendingDeviceCount = 0;
   String _displayName = 'Karyawan';
   String _employeeNo = '—';
   List<String> _roles = const <String>[];
@@ -233,6 +235,18 @@ class _HomeShellState extends State<HomeShell> {
   void initState() {
     super.initState();
     _syncConsent();
+    _loadDeviceCount();
+  }
+
+  Future<void> _loadDeviceCount() async {
+    try {
+      final devices = await widget.devices.myDevices();
+      if (!mounted) return;
+      setState(() {
+        _pendingDeviceCount =
+            devices.where((d) => d.status == DeviceStatus.pending).length;
+      });
+    } catch (_) {}
   }
 
   @override
@@ -255,6 +269,7 @@ class _HomeShellState extends State<HomeShell> {
         attendance: widget.attendance,
         schedules: widget.schedules,
         displayName: _displayName,
+        pendingDevices: _pendingDeviceCount,
         biometricConsent: _biometricConsent,
         onToggleBiometric: _toggleBiometric,
         onStartAttendance: () => _push(_preflight()),

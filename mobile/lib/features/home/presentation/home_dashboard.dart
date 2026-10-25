@@ -12,6 +12,7 @@ class HomeDashboard extends StatefulWidget {
     required this.attendance,
     required this.schedules,
     required this.displayName,
+    required this.pendingDevices,
     required this.biometricConsent,
     required this.onToggleBiometric,
     required this.onStartAttendance,
@@ -27,6 +28,7 @@ class HomeDashboard extends StatefulWidget {
   final AttendanceRepository attendance;
   final ScheduleRepository schedules;
   final String displayName;
+  final int pendingDevices;
   final bool biometricConsent;
   final Future<void> Function(bool granted) onToggleBiometric;
   final VoidCallback onStartAttendance;
@@ -134,6 +136,78 @@ class _HomeDashboardState extends State<HomeDashboard> {
     if (h < 15) return 'Selamat Siang,';
     if (h < 18) return 'Selamat Sore,';
     return 'Selamat Malam,';
+  }
+
+  void _showNotifications() {
+    showModalBottomSheet<void>(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (BuildContext ctx) {
+        final List<_Notif> items = <_Notif>[];
+        if (_outboxCount > 0) {
+          items.add(_Notif(
+            icon: Icons.cloud_off,
+            color: AppColors.warningText,
+            title: 'Presensi offline tertunda',
+            body: '$_outboxCount presensi tersimpan di perangkat, akan dikirim saat online.',
+          ));
+        }
+        if (widget.pendingDevices > 0) {
+          items.add(_Notif(
+            icon: Icons.devices_other_outlined,
+            color: AppColors.primary,
+            title: 'Perangkat menunggu aktivasi',
+            body: '${widget.pendingDevices} perangkat belum diaktifkan admin.',
+          ));
+        }
+        if (items.isEmpty) {
+          items.add(const _Notif(
+            icon: Icons.check_circle_outline,
+            color: AppColors.successText,
+            title: 'Tidak ada notifikasi',
+            body: 'Semua presensi dan perangkat sudah sinkron.',
+          ));
+        }
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const Text('Notifikasi', style: AppText.headlineSm),
+                const SizedBox(height: 12),
+                ...items.map((_Notif n) => Padding(
+                      padding: const EdgeInsets.only(bottom: 10),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Icon(n.icon, color: n.color, size: 22),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(n.title,
+                                    style: AppText.bodyMdMedium
+                                        .copyWith(color: AppColors.ink)),
+                                Text(n.body,
+                                    style: AppText.bodyMd
+                                        .copyWith(color: AppColors.inkSecondary)),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    )),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   Widget _adminBanner() {
@@ -262,30 +336,36 @@ class _HomeDashboardState extends State<HomeDashboard> {
                     ),
                   ),
                   IconButton(
-                    onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                              'Operan Jaga Bangsal Melati terjadwal pukul 14:45 WIB.'),
-                        ),
-                      );
-                    },
+                    onPressed: _showNotifications,
                     icon: Stack(
                       children: [
                         const Icon(Icons.notifications_none,
                             color: AppColors.primary, size: 24),
-                        Positioned(
-                          right: 2,
-                          top: 2,
-                          child: Container(
-                            width: 8,
-                            height: 8,
-                            decoration: const BoxDecoration(
-                              color: AppColors.error,
-                              shape: BoxShape.circle,
+                        if (_outboxCount + widget.pendingDevices > 0)
+                          Positioned(
+                            right: 0,
+                            top: 0,
+                            child: Container(
+                              padding: const EdgeInsets.all(2),
+                              decoration: const BoxDecoration(
+                                color: AppColors.error,
+                                shape: BoxShape.circle,
+                              ),
+                              constraints: const BoxConstraints(
+                                minWidth: 16,
+                                minHeight: 16,
+                              ),
+                              child: Text(
+                                '${_outboxCount + widget.pendingDevices}',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
                             ),
                           ),
-                        ),
                       ],
                     ),
                   ),
@@ -1111,4 +1191,19 @@ class _HomeDashboardState extends State<HomeDashboard> {
     if (d == null) return '--:--';
     return '${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}';
   }
+}
+
+
+class _Notif {
+  const _Notif({
+    required this.icon,
+    required this.color,
+    required this.title,
+    required this.body,
+  });
+
+  final IconData icon;
+  final Color color;
+  final String title;
+  final String body;
 }
