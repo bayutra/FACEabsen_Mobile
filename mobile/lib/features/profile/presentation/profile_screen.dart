@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 import '../../device/data/device_repository.dart';
-import '../../device/presentation/device_sections.dart';
 import '../../device/presentation/helpdesk_sheet.dart';
 import '../../../core/theme/app_colors.dart';
 import '../data/profile_repository.dart';
@@ -301,19 +300,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 const SizedBox(height: 14),
                 _adminEntry(),
               ],
-              const SizedBox(height: 14),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildSectionHeader('PERANGKAT TERDAFTAR & MANAJEMEN'),
-                  DeviceStatusSection(
-                    devices: widget.devices,
-                    employeeName: _data!.name,
-                    employeeNip: _data!.employeeNo,
-                    unit: _data!.department,
-                  ),
-                ],
-              ),
               const SizedBox(height: 14),
               _generalSettings(),
               const SizedBox(height: 14),

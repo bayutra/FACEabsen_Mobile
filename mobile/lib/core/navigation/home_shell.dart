@@ -12,7 +12,6 @@ import '../../features/auth/data/auth_repository.dart';
 import '../../features/correction/data/correction_repository.dart';
 import '../../features/correction/presentation/correction_list_screen.dart';
 import '../../features/device/data/device_repository.dart';
-import '../../features/device/presentation/device_screen.dart';
 import '../../features/face/data/face_repository.dart';
 import '../../features/face/presentation/face_registration_screen.dart';
 import '../../features/leave/data/leave_repository.dart';
@@ -271,7 +270,7 @@ class _HomeShellState extends State<HomeShell> {
           employeeNo: _employeeNo,
         )),
         onOpenSchedule: () => _go(2),
-        onOpenProfile: () => _go(4),
+        onOpenProfile: () => _go(3),
         onOpenHistory: () => _go(1),
         onOpenAdmin: canOpenAdminArea(_roles)
             ? () => _push(AdminHomeScreen(dio: widget.dio, roles: _roles))
@@ -291,10 +290,6 @@ class _HomeShellState extends State<HomeShell> {
           displayName: _displayName,
           employeeNo: _employeeNo,
         )),
-      ),
-      DeviceScreen(
-        devices: widget.devices,
-        displayName: _displayName,
       ),
       profile,
     ];
@@ -322,11 +317,6 @@ class _HomeShellState extends State<HomeShell> {
             icon: Icon(Icons.calendar_month_outlined),
             selectedIcon: Icon(Icons.calendar_month, color: Colors.white),
             label: 'Jadwal',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.devices_outlined),
-            selectedIcon: Icon(Icons.devices, color: Colors.white),
-            label: 'Perangkat',
           ),
           NavigationDestination(
             icon: Icon(Icons.account_circle_outlined),
