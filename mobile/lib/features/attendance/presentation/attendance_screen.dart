@@ -652,7 +652,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                                 shape: BoxShape.circle,
                                 color: AppColors.primaryContainer,
                                 border: Border.all(
-                                    color: const Color(0xFF89F5E7), width: 3),
+                                    color: AppColors.primaryFixed, width: 3),
                                 boxShadow: [
                                   BoxShadow(
                                     color: AppColors.primary.withOpacity(0.3),
@@ -915,9 +915,9 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     final bool warn = verdict.status == PunchStatus.late ||
         verdict.status == PunchStatus.veryLate ||
         verdict.status == PunchStatus.earlyCheckout;
-    final Color fg = warn ? const Color(0xFFB45309) : AppColors.successText;
-    final Color bg = warn ? const Color(0xFFFFFBEB) : AppColors.successTint;
-    final Color border = warn ? const Color(0xFFFDE68A) : AppColors.success;
+    final Color fg = warn ? AppColors.warningText : AppColors.successText;
+    final Color bg = warn ? AppColors.warningTint : AppColors.successTint;
+    final Color border = warn ? AppColors.warningBorder : AppColors.success;
     final String base = arriving
         ? checkInStatusLabel(verdict.status)
         : checkOutStatusLabel(verdict.status);
@@ -992,7 +992,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
               color: isDone
                   ? AppColors.successTint
                   : (isInProgress
-                      ? const Color(0xFFE0F2FE)
+                      ? AppColors.infoTint
                       : AppColors.surfaceLow),
               border: Border.all(
                 color: isDone
@@ -1037,7 +1037,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
                         color: isInProgress
-                            ? const Color(0xFF004C6E)
+                            ? AppColors.primary
                             : AppColors.ink,
                       ),
                     ),
@@ -1048,7 +1048,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                         color: isDone
                             ? AppColors.successTint
                             : (isInProgress
-                                ? const Color(0xFFE0F2FE)
+                                ? AppColors.infoTint
                                 : AppColors.surfaceLow),
                         borderRadius:
                             BorderRadius.circular(AppColors.radiusFull),

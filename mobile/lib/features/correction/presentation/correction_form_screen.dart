@@ -162,7 +162,7 @@ class _CorrectionFormScreenState extends State<CorrectionFormScreen> {
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w700,
-                            color: Color(0xFF004C6E),
+                            color: AppColors.primary,
                           ),
                         ),
                         SizedBox(height: 2),

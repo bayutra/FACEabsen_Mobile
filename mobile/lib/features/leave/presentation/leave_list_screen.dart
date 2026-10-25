@@ -510,9 +510,9 @@ class _LeaveListScreenState extends State<LeaveListScreen> {
           'Ditolak',
         ),
       _ => (
-          const Color(0xFF6B7280),
-          const Color(0xFFF3F4F6),
-          const Color(0xFF374151),
+          AppColors.inkDisabled,
+          AppColors.surfaceLow,
+          AppColors.inkSecondary,
           l.status,
         ),
     };

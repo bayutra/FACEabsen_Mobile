@@ -1,4 +1,6 @@
+// ignore_for_file: prefer_const_constructors
 import 'package:flutter/material.dart';
+import 'package:face_absen_mobile/core/theme/app_colors.dart';
 
 import '../../../core/widgets/hospital_mark.dart';
 import '../domain/attendance_models.dart';
@@ -45,21 +47,21 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
         : widget.result.checkOutStatus ?? '';
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FF),
+      backgroundColor: AppColors.canvas,
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(60),
         child: Container(
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             color: Colors.white,
             border: Border(
               bottom: BorderSide(
-                color: Color(0x99BDC9C6),
+                color: AppColors.border.withOpacity(0.60),
                 width: 0.8,
               ),
             ),
             boxShadow: [
               BoxShadow(
-                color: Color(0x08000000),
+                color: AppColors.ink.withOpacity(0.03),
                 blurRadius: 4,
                 offset: Offset(0, 1),
               ),
@@ -78,7 +80,7 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w700,
-                      color: Color(0xFF005C55),
+                      color: AppColors.primary,
                       letterSpacing: -0.2,
                     ),
                   ),
@@ -87,10 +89,10 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
                     width: 32,
                     height: 32,
                     decoration: BoxDecoration(
-                      color: const Color(0xFFE5EEFF),
+                      color: AppColors.surfaceContainer,
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: const Color(0xCCBDC9C6),
+                        color: AppColors.border.withOpacity(0.80),
                       ),
                     ),
                     child: Center(
@@ -99,7 +101,7 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
                         style: const TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w700,
-                          color: Color(0xFF005C55),
+                          color: AppColors.primary,
                         ),
                       ),
                     ),
@@ -116,10 +118,10 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
           Container(
             padding: const EdgeInsets.all(4),
             decoration: BoxDecoration(
-              color: const Color(0xFFDCE9FF),
+              color: AppColors.surfaceHigh,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: const Color(0x99BDC9C6),
+                color: AppColors.border.withOpacity(0.60),
               ),
             ),
             child: Row(
@@ -134,14 +136,14 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
           const Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.info_outline, size: 13, color: Color(0xFF3E4947)),
+              Icon(Icons.info_outline, size: 13, color: AppColors.inkSecondary),
               SizedBox(width: 4),
               Text(
                 'Pratinjau Hasil Presensi Masuk SIMRS Kemenkes',
                 style: TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.w500,
-                  color: Color(0xFF3E4947),
+                  color: AppColors.inkSecondary,
                 ),
               ),
             ],
@@ -169,13 +171,13 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
               },
               style: FilledButton.styleFrom(
                 backgroundColor: _tab == 1
-                    ? const Color(0xFF005C55)
-                    : const Color(0xFF0F766E),
+                    ? AppColors.primary
+                    : AppColors.primaryContainer,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
                 elevation: 2,
-                shadowColor: const Color(0x33005C55),
+                shadowColor: AppColors.primary.withOpacity(0.20),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -212,7 +214,7 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
             child: OutlinedButton(
               onPressed: () => _showEvidenceSheet(context),
               style: OutlinedButton.styleFrom(
-                side: const BorderSide(color: Color(0xFFBDC9C6), width: 1.2),
+                side: BorderSide(color: AppColors.border, width: 1.2),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
@@ -220,14 +222,14 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
               child: const Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.receipt_long, size: 18, color: Color(0xFF0B1C30)),
+                  Icon(Icons.receipt_long, size: 18, color: AppColors.ink),
                   SizedBox(width: 8),
                   Text(
                     'Lihat Detail Bukti Presensi',
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: Color(0xFF0B1C30),
+                      color: AppColors.ink,
                     ),
                   ),
                 ],
@@ -243,8 +245,8 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
                 icon: const Icon(Icons.support_agent, size: 18),
                 label: const Text('Laporkan Kendala / CS IT'),
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: const Color(0xFFBA1A1A),
-                  side: const BorderSide(color: Color(0xFFFECACA), width: 1.2),
+                  foregroundColor: AppColors.error,
+                  side: BorderSide(color: AppColors.errorBorder, width: 1.2),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                   ),
@@ -268,11 +270,11 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: borderColor ?? const Color(0x80BDC9C6),
+          color: borderColor ?? AppColors.border.withOpacity(0.50),
         ),
-        boxShadow: const [
+        boxShadow: [
           BoxShadow(
-            color: Color(0x0A000000),
+            color: AppColors.ink.withOpacity(0.04),
             blurRadius: 8,
             offset: Offset(0, 2),
           ),
@@ -302,11 +304,11 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
     final bool active = _tab == i;
     Color activeFg;
     if (i == 0) {
-      activeFg = const Color(0xFF005C55);
+      activeFg = AppColors.primary;
     } else if (i == 1) {
-      activeFg = const Color(0xFFBA1A1A);
+      activeFg = AppColors.error;
     } else {
-      activeFg = const Color(0xFFB45309);
+      activeFg = AppColors.warningText;
     }
 
     return Expanded(
@@ -320,9 +322,9 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
             color: active ? Colors.white : Colors.transparent,
             borderRadius: BorderRadius.circular(10),
             boxShadow: active
-                ? const [
+                ? [
                     BoxShadow(
-                      color: Color(0x14000000),
+                      color: AppColors.ink.withOpacity(0.08),
                       blurRadius: 4,
                       offset: Offset(0, 1),
                     ),
@@ -335,7 +337,7 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
               Icon(
                 icon,
                 size: 15,
-                color: active ? activeFg : const Color(0xFF3E4947),
+                color: active ? activeFg : AppColors.inkSecondary,
               ),
               const SizedBox(width: 5),
               Text(
@@ -343,7 +345,7 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: active ? FontWeight.w700 : FontWeight.w500,
-                  color: active ? activeFg : const Color(0xFF3E4947),
+                  color: active ? activeFg : AppColors.inkSecondary,
                 ),
               ),
             ],
@@ -359,8 +361,8 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
     return Column(
       children: [
         _card(
-          accentColor: const Color(0xFFBA1A1A),
-          borderColor: const Color(0xFFFECACA),
+          accentColor: AppColors.error,
+          borderColor: AppColors.errorBorder,
           padding: const EdgeInsets.all(20),
           child: Column(
             children: [
@@ -369,14 +371,14 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
                   width: 64,
                   height: 64,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFFEF2F2),
+                    color: AppColors.roseTint,
                     shape: BoxShape.circle,
                     border:
-                        Border.all(color: const Color(0xFFFECACA), width: 1.5),
+                        Border.all(color: AppColors.errorBorder, width: 1.5),
                   ),
                   child: const Center(
                     child:
-                        Icon(Icons.gpp_bad, size: 32, color: Color(0xFFBA1A1A)),
+                        Icon(Icons.gpp_bad, size: 32, color: AppColors.error),
                   ),
                 ),
               ),
@@ -385,22 +387,22 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFEF2F2),
+                  color: AppColors.roseTint,
                   borderRadius: BorderRadius.circular(999),
-                  border: Border.all(color: const Color(0xFFFECACA)),
+                  border: Border.all(color: AppColors.errorBorder),
                 ),
                 child: const Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(Icons.error_outline,
-                        size: 14, color: Color(0xFFB91C1C)),
+                        size: 14, color: AppColors.roseText),
                     SizedBox(width: 4),
                     Text(
                       'Presensi Ditolak',
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w700,
-                        color: Color(0xFFB91C1C),
+                        color: AppColors.roseText,
                       ),
                     ),
                   ],
@@ -413,7 +415,7 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.w700,
-                  color: Color(0xFF0B1C30),
+                  color: AppColors.ink,
                   letterSpacing: -0.3,
                 ),
               ),
@@ -423,11 +425,11 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 13,
-                  color: Color(0xFF3E4947),
+                  color: AppColors.inkSecondary,
                 ),
               ),
               const SizedBox(height: 14),
-              const Divider(height: 1, color: Color(0xFFFEE2E2)),
+              Divider(height: 1, color: AppColors.errorBorder),
               const SizedBox(height: 10),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -438,7 +440,7 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
                       letterSpacing: 1.2,
-                      color: Color(0xFF6E7977),
+                      color: AppColors.outline,
                     ),
                   ),
                   Text(
@@ -446,7 +448,7 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
-                      color: Color(0xFFBA1A1A),
+                      color: AppColors.error,
                       fontFeatures: [FontFeature.tabularFigures()],
                     ),
                   ),
@@ -467,14 +469,14 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
                   const Row(
                     children: [
                       Icon(Icons.report_problem,
-                          size: 18, color: Color(0xFFBA1A1A)),
+                          size: 18, color: AppColors.error),
                       SizedBox(width: 6),
                       Text(
                         'Diagnosa Sistem Absensi',
                         style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.w700,
-                          color: Color(0xFF0B1C30),
+                          color: AppColors.ink,
                         ),
                       ),
                     ],
@@ -483,16 +485,16 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
                     padding:
                         const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFFEF2F2),
+                      color: AppColors.roseTint,
                       borderRadius: BorderRadius.circular(6),
-                      border: Border.all(color: const Color(0xFFFECACA)),
+                      border: Border.all(color: AppColors.errorBorder),
                     ),
                     child: const Text(
                       'ERR-ATT-01',
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
-                        color: Color(0xFFBA1A1A),
+                        color: AppColors.error,
                         fontFamily: 'monospace',
                       ),
                     ),
@@ -503,15 +505,15 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFEF2F2),
+                  color: AppColors.roseTint,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: const Color(0xFFFECACA)),
+                  border: Border.all(color: AppColors.errorBorder),
                 ),
                 child: const Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Icon(Icons.report_problem,
-                        size: 20, color: Color(0xFFBA1A1A)),
+                        size: 20, color: AppColors.error),
                     SizedBox(width: 10),
                     Expanded(
                       child: Column(
@@ -522,7 +524,7 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
                             style: TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w700,
-                              color: Color(0xFF991B1B),
+                              color: AppColors.roseTextDark,
                             ),
                           ),
                           SizedBox(height: 3),
@@ -530,7 +532,7 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
                             'Sistem tidak dapat memverifikasi presensi Anda. Pastikan wajah terlihat jelas dan perangkat dalam kondisi sah, lalu coba lagi.',
                             style: TextStyle(
                               fontSize: 12,
-                              color: Color(0xFFB91C1C),
+                              color: AppColors.roseText,
                               height: 1.35,
                             ),
                           ),
@@ -545,34 +547,34 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF8F9FF),
+                  color: AppColors.canvas,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: const Color(0x80BDC9C6),
+                    color: AppColors.border.withOpacity(0.50),
                   ),
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.face, size: 18, color: Color(0xFF3E4947)),
+                    const Icon(Icons.face, size: 18, color: AppColors.inkSecondary),
                     const SizedBox(width: 8),
                     const Text(
                       'Pencocokan Biometrik Wajah',
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
-                        color: Color(0xFF0B1C30),
+                        color: AppColors.ink,
                       ),
                     ),
                     const Spacer(),
                     const Icon(Icons.check_circle,
-                        size: 15, color: Color(0xFF047857)),
+                        size: 15, color: AppColors.successText),
                     const SizedBox(width: 4),
                     Text(
                       'Sesuai (${score.toStringAsFixed(1)}%)',
                       style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w700,
-                        color: Color(0xFF047857),
+                        color: AppColors.successText,
                       ),
                     ),
                   ],
@@ -582,23 +584,23 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFEFF4FF),
+                  color: AppColors.surfaceLow,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: const Color(0xFFD3E4FE)),
+                  border: Border.all(color: AppColors.surfaceVariant),
                 ),
                 child: const Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
                       children: [
-                        Icon(Icons.policy, size: 16, color: Color(0xFF005C55)),
+                        Icon(Icons.policy, size: 16, color: AppColors.primary),
                         SizedBox(width: 6),
                         Text(
                           'Aturan Kepatuhan Presensi RS:',
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w700,
-                            color: Color(0xFF0B1C30),
+                            color: AppColors.ink,
                           ),
                         ),
                       ],
@@ -608,7 +610,7 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
                       '1. Presensi wajib dilakukan menggunakan akun dan perangkat Anda sendiri.\n2. Pastikan wajah terlihat jelas dan pencahayaan cukup saat pengambilan biometrik.',
                       style: TextStyle(
                         fontSize: 11,
-                        color: Color(0xFF3E4947),
+                        color: AppColors.inkSecondary,
                         height: 1.4,
                       ),
                     ),
@@ -628,8 +630,8 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
     return Column(
       children: [
         _card(
-          accentColor: const Color(0xFFF59E0B),
-          borderColor: const Color(0xFFFDE68A),
+          accentColor: AppColors.warning,
+          borderColor: AppColors.warningBorder,
           padding: const EdgeInsets.all(20),
           child: Column(
             children: [
@@ -638,14 +640,14 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
                   width: 64,
                   height: 64,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFFFFBEB),
+                    color: AppColors.warningTint,
                     shape: BoxShape.circle,
                     border:
-                        Border.all(color: const Color(0xFFFDE68A), width: 1.5),
+                        Border.all(color: AppColors.warningBorder, width: 1.5),
                   ),
                   child: const Center(
                     child: Icon(Icons.hourglass_top,
-                        size: 32, color: Color(0xFFB45309)),
+                        size: 32, color: AppColors.warningText),
                   ),
                 ),
               ),
@@ -654,21 +656,21 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFFFBEB),
+                  color: AppColors.warningTint,
                   borderRadius: BorderRadius.circular(999),
-                  border: Border.all(color: const Color(0xFFFDE68A)),
+                  border: Border.all(color: AppColors.warningBorder),
                 ),
                 child: const Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.schedule, size: 14, color: Color(0xFFB45309)),
+                    Icon(Icons.schedule, size: 14, color: AppColors.warningText),
                     SizedBox(width: 4),
                     Text(
                       'Menunggu Review',
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w700,
-                        color: Color(0xFFB45309),
+                        color: AppColors.warningText,
                       ),
                     ),
                   ],
@@ -681,7 +683,7 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.w700,
-                  color: Color(0xFF0B1C30),
+                  color: AppColors.ink,
                   letterSpacing: -0.3,
                 ),
               ),
@@ -691,11 +693,11 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 13,
-                  color: Color(0xFF3E4947),
+                  color: AppColors.inkSecondary,
                 ),
               ),
               const SizedBox(height: 14),
-              const Divider(height: 1, color: Color(0xFFFEF3C7)),
+              Divider(height: 1, color: AppColors.warningBorder),
               const SizedBox(height: 10),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -706,7 +708,7 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
                       letterSpacing: 1.2,
-                      color: Color(0xFF6E7977),
+                      color: AppColors.outline,
                     ),
                   ),
                   Text(
@@ -714,7 +716,7 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
-                      color: Color(0xFFB45309),
+                      color: AppColors.warningText,
                       fontFeatures: [FontFeature.tabularFigures()],
                     ),
                   ),
@@ -743,14 +745,14 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
                   const Row(
                     children: [
                       Icon(Icons.assignment_late,
-                          size: 18, color: Color(0xFFB45309)),
+                          size: 18, color: AppColors.warningText),
                       SizedBox(width: 6),
                       Text(
                         'Alasan Dispensasi Presensi',
                         style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.w700,
-                          color: Color(0xFF0B1C30),
+                          color: AppColors.ink,
                         ),
                       ),
                     ],
@@ -759,10 +761,10 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
                     padding:
                         const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFE5EEFF),
+                      color: AppColors.surfaceContainer,
                       borderRadius: BorderRadius.circular(6),
                       border: Border.all(
-                        color: const Color(0x80BDC9C6),
+                        color: AppColors.border.withOpacity(0.50),
                       ),
                     ),
                     child: Text(
@@ -770,7 +772,7 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
                       style: const TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
-                        color: Color(0xFF0B1C30),
+                        color: AppColors.ink,
                         fontFamily: 'monospace',
                       ),
                     ),
@@ -781,15 +783,15 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFFFBEB),
+                  color: AppColors.warningTint,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: const Color(0xFFFDE68A)),
+                  border: Border.all(color: AppColors.warningBorder),
                 ),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Icon(Icons.attribution,
-                        size: 20, color: Color(0xFFB45309)),
+                        size: 20, color: AppColors.warningText),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Column(
@@ -800,7 +802,7 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
                             style: TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w700,
-                              color: Color(0xFF92400E),
+                              color: AppColors.warningText,
                             ),
                           ),
                           const SizedBox(height: 3),
@@ -808,7 +810,7 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
                             'Skor risiko presensi di bawah ambang otomatis sehingga diteruskan ke verifikasi kepegawaian${acc != null ? ' (Skor: $acc)' : ''}.',
                             style: const TextStyle(
                               fontSize: 12,
-                              color: Color(0xFFB45309),
+                              color: AppColors.warningText,
                               height: 1.35,
                             ),
                           ),
@@ -822,10 +824,10 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF8F9FF),
+                  color: AppColors.canvas,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: const Color(0x80BDC9C6),
+                    color: AppColors.border.withOpacity(0.50),
                   ),
                 ),
                 child: Column(
@@ -837,7 +839,7 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
                         letterSpacing: 1.2,
-                        color: Color(0xFF6E7977),
+                        color: AppColors.outline,
                       ),
                     ),
                     const SizedBox(height: 10),
@@ -846,9 +848,9 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
                       title: 'Foto Selfie Wajah Disimpan',
                       subtitle: 'Liveness check terkonfirmasi valid',
                       icon: Icons.check,
-                      iconColor: const Color(0xFF047857),
-                      badgeBg: const Color(0xFFECFDF5),
-                      badgeFg: const Color(0xFF047857),
+                      iconColor: AppColors.successText,
+                      badgeBg: AppColors.successTint,
+                      badgeFg: AppColors.successText,
                     ),
                     const SizedBox(height: 8),
                     _workflowStepItem(
@@ -856,9 +858,9 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
                       title: 'Diteruskan ke Kepala Tim Jaga',
                       subtitle: 'dr. Hendra Wicaksono, Sp.PD',
                       icon: Icons.pending,
-                      iconColor: const Color(0xFFB45309),
-                      badgeBg: const Color(0xFFFFFBEB),
-                      badgeFg: const Color(0xFFB45309),
+                      iconColor: AppColors.warningText,
+                      badgeBg: AppColors.warningTint,
+                      badgeFg: AppColors.warningText,
                     ),
                     const SizedBox(height: 8),
                     _workflowStepItem(
@@ -866,9 +868,9 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
                       title: 'Validasi SDM Kepegawaian',
                       subtitle: 'Pencatatan resmi ke payroll rumah sakit',
                       icon: Icons.schedule,
-                      iconColor: const Color(0xFF6E7977),
-                      badgeBg: const Color(0xFFE5EEFF),
-                      badgeFg: const Color(0xFF0B1C30),
+                      iconColor: AppColors.outline,
+                      badgeBg: AppColors.surfaceContainer,
+                      badgeFg: AppColors.ink,
                       isMuted: true,
                     ),
                   ],
@@ -878,22 +880,22 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFEFF4FF),
+                  color: AppColors.surfaceLow,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: const Color(0xFFD3E4FE)),
+                  border: Border.all(color: AppColors.surfaceVariant),
                 ),
                 child: const Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Icon(Icons.info_outline,
-                        size: 18, color: Color(0xFF005C55)),
+                        size: 18, color: AppColors.primary),
                     SizedBox(width: 8),
                     Expanded(
                       child: Text(
                         'Hasil verifikasi biometrik presensi otomatis diteruskan ke Kepala Tim & SDM Kepegawaian untuk validasi manual dalam kurun waktu 1x24 jam.',
                         style: TextStyle(
                           fontSize: 11,
-                          color: Color(0xFF3E4947),
+                          color: AppColors.inkSecondary,
                           height: 1.4,
                         ),
                       ),
@@ -950,7 +952,7 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
                   style: const TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
-                    color: Color(0xFF0B1C30),
+                    color: AppColors.ink,
                     height: 1.2,
                   ),
                 ),
@@ -959,7 +961,7 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
                   subtitle,
                   style: const TextStyle(
                     fontSize: 11,
-                    color: Color(0xFF3E4947),
+                    color: AppColors.inkSecondary,
                   ),
                 ),
               ],
@@ -973,7 +975,7 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
 
   Widget _successHeroCard(String title, String? timeIso, String status) {
     return _card(
-      accentColor: const Color(0xFF005C55),
+      accentColor: AppColors.primary,
       padding: const EdgeInsets.all(20),
       child: Column(
         children: [
@@ -981,20 +983,20 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
             child: Container(
               width: 72,
               height: 72,
-              decoration: const BoxDecoration(
-                color: Color(0x739CF2E8),
+              decoration: BoxDecoration(
+                color: AppColors.primaryFixed.withOpacity(0.45),
                 shape: BoxShape.circle,
               ),
               child: Center(
                 child: Container(
                   width: 54,
                   height: 54,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFF005C55),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary,
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: Color(0x20005C55),
+                        color: AppColors.primary.withOpacity(0.12),
                         blurRadius: 8,
                         offset: Offset(0, 3),
                       ),
@@ -1016,7 +1018,7 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
             style: const TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.w700,
-              color: Color(0xFF0B1C30),
+              color: AppColors.ink,
               letterSpacing: -0.3,
             ),
           ),
@@ -1026,11 +1028,11 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 13,
-              color: Color(0xFF3E4947),
+              color: AppColors.inkSecondary,
             ),
           ),
           const SizedBox(height: 16),
-          const Divider(height: 1, color: Color(0xFFE5EEFF)),
+          const Divider(height: 1, color: AppColors.surfaceContainer),
           const SizedBox(height: 12),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1044,7 +1046,7 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
                       letterSpacing: 1.2,
-                      color: Color(0xFF6E7977),
+                      color: AppColors.outline,
                     ),
                   ),
                   const SizedBox(height: 2),
@@ -1053,7 +1055,7 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
                     style: const TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.w700,
-                      color: Color(0xFF0B1C30),
+                      color: AppColors.ink,
                       fontFeatures: [FontFeature.tabularFigures()],
                     ),
                   ),
@@ -1088,14 +1090,14 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
               const Row(
                 children: [
                   Icon(Icons.medical_services,
-                      size: 18, color: Color(0xFF005C55)),
+                      size: 18, color: AppColors.primary),
                   SizedBox(width: 8),
                   Text(
                     'Data Penugasan Shift',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
-                      color: Color(0xFF0B1C30),
+                      color: AppColors.ink,
                     ),
                   ),
                 ],
@@ -1104,16 +1106,16 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFCCFBF1),
+                  color: AppColors.tealBadgeBg,
                   borderRadius: BorderRadius.circular(999),
-                  border: Border.all(color: const Color(0xFF99F6E4)),
+                  border: Border.all(color: AppColors.tealBadgeBorder),
                 ),
                 child: Text(
                   widget.result.shiftLabel ?? 'Dinas Pagi',
                   style: const TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
-                    color: Color(0xFF0F766E),
+                    color: AppColors.primaryContainer,
                   ),
                 ),
               ),
@@ -1123,9 +1125,9 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: const Color(0xFFEFF4FF),
+              color: AppColors.surfaceLow,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: const Color(0xFFD3E4FE)),
+              border: Border.all(color: AppColors.surfaceVariant),
             ),
             child: Row(
               children: [
@@ -1133,11 +1135,11 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFD3E4FE),
+                    color: AppColors.surfaceVariant,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: const Icon(Icons.badge,
-                      color: Color(0xFF005C55), size: 22),
+                      color: AppColors.primary, size: 22),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
@@ -1151,7 +1153,7 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
                         style: const TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w700,
-                          color: Color(0xFF0B1C30),
+                          color: AppColors.ink,
                         ),
                       ),
                       const SizedBox(height: 2),
@@ -1159,7 +1161,7 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
                         'NIP. ${widget.employeeNo.isEmpty ? "—" : widget.employeeNo} • Perawat Ahli Pertama',
                         style: const TextStyle(
                           fontSize: 11,
-                          color: Color(0xFF3E4947),
+                          color: AppColors.inkSecondary,
                         ),
                       ),
                     ],
@@ -1220,10 +1222,10 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
-              color: const Color(0xFFF8F9FF),
+              color: AppColors.canvas,
               borderRadius: BorderRadius.circular(8),
               border: Border.all(
-                color: const Color(0x80BDC9C6),
+                color: AppColors.border.withOpacity(0.50),
               ),
             ),
             child: Row(
@@ -1233,7 +1235,7 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
                   'ID Referensi SIMRS:',
                   style: TextStyle(
                     fontSize: 11,
-                    color: Color(0xFF3E4947),
+                    color: AppColors.inkSecondary,
                   ),
                 ),
                 Text(
@@ -1244,7 +1246,7 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
                     fontFamily: 'monospace',
-                    color: Color(0xFF0B1C30),
+                    color: AppColors.ink,
                   ),
                 ),
               ],
@@ -1265,10 +1267,10 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: const Color(0xFFF8F9FF),
+        color: AppColors.canvas,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: const Color(0x80BDC9C6),
+          color: AppColors.border.withOpacity(0.50),
         ),
       ),
       child: Column(
@@ -1280,8 +1282,8 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
                 icon,
                 size: 14,
                 color: isSuccess
-                    ? const Color(0xFF047857)
-                    : const Color(0xFF6E7977),
+                    ? AppColors.successText
+                    : AppColors.outline,
               ),
               const SizedBox(width: 4),
               Expanded(
@@ -1289,7 +1291,7 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
                   title,
                   style: const TextStyle(
                     fontSize: 11,
-                    color: Color(0xFF6E7977),
+                    color: AppColors.outline,
                     fontWeight: FontWeight.w500,
                   ),
                   maxLines: 1,
@@ -1304,7 +1306,7 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
             style: TextStyle(
               fontSize: 13,
               color:
-                  isSuccess ? const Color(0xFF047857) : const Color(0xFF0B1C30),
+                  isSuccess ? AppColors.successText : AppColors.ink,
               fontWeight: FontWeight.w700,
             ),
             maxLines: 1,
@@ -1316,7 +1318,7 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
             style: TextStyle(
               fontSize: 10,
               color:
-                  isSuccess ? const Color(0xFF047857) : const Color(0xFF6E7977),
+                  isSuccess ? AppColors.successText : AppColors.outline,
             ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
@@ -1335,25 +1337,25 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
     switch (status) {
       case 'ON_TIME':
       case 'NORMAL_CHECKOUT':
-        bg = const Color(0xFFECFDF5);
-        fg = const Color(0xFF047857);
-        border = const Color(0xFFA7F3D0);
+        bg = AppColors.successTint;
+        fg = AppColors.successText;
+        border = AppColors.successBorder;
         label = 'Tepat Waktu';
         icon = Icons.check_circle;
         break;
       case 'LATE':
       case 'VERY_LATE':
       case 'EARLY_CHECKOUT':
-        bg = const Color(0xFFFFFBEB);
-        fg = const Color(0xFFB45309);
-        border = const Color(0xFFFDE68A);
+        bg = AppColors.warningTint;
+        fg = AppColors.warningText;
+        border = AppColors.warningBorder;
         label = status == 'EARLY_CHECKOUT' ? 'Pulang Cepat' : 'Terlambat';
         icon = Icons.schedule;
         break;
       default:
-        bg = const Color(0xFFECFDF5);
-        fg = const Color(0xFF047857);
-        border = const Color(0xFFA7F3D0);
+        bg = AppColors.successTint;
+        fg = AppColors.successText;
+        border = AppColors.successBorder;
         label = 'Tepat Waktu';
         icon = Icons.check_circle;
     }
@@ -1364,9 +1366,9 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
         color: bg,
         borderRadius: BorderRadius.circular(999),
         border: Border.all(color: border),
-        boxShadow: const [
+        boxShadow: [
           BoxShadow(
-            color: Color(0x06000000),
+            color: AppColors.ink.withOpacity(0.02),
             blurRadius: 4,
             offset: Offset(0, 1),
           ),
@@ -1396,7 +1398,7 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (BuildContext sheetContext) => Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
@@ -1412,7 +1414,7 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
                   width: 40,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFBDC9C6),
+                    color: AppColors.border,
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -1420,14 +1422,14 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
               const SizedBox(height: 16),
               const Row(
                 children: [
-                  Icon(Icons.verified_user, color: Color(0xFF005C55), size: 22),
+                  Icon(Icons.verified_user, color: AppColors.primary, size: 22),
                   SizedBox(width: 8),
                   Text(
                     'Detail Bukti Presensi Digital',
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w700,
-                      color: Color(0xFF0B1C30),
+                      color: AppColors.ink,
                     ),
                   ),
                 ],
@@ -1437,16 +1439,16 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
                 'Stempel Resmi SIMRS RSU Darmayu Madiun',
                 style: TextStyle(
                   fontSize: 12,
-                  color: Color(0xFF3E4947),
+                  color: AppColors.inkSecondary,
                 ),
               ),
               const SizedBox(height: 16),
               Container(
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFEFF4FF),
+                  color: AppColors.surfaceLow,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: const Color(0xFFD3E4FE)),
+                  border: Border.all(color: AppColors.surfaceVariant),
                 ),
                 child: Column(
                   children: [
@@ -1503,19 +1505,19 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
                   icon: const Icon(
                     Icons.download,
                     size: 18,
-                    color: Color(0xFF005C55),
+                    color: AppColors.primary,
                   ),
                   label: const Text(
                     'Unduh PDF',
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: Color(0xFF005C55),
+                      color: AppColors.primary,
                     ),
                   ),
                   style: OutlinedButton.styleFrom(
                     side:
-                        const BorderSide(color: Color(0xFFBDC9C6), width: 1.2),
+                        BorderSide(color: AppColors.border, width: 1.2),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
                     ),
@@ -1529,7 +1531,7 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
                 child: FilledButton(
                   onPressed: () => Navigator.of(sheetContext).pop(),
                   style: FilledButton.styleFrom(
-                    backgroundColor: const Color(0xFF0F766E),
+                    backgroundColor: AppColors.primaryContainer,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
                     ),
@@ -1563,7 +1565,7 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
             label,
             style: const TextStyle(
               fontSize: 12,
-              color: Color(0xFF3E4947),
+              color: AppColors.inkSecondary,
             ),
           ),
           const SizedBox(width: 12),
@@ -1575,7 +1577,7 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
                 fontFamily: isMono ? 'monospace' : null,
-                color: const Color(0xFF0B1C30),
+                color: AppColors.ink,
               ),
             ),
           ),
@@ -1612,15 +1614,15 @@ class _PipelineStep extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final Color dot = done
-        ? const Color(0xFF10B981)
+        ? AppColors.success
         : active
-            ? const Color(0xFF006591)
-            : const Color(0xFF6E7977);
+            ? AppColors.secondary
+            : AppColors.outline;
     final Color bg = done
-        ? const Color(0xFFECFDF5)
+        ? AppColors.successTint
         : active
-            ? const Color(0xFFEFF4FF)
-            : const Color(0xFFEFF4FF);
+            ? AppColors.surfaceLow
+            : AppColors.surfaceLow;
     return Column(
       children: [
         Container(
@@ -1635,7 +1637,7 @@ class _PipelineStep extends StatelessWidget {
               ? const Icon(
                   Icons.check,
                   size: 14,
-                  color: Color(0xFF047857),
+                  color: AppColors.successText,
                 )
               : null,
         ),
@@ -1645,10 +1647,11 @@ class _PipelineStep extends StatelessWidget {
           style: const TextStyle(
             fontSize: 11,
             fontWeight: FontWeight.w500,
-            color: Color(0xFF3E4947),
+            color: AppColors.inkSecondary,
           ),
         ),
       ],
     );
   }
 }
+

@@ -297,7 +297,7 @@ class _FaceRegistrationScreenState extends State<FaceRegistrationScreen>
                                         children: [
                                           Icon(Icons.verified_user_outlined,
                                               size: 12,
-                                              color: Color(0xFF89F5E7)),
+                                              color: AppColors.primaryFixed),
                                           SizedBox(width: 5),
                                           Text(
                                             'Registrasi Wajah',
@@ -490,7 +490,7 @@ class _CameraFrameGuide extends CustomPainter {
         ..addRRect(roundedFrame)
         ..addRect(Rect.fromLTWH(0, 0, size.width, size.height))
         ..fillType = PathFillType.evenOdd,
-      Paint()..color = const Color(0x730F172A),
+      Paint()..color = AppColors.ink.withOpacity(0.45),
     );
     const double cornerLength = 24;
     final Paint p = Paint()

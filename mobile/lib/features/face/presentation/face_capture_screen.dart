@@ -251,7 +251,7 @@ class _CaptureOval extends CustomPainter {
         ..addOval(oval)
         ..addRect(Rect.fromLTWH(0, 0, size.width, size.height))
         ..fillType = PathFillType.evenOdd,
-      Paint()..color = const Color(0x730F172A),
+      Paint()..color = AppColors.ink.withOpacity(0.45),
     );
     canvas.drawOval(
         oval,

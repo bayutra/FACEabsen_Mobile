@@ -485,7 +485,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                           fontSize: 10,
                           fontWeight: FontWeight.w600,
                           color: isToday
-                              ? const Color(0xFF89F5E7)
+                              ? AppColors.primaryFixed
                               : AppColors.inkSecondary,
                         ),
                       ),

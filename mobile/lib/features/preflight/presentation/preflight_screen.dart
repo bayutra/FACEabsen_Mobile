@@ -1,4 +1,6 @@
+// ignore_for_file: prefer_const_constructors
 import 'package:flutter/material.dart';
+import 'package:face_absen_mobile/core/theme/app_colors.dart';
 
 import '../data/preflight_repository.dart';
 import '../domain/eligibility.dart';
@@ -65,15 +67,15 @@ class _PreflightScreenState extends State<PreflightScreen> {
     final bool ready = hasData && blocking.isEmpty;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FF),
+      backgroundColor: AppColors.canvas,
       appBar: AppBar(
-        backgroundColor: const Color(0xFFF8F9FF),
+        backgroundColor: AppColors.canvas,
         elevation: 0,
         scrolledUnderElevation: 0,
         centerTitle: false,
         leading: Navigator.canPop(context)
             ? IconButton(
-                icon: const Icon(Icons.arrow_back, color: Color(0xFF0B1C30)),
+                icon: const Icon(Icons.arrow_back, color: AppColors.ink),
                 onPressed: () => Navigator.pop(context),
                 tooltip: 'Kembali',
               )
@@ -85,7 +87,7 @@ class _PreflightScreenState extends State<PreflightScreen> {
             Text(
               'Pra-Validasi Presensi',
               style: TextStyle(
-                color: Color(0xFF0B1C30),
+                color: AppColors.ink,
                 fontSize: 17,
                 fontWeight: FontWeight.w600,
                 letterSpacing: -0.2,
@@ -94,7 +96,7 @@ class _PreflightScreenState extends State<PreflightScreen> {
             Text(
               'Pemeriksaan Sistem Sebelum Absen',
               style: TextStyle(
-                color: Color(0xFF3E4947),
+                color: AppColors.inkSecondary,
                 fontSize: 11,
                 fontWeight: FontWeight.w500,
               ),
@@ -104,7 +106,7 @@ class _PreflightScreenState extends State<PreflightScreen> {
         actions: [
           IconButton(
             onPressed: _load,
-            icon: const Icon(Icons.refresh, color: Color(0xFF3E4947), size: 20),
+            icon: const Icon(Icons.refresh, color: AppColors.inkSecondary, size: 20),
             tooltip: 'Muat Ulang',
           ),
           Container(
@@ -112,12 +114,12 @@ class _PreflightScreenState extends State<PreflightScreen> {
             width: 32,
             height: 32,
             decoration: BoxDecoration(
-              color: const Color(0xFF005C55).withOpacity(0.1),
+              color: AppColors.primary.withOpacity(0.1),
               shape: BoxShape.circle,
             ),
             child: const Icon(
               Icons.verified_user,
-              color: Color(0xFF005C55),
+              color: AppColors.primary,
               size: 18,
             ),
           ),
@@ -125,7 +127,7 @@ class _PreflightScreenState extends State<PreflightScreen> {
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1),
           child: Container(
-            color: const Color(0xFFBDC9C6).withOpacity(0.35),
+            color: AppColors.border.withOpacity(0.35),
             height: 1,
           ),
         ),
@@ -152,7 +154,7 @@ class _PreflightScreenState extends State<PreflightScreen> {
               height: 44,
               child: CircularProgressIndicator(
                 strokeWidth: 3.5,
-                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF005C55)),
+                valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
               ),
             ),
             SizedBox(height: 16),
@@ -161,7 +163,7 @@ class _PreflightScreenState extends State<PreflightScreen> {
               style: TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w600,
-                color: Color(0xFF0B1C30),
+                color: AppColors.ink,
               ),
             ),
             SizedBox(height: 6),
@@ -170,7 +172,7 @@ class _PreflightScreenState extends State<PreflightScreen> {
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 12,
-                color: Color(0xFF3E4947),
+                color: AppColors.inkSecondary,
               ),
             ),
           ],
@@ -188,10 +190,10 @@ class _PreflightScreenState extends State<PreflightScreen> {
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFFBDC9C6).withOpacity(0.5)),
-            boxShadow: const [
+            border: Border.all(color: AppColors.border.withOpacity(0.5)),
+            boxShadow: [
               BoxShadow(
-                color: Color(0x0A000000),
+                color: AppColors.ink.withOpacity(0.04),
                 blurRadius: 8,
                 offset: Offset(0, 2),
               ),
@@ -204,12 +206,12 @@ class _PreflightScreenState extends State<PreflightScreen> {
                 width: 44,
                 height: 44,
                 decoration: const BoxDecoration(
-                  color: Color(0xFFFEF2F2),
+                  color: AppColors.roseTint,
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
                   Icons.error_outline,
-                  color: Color(0xFFBA1A1A),
+                  color: AppColors.error,
                   size: 24,
                 ),
               ),
@@ -219,7 +221,7 @@ class _PreflightScreenState extends State<PreflightScreen> {
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
-                  color: Color(0xFF0B1C30),
+                  color: AppColors.ink,
                 ),
               ),
               const SizedBox(height: 6),
@@ -228,7 +230,7 @@ class _PreflightScreenState extends State<PreflightScreen> {
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   fontSize: 12.5,
-                  color: Color(0xFF3E4947),
+                  color: AppColors.inkSecondary,
                   height: 1.35,
                 ),
               ),
@@ -237,7 +239,7 @@ class _PreflightScreenState extends State<PreflightScreen> {
                 height: 44,
                 child: FilledButton.icon(
                   style: FilledButton.styleFrom(
-                    backgroundColor: const Color(0xFF005C55),
+                    backgroundColor: AppColors.primary,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -276,7 +278,7 @@ class _PreflightScreenState extends State<PreflightScreen> {
               style: TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w600,
-                color: Color(0xFF0B1C30),
+                color: AppColors.ink,
               ),
             ),
             Container(
@@ -284,11 +286,11 @@ class _PreflightScreenState extends State<PreflightScreen> {
                   const EdgeInsets.symmetric(horizontal: 10, vertical: 3.5),
               decoration: BoxDecoration(
                 color:
-                    ready ? const Color(0xFFECFDF5) : const Color(0xFFFFFBEB),
+                    ready ? AppColors.successTint : AppColors.warningTint,
                 borderRadius: BorderRadius.circular(999),
                 border: Border.all(
                   color:
-                      ready ? const Color(0xFFA7F3D0) : const Color(0xFFFDE68A),
+                      ready ? AppColors.successBorder : AppColors.warningBorder,
                 ),
               ),
               child: Row(
@@ -299,8 +301,8 @@ class _PreflightScreenState extends State<PreflightScreen> {
                     height: 6,
                     decoration: BoxDecoration(
                       color: ready
-                          ? const Color(0xFF10B981)
-                          : const Color(0xFFF59E0B),
+                          ? AppColors.success
+                          : AppColors.warning,
                       shape: BoxShape.circle,
                     ),
                   ),
@@ -311,8 +313,8 @@ class _PreflightScreenState extends State<PreflightScreen> {
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
                       color: ready
-                          ? const Color(0xFF047857)
-                          : const Color(0xFFB45309),
+                          ? AppColors.successText
+                          : AppColors.warningText,
                     ),
                   ),
                 ],
@@ -346,10 +348,10 @@ class _PreflightScreenState extends State<PreflightScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFBDC9C6).withOpacity(0.5)),
-        boxShadow: const [
+        border: Border.all(color: AppColors.border.withOpacity(0.5)),
+        boxShadow: [
           BoxShadow(
-            color: Color(0x0A000000),
+            color: AppColors.ink.withOpacity(0.04),
             blurRadius: 8,
             offset: Offset(0, 2),
           ),
@@ -363,7 +365,7 @@ class _PreflightScreenState extends State<PreflightScreen> {
             left: 0,
             right: 0,
             height: 4,
-            child: Container(color: const Color(0xFF005C55)),
+            child: Container(color: AppColors.primary),
           ),
           Padding(
             padding: const EdgeInsets.fromLTRB(14, 16, 14, 14),
@@ -380,17 +382,17 @@ class _PreflightScreenState extends State<PreflightScreen> {
                           width: 48,
                           height: 48,
                           decoration: BoxDecoration(
-                            color: const Color(0xFFDCE9FF),
+                            color: AppColors.surfaceHigh,
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                              color: const Color(0xFFBDC9C6).withOpacity(0.4),
+                              color: AppColors.border.withOpacity(0.4),
                             ),
                           ),
                           child: Center(
                             child: Text(
                               initials,
                               style: const TextStyle(
-                                color: Color(0xFF005C55),
+                                color: AppColors.primary,
                                 fontSize: 18,
                                 fontWeight: FontWeight.w700,
                               ),
@@ -404,7 +406,7 @@ class _PreflightScreenState extends State<PreflightScreen> {
                             width: 16,
                             height: 16,
                             decoration: BoxDecoration(
-                              color: const Color(0xFF10B981),
+                              color: AppColors.success,
                               shape: BoxShape.circle,
                               border: Border.all(color: Colors.white, width: 2),
                             ),
@@ -428,7 +430,7 @@ class _PreflightScreenState extends State<PreflightScreen> {
                                 child: Text(
                                   name,
                                   style: const TextStyle(
-                                    color: Color(0xFF0B1C30),
+                                    color: AppColors.ink,
                                     fontSize: 15,
                                     fontWeight: FontWeight.w600,
                                   ),
@@ -444,14 +446,14 @@ class _PreflightScreenState extends State<PreflightScreen> {
                                 ),
                                 decoration: BoxDecoration(
                                   color: active
-                                      ? const Color(0xFF005C55).withOpacity(0.1)
-                                      : const Color(0xFFFEF2F2),
+                                      ? AppColors.primary.withOpacity(0.1)
+                                      : AppColors.roseTint,
                                   borderRadius: BorderRadius.circular(999),
                                   border: Border.all(
                                     color: active
-                                        ? const Color(0xFF005C55)
+                                        ? AppColors.primary
                                             .withOpacity(0.25)
-                                        : const Color(0xFFFECACA),
+                                        : AppColors.errorBorder,
                                   ),
                                 ),
                                 child: Text(
@@ -460,8 +462,8 @@ class _PreflightScreenState extends State<PreflightScreen> {
                                     fontSize: 11,
                                     fontWeight: FontWeight.w600,
                                     color: active
-                                        ? const Color(0xFF005C55)
-                                        : const Color(0xFFB91C1C),
+                                        ? AppColors.primary
+                                        : AppColors.roseText,
                                   ),
                                 ),
                               ),
@@ -472,7 +474,7 @@ class _PreflightScreenState extends State<PreflightScreen> {
                             'NIP: $nip',
                             style: const TextStyle(
                               fontSize: 12,
-                              color: Color(0xFF3E4947),
+                              color: AppColors.inkSecondary,
                             ),
                           ),
                         ],
@@ -485,10 +487,10 @@ class _PreflightScreenState extends State<PreflightScreen> {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF8FAFC),
+                    color: AppColors.canvas,
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(
-                      color: const Color(0xFFBDC9C6).withOpacity(0.35),
+                      color: AppColors.border.withOpacity(0.35),
                     ),
                   ),
                   child: Row(
@@ -496,7 +498,7 @@ class _PreflightScreenState extends State<PreflightScreen> {
                       const Icon(
                         Icons.schedule,
                         size: 15,
-                        color: Color(0xFF005C55),
+                        color: AppColors.primary,
                       ),
                       const SizedBox(width: 5),
                       Expanded(
@@ -505,7 +507,7 @@ class _PreflightScreenState extends State<PreflightScreen> {
                           style: const TextStyle(
                             fontSize: 11.5,
                             fontWeight: FontWeight.w600,
-                            color: Color(0xFF005C55),
+                            color: AppColors.primary,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -515,7 +517,7 @@ class _PreflightScreenState extends State<PreflightScreen> {
                       const Icon(
                         Icons.local_hospital,
                         size: 14,
-                        color: Color(0xFF3E4947),
+                        color: AppColors.inkSecondary,
                       ),
                       const SizedBox(width: 4),
                       Flexible(
@@ -523,7 +525,7 @@ class _PreflightScreenState extends State<PreflightScreen> {
                           ward,
                           style: const TextStyle(
                             fontSize: 11.5,
-                            color: Color(0xFF3E4947),
+                            color: AppColors.inkSecondary,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -550,25 +552,25 @@ class _PreflightScreenState extends State<PreflightScreen> {
   Widget _deviceGateCard(GateResult g, PreflightSnapshot s) {
     final (Color fg, Color bg, IconData icon) = switch (g.state) {
       GateState.pass => (
-          const Color(0xFF047857),
-          const Color(0xFFECFDF5),
+          AppColors.successText,
+          AppColors.successTint,
           Icons.check_circle
         ),
       GateState.warn => (
-          const Color(0xFFB45309),
-          const Color(0xFFFFFBEB),
+          AppColors.warningText,
+          AppColors.warningTint,
           Icons.error_outline
         ),
       GateState.fail => (
-          const Color(0xFFB91C1C),
-          const Color(0xFFFEF2F2),
+          AppColors.roseText,
+          AppColors.roseTint,
           Icons.cancel
         ),
     };
     final Color borderCol = switch (g.state) {
-      GateState.pass => const Color(0xFFA7F3D0),
-      GateState.warn => const Color(0xFFFDE68A),
-      GateState.fail => const Color(0xFFFECACA),
+      GateState.pass => AppColors.successBorder,
+      GateState.warn => AppColors.warningBorder,
+      GateState.fail => AppColors.errorBorder,
     };
 
     return Container(
@@ -576,10 +578,10 @@ class _PreflightScreenState extends State<PreflightScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFBDC9C6).withOpacity(0.5)),
-        boxShadow: const [
+        border: Border.all(color: AppColors.border.withOpacity(0.5)),
+        boxShadow: [
           BoxShadow(
-              color: Color(0x0A000000), blurRadius: 8, offset: Offset(0, 2)),
+              color: AppColors.ink.withOpacity(0.04), blurRadius: 8, offset: Offset(0, 2)),
         ],
       ),
       child: Row(
@@ -608,7 +610,7 @@ class _PreflightScreenState extends State<PreflightScreen> {
                       style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFF0B1C30),
+                        color: AppColors.ink,
                       ),
                     ),
                     Container(
@@ -638,7 +640,7 @@ class _PreflightScreenState extends State<PreflightScreen> {
                       : g.detail,
                   style: const TextStyle(
                     fontSize: 12,
-                    color: Color(0xFF3E4947),
+                    color: AppColors.inkSecondary,
                     height: 1.35,
                   ),
                 ),
@@ -646,19 +648,19 @@ class _PreflightScreenState extends State<PreflightScreen> {
                 Row(
                   children: [
                     const Icon(Icons.fingerprint,
-                        size: 13, color: Color(0xFF64748B)),
+                        size: 13, color: AppColors.inkSecondary),
                     const SizedBox(width: 3),
                     const Text(
                       'IMEI Matched',
                       style: TextStyle(
                         fontSize: 11,
                         fontFamily: 'monospace',
-                        color: Color(0xFF64748B),
+                        color: AppColors.inkSecondary,
                       ),
                     ),
                     const Text(
                       ' • ',
-                      style: TextStyle(color: Color(0xFF94A3B8)),
+                      style: TextStyle(color: AppColors.inkDisabled),
                     ),
                     Text(
                       s.isActive
@@ -668,8 +670,8 @@ class _PreflightScreenState extends State<PreflightScreen> {
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
                         color: s.isActive
-                            ? const Color(0xFF047857)
-                            : const Color(0xFFB91C1C),
+                            ? AppColors.successText
+                            : AppColors.roseText,
                       ),
                     ),
                   ],
@@ -685,25 +687,25 @@ class _PreflightScreenState extends State<PreflightScreen> {
   Widget _scheduleGateCard(GateResult g, PreflightSnapshot s) {
     final (Color fg, Color bg, IconData icon) = switch (g.state) {
       GateState.pass => (
-          const Color(0xFF047857),
-          const Color(0xFFECFDF5),
+          AppColors.successText,
+          AppColors.successTint,
           Icons.check_circle
         ),
       GateState.warn => (
-          const Color(0xFFB45309),
-          const Color(0xFFFFFBEB),
+          AppColors.warningText,
+          AppColors.warningTint,
           Icons.error_outline
         ),
       GateState.fail => (
-          const Color(0xFFB91C1C),
-          const Color(0xFFFEF2F2),
+          AppColors.roseText,
+          AppColors.roseTint,
           Icons.cancel
         ),
     };
     final Color borderCol = switch (g.state) {
-      GateState.pass => const Color(0xFFA7F3D0),
-      GateState.warn => const Color(0xFFFDE68A),
-      GateState.fail => const Color(0xFFFECACA),
+      GateState.pass => AppColors.successBorder,
+      GateState.warn => AppColors.warningBorder,
+      GateState.fail => AppColors.errorBorder,
     };
 
     final String shiftName = s.shift?.shiftName ?? 'Shift Pagi';
@@ -717,10 +719,10 @@ class _PreflightScreenState extends State<PreflightScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFBDC9C6).withOpacity(0.5)),
-        boxShadow: const [
+        border: Border.all(color: AppColors.border.withOpacity(0.5)),
+        boxShadow: [
           BoxShadow(
-              color: Color(0x0A000000), blurRadius: 8, offset: Offset(0, 2)),
+              color: AppColors.ink.withOpacity(0.04), blurRadius: 8, offset: Offset(0, 2)),
         ],
       ),
       child: Row(
@@ -749,7 +751,7 @@ class _PreflightScreenState extends State<PreflightScreen> {
                       style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFF0B1C30),
+                        color: AppColors.ink,
                       ),
                     ),
                     Container(
@@ -776,14 +778,14 @@ class _PreflightScreenState extends State<PreflightScreen> {
                   RichText(
                     text: TextSpan(
                       style: const TextStyle(
-                          fontSize: 12, color: Color(0xFF3E4947)),
+                          fontSize: 12, color: AppColors.inkSecondary),
                       children: [
                         TextSpan(text: '$shiftName Sesuai Roster '),
                         TextSpan(
                           text: '($shiftWindow)',
                           style: const TextStyle(
                             fontWeight: FontWeight.w600,
-                            color: Color(0xFF0B1C30),
+                            color: AppColors.ink,
                           ),
                         ),
                       ],
@@ -805,17 +807,17 @@ class _PreflightScreenState extends State<PreflightScreen> {
                   Text(
                     g.detail,
                     style:
-                        const TextStyle(fontSize: 12, color: Color(0xFF3E4947)),
+                        const TextStyle(fontSize: 12, color: AppColors.inkSecondary),
                   ),
                 const SizedBox(height: 8),
                 Container(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF8FAFC),
+                    color: AppColors.canvas,
                     borderRadius: BorderRadius.circular(6),
                     border: Border.all(
-                      color: const Color(0xFFBDC9C6).withOpacity(0.35),
+                      color: AppColors.border.withOpacity(0.35),
                     ),
                   ),
                   child: Row(
@@ -824,7 +826,7 @@ class _PreflightScreenState extends State<PreflightScreen> {
                       const Icon(
                         Icons.pin_drop,
                         size: 13,
-                        color: Color(0xFF005C55),
+                        color: AppColors.primary,
                       ),
                       const SizedBox(width: 4),
                       Flexible(
@@ -833,7 +835,7 @@ class _PreflightScreenState extends State<PreflightScreen> {
                           style: const TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w500,
-                            color: Color(0xFF3E4947),
+                            color: AppColors.inkSecondary,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -857,7 +859,7 @@ class _PreflightScreenState extends State<PreflightScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         border: Border(
-          top: BorderSide(color: const Color(0xFFBDC9C6).withOpacity(0.35)),
+          top: BorderSide(color: AppColors.border.withOpacity(0.35)),
         ),
       ),
       child: Column(
@@ -867,14 +869,14 @@ class _PreflightScreenState extends State<PreflightScreen> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: const Color(0xFFFFFBEB),
+                color: AppColors.warningTint,
                 borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: const Color(0xFFFDE68A)),
+                border: Border.all(color: AppColors.warningBorder),
               ),
               child: Row(
                 children: [
                   const Icon(Icons.warning_amber_rounded,
-                      color: Color(0xFFB45309), size: 20),
+                      color: AppColors.warningText, size: 20),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
@@ -884,7 +886,7 @@ class _PreflightScreenState extends State<PreflightScreen> {
                       style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFF92400E),
+                        color: AppColors.warningText,
                       ),
                     ),
                   ),
@@ -899,8 +901,8 @@ class _PreflightScreenState extends State<PreflightScreen> {
             child: FilledButton(
               onPressed: ready ? () => widget.onProceed(_snap!) : null,
               style: FilledButton.styleFrom(
-                backgroundColor: const Color(0xFF005C55),
-                disabledBackgroundColor: const Color(0xFFBDC9C6),
+                backgroundColor: AppColors.primary,
+                disabledBackgroundColor: AppColors.border,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(14),
                 ),
@@ -925,17 +927,17 @@ class _PreflightScreenState extends State<PreflightScreen> {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: ready ? const Color(0xFFECFDF5) : const Color(0xFFFFFBEB),
+        color: ready ? AppColors.successTint : AppColors.warningTint,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: ready ? const Color(0xFFA7F3D0) : const Color(0xFFFDE68A),
+          color: ready ? AppColors.successBorder : AppColors.warningBorder,
         ),
       ),
       child: Row(
         children: [
           Icon(
             ready ? Icons.check_circle : Icons.info_outline,
-            color: ready ? const Color(0xFF047857) : const Color(0xFFB45309),
+            color: ready ? AppColors.successText : AppColors.warningText,
             size: 22,
           ),
           const SizedBox(width: 12),
@@ -949,8 +951,8 @@ class _PreflightScreenState extends State<PreflightScreen> {
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
                     color: ready
-                        ? const Color(0xFF047857)
-                        : const Color(0xFF92400E),
+                        ? AppColors.successText
+                        : AppColors.warningText,
                   ),
                 ),
                 const SizedBox(height: 2),
@@ -961,8 +963,8 @@ class _PreflightScreenState extends State<PreflightScreen> {
                   style: TextStyle(
                     fontSize: 11.5,
                     color: ready
-                        ? const Color(0xFF047857)
-                        : const Color(0xFF92400E),
+                        ? AppColors.successText
+                        : AppColors.warningText,
                     height: 1.3,
                   ),
                 ),
@@ -981,3 +983,4 @@ class _PreflightScreenState extends State<PreflightScreen> {
     return (parts.first[0] + parts[1][0]).toUpperCase();
   }
 }
+

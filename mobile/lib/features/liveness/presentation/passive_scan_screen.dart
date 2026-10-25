@@ -329,7 +329,7 @@ class _PassiveScanScreenState extends State<PassiveScanScreen>
                 ),
               )
             else
-              const ColoredBox(color: Color(0xFF0B1220)),
+              const ColoredBox(color: AppColors.ink),
             _scrim(),
             SafeArea(
               child: Column(
@@ -541,7 +541,7 @@ class _ScanFramePainter extends CustomPainter {
     final double right = size.width - inset;
     final double bottom = size.height - inset;
     final Paint paint = Paint()
-      ..color = const Color(0xFF89F5E7)
+      ..color = AppColors.primaryFixed
       ..strokeWidth = 3
       ..strokeCap = StrokeCap.round
       ..style = PaintingStyle.stroke;

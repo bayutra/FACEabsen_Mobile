@@ -1,3 +1,4 @@
+// ignore_for_file: prefer_const_constructors
 import 'package:flutter/material.dart';
 
 import '../data/device_repository.dart';
@@ -75,7 +76,7 @@ class _DeviceStatusSectionState extends State<DeviceStatusSection> {
       DeviceStatus.active => (
           'STATUS: AKTIF',
           AppColors.success,
-          const Color(0x6610B981),
+          AppColors.success.withOpacity(0.4),
           AppColors.successTint,
           AppColors.successText,
           AppColors.successBorder,
@@ -83,7 +84,7 @@ class _DeviceStatusSectionState extends State<DeviceStatusSection> {
       DeviceStatus.pending => (
           'STATUS: MENUNGGU',
           AppColors.warning,
-          const Color(0x66F59E0B),
+          AppColors.warning.withOpacity(0.4),
           AppColors.warningTint,
           AppColors.warningText,
           AppColors.warningBorder,
@@ -91,7 +92,7 @@ class _DeviceStatusSectionState extends State<DeviceStatusSection> {
       DeviceStatus.revoked => (
           'STATUS: DICABUT',
           AppColors.error,
-          const Color(0x66BA1A1A),
+          AppColors.error.withOpacity(0.4),
           AppColors.errorTint,
           AppColors.errorText,
           AppColors.errorBorder,
@@ -99,7 +100,7 @@ class _DeviceStatusSectionState extends State<DeviceStatusSection> {
       DeviceStatus.lost => (
           'STATUS: HILANG',
           AppColors.error,
-          const Color(0x66BA1A1A),
+          AppColors.error.withOpacity(0.4),
           AppColors.errorTint,
           AppColors.errorText,
           AppColors.errorBorder,
@@ -107,7 +108,7 @@ class _DeviceStatusSectionState extends State<DeviceStatusSection> {
       DeviceStatus.replaced => (
           'STATUS: DIGANTI',
           AppColors.secondary,
-          const Color(0x66006591),
+          AppColors.secondary.withOpacity(0.4),
           AppColors.surfaceContainer,
           AppColors.secondary,
           AppColors.border,
@@ -115,7 +116,7 @@ class _DeviceStatusSectionState extends State<DeviceStatusSection> {
       DeviceStatus.unknown => (
           'STATUS: LAINNYA',
           AppColors.outline,
-          const Color(0x666E7977),
+          AppColors.outline.withOpacity(0.4),
           AppColors.surfaceLow,
           AppColors.inkSecondary,
           AppColors.border,
@@ -260,9 +261,9 @@ class _DeviceStatusSectionState extends State<DeviceStatusSection> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.border.withOpacity(0.5)),
-        boxShadow: const [
+        boxShadow: [
           BoxShadow(
-            color: Color(0x0A000000),
+            color: AppColors.ink.withOpacity(0.04),
             blurRadius: 8,
             offset: Offset(0, 2),
           ),
@@ -271,13 +272,13 @@ class _DeviceStatusSectionState extends State<DeviceStatusSection> {
       clipBehavior: Clip.antiAlias,
       child: Stack(
         children: [
-          const Positioned(
+          Positioned(
             right: -10,
             bottom: -15,
             child: Icon(
               Icons.local_hospital_rounded,
               size: 92,
-              color: Color(0x0D005C55),
+              color: AppColors.primary.withOpacity(0.05),
             ),
           ),
           Padding(
@@ -454,7 +455,7 @@ class _DeviceStatusSectionState extends State<DeviceStatusSection> {
         decoration: BoxDecoration(
           color: AppColors.surfaceLow,
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: const Color(0x33BDC9C6)),
+          border: Border.all(color: AppColors.border.withOpacity(0.2)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -561,9 +562,9 @@ class _DeviceStatusSectionState extends State<DeviceStatusSection> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.border.withOpacity(0.5)),
-        boxShadow: const [
+        boxShadow: [
           BoxShadow(
-            color: Color(0x0A000000),
+            color: AppColors.ink.withOpacity(0.04),
             blurRadius: 8,
             offset: Offset(0, 2),
           ),
@@ -599,7 +600,7 @@ class _DeviceStatusSectionState extends State<DeviceStatusSection> {
                       decoration: BoxDecoration(
                         color: AppColors.surfaceLow,
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: const Color(0x33BDC9C6)),
+                        border: Border.all(color: AppColors.border.withOpacity(0.2)),
                       ),
                       child: const Icon(
                         Icons.smartphone_rounded,
@@ -748,9 +749,9 @@ class _DeviceStatusSectionState extends State<DeviceStatusSection> {
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: AppColors.border.withOpacity(0.5)),
-                boxShadow: const [
+                boxShadow: [
                   BoxShadow(
-                    color: Color(0x0A000000),
+                    color: AppColors.ink.withOpacity(0.04),
                     blurRadius: 8,
                     offset: Offset(0, 2),
                   ),
@@ -829,9 +830,9 @@ class _DeviceStatusSectionState extends State<DeviceStatusSection> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.border.withOpacity(0.5)),
-        boxShadow: const [
+        boxShadow: [
           BoxShadow(
-            color: Color(0x0A000000),
+            color: AppColors.ink.withOpacity(0.04),
             blurRadius: 8,
             offset: Offset(0, 2),
           ),

@@ -310,7 +310,7 @@ class _LivenessScreenState extends State<LivenessScreen>
 
     const Color inverseSurface = AppColors.inverseSurface;
     const Color primaryFixed = AppColors.primaryFixed;
-    const Color tertiaryFixed = Color(0xFF89F5E7);
+    const Color tertiaryFixed = AppColors.primaryFixed;
 
     return Scaffold(
       backgroundColor: inverseSurface,
@@ -519,7 +519,7 @@ class _LivenessScreenState extends State<LivenessScreen>
                                         children: [
                                           const Icon(Icons.timer,
                                               size: 12,
-                                              color: Color(0xFF004C6E)),
+                                              color: AppColors.primary),
                                           const SizedBox(width: 3),
                                           Text(
                                             '${_mm(_remaining)} dtk',
@@ -588,7 +588,7 @@ class _LivenessScreenState extends State<LivenessScreen>
                                 color: isActive
                                     ? AppColors.inversePrimary
                                     : (isDone
-                                        ? const Color(0xFF89F5E7)
+                                        ? AppColors.primaryFixed
                                             .withOpacity(0.4)
                                         : Colors.white.withOpacity(0.2)),
                               ),
@@ -600,9 +600,9 @@ class _LivenessScreenState extends State<LivenessScreen>
                                   isDone ? Icons.check_circle : _iconFor(c),
                                   size: 15,
                                   color: isActive
-                                      ? const Color(0xFF89F5E7)
+                                      ? AppColors.primaryFixed
                                       : (isDone
-                                          ? const Color(0xFF89F5E7)
+                                          ? AppColors.primaryFixed
                                           : Colors.white70),
                                 ),
                                 const SizedBox(width: 6),
@@ -633,12 +633,12 @@ class _LivenessScreenState extends State<LivenessScreen>
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(Icons.lock_outline,
-                            size: 13, color: Color(0xFFCBDDF5)),
+                            size: 13, color: AppColors.surfaceHigh),
                         SizedBox(width: 5),
                         Text(
                           'Enkripsi Biometrik ISO/IEC 30107-3 Liveness Anti-Spoofing',
                           style: TextStyle(
-                              fontSize: 10.5, color: Color(0xFFCBDDF5)),
+                              fontSize: 10.5, color: AppColors.surfaceHigh),
                         ),
                       ],
                     ),
@@ -650,7 +650,7 @@ class _LivenessScreenState extends State<LivenessScreen>
                         decoration: BoxDecoration(
                           color: _error != null
                               ? AppColors.errorTint.withOpacity(0.2)
-                              : const Color(0xFF89F5E7).withOpacity(0.2),
+                              : AppColors.primaryFixed.withOpacity(0.2),
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(
                             color: _error != null
@@ -665,7 +665,7 @@ class _LivenessScreenState extends State<LivenessScreen>
                             fontSize: 12,
                             color: _error != null
                                 ? AppColors.errorTint
-                                : const Color(0xFF89F5E7),
+                                : AppColors.primaryFixed,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -792,7 +792,7 @@ class _LivenessScreenState extends State<LivenessScreen>
                   : controller == null
                       ? const Center(
                           child: CircularProgressIndicator(
-                              color: Color(0xFF89F5E7)))
+                              color: AppColors.primaryFixed))
                       : Stack(
                           fit: StackFit.expand,
                           children: [
@@ -905,8 +905,8 @@ class _LivenessScreenState extends State<LivenessScreen>
                                       CircleAvatar(
                                         radius: 3,
                                         backgroundColor: _faceCount == 1
-                                            ? const Color(0xFF34D399)
-                                            : const Color(0xFF89F5E7),
+                                            ? AppColors.success
+                                            : AppColors.primaryFixed,
                                       ),
                                       const SizedBox(width: 5),
                                       Text(
@@ -1028,14 +1028,14 @@ class _LivenessScreenState extends State<LivenessScreen>
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             if (icon != null) ...[
-              Icon(icon, size: 12, color: const Color(0xFF89F5E7)),
+              Icon(icon, size: 12, color: AppColors.primaryFixed),
               const SizedBox(width: 4),
             ] else ...[
               Container(
                 width: 6,
                 height: 6,
                 decoration: BoxDecoration(
-                  color: ok ? const Color(0xFF89F5E7) : Colors.orangeAccent,
+                  color: ok ? AppColors.primaryFixed : Colors.orangeAccent,
                   shape: BoxShape.circle,
                 ),
               ),
@@ -1058,7 +1058,7 @@ class _LivenessScreenState extends State<LivenessScreen>
           style: TextStyle(
             fontSize: 11.5,
             fontWeight: FontWeight.w700,
-            color: ok ? const Color(0xFF89F5E7) : Colors.white70,
+            color: ok ? AppColors.primaryFixed : Colors.white70,
           ),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
@@ -1079,13 +1079,13 @@ class _BiometricHudPainter extends CustomPainter {
       height: size.height * 0.60,
     );
     final Paint ovalPaint = Paint()
-      ..color = const Color(0xFF89F5E7).withOpacity(0.55)
+      ..color = AppColors.primaryFixed.withOpacity(0.55)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.3;
     canvas.drawOval(oval, ovalPaint);
 
     final Paint eyePaint = Paint()
-      ..color = const Color(0xFF00D2B7).withOpacity(0.65)
+      ..color = AppColors.inversePrimary.withOpacity(0.65)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.4;
     final Paint eyeDotPaint = Paint()
@@ -1100,7 +1100,7 @@ class _BiometricHudPainter extends CustomPainter {
     canvas.drawCircle(rightEye, 3.5, eyeDotPaint);
 
     final Paint mouthPaint = Paint()
-      ..color = const Color(0xFF89F5E7).withOpacity(0.55)
+      ..color = AppColors.primaryFixed.withOpacity(0.55)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.2;
     canvas.drawLine(
@@ -1110,7 +1110,7 @@ class _BiometricHudPainter extends CustomPainter {
     );
 
     final Paint bracketPaint = Paint()
-      ..color = const Color(0xFF89F5E7)
+      ..color = AppColors.primaryFixed
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2.4
       ..strokeCap = StrokeCap.round;
@@ -1155,3 +1155,4 @@ Widget pill(Color bg, Color fg, String label) => Container(
           style:
               TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: fg)),
     );
+

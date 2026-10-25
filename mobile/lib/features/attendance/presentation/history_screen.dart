@@ -1,3 +1,4 @@
+// ignore_for_file: prefer_const_constructors
 import 'package:flutter/material.dart';
 
 import '../../attendance/data/attendance_repository.dart';
@@ -627,9 +628,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
                           : AppColors.border.withOpacity(0.6),
                     ),
                     boxShadow: _status == e.key
-                        ? const [
+                        ? [
                             BoxShadow(
-                              color: Color(0x20005C55),
+                              color: AppColors.primary.withOpacity(0.12),
                               blurRadius: 4,
                               offset: Offset(0, 1),
                             ),
@@ -669,9 +670,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
         border: Border.all(
           color: AppColors.border.withOpacity(0.5),
         ),
-        boxShadow: const [
+        boxShadow: [
           BoxShadow(
-            color: Color(0x0A000000),
+            color: AppColors.ink.withOpacity(0.04),
             blurRadius: 8,
             offset: Offset(0, 2),
           ),
@@ -850,9 +851,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
           right: BorderSide(color: AppColors.border.withOpacity(0.5)),
           bottom: BorderSide(color: AppColors.border.withOpacity(0.5)),
         ),
-        boxShadow: const [
+        boxShadow: [
           BoxShadow(
-            color: Color(0x0A000000),
+            color: AppColors.ink.withOpacity(0.04),
             blurRadius: 8,
             offset: Offset(0, 2),
           ),
@@ -1225,12 +1226,12 @@ class _DetailSheet extends StatelessWidget {
         effectiveDurationLabel(item.checkInAt, item.checkOutAt);
 
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
         boxShadow: [
           BoxShadow(
-            color: Color(0x1A000000),
+            color: AppColors.ink.withOpacity(0.10),
             blurRadius: 20,
             offset: Offset(0, -4),
           ),
@@ -1841,3 +1842,4 @@ class _DetailSheet extends StatelessWidget {
     );
   }
 }
+
