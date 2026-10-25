@@ -5,6 +5,7 @@ import '../../../core/widgets/stitch.dart';
 import '../../attendance/data/attendance_repository.dart';
 import '../../attendance/domain/attendance_models.dart';
 import '../../schedule/data/schedule_repository.dart';
+import '../../schedule/domain/shift_status.dart';
 
 class HomeDashboard extends StatefulWidget {
   const HomeDashboard({
@@ -128,6 +129,20 @@ class _HomeDashboardState extends State<HomeDashboard> {
       }
     }
     return null;
+  }
+
+  bool get _needsCheckoutReminder {
+    final AttendanceHistoryItem? t = _today;
+    if (t == null || t.checkInAt == null || t.checkOutAt != null) return false;
+    final ScheduleEntry? s = _todayShift;
+    if (s == null) return false;
+    final DateTime end = shiftEnd(
+      s.workDate,
+      s.endTime,
+      s.startTime,
+      s.overnight,
+    );
+    return _now.isAfter(end.add(const Duration(minutes: 30)));
   }
 
   static String _greeting() {
@@ -380,6 +395,58 @@ class _HomeDashboardState extends State<HomeDashboard> {
         child: ListView(
           padding: const EdgeInsets.all(AppColors.pageMargin),
           children: [
+              if (_needsCheckoutReminder) ...[
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: AppColors.warningTint,
+                    borderRadius: BorderRadius.circular(AppColors.radiusCard),
+                    border: Border.all(color: AppColors.warningBorder),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.logout, color: AppColors.warningText, size: 20),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          'Anda sudah check-in. Jangan lupa check-out setelah pulang.',
+                          style: AppText.bodyMd.copyWith(
+                            color: AppColors.warningText,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+              ],
+              if (_needsCheckoutReminder) ...[
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: AppColors.warningTint,
+                    borderRadius: BorderRadius.circular(AppColors.radiusCard),
+                    border: Border.all(color: AppColors.warningBorder),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.logout, color: AppColors.warningText, size: 20),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          'Anda sudah check-in. Jangan lupa check-out setelah pulang.',
+                          style: AppText.bodyMd.copyWith(
+                            color: AppColors.warningText,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+              ],
               if (_outboxCount > 0) ...[
                 Container(
                   padding: const EdgeInsets.all(12),
