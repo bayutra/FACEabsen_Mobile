@@ -28,7 +28,7 @@ class DeviceRegisterScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-        backgroundColor: AppColors.canvas,
+        backgroundColor: AppColors.surfaceLow,
         appBar: StitchHeader(
           title: 'Daftarkan Perangkat',
           subtitle: 'RS ABSEN SIMRS • Langkah 2 dari 3',

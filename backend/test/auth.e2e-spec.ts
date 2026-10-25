@@ -14,6 +14,7 @@ import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { AuditService } from '../src/audit/audit.service.js';
 import { AuthService } from '../src/auth/auth.service.js';
+import { EmailVerificationService } from '../src/auth/email-verification.service.js';
 import { AuthController } from '../src/auth/auth.controller.js';
 import { RequirePermissions, Roles } from '../src/auth/decorators.js';
 import { JwtAuthGuard } from '../src/auth/guards/jwt-auth.guard.js';
@@ -189,6 +190,8 @@ beforeAll(async () => {
       email,
       passwordHash: hash,
       isActive: true,
+      emailVerifiedAt: new Date(),
+      approvedAt: new Date(),
       failedLoginAttempts: 0,
       lockedUntil: null,
       roles: [...roles],
@@ -209,6 +212,7 @@ beforeAll(async () => {
     controllers: [AuthController, ProbeController],
     providers: [
       AuthService,
+      { provide: EmailVerificationService, useValue: { issue: async () => undefined, verify: async () => ({ userId: 'u1' }) } },
       JwtAuthGuard,
       RolesGuard,
       PermissionsGuard,

@@ -10,6 +10,7 @@ import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { AuditService } from '../src/audit/audit.service.js';
 import { AuthService } from '../src/auth/auth.service.js';
+import { EmailVerificationService } from '../src/auth/email-verification.service.js';
 import { AuthController } from '../src/auth/auth.controller.js';
 import { JwtAuthGuard } from '../src/auth/guards/jwt-auth.guard.js';
 import { PermissionsGuard } from '../src/auth/guards/permissions.guard.js';
@@ -139,6 +140,8 @@ async function seedUser(id: string, email: string, password = 'Password123!') {
     email,
     passwordHash: await argon2.hash(password),
     isActive: true,
+    emailVerifiedAt: new Date(),
+    approvedAt: new Date(),
     failedLoginAttempts: 0,
     lockedUntil: null,
     totpSecret: null,
@@ -166,6 +169,7 @@ beforeAll(async () => {
     controllers: [AuthController, TotpController],
     providers: [
       AuthService,
+      { provide: EmailVerificationService, useValue: { issue: async () => undefined, verify: async () => ({ userId: 'u1' }) } },
       TotpService,
       JwtAuthGuard,
       RolesGuard,

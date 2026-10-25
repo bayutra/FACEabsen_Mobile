@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:face_absen_mobile/features/attendance/data/outbox_repository.dart';
+import 'package:face_absen_mobile/features/attendance/data/punch_models.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'fakes.dart';
@@ -9,16 +10,26 @@ OutboxEntry _entry(
         {String deviceId = 'd1', PunchKind kind = PunchKind.checkIn}) =>
     OutboxEntry(
       kind: kind,
-      embedding: List<double>.filled(192, 0.1),
-      liveness: <String, Object>{
-        'passed': true,
-        'mode': 'passive',
-        'completedAt': '2026-10-07T07:00:00.000Z',
-        'score': 1.0,
-        'padScore': 0.82,
+      payload: <String, Object?>{
+        'deviceId': deviceId,
+        'faceEmbedding': List<double>.filled(192, 0.1),
+        'liveness': <String, Object>{
+          'passed': true,
+          'mode': 'passive',
+          'completedAt': '2026-10-07T07:00:00.000Z',
+          'score': 1.0,
+          'padScore': 0.82,
+        },
+        'requestId': 'r-$deviceId',
+        'captureAt': '2026-10-07T07:00:00.000Z',
+        'queuedAt': '2026-10-07T07:05:00.000Z',
+        'challengeNonce': 'nonce-x',
+        'signatureVersion': 'v1',
+        'signature': 'sig-$deviceId',
+        'deviceCompromised': false,
       },
-      deviceId: deviceId,
-      compromised: false,
+      requestId: 'r-$deviceId',
+      captureAt: DateTime.parse('2026-10-07T07:00:00.000Z'),
       queuedAt: DateTime.parse('2026-10-07T07:05:00.000Z'),
     );
 
@@ -34,13 +45,14 @@ void main() {
       expect(loaded, hasLength(1));
       final OutboxEntry e = loaded.single;
       expect(e.kind, PunchKind.checkIn);
-      expect(e.embedding, hasLength(192));
-      expect(e.embedding.first, 0.1);
-      expect(e.liveness['passed'], isTrue);
-      expect(e.liveness['mode'], 'passive');
-      expect(e.deviceId, 'd1');
-      expect(e.compromised, isFalse);
+      expect(e.payload['faceEmbedding'], hasLength(192));
+      expect((e.payload['faceEmbedding'] as List).first, 0.1);
+      expect((e.payload['liveness'] as Map)['passed'], isTrue);
+      expect((e.payload['liveness'] as Map)['mode'], 'passive');
+      expect(e.payload['deviceId'], 'd1');
+      expect(e.payload['deviceCompromised'], isFalse);
       expect(e.queuedAt, DateTime.parse('2026-10-07T07:05:00.000Z'));
+      expect(e.requestId, 'r-d1');
       expect(await box.count(), 1);
     });
 
@@ -50,39 +62,50 @@ void main() {
 
       final OutboxEntry src = OutboxEntry(
         kind: PunchKind.checkOut,
-        embedding: List<double>.filled(192, 0.2),
-        liveness: <String, Object>{
-          'passed': true,
-          'completedAt': '2026-10-07T17:00:00.000Z',
-          'score': 0.9,
+        payload: <String, Object?>{
+          'deviceId': 'd9',
+          'faceEmbedding': List<double>.filled(192, 0.2),
+          'liveness': <String, Object>{
+            'passed': true,
+            'completedAt': '2026-10-07T17:00:00.000Z',
+            'score': 0.9,
+          },
+          'requestId': 'r-d9',
+          'captureAt': '2026-10-07T17:00:00.000Z',
+          'queuedAt': '2026-10-07T17:05:00.000Z',
+          'challengeNonce': 'nonce-y',
+          'signatureVersion': 'v1',
+          'signature': 'sig',
+          'deviceCompromised': true,
+          'integrityToken': 'tok-123',
         },
-        deviceId: 'd9',
-        compromised: true,
-        integrityToken: 'tok-123',
+        requestId: 'r-d9',
+        captureAt: DateTime.parse('2026-10-07T17:00:00.000Z'),
         queuedAt: DateTime.parse('2026-10-07T17:05:00.000Z'),
       );
       await box.save(src);
 
       final OutboxEntry e = (await box.load()).single;
       expect(e.kind, PunchKind.checkOut);
-      expect(e.compromised, isTrue);
-      expect(e.integrityToken, 'tok-123');
+      expect(e.payload['deviceCompromised'], isTrue);
+      expect(e.payload['integrityToken'], 'tok-123');
     });
   });
 
-  group('cap-10 eviction', () {
-    test('entry ke-11 mengusir yang tertua', () async {
+  group('full outbox', () {
+    test('entry ke-51 melempar OutboxFullException', () async {
       final FakeStore store = FakeStore();
       final OutboxRepository box = OutboxRepository(store: store);
 
-      for (var i = 0; i < 12; i++) {
+      for (var i = 0; i < OutboxRepository.maxEntries; i++) {
         await box.save(_entry(deviceId: 'd$i'));
       }
-
-      final List<OutboxEntry> loaded = await box.load();
-      expect(loaded, hasLength(OutboxRepository.maxEntries));
-      expect(loaded.first.deviceId, 'd2');
-      expect(loaded.last.deviceId, 'd11');
+      expect(
+        () => box.save(_entry(deviceId: 'd50')),
+        throwsA(isA<OutboxFullException>()),
+      );
+      expect(await box.count(), OutboxRepository.maxEntries);
+      expect((await box.load()).first.payload['deviceId'], 'd0');
     });
   });
 
@@ -114,10 +137,10 @@ void main() {
       ]));
 
       final List<OutboxEntry> loaded = await box.load();
-      expect(loaded, hasLength(1));
-      expect(loaded.single.deviceId, 'd1');
+      expect(loaded, hasLength(3));
+      expect(loaded.first.payload['deviceId'], 'd1');
 
-      expect(await box.count(), 1);
+      expect(await box.count(), 3);
     });
 
     test('payload top-level rusak → antrean kosong, bukan throw', () async {

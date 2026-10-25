@@ -196,6 +196,7 @@ export class ReportsController {
       'Content-Disposition',
       `attachment; filename="${out.filename}"`,
     );
-    return res.send(out.body);
+    res.send(out.body);
+    return undefined;
   }
 }

@@ -6,3 +6,6 @@ backups/
 
 # Hasil build iOS yang diunduh dari CI (30 MB, jangan masuk repo).
 *.ipa
+
+# Koneksi Database Client lokal (berisi password dev).
+.vscode/database-client-config.json

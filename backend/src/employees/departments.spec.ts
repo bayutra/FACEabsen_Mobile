@@ -217,7 +217,7 @@ describe('EmployeesService.listHospitals', () => {
       auditStub,
     );
 
-    await expect(svc.listHospitals()).resolves.toHaveLength(1);
+    await expect(svc.listHospitals('u1', ['SUPER_ADMIN'])).resolves.toHaveLength(1);
     expect(findMany).toHaveBeenCalledWith(
       expect.objectContaining({ orderBy: { code: 'asc' } }),
     );

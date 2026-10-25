@@ -5,11 +5,13 @@ import { ConfigService } from '@nestjs/config';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { Test } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
+import * as argon2 from 'argon2';
 import { randomBytes } from 'node:crypto';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { AuditService } from '../src/audit/audit.service.js';
 import { AuthService } from '../src/auth/auth.service.js';
+import { EmailVerificationService } from '../src/auth/email-verification.service.js';
 import { JwtAuthGuard } from '../src/auth/guards/jwt-auth.guard.js';
 import { PermissionsGuard } from '../src/auth/guards/permissions.guard.js';
 import { RolesGuard } from '../src/auth/guards/roles.guard.js';
@@ -123,8 +125,11 @@ let app: INestApplication;
 let fake: ReturnType<typeof makeFake>;
 let jwt: JwtService;
 
+const PASSWORD = 'Password123!';
+
 beforeAll(async () => {
   fake = makeFake();
+  fake.users.get('u-emp').passwordHash = await argon2.hash(PASSWORD);
 
   const module = await Test.createTestingModule({
     imports: [
@@ -143,6 +148,7 @@ beforeAll(async () => {
       TemplateCryptoService,
       PrivacyService,
       AuthService,
+      { provide: EmailVerificationService, useValue: { issue: async () => undefined, verify: async () => ({ userId: 'u1' }) } },
       JwtAuthGuard,
       RolesGuard,
       PermissionsGuard,
@@ -208,7 +214,7 @@ describe('face registration over HTTP (PRD §54)', () => {
     const r2 = await request(server)
       .post('/face/register')
       .set(auth)
-      .send({ template: tpl(), qualityScore: 0.8 });
+      .send({ template: tpl(), qualityScore: 0.8, currentPassword: PASSWORD });
     expect(r2.body.version).toBe(2);
 
     const st = await request(server).get('/face/status').set(auth);

@@ -67,6 +67,13 @@ class AttendanceRepository {
     }
   }
 
+  /// Capture is blocked before the scan when there are not enough nonces.
+  Future<bool> hasNonceSession() async {
+    await ensureNoncePool();
+    final List<String>? pool = await _store.readNoncePool();
+    return pool != null && pool.length >= 2;
+  }
+
   Future<String> _takeNonce() async {
     final List<String>? pool = await _store.readNoncePool();
     if (pool == null || pool.isEmpty) {

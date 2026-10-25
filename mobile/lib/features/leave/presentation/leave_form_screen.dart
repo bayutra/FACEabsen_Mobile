@@ -163,7 +163,7 @@ class _LeaveFormScreenState extends State<LeaveFormScreen> {
     final int days = leaveDays(startKey, endKey);
 
     return Scaffold(
-      backgroundColor: AppColors.canvas,
+      backgroundColor: AppColors.surfaceLow,
       appBar: AppBar(
         title: const Text('Pengajuan Izin & Cuti'),
         backgroundColor: Colors.white,

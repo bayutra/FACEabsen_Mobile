@@ -78,7 +78,7 @@ class AdminScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.canvas,
+      backgroundColor: AppColors.surfaceLow,
       appBar: StitchHeader(
         title: title,
         subtitle: subtitle,

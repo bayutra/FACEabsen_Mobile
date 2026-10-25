@@ -8,6 +8,7 @@ import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { AuthService } from '../src/auth/auth.service.js';
+import { EmailVerificationService } from '../src/auth/email-verification.service.js';
 import { AuditService } from '../src/audit/audit.service.js';
 import { JwtAuthGuard } from '../src/auth/guards/jwt-auth.guard.js';
 import { PermissionsGuard } from '../src/auth/guards/permissions.guard.js';
@@ -326,6 +327,7 @@ beforeAll(async () => {
     providers: [
       ReportsService,
       AuthService,
+      { provide: EmailVerificationService, useValue: { issue: async () => undefined, verify: async () => ({ userId: 'u1' }) } },
       JwtAuthGuard,
       RolesGuard,
       PermissionsGuard,

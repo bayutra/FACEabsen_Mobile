@@ -323,6 +323,7 @@ describe('DevicesService.activate (STEP 18 — aktivasi langsung)', () => {
       },
       device: {
         findUnique: vi.fn(async () => null),
+        count: vi.fn(async () => 0),
         update: vi.fn(async (a: { where: { id: string }; data: object }) => ({
           id: a.where.id,
           ...a.data,
@@ -342,6 +343,7 @@ describe('DevicesService.activate (STEP 18 — aktivasi langsung)', () => {
           ...pending,
           employee: { department: { hospitalId: 'h1' } },
         })),
+        count: vi.fn(async () => 0),
         update: vi.fn(async (a: { where: { id: string }; data: object }) => ({
           id: a.where.id,
           ...a.data,

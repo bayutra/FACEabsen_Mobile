@@ -10,6 +10,7 @@ import '../../../core/widgets/stitch.dart';
 import '../data/auth_repository.dart';
 import '../../device/data/device_repository.dart';
 import 'register_screen.dart';
+import 'verify_email_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({
@@ -38,6 +39,7 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _obscurePassword = true;
   bool _rememberMe = true;
   String? _error;
+  String? _unverifiedEmail;
   bool _busy = false;
 
   String? _totpToken;
@@ -65,6 +67,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
     setState(() {
       _error = null;
+      _unverifiedEmail = null;
       _busy = true;
     });
 
@@ -87,6 +90,8 @@ class _LoginScreenState extends State<LoginScreen> {
       if (!mounted) return;
       setState(() {
         _error = _messageFor(e);
+        _unverifiedEmail =
+            _reason(e) == 'EMAIL_NOT_VERIFIED' ? credential : null;
         _busy = false;
       });
     } catch (e) {
@@ -169,6 +174,11 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  String? _reason(DioException e) {
+    final Object? data = e.response?.data;
+    return data is Map ? data['reason'] as String? : null;
+  }
+
   String _messageFor(DioException e) {
     final int? code = e.response?.statusCode;
     if (e.type == DioExceptionType.connectionTimeout ||
@@ -176,7 +186,16 @@ class _LoginScreenState extends State<LoginScreen> {
       return 'Server tidak terjangkau. Periksa koneksi jaringan rumah sakit.';
     }
     if (code == 401) return 'Kredensial atau kata sandi tidak sesuai.';
-    if (code == 403) return 'Akun dikunci sementara. Hubungi Kepegawaian.';
+    if (code == 403) {
+      final String? reason = _reason(e);
+      if (reason == 'EMAIL_NOT_VERIFIED') {
+        return 'Email belum diverifikasi. Masukkan kode verifikasi terlebih dahulu.';
+      }
+      if (reason == 'PENDING_APPROVAL') {
+        return 'Akun menunggu persetujuan admin. Coba lagi setelah disetujui.';
+      }
+      return 'Akun dikunci sementara. Hubungi Kepegawaian.';
+    }
     if (code == 409) return 'Perangkat ini sudah terdaftar pada akun lain.';
     return 'Gagal masuk (${code ?? 'tanpa kode'}).';
   }
@@ -306,23 +325,31 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.canvas,
-      body: SafeArea(
-        child: Column(
-          children: [
-            Container(
-              height: 6,
-              width: double.infinity,
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    AppColors.primary,
-                    AppColors.primaryContainer,
-                    AppColors.secondaryContainer,
-                  ],
+      backgroundColor: AppColors.surfaceLow,
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: <Color>[AppColors.surfaceLow, AppColors.canvas],
+          ),
+        ),
+        child: SafeArea(
+          child: Column(
+            children: [
+              Container(
+                height: 8,
+                width: double.infinity,
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: <Color>[
+                      AppColors.primary,
+                      AppColors.primaryContainer,
+                      AppColors.secondary,
+                    ],
+                  ),
                 ),
               ),
-            ),
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(
@@ -344,7 +371,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 children: [
                                   Text(
                                     'Darmayu Face ID',
-                                    style: AppText.headlineSm.copyWith(
+                                    style: AppText.headlineLg.copyWith(
                                       color: AppColors.primary,
                                       fontWeight: FontWeight.w700,
                                     ),
@@ -515,6 +542,25 @@ class _LoginScreenState extends State<LoginScreen> {
                                     : InfoBannerTone.error,
                                 title: 'Tidak dapat masuk',
                               ),
+                              if (_unverifiedEmail != null)
+                                Align(
+                                  alignment: Alignment.centerRight,
+                                  child: TextButton.icon(
+                                    onPressed: () {
+                                      Navigator.of(context).push<void>(
+                                        MaterialPageRoute<void>(
+                                          builder: (_) => VerifyEmailScreen(
+                                            email: _unverifiedEmail!,
+                                            auth: widget.auth,
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                    icon: const Icon(Icons.mark_email_read,
+                                        size: 18),
+                                    label: const Text('Verifikasi email'),
+                                  ),
+                                ),
                               const SizedBox(height: 16),
                             ],
                             SizedBox(
@@ -740,6 +786,7 @@ class _LoginScreenState extends State<LoginScreen> {
           ],
         ),
       ),
+    ),
     );
   }
 }

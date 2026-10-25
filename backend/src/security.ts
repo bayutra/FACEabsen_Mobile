@@ -46,4 +46,5 @@ export function assertProductionEnv(env: EnvLike): void {
   if (!env.SMTP_FROM) problems.push('SMTP_FROM is missing');
   const ecs = env.EMAIL_CODE_SECRET ?? '';
   if (!ecs || ecs.length < 32) problems.push('EMAIL_CODE_SECRET must be at least 32 chars');
+  if (problems.length) throw new Error(problems.join('; '));
 }

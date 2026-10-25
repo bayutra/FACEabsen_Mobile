@@ -82,7 +82,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
     final int totalHours = knownHours.fold(0, (sum, h) => sum + h);
 
     return Scaffold(
-      backgroundColor: AppColors.canvas,
+      backgroundColor: AppColors.surfaceLow,
       appBar: AppBar(
         title: const Column(
           crossAxisAlignment: CrossAxisAlignment.start,

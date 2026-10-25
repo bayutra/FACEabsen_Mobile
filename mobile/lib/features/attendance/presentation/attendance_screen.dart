@@ -6,6 +6,7 @@ import '../../../core/widgets/stitch.dart';
 import 'attendance_result_screen.dart';
 import '../../attendance/data/attendance_repository.dart';
 import '../../attendance/data/outbox_repository.dart';
+import '../../attendance/data/punch_models.dart';
 import '../../attendance/domain/attendance_models.dart';
 import '../../face/data/face_repository.dart';
 import '../../liveness/presentation/passive_scan_screen.dart';
@@ -72,6 +73,18 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     _cancelToken?.cancel();
     _cancelToken = CancelToken();
     _cancelled = false;
+
+    final bool nonceReady = await widget.attendance.hasNonceSession();
+    if (!mounted || _cancelled) return;
+    if (!nonceReady) {
+      setState(() {
+        _error = 'Sambungkan internet untuk memuat sesi presensi.';
+        _busy = false;
+        _phase = null;
+      });
+      return;
+    }
+
     setState(() {
       _busy = true;
       _error = null;
@@ -180,27 +193,31 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
           ),
         );
       }
-    } on AttendanceOffline {
+    } on AttendanceOffline catch (e) {
       if (!mounted || _cancelled) return;
-      if (embedding != null && live != null && deviceId != null) {
-        try {
-          await widget.attendance.outbox().save(
-                OutboxEntry(
-                  kind: checkIn ? PunchKind.checkIn : PunchKind.checkOut,
-                  embedding: embedding,
-                  liveness: live,
-                  deviceId: deviceId,
-                  compromised: compromised,
-                  queuedAt: DateTime.now().toUtc(),
-                ),
-              );
-        } catch (_) {}
+      final PreparedPunch? prepared = e.prepared;
+      if (prepared == null) {
+        setState(() {
+          _error = 'Sesi presensi habis; sambungkan internet lalu coba lagi.';
+          _busy = false;
+          _phase = null;
+        });
+        return;
       }
-      setState(() {
-        _queued = 'Presensi tersimpan di perangkat, akan dikirim otomatis.';
-        _busy = false;
-        _phase = null;
-      });
+      try {
+        await widget.attendance.outbox().save(OutboxEntry.fromPrepared(prepared));
+        setState(() {
+          _queued = 'Presensi tersimpan, akan dikirim saat online.';
+          _busy = false;
+          _phase = null;
+        });
+      } catch (_) {
+        setState(() {
+          _error = 'Presensi belum tersimpan. Coba lagi saat online.';
+          _busy = false;
+          _phase = null;
+        });
+      }
     } on AttendanceRejected catch (e) {
       if (!mounted || _cancelled) return;
       setState(() {
@@ -229,7 +246,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
 
     final AttendanceResult? r = _result;
     return Scaffold(
-      backgroundColor: AppColors.canvas,
+      backgroundColor: AppColors.surfaceLow,
       appBar: AppBar(
         title: const Text('Presensi Kehadiran'),
         backgroundColor: Colors.white,
@@ -513,7 +530,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
 
   Widget _buildProcessingScreen() {
     return Scaffold(
-      backgroundColor: AppColors.canvas,
+      backgroundColor: AppColors.surfaceLow,
       body: SafeArea(
         child: Column(
           children: [

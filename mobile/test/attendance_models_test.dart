@@ -1,12 +1,29 @@
 import 'package:face_absen_mobile/features/attendance/data/attendance_repository.dart';
+import 'package:face_absen_mobile/features/attendance/data/signature_v1.dart';
 import 'package:face_absen_mobile/features/attendance/domain/attendance_models.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  test('sign message matches server format', () {
+  test('sign message matches server format', () async {
+    final String msg = await SignatureV1.message(
+      action: 'check-in',
+      deviceId: 'd1',
+      requestId: '11111111-2222-3333-4444-555555555555',
+      captureAt: '2026-10-23T07:00:00.000Z',
+      nonce: 'nonce-abc',
+      embedding: <double>[0.1, -0.25, 0.3333333333],
+      liveness: <String, Object?>{
+        'passed': true,
+        'mode': 'active',
+        'completedAt': '2026-10-23T07:00:00.000Z',
+        'score': 0.987654321,
+        'padScore': 0.5,
+        'challenges': <String>['blink', 'turn_left'],
+      },
+    );
     expect(
-      AttendanceRepository.signMessage('req-1', '2026-10-05T07:00:00.000Z'),
-      'req-1.2026-10-05T07:00:00.000Z',
+      msg,
+      'v1|check-in|d1|11111111-2222-3333-4444-555555555555|2026-10-23T07:00:00.000Z||nonce-abc|666a0811ed27009b72350c48071862ff9228939118c89672bc349194caef88fb|b019db2a3f847f4fc92123aaf7f1b77be6e5dd9a1ef9f1311a02d30bd0cde14f',
     );
   });
 

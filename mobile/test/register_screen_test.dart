@@ -47,16 +47,14 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  testWidgets('pendaftaran sukses menutup layar dan mengembalikan true',
+  testWidgets('pendaftaran sukses mengarah ke verifikasi email',
       (tester) async {
-    bool? result;
     final auth = FakeAuthRepository();
     final devices = FakeDeviceRepository();
     await openRegister(
       tester,
       auth: auth,
       devices: devices,
-      onResult: (bool? value) => result = value,
     );
 
     expect(find.text('Daftar Akun'), findsOneWidget);
@@ -73,9 +71,7 @@ void main() {
     await tester.tap(submit);
     await tester.pumpAndSettle();
 
-    expect(result, isTrue);
-    expect(find.text('Daftar Akun'), findsNothing);
-    expect(devices.registerCalls, 1);
+    expect(find.text('Kode dikirim ke budi@rs.test'), findsOneWidget);
     expect(auth.lastRegisterUnit, 'dept-1');
   });
 

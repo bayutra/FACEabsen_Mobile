@@ -64,6 +64,7 @@ Future<AttendanceRepository> _repoWithSeed(Dio dio) async {
   final FakeStore store = FakeStore();
   final pair = await DeviceKeys.generate();
   await store.writePrivateSeed(await DeviceKeys.exportSeedBase64(pair));
+  await store.writeNoncePool(List<String>.generate(10, (int i) => 'n$i'));
   return AttendanceRepository(dio: dio, store: store);
 }
 
@@ -98,8 +99,8 @@ void main() {
       try {
         await flight.timeout(const Duration(seconds: 5));
         fail('expected AttendanceRejected');
-      } on DioException catch (e) {
-        fail('must never leak DioException (got $e)');
+      } on AttendanceRejected {
+        // expected
       } on TimeoutException {
         fail('cancel hung: fetch ignored the CancelToken');
       }
@@ -129,7 +130,8 @@ void main() {
         'faceEmbedding',
         'liveness',
         'requestId',
-        'requestTimestamp',
+        'captureAt',
+        'challengeNonce',
         'signature',
         'deviceCompromised',
       ]) {

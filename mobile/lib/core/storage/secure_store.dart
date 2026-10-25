@@ -92,7 +92,7 @@ class SecureStore {
 
   Future<List<String>?> readNoncePool() async {
     final String? raw =
-        await _storage.read(key: '$_noncePoolKey\_${await _deviceScope()}');
+        await _storage.read(key: '${_noncePoolKey}_${await _deviceScope()}');
     if (raw == null || raw.isEmpty) return null;
     try {
       final Object? decoded = json.decode(raw);
@@ -101,11 +101,13 @@ class SecureStore {
     return null;
   }
 
-  Future<void> writeNoncePool(List<String> pool) async =>
-      _storage.write(key: '$_noncePoolKey\_${await _deviceScope()}', value: json.encode(pool));
+  Future<void> writeNoncePool(List<String> pool) async => _storage.write(
+        key: '${_noncePoolKey}_${await _deviceScope()}',
+        value: json.encode(pool),
+      );
 
   Future<void> clearNoncePool() async =>
-      _storage.delete(key: '$_noncePoolKey\_${await _deviceScope()}');
+      _storage.delete(key: '${_noncePoolKey}_${await _deviceScope()}');
 
   Future<void> clearDevice() async {
     await _storage.delete(key: '${_deviceIdKey}_${await _deviceScope()}');

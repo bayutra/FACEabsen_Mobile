@@ -192,7 +192,7 @@ class _HomeDashboardState extends State<HomeDashboard> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.canvas,
+      backgroundColor: AppColors.surfaceLow,
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(64),
         child: Container(

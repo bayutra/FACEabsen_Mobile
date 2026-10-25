@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import '../../../core/storage/secure_store.dart';
 import 'punch_models.dart';
-import 'signature_v1.dart';
 
 class OutboxFullException implements Exception {
   OutboxFullException([this.message = 'Outbox penuh (maks 50)']);
@@ -66,13 +65,23 @@ class OutboxEntry {
     final String requestId =
         (json['requestId'] as String?) ?? (json['requestId'] as String? ?? '');
     final String? captureRaw = json['captureAt'] as String?;
-    final DateTime captureAt = captureRaw != null
-        ? DateTime.parse(captureRaw).toUtc()
-        : DateTime.now().toUtc();
+    DateTime captureAt;
+    try {
+      captureAt = captureRaw != null
+          ? DateTime.parse(captureRaw).toUtc()
+          : DateTime.now().toUtc();
+    } catch (_) {
+      return null;
+    }
     final String? queuedRaw = json['queuedAt'] as String?;
-    final DateTime queuedAt = queuedRaw != null
-        ? DateTime.parse(queuedRaw).toUtc()
-        : captureAt;
+    DateTime queuedAt;
+    try {
+      queuedAt = queuedRaw != null
+          ? DateTime.parse(queuedRaw).toUtc()
+          : captureAt;
+    } catch (_) {
+      return null;
+    }
     final bool legacy = payload.isEmpty && requestId.isEmpty;
     return OutboxEntry(
       kind: kind,

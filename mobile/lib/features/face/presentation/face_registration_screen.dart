@@ -1,4 +1,5 @@
 import 'package:camera/camera.dart';
+// ignore_for_file: empty_catches
 import 'package:flutter/material.dart';
 
 import '../../../core/network/error_detail.dart';

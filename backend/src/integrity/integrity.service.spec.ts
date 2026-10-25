@@ -104,11 +104,11 @@ describe('IntegrityService', () => {
     );
   });
 
-  it('strict mode requires token; lax mode falls back to jailbreak claim', () => {
+  it('strict mode requires token; lax mode no longer trusts jailbreak claim', () => {
     const strict = new IntegrityService(cfg({ INTEGRITY_STRICT: 'true' }));
     expect(strict.resolveSignal({ deviceCompromised: false }).ok).toBe(false);
     const lax = new IntegrityService(cfg({ INTEGRITY_STRICT: 'false' }));
-    expect(lax.resolveSignal({ deviceCompromised: false }).ok).toBe(true);
+    expect(lax.resolveSignal({ deviceCompromised: false }).ok).toBe(false);
     expect(lax.resolveSignal({ deviceCompromised: true }).ok).toBe(false);
   });
 });

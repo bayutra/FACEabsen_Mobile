@@ -30,19 +30,19 @@ describe('assertProductionEnv (STEP 22)', () => {
 
   it('production boots only with real secrets + DB + encryption key', () => {
     const goodKey = Buffer.alloc(32).toString('base64');
+    const goodEnv = {
+      NODE_ENV: 'production',
+      JWT_ACCESS_SECRET: 'a'.repeat(32),
+      DATABASE_URL: 'postgresql://x',
+      DATA_ENCRYPTION_KEY: goodKey,
+      SMTP_HOST: 'smtp.example.com',
+      SMTP_FROM: 'no-reply@example.com',
+      EMAIL_CODE_SECRET: 'b'.repeat(32),
+    };
+    expect(() => assertProductionEnv(goodEnv)).not.toThrow();
     expect(() =>
       assertProductionEnv({
-        NODE_ENV: 'production',
-        JWT_ACCESS_SECRET: 'a'.repeat(32),
-        DATABASE_URL: 'postgresql://x',
-        DATA_ENCRYPTION_KEY: goodKey,
-      }),
-    ).not.toThrow();
-    expect(() =>
-      assertProductionEnv({
-        NODE_ENV: 'production',
-        JWT_ACCESS_SECRET: 'a'.repeat(32),
-        DATABASE_URL: 'postgresql://x',
+        ...goodEnv,
         DATA_ENCRYPTION_KEY: 'not-base64-32-bytes!!',
       }),
     ).toThrow('DATA_ENCRYPTION_KEY');

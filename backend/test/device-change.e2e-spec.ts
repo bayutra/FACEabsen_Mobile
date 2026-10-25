@@ -11,6 +11,7 @@ import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { AuditService } from '../src/audit/audit.service.js';
 import { AuthService } from '../src/auth/auth.service.js';
+import { EmailVerificationService } from '../src/auth/email-verification.service.js';
 import { JwtAuthGuard } from '../src/auth/guards/jwt-auth.guard.js';
 import { PermissionsGuard } from '../src/auth/guards/permissions.guard.js';
 import { RolesGuard } from '../src/auth/guards/roles.guard.js';
@@ -130,22 +131,25 @@ function makeFake(hash: string) {
       },
     },
     device: {
+      count: async ({ where }: any) =>
+        [...devices.values()].filter(
+          (d) =>
+            (!where?.employeeId || d.employeeId === where.employeeId) &&
+            (!where?.status || d.status === where.status) &&
+            (!where?.NOT?.id || d.id !== where.NOT.id),
+        ).length,
       findFirst: async ({ where }: any) => {
         const rows = [...devices.values()];
-        if (where.OR) {
-          return (
-            rows.find((d) =>
-              where.OR.some((c: any) =>
-                Object.entries(c).every(([k, v]) => d[k] === v),
-              ),
-            ) ?? null
+        const match = (d: any, w: Record<string, any>) =>
+          Object.entries(w).every(([k, v]) =>
+            v && typeof v === 'object' && 'not' in v
+              ? d[k] !== v.not
+              : d[k] === v,
           );
+        if (where.OR) {
+          return rows.find((d) => where.OR.some((c: any) => match(d, c))) ?? null;
         }
-        return (
-          rows.find((d) =>
-            Object.entries(where).every(([k, v]) => d[k] === v),
-          ) ?? null
-        );
+        return rows.find((d) => match(d, where)) ?? null;
       },
       findUnique: async ({ where, include }: any) => {
         const d = devices.get(where.id) ?? null;
@@ -391,6 +395,7 @@ beforeAll(async () => {
       DevicesService,
       DeviceChangeService,
       AuthService,
+      { provide: EmailVerificationService, useValue: { issue: async () => undefined, verify: async () => ({ userId: 'u1' }) } },
       JwtAuthGuard,
       RolesGuard,
       PermissionsGuard,

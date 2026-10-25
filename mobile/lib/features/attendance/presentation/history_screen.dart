@@ -262,7 +262,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
     final Map<String, List<AttendanceHistoryItem>> groups = _grouped;
 
     return Scaffold(
-      backgroundColor: AppColors.canvas,
+      backgroundColor: AppColors.surfaceLow,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
@@ -1387,7 +1387,7 @@ class _DetailSheet extends StatelessWidget {
                           ),
                           style: OutlinedButton.styleFrom(
                             foregroundColor: AppColors.ink,
-                            backgroundColor: AppColors.canvas,
+                            backgroundColor: AppColors.surfaceLow,
                             side: BorderSide(
                               color: AppColors.border.withOpacity(0.8),
                             ),

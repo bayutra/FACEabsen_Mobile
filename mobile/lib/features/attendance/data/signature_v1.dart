@@ -2,8 +2,6 @@ import 'dart:convert';
 
 import 'package:cryptography/cryptography.dart';
 
-import 'punch_models.dart';
-
 class SignatureV1 {
   static String canonicalEmbedding(List<double> values) =>
       values.map((v) => v.toStringAsFixed(6)).join(',');

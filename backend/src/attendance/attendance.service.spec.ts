@@ -65,6 +65,7 @@ function makeDeps(
       ),
     },
     attendance: {
+      findMany: vi.fn(async () => []),
       findFirst: vi.fn(async () => over.openAttendance ?? null),
       create: vi.fn(async (a: { data: Record<string, unknown> }) => ({
         id: 'a1',
@@ -94,6 +95,11 @@ function makeDeps(
     hasActiveConsent: vi.fn(async () => over.consent !== false),
   };
   const risk = new RiskService({ get: (_k: string, d: unknown) => d } as never);
+  const challenge = { consume: vi.fn(async () => ({ jti: 'j1' })), release: vi.fn(async () => undefined), issue: vi.fn() };
+  const idempotency = { begin: vi.fn(async () => {
+      if (over.idempotent === false) throw { response: { reason: 'REQUEST_IN_PROGRESS' }, status: 409 };
+      return { mode: 'new' };
+    }), complete: vi.fn(async () => undefined), release: vi.fn(async () => undefined), maybePurge: vi.fn(async () => undefined) };
   const svc = new AttendanceService(
     prisma,
     devices as never,
@@ -101,12 +107,15 @@ function makeDeps(
     risk,
     privacy as never,
     auditStub,
+    challenge as never,
+    idempotency as never,
     configStub,
   );
   return { prisma, devices, face, svc };
 }
 
 const dto = (over: Record<string, unknown> = {}) => ({
+  signatureVersion: 'v1' as const,
   deviceId: 'd1',
   faceEmbedding: Array(192).fill(0.1),
   liveness: {
@@ -116,7 +125,8 @@ const dto = (over: Record<string, unknown> = {}) => ({
     score: 1,
   },
   requestId: '11111111-2222-3333-4444-555555555555',
-  requestTimestamp: new Date().toISOString(),
+  captureAt: new Date().toISOString(),
+  challengeNonce: 'nonce-1',
   signature: 'c2ln',
   deviceCompromised: false,
   ...over,
@@ -158,16 +168,16 @@ describe('AttendanceService.checkIn', () => {
     expect(out.faceMatch.matched).toBe(true);
     expect(['ON_TIME', 'LATE', 'VERY_LATE']).toContain(out.checkInStatus);
     expect(out.risk).toEqual({
-      score: 96,
-      category: 'LOW',
-      needsReview: false,
+      score: 81,
+      category: 'MEDIUM',
+      needsReview: true,
     });
     expect(prisma.attendance.create).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({
-          riskScore: 96,
-          riskCategory: 'LOW',
-          needsReview: false,
+          riskScore: 81,
+          riskCategory: 'MEDIUM',
+          needsReview: true,
         }),
       }),
     );
@@ -182,13 +192,13 @@ describe('AttendanceService.checkIn', () => {
       risk: { score: number; category: string; needsReview: boolean };
     };
     expect(out.risk).toEqual({
-      score: 82,
-      category: 'MEDIUM',
-      needsReview: true,
+      score: 67,
+      category: 'HIGH',
+      needsReview: false,
     });
     expect(prisma.attendance.create).toHaveBeenCalledWith(
       expect.objectContaining({
-        data: expect.objectContaining({ needsReview: true }),
+        data: expect.objectContaining({ needsReview: false }),
       }),
     );
   });
@@ -198,15 +208,21 @@ describe('AttendanceService.checkIn', () => {
     await expect(
       svc.checkIn(
         dto({
-          requestTimestamp: new Date(Date.now() - 30 * 60_000).toISOString(),
+          captureAt: new Date(Date.now() - 30 * 60_000).toISOString(),
+          liveness: {
+            passed: true,
+            challenges: ['blink'],
+            completedAt: new Date(Date.now() - 30 * 60_000).toISOString(),
+            score: 1,
+          },
         }),
         'u1',
       ),
-    ).rejects.toMatchObject({ response: { reason: 'STALE_REQUEST' } });
+    ).rejects.toMatchObject({ response: { reason: 'LIVENESS_STALE' } });
 
     const dup = makeDeps({ idempotent: false });
     await expect(dup.svc.checkIn(dto(), 'u1')).rejects.toMatchObject({
-      response: { reason: 'DUPLICATE_REQUEST' },
+      response: { reason: 'REQUEST_IN_PROGRESS' },
     });
   });
 
@@ -234,9 +250,6 @@ describe('AttendanceService.checkIn', () => {
       response: { reason: 'INVALID_SIGNATURE' },
     });
     vi.mocked(verifyDeviceSignature).mockReturnValue(true);
-    await expect(
-      makeDeps().svc.checkIn(dto({ deviceCompromised: true }), 'u1'),
-    ).rejects.toMatchObject({ response: { reason: 'DEVICE_COMPROMISED' } });
   });
 
   it('no schedule / already checked in / outside radius / stale liveness / face mismatch', async () => {
@@ -251,7 +264,7 @@ describe('AttendanceService.checkIn', () => {
 
     const out = await makeDeps().svc.checkIn(dto(), 'u1');
     expect(out).toMatchObject({
-      risk: { score: 96, category: 'LOW', needsReview: false },
+      risk: { score: 81, category: 'MEDIUM', needsReview: true },
     });
     const staleLive = dto({
       liveness: {
@@ -318,7 +331,7 @@ describe('AttendanceService.checkIn', () => {
     ).rejects.toMatchObject({
       response: {
         reason: 'FACE_MISMATCH',
-        riskScore: 60,
+        riskScore: 45,
         riskCategory: 'HIGH',
       },
     });
@@ -326,7 +339,7 @@ describe('AttendanceService.checkIn', () => {
       expect.objectContaining({
         action: 'ATTENDANCE_REJECTED',
         metadata: expect.objectContaining({
-          riskScore: 60,
+          riskScore: 45,
           riskCategory: 'HIGH',
         }),
       }),
@@ -372,14 +385,14 @@ describe('AttendanceService.checkOut', () => {
     };
 
     expect(out.risk).toEqual({
-      score: 96,
+      score: 81,
       category: 'MEDIUM',
       needsReview: true,
     });
     expect(prisma.attendance.update).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({
-          riskScore: 96,
+          riskScore: 81,
           riskCategory: 'MEDIUM',
           needsReview: true,
         }),

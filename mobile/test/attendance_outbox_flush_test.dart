@@ -6,6 +6,7 @@ import 'package:dio/dio.dart';
 import 'package:face_absen_mobile/core/crypto/device_keys.dart';
 import 'package:face_absen_mobile/features/attendance/data/attendance_repository.dart';
 import 'package:face_absen_mobile/features/attendance/data/outbox_repository.dart';
+import 'package:face_absen_mobile/features/attendance/data/punch_models.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'fakes.dart';
@@ -83,11 +84,19 @@ class _ThrowAdapter implements HttpClientAdapter {
   void close({bool force = false}) {}
 }
 
-Future<AttendanceRepository> _repoWithSeed(Dio dio) async {
+class _Harness {
+  _Harness(this.repo, this.store);
+
+  final AttendanceRepository repo;
+  final FakeStore store;
+}
+
+Future<_Harness> _repoWithSeed(Dio dio) async {
   final FakeStore store = FakeStore();
   final pair = await DeviceKeys.generate();
   await store.writePrivateSeed(await DeviceKeys.exportSeedBase64(pair));
-  return AttendanceRepository(dio: dio, store: store);
+  await store.writeNoncePool(List<String>.generate(10, (int i) => 'n$i'));
+  return _Harness(AttendanceRepository(dio: dio, store: store), store);
 }
 
 Map<String, Object> _passiveLiveness() => <String, Object>{
@@ -98,12 +107,26 @@ Map<String, Object> _passiveLiveness() => <String, Object>{
       'padScore': 0.82,
     };
 
-OutboxEntry _queued({PunchKind kind = PunchKind.checkIn}) => OutboxEntry(
+OutboxEntry _queued({
+  PunchKind kind = PunchKind.checkIn,
+  String requestId = 'r-queued',
+}) =>
+    OutboxEntry(
       kind: kind,
-      embedding: List<double>.filled(192, 0.1),
-      liveness: _passiveLiveness(),
-      deviceId: 'd1',
-      compromised: false,
+      payload: <String, Object?>{
+        'deviceId': 'd1',
+        'faceEmbedding': List<double>.filled(192, 0.1),
+        'liveness': _passiveLiveness(),
+        'requestId': requestId,
+        'captureAt': '2026-10-07T07:00:00.000Z',
+        'queuedAt': '2026-10-07T07:05:00.000Z',
+        'challengeNonce': 'nonce-x',
+        'signatureVersion': 'v1',
+        'signature': 'sig-$requestId',
+        'deviceCompromised': false,
+      },
+      requestId: requestId,
+      captureAt: DateTime.parse('2026-10-07T07:00:00.000Z'),
       queuedAt: DateTime.parse('2026-10-07T07:05:00.000Z'),
     );
 
@@ -155,7 +178,8 @@ void main() {
       final Dio dio = _dio();
       final _CapturingAdapter baseline = _CapturingAdapter();
       dio.httpClientAdapter = baseline;
-      final AttendanceRepository repo = await _repoWithSeed(dio);
+      final _Harness h = await _repoWithSeed(dio);
+      final AttendanceRepository repo = h.repo;
 
       await repo.checkIn(
         embedding: List<double>.filled(192, 0.1),
@@ -163,9 +187,8 @@ void main() {
         deviceId: 'd1',
         compromised: false,
       );
-      final String idA = baseline.bodies.single['requestId'] as String;
-
       dio.httpClientAdapter = _ThrowAdapter(DioExceptionType.connectionError);
+      PreparedPunch? prepared;
       try {
         await repo.checkIn(
           embedding: List<double>.filled(192, 0.1),
@@ -174,10 +197,17 @@ void main() {
           compromised: false,
         );
         fail('expected AttendanceOffline');
-      } on AttendanceOffline {
-        await repo.outbox().save(_queued());
+      } on AttendanceOffline catch (e) {
+        prepared = e.prepared;
+        expect(prepared, isNotNull);
+        final PreparedPunch nonNullPrepared = prepared!;
+        expect(nonNullPrepared.payload['queuedAt'], isNotNull);
+        await repo.outbox().save(OutboxEntry.fromPrepared(nonNullPrepared));
       }
       expect(await repo.outbox().count(), 1);
+      final OutboxEntry stored = (await repo.outbox().load()).single;
+      final Object? storedSignature = stored.payload['signature'];
+      expect(stored.requestId, prepared.requestId);
 
       final _CapturingAdapter flushed = _CapturingAdapter();
       dio.httpClientAdapter = flushed;
@@ -188,12 +218,11 @@ void main() {
       expect(result.pending, 0);
       expect(await repo.outbox().count(), 0);
       final String idB = flushed.bodies.single['requestId'] as String;
-      expect(idB, isNot(idA));
-
-      expect(
-          DateTime.tryParse(
-              flushed.bodies.single['requestTimestamp'] as String),
-          isNotNull);
+      expect(idB, prepared.requestId);
+      expect(flushed.bodies.single['captureAt'], stored.captureAt.toIso8601String());
+      expect(flushed.bodies.single['signature'], storedSignature);
+      expect(flushed.bodies.single['signatureVersion'], 'v1');
+      expect(flushed.bodies.single.containsKey('requestTimestamp'), isFalse);
     });
 
     test('setiap entry flush mendapat requestId unik + path sesuai kind',
@@ -201,41 +230,50 @@ void main() {
       final Dio dio = _dio();
       final _CapturingAdapter cap = _CapturingAdapter();
       dio.httpClientAdapter = cap;
-      final AttendanceRepository repo = await _repoWithSeed(dio);
+      final _Harness h = await _repoWithSeed(dio);
+      final AttendanceRepository repo = h.repo;
 
-      await repo.outbox().save(_queued(kind: PunchKind.checkIn));
-      await repo.outbox().save(_queued(kind: PunchKind.checkOut));
+      await repo.outbox().save(
+          _queued(kind: PunchKind.checkIn, requestId: 'r-in'));
+      await repo.outbox().save(
+          _queued(kind: PunchKind.checkOut, requestId: 'r-out'));
       final FlushResult result = await repo.flushOutbox(outbox: repo.outbox());
 
       expect(result.sent, 2);
       expect(result.pending, 0);
       expect(cap.bodies, hasLength(2));
-      final Set<Object?> ids = cap.bodies.map((b) => b['requestId']).toSet();
-      expect(ids, hasLength(2));
+      final List<Object?> ids =
+          cap.bodies.map((b) => b['requestId']).toList();
+      expect(ids, <Object?>['r-in', 'r-out']);
       expect(
           cap.paths, <String>['/attendance/check-in', '/attendance/check-out']);
     });
 
-    test('422 server outcome tercatat lalu entry dibuang (tidak retry)',
-        () async {
+    test('422 definitif menjadi needsAction dan tidak dibuang', () async {
       final Dio dio = _dio();
       dio.httpClientAdapter = _StatusAdapter(422, 'STALE_REQUEST');
-      final AttendanceRepository repo = await _repoWithSeed(dio);
+      final _Harness h = await _repoWithSeed(dio);
+      final AttendanceRepository repo = h.repo;
 
       await repo.outbox().save(_queued());
       final FlushResult result = await repo.flushOutbox(outbox: repo.outbox());
 
       expect(result.sent, 0);
-      expect(result.dropped, 1);
-      expect(result.pending, 0);
+      expect(result.dropped, 0);
+      expect(result.pending, 1);
+      expect(result.needsAction, 1);
       expect(result.dropReasons, <String?>['STALE_REQUEST']);
-      expect(await repo.outbox().count(), 0);
+      expect(await repo.outbox().count(), 1);
+      final OutboxEntry kept = (await repo.outbox().load()).single;
+      expect(kept.needsAction, isTrue);
+      expect(kept.lastError, 'STALE_REQUEST');
     });
 
     test('connection error saat flush → entry tetap antre', () async {
       final Dio dio = _dio();
       dio.httpClientAdapter = _ThrowAdapter(DioExceptionType.connectionError);
-      final AttendanceRepository repo = await _repoWithSeed(dio);
+      final _Harness h = await _repoWithSeed(dio);
+      final AttendanceRepository repo = h.repo;
 
       await repo.outbox().save(_queued());
       final FlushResult result = await repo.flushOutbox(outbox: repo.outbox());
@@ -244,6 +282,7 @@ void main() {
       expect(result.dropped, 0);
       expect(result.pending, 1);
       expect(await repo.outbox().count(), 1);
+      expect((await repo.outbox().load()).single.attempts, 1);
     });
   });
 }

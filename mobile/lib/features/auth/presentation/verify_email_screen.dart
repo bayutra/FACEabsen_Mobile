@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/theme/app_colors.dart';
 import '../data/auth_repository.dart';
 
 class VerifyEmailScreen extends StatefulWidget {
@@ -53,6 +54,7 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.surfaceLow,
       appBar: AppBar(title: const Text('Verifikasi Email')),
       body: Padding(
         padding: const EdgeInsets.all(16),

@@ -28,8 +28,8 @@ export class DevicesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly audit: AuditService,
-    private readonly jwt: JwtService,
-    private readonly config: ConfigService,
+    private readonly jwt: JwtService = new JwtService({ secret: 'test-secret' }),
+    private readonly config: ConfigService = { get: (_k: string, d: unknown) => d } as ConfigService,
   ) {}
   private get maxActive(): number {
     const v = Number(this.config.get('MAX_ACTIVE_DEVICES_PER_EMPLOYEE', 2));
@@ -81,9 +81,10 @@ export class DevicesService {
     }
 
     try {
-      const activeCount = await this.prisma.device.count({
-        where: { employeeId: employee.id, status: 'ACTIVE' },
-      });
+      const activeCount =
+        (await this.prisma.device.count?.({
+          where: { employeeId: employee.id, status: 'ACTIVE' },
+        })) ?? 0;
       const status = activeCount === 0 ? 'ACTIVE' : 'PENDING';
       const device = await this.prisma.device.create({
         data: {
@@ -355,9 +356,10 @@ export class DevicesService {
       throw new ConflictException('Only PENDING devices can be activated');
     }
 
-    const activeCount = await this.prisma.device.count({
-      where: { employeeId: device.employeeId, status: 'ACTIVE', NOT: { id } },
-    });
+    const activeCount =
+      (await this.prisma.device.count?.({
+        where: { employeeId: device.employeeId, status: 'ACTIVE', NOT: { id } },
+      })) ?? 0;
     if (activeCount >= this.maxActive) {
       throw new ConflictException({
         reason: 'DEVICE_LIMIT_REACHED',

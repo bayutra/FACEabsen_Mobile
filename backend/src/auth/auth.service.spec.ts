@@ -8,6 +8,7 @@ let HASH = '';
 
 const configStub = { get: (_key: string, dflt: unknown) => dflt } as never;
 const auditStub = { log: vi.fn(async () => undefined) } as never;
+const emailVerificationStub = { issue: vi.fn(async () => undefined), verify: vi.fn(async () => ({ userId: 'u1' })) } as never;
 const jwt = new JwtService({ secret: 'test-secret' });
 
 function makePrisma(overrides: Record<string, Record<string, unknown>> = {}) {
@@ -38,6 +39,8 @@ function userRow(over: Record<string, unknown> = {}) {
     email: 'employee@rs.test',
     passwordHash: HASH,
     isActive: true,
+    emailVerifiedAt: new Date(),
+    approvedAt: new Date(),
     failedLoginAttempts: 0,
     lockedUntil: null,
     userRoles: [{ role: { name: 'EMPLOYEE' } }],
@@ -64,7 +67,7 @@ describe('AuthService.login', () => {
         })),
       },
     });
-    const svc = new AuthService(prisma, jwt, configStub, auditStub);
+    const svc = new AuthService(prisma, jwt, configStub, auditStub, emailVerificationStub);
     const out = await svc.login(
       { email: 'employee@rs.test', password: PASSWORD },
       { ip: '1.2.3.4' },
@@ -82,7 +85,7 @@ describe('AuthService.login', () => {
     const prisma = makePrisma({
       user: { findUnique: vi.fn(async () => userRow()), update },
     });
-    const svc = new AuthService(prisma, jwt, configStub, auditStub);
+    const svc = new AuthService(prisma, jwt, configStub, auditStub, emailVerificationStub);
     await expect(
       svc.login({ email: 'employee@rs.test', password: 'Wrong123!' }, {}),
     ).rejects.toThrow('Invalid credentials');
@@ -104,7 +107,7 @@ describe('AuthService.login', () => {
         update,
       },
     });
-    const svc = new AuthService(prisma, jwt, configStub, auditStub);
+    const svc = new AuthService(prisma, jwt, configStub, auditStub, emailVerificationStub);
     await expect(
       svc.login({ email: 'e', password: 'Wrong123!' }, {}),
     ).rejects.toThrow();
@@ -119,24 +122,24 @@ describe('AuthService.login', () => {
         ),
       },
     });
-    const svc2 = new AuthService(prisma2, jwt, configStub, auditStub);
+    const svc2 = new AuthService(prisma2, jwt, configStub, auditStub, emailVerificationStub);
     await expect(
       svc2.login({ email: 'e', password: PASSWORD }, {}),
     ).rejects.toThrow('temporarily locked');
   });
 
   it('unknown email and inactive account both return generic 401', async () => {
-    const svc = new AuthService(makePrisma(), jwt, configStub, auditStub);
+    const svc = new AuthService(makePrisma(), jwt, configStub, auditStub, emailVerificationStub);
     await expect(
       svc.login({ email: 'no@rs.test', password: PASSWORD }, {}),
     ).rejects.toThrow('Invalid credentials');
     const prisma = makePrisma({
       user: { findUnique: vi.fn(async () => userRow({ isActive: false })) },
     });
-    const svc2 = new AuthService(prisma, jwt, configStub, auditStub);
+    const svc2 = new AuthService(prisma, jwt, configStub, auditStub, emailVerificationStub);
     await expect(
       svc2.login({ email: 'e', password: PASSWORD }, {}),
-    ).rejects.toThrow('Invalid credentials');
+    ).rejects.toThrow('Akun menunggu persetujuan admin');
   });
 
   it('totp-enabled user gets a challenge token and no session yet', async () => {
@@ -150,7 +153,7 @@ describe('AuthService.login', () => {
       },
       session: { create: sessionCreate },
     });
-    const svc = new AuthService(prisma, jwt, configStub, auditStub);
+    const svc = new AuthService(prisma, jwt, configStub, auditStub, emailVerificationStub);
     auditStub.log.mockClear();
     const out = (await svc.login(
       { email: 'employee@rs.test', password: PASSWORD },
@@ -203,7 +206,7 @@ describe('AuthService.refresh/logout', () => {
       },
       user: { findUnique: vi.fn(), update: vi.fn() },
     });
-    const svc = new AuthService(prisma, jwt, configStub, auditStub);
+    const svc = new AuthService(prisma, jwt, configStub, auditStub, emailVerificationStub);
 
     const { createHash, randomBytes } = await import('node:crypto');
     const first = randomBytes(48).toString('base64url');
@@ -238,7 +241,7 @@ describe('AuthService.refresh/logout', () => {
       },
       user: { findUnique: vi.fn(), update: vi.fn() },
     });
-    const svc = new AuthService(prisma, jwt, configStub, auditStub);
+    const svc = new AuthService(prisma, jwt, configStub, auditStub, emailVerificationStub);
     const { createHash, randomBytes } = await import('node:crypto');
     const first = randomBytes(48).toString('base64url');
     storedHash = createHash('sha256').update(first).digest('hex');
@@ -269,7 +272,7 @@ describe('AuthService.refresh/logout', () => {
         updateMany: vi.fn(async () => ({ count: 1 })),
       },
     });
-    const svc = new AuthService(prisma, jwt, configStub, auditStub);
+    const svc = new AuthService(prisma, jwt, configStub, auditStub, emailVerificationStub);
     await expect(
       svc.refresh('anything-valid-length-0123456789abcdef', {}),
     ).rejects.toThrow();
@@ -286,7 +289,7 @@ describe('AuthService.changePassword/sessions', () => {
     const prisma = makePrisma({
       user: { findUnique: vi.fn(async () => userRow()), update: vi.fn() },
     });
-    const svc = new AuthService(prisma, jwt, configStub, auditStub);
+    const svc = new AuthService(prisma, jwt, configStub, auditStub, emailVerificationStub);
     await expect(
       svc.changePassword(
         'u1',
@@ -312,7 +315,7 @@ describe('AuthService.changePassword/sessions', () => {
       user: { findUnique: vi.fn(async () => userRow()), update: userUpdate },
       session: { updateMany: sessUpdateMany },
     });
-    const svc = new AuthService(prisma, jwt, configStub, auditStub);
+    const svc = new AuthService(prisma, jwt, configStub, auditStub, emailVerificationStub);
     const out = await svc.changePassword(
       'u1',
       's1',
@@ -334,7 +337,7 @@ describe('AuthService.changePassword/sessions', () => {
         findUnique: vi.fn(async () => ({ id: 'sx', userId: 'other' })),
       },
     });
-    const svc = new AuthService(prisma, jwt, configStub, auditStub);
+    const svc = new AuthService(prisma, jwt, configStub, auditStub, emailVerificationStub);
     await expect(svc.revokeSession('u1', 'sx')).rejects.toThrow(
       'Session not found',
     );
@@ -385,20 +388,14 @@ describe('AuthService.register (pendaftaran mandiri)', () => {
 
   it('membuat akun + karyawan + peran EMPLOYEE, langsung memberi sesi', async () => {
     const prisma = registerPrisma();
-    const svc = new AuthService(prisma, jwt, configStub, auditStub);
+    const svc = new AuthService(prisma, jwt, configStub, auditStub, emailVerificationStub);
     const out = await svc.register({
       name: 'Budi Baru',
       email: 'Baru@RS.test',
       password: PASSWORD,
     });
 
-    expect(out.accessToken).toBeTruthy();
-    expect(out.refreshToken).toBeTruthy();
-    expect(out.user).toMatchObject({
-      email: 'baru@rs.test',
-      roles: ['EMPLOYEE'],
-      employeeNo: 'EMP-001',
-    });
+    expect(out).toEqual({ status: 'VERIFICATION_SENT' });
     expect(
       (prisma as unknown as { userRole: { create: ReturnType<typeof vi.fn> } })
         .userRole.create,
@@ -415,19 +412,18 @@ describe('AuthService.register (pendaftaran mandiri)', () => {
     const prisma = registerPrisma({
       user: { findUnique: vi.fn(async () => ({ id: 'u1' })) },
     });
-    const svc = new AuthService(prisma, jwt, configStub, auditStub);
-    await expect(
-      svc.register({
-        name: 'Budi',
-        email: 'employee@rs.test',
-        password: PASSWORD,
-      }),
-    ).rejects.toThrow('Email sudah terdaftar');
+    const svc = new AuthService(prisma, jwt, configStub, auditStub, emailVerificationStub);
+    const out = await svc.register({
+      name: 'Budi',
+      email: 'employee@rs.test',
+      password: PASSWORD,
+    });
+    expect(out).toEqual({ status: 'VERIFICATION_SENT' });
   });
 
   it('password lemah ditolak sebelum menyentuh database', async () => {
     const prisma = registerPrisma();
-    const svc = new AuthService(prisma, jwt, configStub, auditStub);
+    const svc = new AuthService(prisma, jwt, configStub, auditStub, emailVerificationStub);
     await expect(
       svc.register({
         name: 'Budi',

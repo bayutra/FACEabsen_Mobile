@@ -34,7 +34,7 @@ ThemeData buildAppTheme() {
   return ThemeData(
     useMaterial3: true,
     colorScheme: scheme,
-    scaffoldBackgroundColor: AppColors.canvas,
+    scaffoldBackgroundColor: AppColors.surfaceLow,
     textTheme: AppText.textTheme(AppColors.ink, AppColors.inkSecondary),
     appBarTheme: const AppBarTheme(
       backgroundColor: AppColors.surfaceLowest,
@@ -108,7 +108,8 @@ ThemeData buildAppTheme() {
     ),
     cardTheme: CardTheme(
       color: AppColors.surfaceLowest,
-      elevation: 0,
+      elevation: 1,
+      shadowColor: AppColors.ink.withOpacity(0.08),
       margin: EdgeInsets.zero,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppColors.radiusCard),

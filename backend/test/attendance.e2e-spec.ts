@@ -18,8 +18,12 @@ import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { AttendanceController } from '../src/attendance/attendance.controller.js';
 import { AttendanceService } from '../src/attendance/attendance.service.js';
+import { ChallengeService } from '../src/attendance/challenge.service.js';
+import { buildSignMessageV1 } from '../src/attendance/helpers.js';
+import { IdempotencyService } from '../src/attendance/idempotency.service.js';
 import { AuditService } from '../src/audit/audit.service.js';
 import { AuthService } from '../src/auth/auth.service.js';
+import { EmailVerificationService } from '../src/auth/email-verification.service.js';
 import { JwtAuthGuard } from '../src/auth/guards/jwt-auth.guard.js';
 import { PermissionsGuard } from '../src/auth/guards/permissions.guard.js';
 import { RolesGuard } from '../src/auth/guards/roles.guard.js';
@@ -51,6 +55,7 @@ const PUB2_B64 = PAIR2.publicKey
   .subarray(-32)
   .toString('base64');
 const FACE_VEC = Array.from({ length: 192 }, (_, i) => Math.sin(i) / 2);
+const idemStore = new Map<string, unknown>();
 
 function makeFake(crypto: TemplateCryptoService) {
   const users = new Map<string, any>([
@@ -493,29 +498,44 @@ function withSessionStore(f: ReturnType<typeof makeFake>) {
   return f;
 }
 
-function signals(over: Record<string, unknown> = {}) {
+function signals(
+  over: Record<string, unknown> = {},
+  action: 'check-in' | 'check-out' = 'check-in',
+  key: typeof privateKey = privateKey,
+) {
   const requestId = randomUUID();
-  const requestTimestamp = new Date().toISOString();
-  const sig = sign(
-    null,
-    Buffer.from(`${requestId}.${requestTimestamp}`, 'utf8'),
-    privateKey,
-  ).toString('base64');
-  return {
+  const captureAt = new Date().toISOString();
+  const liveness = {
+    passed: true,
+    challenges: ['blink'],
+    completedAt: captureAt,
+    score: 1,
+  };
+  const body = {
+    signatureVersion: 'v1' as const,
     deviceId: 'd1',
     faceEmbedding: [...FACE_VEC],
-    liveness: {
-      passed: true,
-      challenges: ['blink'],
-      completedAt: new Date().toISOString(),
-      score: 1,
-    },
+    liveness,
     requestId,
-    requestTimestamp,
-    signature: sig,
+    captureAt,
+    challengeNonce: 'e2e-nonce-0000000',
     deviceCompromised: false,
     ...over,
   };
+  const message = buildSignMessageV1({
+    action,
+    deviceId: body.deviceId as string,
+    requestId: body.requestId as string,
+    captureAt: body.captureAt as string,
+    queuedAt: body.queuedAt as string | undefined,
+    nonce: body.challengeNonce as string,
+    faceEmbedding: body.faceEmbedding as number[],
+    liveness: body.liveness as never,
+  });
+  const signature =
+    (over.signature as string | undefined) ??
+    sign(null, Buffer.from(message, 'utf8'), key).toString('base64');
+  return { ...body, signature };
 }
 
 beforeAll(async () => {
@@ -546,6 +566,35 @@ beforeAll(async () => {
       PrivacyService,
       RiskService,
       AuthService,
+      { provide: EmailVerificationService, useValue: { issue: async () => undefined, verify: async () => ({ userId: 'u1' }) } },
+      {
+        provide: ChallengeService,
+        useValue: {
+          issue: async () => ({ nonces: Array.from({ length: 10 }, (_, i) => `n${i}`), expiresAt: new Date(Date.now() + 86_400_000).toISOString() }),
+          consume: async () => ({ jti: 'e2e-jti' }),
+          release: async () => undefined,
+        },
+      },
+      {
+        provide: IdempotencyService,
+        useValue: {
+          begin: async ({ requestId }: { requestId: string }) => {
+            if (idemStore.has(requestId)) {
+              const response = idemStore.get(requestId);
+              if (response !== undefined) return { mode: 'replay', response };
+            }
+            idemStore.set(requestId, undefined);
+            return { mode: 'new' };
+          },
+          complete: async (requestId: string, response: unknown) => {
+            idemStore.set(requestId, response);
+          },
+          release: async (requestId: string) => {
+            idemStore.delete(requestId);
+          },
+          maybePurge: async () => undefined,
+        },
+      },
       JwtAuthGuard,
       RolesGuard,
       PermissionsGuard,
@@ -586,27 +635,26 @@ describe('attendance lifecycle over HTTP (PRD §57)', () => {
     const t1 = await tokenFor('u1');
     const auth = { Authorization: `Bearer ${t1}` };
 
+    const s = signals();
     const in1 = await request(server)
       .post('/attendance/check-in')
       .set(auth)
-      .send(signals());
+      .send(s);
     expect(in1.status).toBe(200);
     expect(in1.body.faceMatch).toMatchObject({ matched: true });
     expect(in1.body.risk).toMatchObject({
-      score: 100,
-      category: 'LOW',
-      needsReview: false,
+      score: 85,
+      category: 'MEDIUM',
+      needsReview: true,
     });
 
-    // same requestId twice:
-    const s = signals();
-    await request(server).post('/attendance/check-in').set(auth).send(s);
+    // same requestId twice: replay the first response, no second row
     const dup = await request(server)
       .post('/attendance/check-in')
       .set(auth)
       .send(s);
-    expect(dup.status).toBe(409);
-    expect(dup.body.reason).toBe('DUPLICATE_REQUEST');
+    expect(dup.status).toBe(200);
+    expect(dup.body).toEqual(in1.body);
 
     const again = await request(server)
       .post('/attendance/check-in')
@@ -618,14 +666,14 @@ describe('attendance lifecycle over HTTP (PRD §57)', () => {
     const out = await request(server)
       .post('/attendance/check-out')
       .set(auth)
-      .send(signals());
+      .send(signals({}, 'check-out'));
     expect(out.status).toBe(200);
     expect(out.body.checkOutAt).toBeTruthy();
 
     const out2 = await request(server)
       .post('/attendance/check-out')
       .set(auth)
-      .send(signals());
+      .send(signals({}, 'check-out'));
     expect(out2.status).toBe(422);
     expect(out2.body.reason).toBe('NO_OPEN_ATTENDANCE');
 
@@ -654,21 +702,16 @@ describe('attendance lifecycle over HTTP (PRD §57)', () => {
       .set(auth)
       .send(signals({ faceEmbedding: FACE_VEC.map((v) => -v) }));
     expect(wrongFace.body.reason).toBe('FACE_MISMATCH');
-    // cos(v,-v) = -1 → face 0 + 55 = 55 HIGH (non-face weights sum to 55),
+    // cos(v,-v) = -1 → face 0 + 40 = 40 HIGH (non-face weights sum to 40),
     // still scored even though the punch is rejected.
     expect(wrongFace.body).toMatchObject({
-      riskScore: 55,
+      riskScore: 40,
       riskCategory: 'HIGH',
     });
 
     // u2 owns d2 (signed by PAIR2), has schedule, but never registered a face
     const t2 = await tokenFor('u2');
-    const s2 = signals({ deviceId: 'd2' });
-    s2.signature = sign(
-      null,
-      Buffer.from(`${s2.requestId}.${s2.requestTimestamp}`, 'utf8'),
-      PAIR2.privateKey,
-    ).toString('base64');
+    const s2 = signals({ deviceId: 'd2' }, 'check-in', PAIR2.privateKey);
     const noFace = await request(server)
       .post('/attendance/check-in')
       .set({ Authorization: `Bearer ${t2}` })

@@ -93,7 +93,7 @@ class _FaceScanIssueScreenState extends State<FaceScanIssueScreen> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-        backgroundColor: AppColors.canvas,
+        backgroundColor: AppColors.surfaceLow,
         appBar: StitchHeader(
           title: 'Registrasi Wajah',
           subtitle: 'Biometrik Shift • Perekaman Terkendala',

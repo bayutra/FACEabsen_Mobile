@@ -6,6 +6,7 @@ import 'package:face_absen_mobile/core/crypto/device_keys.dart';
 import 'package:face_absen_mobile/core/network/api_client.dart';
 import 'package:face_absen_mobile/features/attendance/data/attendance_repository.dart';
 import 'package:face_absen_mobile/features/attendance/data/outbox_repository.dart';
+import 'package:face_absen_mobile/features/attendance/data/punch_models.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'fakes.dart';
@@ -70,11 +71,19 @@ class _PostStatusAdapter implements HttpClientAdapter {
   void close({bool force = false}) {}
 }
 
-Future<AttendanceRepository> _repoWithSeed(Dio dio) async {
+class _Harness {
+  _Harness(this.repo, this.store);
+
+  final AttendanceRepository repo;
+  final FakeStore store;
+}
+
+Future<_Harness> _repoWithSeed(Dio dio) async {
   final FakeStore store = FakeStore();
   final pair = await DeviceKeys.generate();
   await store.writePrivateSeed(await DeviceKeys.exportSeedBase64(pair));
-  return AttendanceRepository(dio: dio, store: store);
+  await store.writeNoncePool(List<String>.generate(10, (int i) => 'n$i'));
+  return _Harness(AttendanceRepository(dio: dio, store: store), store);
 }
 
 Dio _dio() => Dio(BaseOptions(baseUrl: 'http://localhost:3000/api/v1'));
@@ -89,10 +98,20 @@ Map<String, Object> _passiveLiveness() => <String, Object>{
 
 OutboxEntry _queued() => OutboxEntry(
       kind: PunchKind.checkIn,
-      embedding: List<double>.filled(192, 0.1),
-      liveness: _passiveLiveness(),
-      deviceId: 'd1',
-      compromised: false,
+      payload: <String, Object?>{
+        'deviceId': 'd1',
+        'faceEmbedding': List<double>.filled(192, 0.1),
+        'liveness': _passiveLiveness(),
+        'requestId': 'r-queued',
+        'captureAt': '2026-10-07T07:00:00.000Z',
+        'queuedAt': '2026-10-07T07:05:00.000Z',
+        'challengeNonce': 'nonce-x',
+        'signatureVersion': 'v1',
+        'signature': 'sig',
+        'deviceCompromised': false,
+      },
+      requestId: 'r-queued',
+      captureAt: DateTime.parse('2026-10-07T07:00:00.000Z'),
       queuedAt: DateTime.parse('2026-10-07T07:05:00.000Z'),
     );
 
@@ -165,7 +184,8 @@ void main() {
       final Dio dio = _dio();
       dio.httpClientAdapter =
           _PostStatusAdapter(status, retryAfter: retryAfter);
-      return _repoWithSeed(dio);
+      final _Harness h = await _repoWithSeed(dio);
+      return h.repo;
     }
 
     Future<void> punch(AttendanceRepository repo) => repo.checkIn(
@@ -204,8 +224,8 @@ void main() {
 
       dio.httpClientAdapter = _PostStatusAdapter(422);
       FlushResult r422 = await repo.flushOutbox(outbox: repo.outbox());
-      expect((r422.sent, r422.dropped, r422.pending), (0, 1, 0));
-      expect(await repo.outbox().count(), 0);
+      expect((r422.sent, r422.dropped, r422.pending), (0, 0, 1));
+      expect(await repo.outbox().count(), 1);
     });
   });
 }
