@@ -59,6 +59,7 @@ class _CorrectionFormScreenState extends State<CorrectionFormScreen> {
   final _inTime = TextEditingController();
   final _outTime = TextEditingController();
   final _reason = TextEditingController();
+  final _evidence = TextEditingController();
   String? _error;
   bool _busy = false;
 
@@ -67,6 +68,7 @@ class _CorrectionFormScreenState extends State<CorrectionFormScreen> {
     _inTime.dispose();
     _outTime.dispose();
     _reason.dispose();
+    _evidence.dispose();
     super.dispose();
   }
 
@@ -98,6 +100,7 @@ class _CorrectionFormScreenState extends State<CorrectionFormScreen> {
         requestedCheckIn: reqIn,
         requestedCheckOut: reqOut,
         reason: _reason.text.trim(),
+        evidenceUrl: _evidence.text.trim().isEmpty ? null : _evidence.text.trim(),
       );
       if (mounted) Navigator.of(context).pop(true);
     } on DioException catch (e) {
@@ -464,6 +467,58 @@ class _CorrectionFormScreenState extends State<CorrectionFormScreen> {
                 ],
               ),
             ),
+             const SizedBox(height: 12),
+             const Text(
+               'LINK BUKTI (OPSIONAL)',
+               style: TextStyle(
+                   fontSize: 11,
+                   fontWeight: FontWeight.w700,
+                   letterSpacing: 0.6,
+                   color: AppColors.inkSecondary),
+             ),
+             const SizedBox(height: 8),
+             TextField(
+               controller: _evidence,
+               decoration: InputDecoration(
+                 hintText: 'https://... (foto/surat pendukung)',
+                 hintStyle: const TextStyle(
+                     fontSize: 12, color: AppColors.outline),
+                 contentPadding: const EdgeInsets.all(12),
+                 border: OutlineInputBorder(
+                     borderRadius: BorderRadius.circular(12)),
+                 focusedBorder: OutlineInputBorder(
+                   borderRadius: BorderRadius.circular(12),
+                   borderSide: const BorderSide(
+                       color: AppColors.primary, width: 1.5),
+                 ),
+               ),
+             ),
+             const SizedBox(height: 12),
+             const Text(
+               'LINK BUKTI (OPSIONAL)',
+               style: TextStyle(
+                   fontSize: 11,
+                   fontWeight: FontWeight.w700,
+                   letterSpacing: 0.6,
+                   color: AppColors.inkSecondary),
+             ),
+             const SizedBox(height: 8),
+             TextField(
+               controller: _evidence,
+               decoration: InputDecoration(
+                 hintText: 'https://... (foto/surat pendukung)',
+                 hintStyle: const TextStyle(
+                     fontSize: 12, color: AppColors.outline),
+                 contentPadding: const EdgeInsets.all(12),
+                 border: OutlineInputBorder(
+                     borderRadius: BorderRadius.circular(12)),
+                 focusedBorder: OutlineInputBorder(
+                   borderRadius: BorderRadius.circular(12),
+                   borderSide: const BorderSide(
+                       color: AppColors.primary, width: 1.5),
+                 ),
+               ),
+             ),
             if (_error != null) ...[
               const SizedBox(height: 12),
               Container(

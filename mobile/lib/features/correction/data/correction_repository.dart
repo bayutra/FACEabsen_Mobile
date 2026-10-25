@@ -13,6 +13,7 @@ class CorrectionRepository {
     String? requestedCheckIn,
     String? requestedCheckOut,
     required String reason,
+    String? evidenceUrl,
   }) async {
     final Response res = await _dio.post(
       '/corrections',
@@ -22,6 +23,8 @@ class CorrectionRepository {
         if (requestedCheckIn != null) 'requestedCheckIn': requestedCheckIn,
         if (requestedCheckOut != null) 'requestedCheckOut': requestedCheckOut,
         'reason': reason,
+        if (evidenceUrl != null && evidenceUrl.isNotEmpty)
+          'evidenceUrl': evidenceUrl,
       },
     );
     return CorrectionItem.fromJson(Map<String, dynamic>.from(res.data as Map));
