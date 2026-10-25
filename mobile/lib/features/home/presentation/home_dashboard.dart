@@ -49,6 +49,7 @@ class _HomeDashboardState extends State<HomeDashboard> {
   bool _busy = true;
   String? _error;
   bool _consentBusy = false;
+  int _outboxCount = 0;
 
   @override
   void initState() {
@@ -75,13 +76,16 @@ class _HomeDashboardState extends State<HomeDashboard> {
           from: monday,
           to: monday.add(const Duration(days: 6)),
         ),
+        widget.attendance.outbox().count(),
       ]);
 
       final todayPage = results[0] as AttendanceHistoryPage;
+      final int outboxCount = results[2] as int;
       if (!mounted) return;
       setState(() {
         _today = todayPage.items.isEmpty ? null : todayPage.items.first;
         _week = results[1] as List<ScheduleEntry>;
+        _outboxCount = outboxCount;
         _busy = false;
       });
     } catch (_) {
@@ -296,6 +300,60 @@ class _HomeDashboardState extends State<HomeDashboard> {
         child: ListView(
           padding: const EdgeInsets.all(AppColors.pageMargin),
           children: [
+              if (_outboxCount > 0) ...[
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: AppColors.warningTint,
+                    borderRadius: BorderRadius.circular(AppColors.radiusCard),
+                    border: Border.all(color: AppColors.warningBorder),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.cloud_off,
+                          color: AppColors.warningText, size: 20),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          '$_outboxCount presensi tersimpan offline, akan dikirim saat online.',
+                          style: AppText.bodyMd.copyWith(
+                            color: AppColors.warningText,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+              ],
+              if (_outboxCount > 0) ...[
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: AppColors.warningTint,
+                    borderRadius: BorderRadius.circular(AppColors.radiusCard),
+                    border: Border.all(color: AppColors.warningBorder),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.cloud_off,
+                          color: AppColors.warningText, size: 20),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          '$_outboxCount presensi tersimpan offline, akan dikirim saat online.',
+                          style: AppText.bodyMd.copyWith(
+                            color: AppColors.warningText,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+              ],
             if (widget.onOpenAdmin != null) ...[
               _adminBanner(),
               const SizedBox(height: 12),
