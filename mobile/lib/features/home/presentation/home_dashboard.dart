@@ -501,6 +501,102 @@ class _HomeDashboardState extends State<HomeDashboard> {
                 ),
                 const SizedBox(height: 12),
               ],
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceLowest,
+                  borderRadius: BorderRadius.circular(AppColors.radiusCard),
+                  border: Border.all(color: AppColors.border),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Status Hari Ini',
+                              style: AppText.labelSm.copyWith(
+                                  color: AppColors.inkSecondary)),
+                          const SizedBox(height: 4),
+                          Text(
+                            _today == null
+                                ? 'Belum presensi'
+                                : (_today!.checkOutAt == null
+                                    ? 'Sudah check-in'
+                                    : 'Sudah check-out'),
+                            style: AppText.bodyLgMedium
+                                .copyWith(color: AppColors.ink),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: AppColors.primaryContainer.withOpacity(0.12),
+                        borderRadius:
+                            BorderRadius.circular(AppColors.radiusFull),
+                      ),
+                      child: Text(
+                        '${_week.length} shift minggu ini',
+                        style: AppText.labelSm.copyWith(
+                            color: AppColors.primary,
+                            fontWeight: FontWeight.w700),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceLowest,
+                  borderRadius: BorderRadius.circular(AppColors.radiusCard),
+                  border: Border.all(color: AppColors.border),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Status Hari Ini',
+                              style: AppText.labelSm.copyWith(
+                                  color: AppColors.inkSecondary)),
+                          const SizedBox(height: 4),
+                          Text(
+                            _today == null
+                                ? 'Belum presensi'
+                                : (_today!.checkOutAt == null
+                                    ? 'Sudah check-in'
+                                    : 'Sudah check-out'),
+                            style: AppText.bodyLgMedium
+                                .copyWith(color: AppColors.ink),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: AppColors.primaryContainer.withOpacity(0.12),
+                        borderRadius:
+                            BorderRadius.circular(AppColors.radiusFull),
+                      ),
+                      child: Text(
+                        '${_week.length} shift minggu ini',
+                        style: AppText.labelSm.copyWith(
+                            color: AppColors.primary,
+                            fontWeight: FontWeight.w700),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
             if (widget.onOpenAdmin != null) ...[
               _adminBanner(),
               const SizedBox(height: 12),
