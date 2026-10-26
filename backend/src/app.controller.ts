@@ -19,4 +19,9 @@ export class AppController {
   live() {
     return this.appService.live();
   }
+
+  @Get('app-config')
+  appConfig() {
+    return this.appService.appConfig();
+  }
 }

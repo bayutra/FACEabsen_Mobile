@@ -73,5 +73,12 @@ describe('AppController', () => {
       const ctrl = mod.get<AppController>(AppController);
       expect(ctrl.live()).toEqual({ status: 'ok' });
     });
+
+    it('app config exposes a version gate', () => {
+      const config = appController.appConfig();
+      expect(config.minVersion).toMatch(/^\d+\.\d+\.\d+/);
+      expect(config.latestVersion.length).toBeGreaterThan(0);
+      expect(config.message.length).toBeGreaterThan(0);
+    });
   });
 });

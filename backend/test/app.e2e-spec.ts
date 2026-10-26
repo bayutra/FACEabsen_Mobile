@@ -23,6 +23,19 @@ describe('AppController (e2e)', () => {
       .expect('Hello World!');
   });
 
+  it('/app-config (GET)', () => {
+    return request(app.getHttpServer())
+      .get('/app-config')
+      .expect(200)
+      .expect((res) => {
+        expect(res.body).toMatchObject({
+          minVersion: expect.any(String),
+          latestVersion: expect.any(String),
+          message: expect.any(String),
+        });
+      });
+  });
+
   afterEach(async () => {
     await app.close();
   });

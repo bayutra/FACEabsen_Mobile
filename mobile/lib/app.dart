@@ -2,6 +2,8 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 
 import 'core/config/env.dart';
+import 'core/config/app_config_repository.dart';
+import 'core/config/app_update_screen.dart';
 import 'core/config/server_settings.dart';
 import 'core/config/server_settings_dialog.dart';
 import 'core/network/api_client.dart';
@@ -46,6 +48,7 @@ class _BootstrapGateState extends State<BootstrapGate> {
   late final SecureStore _store;
   late final Dio _dio;
   late final ServerSettings _servers;
+  late final AppConfigRepository _appConfig;
   late final AuthRepository _auth;
   late final DeviceRepository _devices;
   late final FaceRepository _faces;
@@ -58,6 +61,7 @@ class _BootstrapGateState extends State<BootstrapGate> {
 
   bool? _authed;
   Object? _startupError;
+  AppUpdateStatus? _update;
 
   @override
   void initState() {
@@ -65,6 +69,7 @@ class _BootstrapGateState extends State<BootstrapGate> {
     _store = SecureStore();
     _dio = createApiClient(store: _store);
     _servers = ServerSettings(store: _store, dio: _dio);
+    _appConfig = AppConfigRepository(dio: _dio);
     _auth = AuthRepository(dio: _dio, store: _store);
     _devices = DeviceRepository(dio: _dio, store: _store);
     _faces = FaceRepository(
@@ -93,9 +98,16 @@ class _BootstrapGateState extends State<BootstrapGate> {
     setState(() {
       _authed = null;
       _startupError = null;
+      _update = null;
     });
     try {
       await _servers.restore();
+      final AppUpdateStatus? update = await _appConfig.check();
+      if (!mounted) return;
+      if (update != null && update.required) {
+        setState(() => _update = update);
+        return;
+      }
       final bool authed = await _hasSession();
       if (!mounted) return;
       setState(() => _authed = authed);
@@ -121,6 +133,10 @@ class _BootstrapGateState extends State<BootstrapGate> {
 
   @override
   Widget build(BuildContext context) {
+    if (_update != null) {
+      return AppUpdateScreen(status: _update!, onRetry: _restore);
+    }
+
     if (_startupError != null) {
       return Scaffold(
         body: Center(
