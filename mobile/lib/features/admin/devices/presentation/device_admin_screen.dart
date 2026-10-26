@@ -91,6 +91,8 @@ class _DeviceAdminScreenState extends State<DeviceAdminScreen> {
               const SizedBox(height: 12),
               DetailRow('Karyawan', '${d.employeeName} (${d.employeeNo})'),
               DetailRow('Platform', d.platform),
+              DetailRow(
+                  'Skor kepercayaan', '${d.trustScore}/100 · ${d.trustLabel}'),
               DetailRow('Versi app', d.appVersion ?? '—'),
               DetailRow('Terdaftar', adminDateTime(d.registeredAt)),
               DetailRow('Terakhir aktif', adminDateTime(d.lastSeenAt)),
@@ -242,7 +244,8 @@ class _DeviceAdminScreenState extends State<DeviceAdminScreen> {
                     : Icons.phone_android,
                 title: d.deviceName ?? d.platform,
                 subtitle: '${d.employeeName} (${d.employeeNo}) · '
-                    '${adminShortDate(d.registeredAt)}',
+                    '${adminShortDate(d.registeredAt)}\n'
+                    'Skor ${d.trustScore}/100 · ${d.trustLabel}',
                 accent: d.pending ? AppColors.warning : null,
                 trailing: StatusPill(d.status),
                 onTap: () => _openDetail(d),

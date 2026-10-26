@@ -11,6 +11,8 @@ class AdminDevice {
     this.registeredAt,
     this.lastSeenAt,
     this.revokeReason,
+    this.trustScore = 0,
+    this.trustLevel = 'LOW',
   });
 
   final String id;
@@ -24,8 +26,16 @@ class AdminDevice {
   final DateTime? registeredAt;
   final DateTime? lastSeenAt;
   final String? revokeReason;
+  final int trustScore;
+  final String trustLevel;
 
   bool get pending => status == 'PENDING';
+
+  String get trustLabel => switch (trustLevel) {
+        'HIGH' => 'Tinggi',
+        'MEDIUM' => 'Sedang',
+        _ => 'Rendah',
+      };
 
   factory AdminDevice.fromJson(Map<String, dynamic> json) {
     final Map<String, dynamic>? employee = json['employee'] is Map
@@ -43,6 +53,8 @@ class AdminDevice {
       registeredAt: DateTime.tryParse(json['registeredAt'] as String? ?? ''),
       lastSeenAt: DateTime.tryParse(json['lastSeenAt'] as String? ?? ''),
       revokeReason: json['revokeReason'] as String?,
+      trustScore: (json['trustScore'] as num?)?.toInt() ?? 0,
+      trustLevel: json['trustLevel']?.toString() ?? 'LOW',
     );
   }
 }

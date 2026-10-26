@@ -23,13 +23,73 @@ export const DEVICE_REGISTER_PURPOSE = 'device-register';
 
 export const DEVICE_REGISTER_CHALLENGE_TTL_SEC = 300;
 
+export type DeviceTrustLevel = 'HIGH' | 'MEDIUM' | 'LOW';
+
+type TrustDevice = {
+  status?: string | null;
+  lastSeenAt?: Date | string | null;
+  deviceName?: string | null;
+  appVersion?: string | null;
+  installationId?: string | null;
+  platform?: string | null;
+};
+
+export function deviceTrust(
+  device: TrustDevice,
+  now: Date = new Date(),
+): { trustScore: number; trustLevel: DeviceTrustLevel } {
+  let score = 10;
+  switch (device.status) {
+    case 'ACTIVE':
+      score = 55;
+      break;
+    case 'PENDING':
+      score = 30;
+      break;
+    case 'LOST':
+      score = 5;
+      break;
+    case 'REVOKED':
+    case 'REPLACED':
+      score = 0;
+      break;
+  }
+
+  if (device.lastSeenAt) {
+    const seen = new Date(device.lastSeenAt);
+    const seenMs = seen.getTime();
+    if (!Number.isNaN(seenMs)) {
+      const ageMs = Math.max(0, now.getTime() - seenMs);
+      const day = 86_400_000;
+      if (ageMs <= day) score += 25;
+      else if (ageMs <= 7 * day) score += 20;
+      else if (ageMs <= 30 * day) score += 10;
+      else if (ageMs <= 90 * day) score += 5;
+    }
+  }
+
+  if (device.deviceName?.trim()) score += 5;
+  if (device.appVersion?.trim()) score += 5;
+  if (device.installationId?.trim()) score += 5;
+  if (device.platform === 'ANDROID' || device.platform === 'IOS') score += 5;
+
+  const trustScore = Math.min(100, score);
+  const trustLevel: DeviceTrustLevel =
+    trustScore >= 80 ? 'HIGH' : trustScore >= 55 ? 'MEDIUM' : 'LOW';
+  return { trustScore, trustLevel };
+}
+
 @Injectable()
 export class DevicesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly audit: AuditService,
-    private readonly jwt: JwtService = new JwtService({ secret: 'test-secret' }),
-    private readonly config: ConfigService = { get: (_k: string, d: unknown) => d } as ConfigService,
+    private readonly jwt: JwtService = new JwtService({
+      secret: 'test-secret',
+    }),
+    private readonly config: ConfigService = {
+      get: (_k: string, d: unknown) => d,
+    } as ConfigService,
   ) {}
   private get maxActive(): number {
     const v = Number(this.config.get('MAX_ACTIVE_DEVICES_PER_EMPLOYEE', 2));
@@ -192,14 +252,17 @@ export class DevicesService {
     });
     if (!device) throw new NotFoundException('Device not found');
     const owner = device.employee.userId === userId;
-    if (owner || satisfiesRole(roles, 'SUPER_ADMIN')) return device;
+    const trust = deviceTrust(device);
+    if (owner || satisfiesRole(roles, 'SUPER_ADMIN')) {
+      return { ...device, ...trust };
+    }
     if (satisfiesRole(roles, 'ADMIN')) {
       const scope = await resolveHospitalScope(this.prisma, userId, roles);
       if (
         scope.kind === 'hospital' &&
         device.employee?.department?.hospitalId === scope.hospitalId
       ) {
-        return device;
+        return { ...device, ...trust };
       }
     }
     throw new NotFoundException('Device not found');
@@ -269,7 +332,7 @@ export class DevicesService {
       }),
     ]);
     return {
-      data: rows,
+      data: rows.map((row) => ({ ...row, ...deviceTrust(row) })),
       pagination: {
         page,
         pageSize,

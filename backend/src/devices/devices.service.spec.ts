@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { generateKeyPairSync, sign } from 'node:crypto';
 import type { PrismaService } from '../prisma/prisma.service.js';
-import { DevicesService } from './devices.service.js';
+import { DevicesService, deviceTrust } from './devices.service.js';
 
 const auditStub = { log: vi.fn(async () => undefined) } as never;
 
@@ -212,9 +212,18 @@ describe('DevicesService.register', () => {
 });
 
 describe('DevicesService admin (STEP 18)', () => {
-  const active = { id: 'd1', employeeId: 'e1', status: 'ACTIVE' };
+  const active = {
+    id: 'd1',
+    employeeId: 'e1',
+    status: 'ACTIVE',
+    deviceName: 'Galaxy',
+    appVersion: '1.0.0',
+    installationId: 'inst-1',
+    platform: 'ANDROID',
+    lastSeenAt: new Date(),
+  };
 
-  it('listAll builds envelope + filters', async () => {
+  it('listAll builds envelope + filters and annotates trust', async () => {
     const findMany = vi.fn(async () => [active]);
     const prisma = makePrisma({
       device: {
@@ -229,11 +238,54 @@ describe('DevicesService admin (STEP 18)', () => {
       ['SUPER_ADMIN'],
     );
     expect(out.pagination).toMatchObject({ totalItems: 1, totalPages: 1 });
+    expect(out.data[0]).toMatchObject({
+      trustScore: 100,
+      trustLevel: 'HIGH',
+    });
     expect(findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({ AND: expect.any(Array) }),
       }),
     );
+  });
+
+  it('deviceTrust prioritizes fresh complete active devices', () => {
+    const now = new Date('2026-10-26T12:00:00.000Z');
+    const fresh = {
+      status: 'ACTIVE',
+      lastSeenAt: new Date('2026-10-26T11:00:00.000Z'),
+      deviceName: 'Galaxy',
+      appVersion: '1.0.0',
+      installationId: 'inst-1',
+      platform: 'ANDROID',
+    };
+    expect(deviceTrust(fresh, now)).toEqual({
+      trustScore: 100,
+      trustLevel: 'HIGH',
+    });
+    expect(
+      deviceTrust(
+        {
+          ...fresh,
+          status: 'PENDING',
+          lastSeenAt: new Date('2026-10-26T11:00:00.000Z'),
+        },
+        now,
+      ),
+    ).toEqual({ trustScore: 75, trustLevel: 'MEDIUM' });
+    expect(
+      deviceTrust(
+        {
+          status: 'REVOKED',
+          lastSeenAt: null,
+          deviceName: null,
+          appVersion: null,
+          installationId: null,
+          platform: null,
+        },
+        now,
+      ),
+    ).toEqual({ trustScore: 0, trustLevel: 'LOW' });
   });
 
   it('revoke flips, kills sessions, audits; idempotent when already revoked', async () => {
