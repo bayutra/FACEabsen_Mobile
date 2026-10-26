@@ -17,6 +17,8 @@ class ScheduleScreen extends StatefulWidget {
 
 class _ScheduleScreenState extends State<ScheduleScreen> {
   late DateTime _weekStart;
+  late DateTime _monthStart;
+  bool _monthly = false;
   List<ScheduleEntry> _entries = const [];
   bool _busy = true;
   String? _error;
@@ -24,7 +26,9 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
   @override
   void initState() {
     super.initState();
-    _weekStart = _mondayOf(DateTime.now());
+    final DateTime now = DateTime.now();
+    _weekStart = _mondayOf(now);
+    _monthStart = DateTime(now.year, now.month, 1);
     _load();
   }
 
@@ -33,6 +37,25 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
 
   DateTime get _weekEnd => _weekStart.add(const Duration(days: 6));
 
+  DateTime get _visibleMonthEnd =>
+      DateTime(_monthStart.year, _monthStart.month + 1, 0);
+
+  List<DateTime> get _visibleDays {
+    if (!_monthly) {
+      return List<DateTime>.generate(
+        7,
+        (int i) => _weekStart.add(Duration(days: i)),
+      );
+    }
+    return List<DateTime>.generate(
+      _visibleMonthEnd.difference(_monthStart).inDays + 1,
+      (int i) => _monthStart.add(Duration(days: i)),
+    );
+  }
+
+  DateTime get _rangeStart => _monthly ? _monthStart : _weekStart;
+  DateTime get _rangeEnd => _monthly ? _visibleMonthEnd : _weekEnd;
+
   Future<void> _load() async {
     setState(() {
       _busy = true;
@@ -40,7 +63,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
     });
     try {
       final List<ScheduleEntry> rows =
-          await widget.schedules.mySchedule(from: _weekStart, to: _weekEnd);
+          await widget.schedules.mySchedule(from: _rangeStart, to: _rangeEnd);
       if (!mounted) return;
       setState(() {
         _entries = rows;
@@ -60,6 +83,14 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
     _load();
   }
 
+  void _shiftMonth(int months) {
+    final DateTime anchor = DateTime(_monthStart.year, _monthStart.month, 1);
+    setState(() {
+      _monthStart = DateTime(anchor.year, anchor.month + months, 1);
+    });
+    _load();
+  }
+
   ScheduleEntry? _entryFor(DateTime day) {
     for (final ScheduleEntry e in _entries) {
       final DateTime d = e.workDate;
@@ -72,13 +103,25 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final int dutyDays = _entries.length;
-    final int offDays = (7 - dutyDays).clamp(0, 7);
-    final int nightShifts =
-        _entries.where((e) => e.overnight || e.kind == ShiftKind.malam).length;
+    final List<ScheduleEntry> visibleEntries = _entries
+        .where(
+          (ScheduleEntry e) => _visibleDays.any(
+            (DateTime d) =>
+                d.year == e.workDate.year &&
+                d.month == e.workDate.month &&
+                d.day == e.workDate.day,
+          ),
+        )
+        .toList();
+    final int dutyDays = visibleEntries.length;
+    final int offDays = (_visibleDays.length - visibleEntries.length)
+        .clamp(0, _visibleDays.length);
+    final int nightShifts = visibleEntries
+        .where((e) => e.overnight || e.kind == ShiftKind.malam)
+        .length;
 
     final List<int> knownHours =
-        _entries.map((e) => e.durationHours).whereType<int>().toList();
+        visibleEntries.map((e) => e.durationHours).whereType<int>().toList();
     final int totalHours = knownHours.fold(0, (sum, h) => sum + h);
 
     return Scaffold(
@@ -131,6 +174,27 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
+            Align(
+              alignment: Alignment.centerLeft,
+              child: SegmentedButton<bool>(
+                segments: const [
+                  ButtonSegment<bool>(value: false, label: Text('Minggu')),
+                  ButtonSegment<bool>(value: true, label: Text('Bulan')),
+                ],
+                selected: {_monthly},
+                onSelectionChanged: (Set<bool> value) {
+                  setState(() => _monthly = value.first);
+                  if (_monthly) {
+                    final DateTime now = DateTime.now();
+                    _monthStart = DateTime(now.year, now.month, 1);
+                  } else {
+                    _weekStart = _mondayOf(DateTime.now());
+                  }
+                  _load();
+                },
+              ),
+            ),
+            const SizedBox(height: 12),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -208,7 +272,9 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       InkWell(
-                        onTap: _busy ? null : () => _shiftWeek(-1),
+                        onTap: _busy
+                            ? null
+                            : () => _monthly ? _shiftMonth(-1) : _shiftWeek(-1),
                         borderRadius: BorderRadius.circular(8),
                         child: Container(
                           width: 32,
@@ -224,7 +290,9 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                       Column(
                         children: [
                           Text(
-                            _formatWeekRange(_weekStart, _weekEnd),
+                            _monthly
+                                ? _formatMonth(_monthStart)
+                                : _formatWeekRange(_weekStart, _weekEnd),
                             style: const TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w700,
@@ -240,16 +308,18 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                               borderRadius:
                                   BorderRadius.circular(AppColors.radiusFull),
                             ),
-                            child: const Row(
+                            child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                CircleAvatar(
+                                const CircleAvatar(
                                     radius: 3,
                                     backgroundColor: AppColors.primary),
-                                SizedBox(width: 4),
+                                const SizedBox(width: 4),
                                 Text(
-                                  'Minggu Berjalan (Aktif)',
-                                  style: TextStyle(
+                                  _monthly
+                                      ? 'Bulan Aktif'
+                                      : 'Minggu Berjalan (Aktif)',
+                                  style: const TextStyle(
                                     fontSize: 10,
                                     fontWeight: FontWeight.w600,
                                     color: AppColors.primary,
@@ -261,7 +331,9 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                         ],
                       ),
                       InkWell(
-                        onTap: _busy ? null : () => _shiftWeek(1),
+                        onTap: _busy
+                            ? null
+                            : () => _monthly ? _shiftMonth(1) : _shiftWeek(1),
                         borderRadius: BorderRadius.circular(8),
                         child: Container(
                           width: 32,
@@ -364,10 +436,10 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
               ),
             ),
             const SizedBox(height: 16),
-            const Row(
+            Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
+                const Text(
                   'HARI & PENUGASAN KLINIK',
                   style: TextStyle(
                     fontSize: 11,
@@ -377,14 +449,20 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                   ),
                 ),
                 Text(
-                  '7 Hari Kerja Roster',
-                  style: TextStyle(fontSize: 11, color: AppColors.outline),
+                  _monthly
+                      ? '${_visibleDays.length} Hari Kerja'
+                      : '7 Hari Kerja Roster',
+                  style:
+                      const TextStyle(fontSize: 11, color: AppColors.outline),
                 ),
               ],
             ),
             const SizedBox(height: 8),
             if (_busy)
-              const LoadingState(label: 'Memuat roster mingguan')
+              LoadingState(
+                label:
+                    _monthly ? 'Memuat roster bulan' : 'Memuat roster mingguan',
+              )
             else if (_error != null)
               const InfoBanner(
                 'Gagal memuat jadwal. Periksa koneksi server.',
@@ -392,8 +470,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                 title: 'Tidak dapat memuat jadwal',
               )
             else
-              for (int i = 0; i < 7; i++)
-                _dayTile(_weekStart.add(Duration(days: i))),
+              for (final DateTime day in _visibleDays) _dayTile(day),
             const SizedBox(height: 12),
             _legend(),
             const SizedBox(height: 12),
@@ -421,6 +498,25 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
       'Des'
     ];
     return '${start.day} ${months[start.month]} - ${end.day} ${months[end.month]} ${end.year}';
+  }
+
+  String _formatMonth(DateTime month) {
+    const List<String> months = [
+      '',
+      'Januari',
+      'Februari',
+      'Maret',
+      'April',
+      'Mei',
+      'Juni',
+      'Juli',
+      'Agustus',
+      'September',
+      'Oktober',
+      'November',
+      'Desember'
+    ];
+    return '${months[month.month]} ${month.year}';
   }
 
   Widget _dayTile(DateTime day) {
