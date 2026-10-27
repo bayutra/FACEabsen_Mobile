@@ -78,17 +78,65 @@ class _FaceScanIssueScreenState extends State<FaceScanIssueScreen> {
 
   String get _troubleshoot => switch (_activeGate) {
         FaceGate.tooBlurry =>
-          'Tahan ponsel tetap stabil dan pastikan lensa bersih.',
+          'Kamera goyang atau lensa kotor. Hasil pemindaian tidak memenuhi '
+              'standar biometrik klinis.',
         FaceGate.tooDark =>
-          'Cari pencahayaan merata; hindari membelakangi sumber cahaya.',
+          'Pencahayaan ruangan terlalu rendah untuk verifikasi wajah.',
         FaceGate.tooBright =>
-          'Hindari cahaya kuat yang langsung mengenai kamera.',
-        FaceGate.eyesClosed => 'Buka mata dan tatap kamera selama pemindaian.',
-        FaceGate.multipleFaces => 'Minta orang lain keluar dari area kamera.',
+          'Cahaya langsung ke kamera membuat wajah tidak terbaca.',
+        FaceGate.eyesClosed =>
+          'Mata tertutup saat pemindaian sehingga liveness tidak terpenuhi.',
+        FaceGate.multipleFaces =>
+          'Terdeteksi lebih dari satu wajah di area kamera.',
         FaceGate.noFace =>
-          'Pastikan izin kamera aktif dan wajah berada di dalam bingkai.',
-        FaceGate.tooSmall => 'Dekatkan ponsel sampai wajah mudah dikenali.',
+          'Wajah tidak terdeteksi di dalam bingkai kamera.',
+        FaceGate.tooSmall =>
+          'Wajah terlalu jauh sehingga detail biometrik tidak cukup.',
         FaceGate.ok => 'Posisikan wajah di tengah bingkai dan coba kembali.',
+      };
+
+  List<String> get _steps => switch (_activeGate) {
+        FaceGate.tooBlurry => const <String>[
+            'Bersihkan lensa kamera depan dengan kain bersih atau tisu kering.',
+            'Pegang ponsel dengan stabil atau sandarkan siku pada meja/dinding.',
+            'Hindari gerakan cepat atau berbicara saat indikator lingkaran '
+                'sensor biometrik berputar.',
+          ],
+        FaceGate.tooDark => const <String>[
+            'Pindah ke area dengan cahaya merata, misalnya dekat jendela.',
+            'Hadapkan wajah ke sumber cahaya, jangan membelakanginya.',
+            'Nyalakan cahaya layar tambahan bila ruangan tetap redup.',
+          ],
+        FaceGate.tooBright => const <String>[
+            'Jauhi lampu sorot atau jendela yang menyorot langsung ke kamera.',
+            'Berdirilah membelakangi sumber cahaya agar wajah tidak silau.',
+            'Lap lensa kamera untuk mengurangi pantulan cahaya.',
+          ],
+        FaceGate.eyesClosed => const <String>[
+            'Buka mata dan tatap kamera selama pemindaian berlangsung.',
+            'Pastikan tidak ada pantulan kacamata yang menutupi mata.',
+            'Coba lagi saat mata tidak lelah atau berkedip cepat.',
+          ],
+        FaceGate.multipleFaces => const <String>[
+            'Pastikan hanya wajah Anda yang terlihat di kamera.',
+            'Minta rekan di sekitar bergeser dari area pandang kamera.',
+            'Ulangi pemindaian saat sendirian di depan kamera.',
+          ],
+        FaceGate.noFace => const <String>[
+            'Periksa izin kamera pada pengaturan perangkat.',
+            'Posisikan wajah di tengah bingkai dengan mata terbuka.',
+            'Bersihkan lensa kamera lalu pindai ulang.',
+          ],
+        FaceGate.tooSmall => const <String>[
+            'Dekatkan ponsel hingga wajah memenuhi bingkai.',
+            'Jaga jarak ideal sekitar 45 cm dari kamera.',
+            'Hindari zoom digital karena menurunkan kualitas biometrik.',
+          ],
+        FaceGate.ok => const <String>[
+            'Posisikan wajah di tengah bingkai.',
+            'Pastikan pencahayaan cukup dan mata terbuka.',
+            'Coba pindai ulang.',
+          ],
       };
 
   @override
@@ -208,24 +256,63 @@ class _FaceScanIssueScreenState extends State<FaceScanIssueScreen> {
               ),
             ),
             const SizedBox(height: 12),
-            GridView.count(
-              crossAxisCount: 2,
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              mainAxisSpacing: 8,
-              crossAxisSpacing: 8,
-              childAspectRatio: 2.4,
-              children: [
-                for (final GuidanceTile tile in _tiles)
-                  _QualityTile(
-                      label: tile.label, value: tile.value, ok: tile.ok),
-              ],
+            GuidanceTileGrid(
+              tiles: _tiles,
+              builder: (GuidanceTile tile) => _QualityTile(
+                  label: tile.label, value: tile.value, ok: tile.ok),
             ),
             const SizedBox(height: 12),
-            InfoBanner(
-              _troubleshoot,
-              title: 'Diagnostik & Tips Perbaikan',
-              tone: InfoBannerTone.warning,
+            AppCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: AppColors.warningTint,
+                      borderRadius:
+                          BorderRadius.circular(AppColors.radiusInput),
+                      border: Border.all(color: AppColors.warningBorder),
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        const Icon(Icons.warning_amber_rounded,
+                            size: 20, color: AppColors.warningText),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                              Text(
+                                'Diagnostik Kegagalan Verifikasi',
+                                style: AppText.labelMd
+                                    .copyWith(color: AppColors.warningText),
+                              ),
+                              const SizedBox(height: 3),
+                              Text(
+                                _troubleshoot,
+                                style: AppText.labelSm.copyWith(
+                                  color: AppColors.inkSecondary,
+                                  height: 1.45,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  const Text(
+                    'Langkah Penyelesaian Mandiri:',
+                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(height: 10),
+                  for (int i = 0; i < _steps.length; i++)
+                    _HelpStep(n: '${i + 1}', text: _steps[i]),
+                ],
+              ),
             ),
             const SizedBox(height: 16),
             SizedBox(
@@ -278,6 +365,49 @@ class _QualityTile extends StatelessWidget {
               value,
               style: AppText.bodyMdMedium.copyWith(
                 color: ok ? AppColors.successText : AppColors.roseText,
+              ),
+            ),
+          ],
+        ),
+      );
+}
+
+class _HelpStep extends StatelessWidget {
+  const _HelpStep({required this.n, required this.text});
+
+  final String n;
+  final String text;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+        padding: const EdgeInsets.only(bottom: 8),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Container(
+              width: 22,
+              height: 22,
+              alignment: Alignment.center,
+              decoration: const BoxDecoration(
+                color: AppColors.surfaceLow,
+                shape: BoxShape.circle,
+              ),
+              child: Text(
+                n,
+                style: AppText.labelSm.copyWith(
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                text,
+                style: AppText.labelSm.copyWith(
+                  color: AppColors.inkSecondary,
+                  height: 1.5,
+                ),
               ),
             ),
           ],

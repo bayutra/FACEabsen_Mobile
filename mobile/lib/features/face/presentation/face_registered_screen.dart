@@ -101,8 +101,8 @@ class FaceRegisteredScreen extends StatelessWidget {
             child: Center(
               child: _Pill(
                 '3/3 Selesai',
-                AppColors.primaryFixed,
-                AppColors.onPrimaryFixed,
+                AppColors.tealBadgeBg,
+                AppColors.tealBadgeText,
                 icon: Icons.check_circle,
               ),
             ),

@@ -134,17 +134,7 @@ class FaceGuidanceCard extends StatelessWidget {
             ),
             if (tiles.isNotEmpty) ...<Widget>[
               const SizedBox(height: 12),
-              GridView.count(
-                crossAxisCount: 2,
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                mainAxisSpacing: 8,
-                crossAxisSpacing: 8,
-                childAspectRatio: 2.4,
-                children: <Widget>[
-                  for (final GuidanceTile t in tiles) _qualityTile(t),
-                ],
-              ),
+              GuidanceTileGrid(tiles: tiles),
             ],
             const SizedBox(height: 12),
             const Text(
@@ -185,38 +175,93 @@ class FaceGuidanceCard extends StatelessWidget {
     );
   }
 
-  Widget _qualityTile(GuidanceTile t) => Container(
+}
+
+/// Two-column quality indicator grid whose rows grow with their text instead
+/// of relying on a fixed aspect ratio (which clips on 320 px devices).
+class GuidanceTileGrid extends StatelessWidget {
+  const GuidanceTileGrid({
+    super.key,
+    required this.tiles,
+    this.builder,
+    this.spacing = 8,
+  });
+
+  final List<GuidanceTile> tiles;
+  final Widget Function(GuidanceTile tile)? builder;
+  final double spacing;
+
+  @override
+  Widget build(BuildContext context) {
+    if (tiles.isEmpty) return const SizedBox.shrink();
+    final List<Widget> rows = <Widget>[];
+    for (int i = 0; i < tiles.length; i += 2) {
+      final bool hasSecond = i + 1 < tiles.length;
+      rows.add(Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Expanded(child: _tile(tiles[i])),
+          SizedBox(width: spacing),
+          Expanded(
+            child: hasSecond ? _tile(tiles[i + 1]) : const SizedBox.shrink(),
+          ),
+        ],
+      ));
+      if (i + 2 < tiles.length) rows.add(SizedBox(height: spacing));
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
+      children: rows,
+    );
+  }
+
+  Widget _tile(GuidanceTile tile) =>
+      builder?.call(tile) ?? _GuidanceTileBox(tile: tile);
+}
+
+class _GuidanceTileBox extends StatelessWidget {
+  const _GuidanceTileBox({required this.tile});
+
+  final GuidanceTile tile;
+
+  @override
+  Widget build(BuildContext context) => Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: t.ok ? AppColors.canvas : AppColors.errorTint.withOpacity(0.4),
+          color: tile.ok
+              ? AppColors.canvas
+              : AppColors.errorTint.withOpacity(0.4),
           borderRadius: BorderRadius.circular(AppColors.radiusInput),
           border: Border.all(
-              color: t.ok ? AppColors.border : AppColors.errorBorder),
+              color: tile.ok ? AppColors.border : AppColors.errorBorder),
         ),
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
                   Text(
-                    t.label,
+                    tile.label,
                     style: const TextStyle(
                         fontSize: 11, color: AppColors.inkSecondary),
                   ),
                   Text(
-                    t.value,
+                    tile.value,
                     style: const TextStyle(
                         fontSize: 12, fontWeight: FontWeight.w600),
                   ),
                 ],
               ),
             ),
+            const SizedBox(width: 6),
             Icon(
-              t.ok ? Icons.check_circle : Icons.error,
+              tile.ok ? Icons.check_circle : Icons.error,
               size: 18,
-              color: t.ok ? AppColors.success : AppColors.error,
+              color: tile.ok ? AppColors.success : AppColors.error,
             ),
           ],
         ),

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/network/error_detail.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/stitch.dart';
 import '../data/face_repository.dart';
 import '../domain/face_quality.dart';
 import '../domain/privacy_notice.dart';
@@ -208,6 +209,15 @@ class _FaceRegistrationScreenState extends State<FaceRegistrationScreen>
     );
   }
 
+  void _toggleConsent(bool? value) {
+    if ((value ?? false) && !_noticeRead) {
+      setState(() =>
+          _message = 'Baca pemberitahuan privasi terlebih dahulu.');
+      return;
+    }
+    setState(() => _consented = value ?? false);
+  }
+
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
@@ -219,300 +229,507 @@ class _FaceRegistrationScreenState extends State<FaceRegistrationScreen>
   Widget build(BuildContext context) {
     final CameraController? controller = _controller;
     return Scaffold(
-      appBar: AppBar(title: const Text('Pendaftaran Wajah')),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            AspectRatio(
-              aspectRatio: 4 / 4.2,
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 240),
-                padding: const EdgeInsets.all(3),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(
-                    color: _success ? AppColors.success : AppColors.scanner,
-                    width: 3,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: (_success ? AppColors.success : AppColors.scanner)
-                          .withOpacity(0.22),
-                      blurRadius: 16,
-                    ),
-                  ],
-                ),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: AppColors.ink,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  clipBehavior: Clip.antiAlias,
-                  child: _initError != null
-                      ? Center(
-                          child: Padding(
-                            padding: const EdgeInsets.all(24),
-                            child: Text(_initError!,
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(color: Colors.white)),
-                          ),
-                        )
-                      : controller == null
-                          ? const Center(
-                              child: CircularProgressIndicator(
-                                  color: Colors.white))
-                          : Stack(
-                              fit: StackFit.expand,
-                              children: [
-                                CameraPreview(controller),
-                                const CustomPaint(painter: _CameraFrameGuide()),
-                                if (_flashOverlay)
-                                  Positioned.fill(
-                                    child: Container(
-                                        color: Colors.white.withOpacity(0.85)),
-                                  ),
-                                Align(
-                                  alignment: Alignment.topCenter,
-                                  child: Padding(
-                                    padding: const EdgeInsets.only(top: 12),
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 10,
-                                        vertical: 4,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: AppColors.inverseSurface
-                                            .withOpacity(0.85),
-                                        borderRadius: BorderRadius.circular(
-                                            AppColors.radiusFull),
-                                        border: Border.all(
-                                          color: AppColors.primaryFixed
-                                              .withOpacity(0.4),
-                                        ),
-                                      ),
-                                      child: const Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Icon(Icons.verified_user_outlined,
-                                              size: 12,
-                                              color: AppColors.primaryFixed),
-                                          SizedBox(width: 5),
-                                          Text(
-                                            'Registrasi Wajah',
-                                            style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 10,
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                Align(
-                                  alignment: Alignment.topRight,
-                                  child: Padding(
-                                    padding:
-                                        const EdgeInsets.only(top: 8, right: 8),
-                                    child: Tooltip(
-                                      message: _useScreenFlash
-                                          ? 'Matikan cahaya layar'
-                                          : 'Nyalakan cahaya layar (mode gelap)',
-                                      child: Material(
-                                        color: _useScreenFlash
-                                            ? AppColors.primaryFixed
-                                            : Colors.black.withOpacity(0.45),
-                                        shape: const CircleBorder(),
-                                        child: InkWell(
-                                          customBorder: const CircleBorder(),
-                                          onTap: _busy
-                                              ? null
-                                              : () => setState(
-                                                    () => _useScreenFlash =
-                                                        !_useScreenFlash,
-                                                  ),
-                                          child: Padding(
-                                            padding: const EdgeInsets.all(8),
-                                            child: Icon(
-                                              _useScreenFlash
-                                                  ? Icons.flash_on
-                                                  : Icons.flash_off,
-                                              size: 18,
-                                              color: _useScreenFlash
-                                                  ? AppColors.inverseSurface
-                                                  : Colors.white,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                const Align(
-                                  alignment: Alignment.bottomCenter,
-                                  child: Padding(
-                                    padding: EdgeInsets.only(bottom: 12),
-                                    child: Text(
-                                      'Posisikan wajah di dalam bingkai • mata terbuka',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Switch(
-                  value: _useScreenFlash,
-                  onChanged:
-                      _busy ? null : (v) => setState(() => _useScreenFlash = v),
-                ),
-                const SizedBox(width: 8),
-                const Expanded(
-                  child: Text(
-                    'Gunakan cahaya layar (mode gelap) — layar akan '
-                    'berkilat sebentar sebelum capture untuk menerangi wajah.',
-                    style: TextStyle(fontSize: 12),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Checkbox(
-                  value: _consented,
-                  onChanged: (v) {
-                    if ((v ?? false) && !_noticeRead) {
-                      setState(() => _message =
-                          'Baca pemberitahuan privasi terlebih dahulu.');
-                      return;
-                    }
-                    setState(() => _consented = v ?? false);
-                  },
-                ),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Saya setuju data wajah saya diproses untuk presensi.',
-                        style: TextStyle(fontSize: 14),
-                      ),
-                      TextButton(
-                        onPressed: _showNotice,
-                        style: TextButton.styleFrom(
-                          padding: EdgeInsets.zero,
-                          minimumSize: Size.zero,
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        ),
-                        child: const Text('Baca pemberitahuan privasi'),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            if (_message != null)
-              _failGate != null
-                  ? Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
-                      child: FaceGuidanceCard(
-                        gate: _failGate!,
-                        message: _message!,
-                        onRetry: _capture,
-                      ),
-                    )
-                  : Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
-                      child: Text(
-                        _message!,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: _success
-                              ? AppColors.successText
-                              : AppColors.errorText,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
-            FilledButton(
-              onPressed: (controller == null || _busy) ? null : _capture,
-              child: Text(_busy ? 'Memproses…' : 'Ambil & Daftarkan Wajah'),
-            ),
-            if (_success)
-              Padding(
-                padding: const EdgeInsets.only(top: 12),
-                child: OutlinedButton(
-                  onPressed: () => Navigator.of(context).pop(true),
-                  child: const Text('Selesai'),
-                ),
+      backgroundColor: AppColors.surfaceLow,
+      appBar: StitchHeader(
+        title: 'Registrasi Wajah',
+        subtitle: 'Biometrik Shift • Perekaman Wajah',
+        onBack: () => Navigator.of(context).maybePop(),
+        trailing: const AppPill(
+          'Perekaman',
+          AppColors.tealBadgeBg,
+          AppColors.tealBadgeText,
+          icon: Icons.face_retouching_natural,
+          border: AppColors.tealBadgeBorder,
+        ),
+      ),
+      body: ListView(
+        padding: const EdgeInsets.all(AppColors.pageMargin),
+        children: <Widget>[
+          _cameraCard(controller),
+          const SizedBox(height: 12),
+          const InfoBanner(
+            'Foto wajah tidak dikirim ke server. Perangkat hanya mengirim '
+            'template biometrik terenkripsi untuk verifikasi presensi.',
+            title: 'Registrasi Wajah Baru',
+            tone: InfoBannerTone.info,
+          ),
+          const SizedBox(height: 12),
+          _guidanceCard(),
+          const SizedBox(height: 12),
+          _lightingCard(),
+          const SizedBox(height: 12),
+          _consentCard(),
+          if (_message != null) ...<Widget>[
+            const SizedBox(height: 12),
+            if (_failGate != null)
+              FaceGuidanceCard(
+                gate: _failGate!,
+                message: _message!,
+                onRetry: _capture,
+              )
+            else
+              InfoBanner(
+                _message!,
+                title: _success
+                    ? 'Pendaftaran berhasil'
+                    : 'Perekaman belum berhasil',
+                tone: _success ? InfoBannerTone.success : InfoBannerTone.error,
               ),
           ],
+          const SizedBox(height: 16),
+          SizedBox(
+            height: AppColors.buttonHeight,
+            child: FilledButton.icon(
+              onPressed: (controller == null || _busy) ? null : _capture,
+              icon: _busy
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : const Icon(Icons.photo_camera_outlined, size: 20),
+              label: Text(_busy ? 'Memproses…' : 'Ambil & Daftarkan Wajah'),
+            ),
+          ),
+          if (_success) ...<Widget>[
+            const SizedBox(height: 8),
+            SizedBox(
+              height: AppColors.ghostHeight,
+              child: OutlinedButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: const Text('Selesai'),
+              ),
+            ),
+          ],
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              const Icon(Icons.shield_outlined,
+                  size: 14, color: AppColors.primary),
+              const SizedBox(width: 6),
+              Flexible(
+                child: Text(
+                  'Data biometrik dilindungi sesuai Permenkes RI',
+                  textAlign: TextAlign.center,
+                  style: AppText.labelSm
+                      .copyWith(color: AppColors.inkSecondary),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _cameraCard(CameraController? controller) {
+    final Color frameColor = _success
+        ? AppColors.success
+        : (_failGate != null ? AppColors.roseFill : AppColors.scanner);
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 240),
+      padding: const EdgeInsets.all(3),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(AppColors.radiusHero),
+        border: Border.all(color: frameColor, width: 3),
+        boxShadow: <BoxShadow>[
+          BoxShadow(color: frameColor.withOpacity(0.2), blurRadius: 16),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(AppColors.radiusCard),
+        child: AspectRatio(
+          aspectRatio: 4 / 4.3,
+          child: Container(
+            color: AppColors.ink,
+            child: Stack(
+              fit: StackFit.expand,
+              children: <Widget>[
+                if (controller != null && controller.value.isInitialized)
+                  FittedBox(
+                    fit: BoxFit.cover,
+                    child: SizedBox(
+                      width: controller.value.previewSize?.height ?? 1,
+                      height: controller.value.previewSize?.width ?? 1,
+                      child: CameraPreview(controller),
+                    ),
+                  )
+                else if (_initError != null)
+                  Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Text(
+                        _initError!,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  )
+                else
+                  const Center(
+                    child: CircularProgressIndicator(
+                        color: AppColors.primaryFixed),
+                  ),
+                CustomPaint(
+                  painter: _RegistrationHudPainter(
+                    color: _success ? AppColors.success : AppColors.scanner,
+                  ),
+                ),
+                if (_flashOverlay)
+                  Positioned.fill(
+                    child: Container(color: Colors.white.withOpacity(0.85)),
+                  ),
+                Positioned(
+                  top: 12,
+                  left: 12,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 10, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: AppColors.inverseSurface.withOpacity(0.85),
+                      borderRadius:
+                          BorderRadius.circular(AppColors.radiusFull),
+                      border: Border.all(
+                          color: AppColors.primaryFixed.withOpacity(0.4)),
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
+                        Icon(Icons.verified_user_outlined,
+                            size: 12, color: AppColors.primaryFixed),
+                        SizedBox(width: 5),
+                        Text(
+                          'Registrasi Wajah',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                Positioned(
+                  top: 10,
+                  right: 10,
+                  child: Tooltip(
+                    message: _useScreenFlash
+                        ? 'Matikan cahaya layar'
+                        : 'Nyalakan cahaya layar (mode gelap)',
+                    child: Material(
+                      color: _useScreenFlash
+                          ? AppColors.primaryFixed
+                          : Colors.black.withOpacity(0.45),
+                      shape: const CircleBorder(),
+                      child: InkWell(
+                        customBorder: const CircleBorder(),
+                        onTap: _busy
+                            ? null
+                            : () => setState(
+                                  () => _useScreenFlash = !_useScreenFlash,
+                                ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(9),
+                          child: Icon(
+                            _useScreenFlash
+                                ? Icons.flash_on
+                                : Icons.flash_off,
+                            size: 18,
+                            color: _useScreenFlash
+                                ? AppColors.inverseSurface
+                                : Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  left: 12,
+                  right: 12,
+                  bottom: 12,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryContainer.withOpacity(0.9),
+                      borderRadius:
+                          BorderRadius.circular(AppColors.radiusFull),
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        Icon(Icons.center_focus_strong,
+                            size: 13, color: Colors.white),
+                        SizedBox(width: 5),
+                        Flexible(
+                          child: Text(
+                            'Posisikan wajah di bingkai • mata terbuka',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 10.5,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
   }
+
+  Widget _guidanceCard() => const AppCard(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Row(
+              children: <Widget>[
+                Icon(Icons.fact_check_outlined,
+                    size: 18, color: AppColors.primary),
+                SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Panduan Perekaman',
+                    style: TextStyle(
+                        fontSize: 14, fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 10),
+            _GuideRow(
+              icon: Icons.visibility_outlined,
+              title: 'Mata terbuka & wajah terlihat',
+              detail: 'Lepas masker atau penutup wajah sementara saat merekam.',
+            ),
+            _GuideRow(
+              icon: Icons.light_mode_outlined,
+              title: 'Pencahayaan merata',
+              detail: 'Hindari cahaya langsung ke kamera dan bayangan di wajah.',
+            ),
+            _GuideRow(
+              icon: Icons.straighten,
+              title: 'Jarak ideal ± 45 cm',
+              detail: 'Pegang ponsel stabil setinggi wajah, tanpa gerakan cepat.',
+            ),
+          ],
+        ),
+      );
+
+  Widget _lightingCard() => AppCard(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        child: Row(
+          children: <Widget>[
+            Container(
+              width: 38,
+              height: 38,
+              decoration: BoxDecoration(
+                color: AppColors.surfaceContainer,
+                borderRadius: BorderRadius.circular(AppColors.radiusInput),
+              ),
+              child: const Icon(Icons.light_mode_outlined,
+                  size: 20, color: AppColors.primary),
+            ),
+            const SizedBox(width: 12),
+            const Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Text(
+                    'Cahaya layar (mode gelap)',
+                    style:
+                        TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                  ),
+                  SizedBox(height: 2),
+                  Text(
+                    'Layar berkilat sebentar sebelum capture untuk menerangi '
+                    'wajah di ruangan redup.',
+                    style:
+                        TextStyle(fontSize: 11, color: AppColors.inkSecondary),
+                  ),
+                ],
+              ),
+            ),
+            Switch(
+              value: _useScreenFlash,
+              activeTrackColor: AppColors.primaryContainer,
+              onChanged:
+                  _busy ? null : (bool v) => setState(() => _useScreenFlash = v),
+            ),
+          ],
+        ),
+      );
+
+  Widget _consentCard() => AppCard(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            const Row(
+              children: <Widget>[
+                Icon(Icons.privacy_tip_outlined,
+                    size: 18, color: AppColors.primary),
+                SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Persetujuan Privasi',
+                    style: TextStyle(
+                        fontSize: 14, fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            InkWell(
+              onTap: _busy ? null : () => _toggleConsent(!_consented),
+              borderRadius: BorderRadius.circular(AppColors.radiusInput),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Checkbox(
+                    value: _consented,
+                    onChanged: _busy ? null : _toggleConsent,
+                  ),
+                  const SizedBox(width: 4),
+                  const Expanded(
+                    child: Padding(
+                      padding: EdgeInsets.only(top: 12),
+                      child: Text(
+                        'Saya setuju data wajah saya diproses untuk presensi '
+                        'di RSU Darmayu Madiun.',
+                        style: TextStyle(fontSize: 13, height: 1.45),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton.icon(
+                onPressed: _showNotice,
+                icon: const Icon(Icons.description_outlined, size: 16),
+                label: const Text('Baca pemberitahuan privasi'),
+                style: TextButton.styleFrom(
+                  padding: EdgeInsets.zero,
+                  minimumSize: const Size(0, 36),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
 }
 
-class _CameraFrameGuide extends CustomPainter {
-  const _CameraFrameGuide();
+class _GuideRow extends StatelessWidget {
+  const _GuideRow({
+    required this.icon,
+    required this.title,
+    required this.detail,
+  });
+
+  final IconData icon;
+  final String title;
+  final String detail;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+        padding: const EdgeInsets.only(bottom: 10),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Container(
+              width: 30,
+              height: 30,
+              decoration: BoxDecoration(
+                color: AppColors.surfaceLow,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(icon, size: 16, color: AppColors.tealBadgeText),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Text(
+                    title,
+                    style: const TextStyle(
+                        fontSize: 12.5, fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(height: 1),
+                  Text(
+                    detail,
+                    style: const TextStyle(
+                        fontSize: 11, color: AppColors.inkSecondary,
+                        height: 1.45),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+}
+
+/// Registration guides: scanner brackets plus the oval face target.
+class _RegistrationHudPainter extends CustomPainter {
+  const _RegistrationHudPainter({required this.color});
+
+  final Color color;
 
   @override
   void paint(Canvas canvas, Size size) {
-    final double side = size.shortestSide * 0.82;
-    final Rect frame = Rect.fromCenter(
-      center: size.center(Offset.zero),
-      width: side,
-      height: side,
+    final Rect oval = Rect.fromCenter(
+      center: Offset(size.width / 2, size.height * 0.46),
+      width: size.width * 0.64,
+      height: size.height * 0.62,
     );
-    final RRect roundedFrame = RRect.fromRectAndRadius(
-      frame,
-      const Radius.circular(24),
+    canvas.drawOval(
+      oval,
+      Paint()
+        ..color = color.withOpacity(0.55)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.6,
     );
 
-    canvas.drawPath(
-      Path()
-        ..addRRect(roundedFrame)
-        ..addRect(Rect.fromLTWH(0, 0, size.width, size.height))
-        ..fillType = PathFillType.evenOdd,
-      Paint()..color = AppColors.ink.withOpacity(0.45),
-    );
-    const double cornerLength = 24;
-    final Paint p = Paint()
-      ..color = AppColors.scanner
+    final Paint bracket = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
       ..strokeWidth = 3
-      ..strokeCap = StrokeCap.round
-      ..style = PaintingStyle.stroke;
-    canvas.drawRRect(roundedFrame, p);
+      ..strokeCap = StrokeCap.round;
+    const double inset = 16;
+    const double length = 26;
+    final double right = size.width - inset;
+    final double bottom = size.height - inset;
     for (final (Offset start, Offset end) in <(Offset, Offset)>[
-      (frame.topLeft, Offset(frame.left + cornerLength, frame.top)),
-      (frame.topLeft, Offset(frame.left, frame.top + cornerLength)),
-      (frame.topRight, Offset(frame.right - cornerLength, frame.top)),
-      (frame.topRight, Offset(frame.right, frame.top + cornerLength)),
-      (frame.bottomLeft, Offset(frame.left + cornerLength, frame.bottom)),
-      (frame.bottomLeft, Offset(frame.left, frame.bottom - cornerLength)),
-      (frame.bottomRight, Offset(frame.right - cornerLength, frame.bottom)),
-      (frame.bottomRight, Offset(frame.right, frame.bottom - cornerLength)),
+      (const Offset(inset, inset), const Offset(inset + length, inset)),
+      (const Offset(inset, inset), const Offset(inset, inset + length)),
+      (Offset(right, inset), Offset(right - length, inset)),
+      (Offset(right, inset), Offset(right, inset + length)),
+      (Offset(inset, bottom), Offset(inset + length, bottom)),
+      (Offset(inset, bottom), Offset(inset, bottom - length)),
+      (Offset(right, bottom), Offset(right - length, bottom)),
+      (Offset(right, bottom), Offset(right, bottom - length)),
     ]) {
-      canvas.drawLine(start, end, p);
+      canvas.drawLine(start, end, bracket);
     }
   }
 
   @override
-  bool shouldRepaint(covariant _CameraFrameGuide oldDelegate) => false;
+  bool shouldRepaint(covariant _RegistrationHudPainter oldDelegate) =>
+      oldDelegate.color != color;
 }
