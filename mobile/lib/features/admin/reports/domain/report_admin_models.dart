@@ -4,7 +4,8 @@ enum ReportKind {
   lateness('late', 'Terlambat'),
   leaves('leaves', 'Izin/Cuti'),
   department('department', 'Per Unit'),
-  employee('employee', 'Per Karyawan');
+  employee('employee', 'Per Karyawan'),
+  heatmap('heatmap', 'Heatmap');
 
   const ReportKind(this.code, this.label);
 
@@ -53,6 +54,7 @@ class AdminReport {
     required this.summary,
     required this.headers,
     required this.rows,
+    this.heatmap,
   });
 
   final String title;
@@ -60,8 +62,9 @@ class AdminReport {
   final List<ReportSummaryItem> summary;
   final List<String> headers;
   final List<List<String>> rows;
+  final AdminHeatmap? heatmap;
 
-  bool get isEmpty => rows.isEmpty;
+  bool get isEmpty => rows.isEmpty && heatmap == null;
 
   factory AdminReport.fromResponse(Object? data) {
     Map<String, dynamic> body = const <String, dynamic>{};
@@ -111,6 +114,62 @@ class AdminReport {
       summary: summary,
       headers: headers,
       rows: rows,
+      heatmap: json['cells'] is List ? AdminHeatmap.fromJson(json) : null,
+    );
+  }
+}
+
+class AdminHeatmap {
+  const AdminHeatmap({
+    required this.days,
+    required this.hours,
+    required this.cells,
+    required this.maxCount,
+    required this.totalCheckIns,
+    required this.lateCheckIns,
+    this.peakDay,
+    this.peakHour,
+    this.peakCount = 0,
+  });
+
+  final List<String> days;
+  final List<int> hours;
+  final List<List<int>> cells;
+  final int maxCount;
+  final int totalCheckIns;
+  final int lateCheckIns;
+  final String? peakDay;
+  final int? peakHour;
+  final int peakCount;
+
+  factory AdminHeatmap.fromJson(Map<String, dynamic> json) {
+    final List<String> days = ((json['days'] as List?) ?? const <dynamic>[])
+        .map((dynamic e) => e.toString())
+        .toList(growable: false);
+    final List<int> hours = ((json['hours'] as List?) ?? const <dynamic>[])
+        .map((dynamic e) => int.tryParse(e.toString()) ?? 0)
+        .toList(growable: false);
+    final List<List<int>> cells =
+        ((json['cells'] as List?) ?? const <dynamic>[])
+            .whereType<List>()
+            .map((List row) => row
+                .map((dynamic e) => int.tryParse(e.toString()) ?? 0)
+                .toList(growable: false))
+            .toList(growable: false);
+    final Object? rawPeak = json['peak'];
+    final Map<String, dynamic> peak = rawPeak is Map
+        ? Map<String, dynamic>.from(rawPeak)
+        : const <String, dynamic>{};
+    return AdminHeatmap(
+      days: days,
+      hours: hours,
+      cells: cells,
+      maxCount: (json['maxCount'] as num?)?.toInt() ?? 0,
+      totalCheckIns: (json['totalCheckIns'] as num?)?.toInt() ?? 0,
+      lateCheckIns: (json['lateCheckIns'] as num?)?.toInt() ?? 0,
+      peakDay: peak['day']?.toString(),
+      peakHour: (peak['hour'] as num?)?.toInt(),
+      peakCount: (peak['count'] as num?)?.toInt() ?? 0,
     );
   }
 }

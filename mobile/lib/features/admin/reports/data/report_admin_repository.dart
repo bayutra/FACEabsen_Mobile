@@ -37,6 +37,10 @@ class ReportAdminRepository {
           '/reports/employee/$employeeId',
           <String, dynamic>{'from': from, 'to': to},
         ),
+      ReportKind.heatmap => (
+          '/reports/heatmap',
+          <String, dynamic>{'from': from, 'to': to},
+        ),
     };
 
     final Response<dynamic> res =

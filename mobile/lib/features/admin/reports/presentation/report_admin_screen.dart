@@ -253,6 +253,7 @@ class _ReportAdminScreenState extends State<ReportAdminScreen> {
       case ReportKind.lateness:
       case ReportKind.leaves:
       case ReportKind.department:
+      case ReportKind.heatmap:
         return _rangeFields();
       case ReportKind.employee:
         return Column(
@@ -377,15 +378,21 @@ class _ReportAdminScreenState extends State<ReportAdminScreen> {
             const SizedBox(height: 12),
             _summaryWrap(report.summary),
             const SizedBox(height: 16),
-            const SectionHeader('Rincian'),
-            if (report.isEmpty)
-              const AdminEmpty(
-                icon: Icons.table_rows_outlined,
-                title: 'Tidak ada baris data',
-                subtitle: 'Laporan ini kosong untuk rentang yang dipilih.',
-              )
-            else
-              _ReportTable(headers: report.headers, rows: report.rows),
+            if (report.heatmap != null) ...<Widget>[
+              const SectionHeader('Heatmap per jam'),
+              const SizedBox(height: 8),
+              _HeatmapCard(heatmap: report.heatmap!),
+            ] else ...<Widget>[
+              const SectionHeader('Rincian'),
+              if (report.isEmpty)
+                const AdminEmpty(
+                  icon: Icons.table_rows_outlined,
+                  title: 'Tidak ada baris data',
+                  subtitle: 'Laporan ini kosong untuk rentang yang dipilih.',
+                )
+              else
+                _ReportTable(headers: report.headers, rows: report.rows),
+            ],
           ],
         ],
       ),
@@ -584,6 +591,142 @@ class _ReportTable extends StatelessWidget {
               ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _HeatmapCard extends StatelessWidget {
+  const _HeatmapCard({required this.heatmap});
+
+  final AdminHeatmap heatmap;
+
+  int _count(int day, int hour) {
+    if (day < 0 || day >= heatmap.cells.length) return 0;
+    final List<int> row = heatmap.cells[day];
+    if (hour < 0 || hour >= row.length) return 0;
+    return row[hour];
+  }
+
+  Color _cellColor(int count) {
+    if (count <= 0) return AppColors.surfaceContainer;
+    final int max = heatmap.maxCount > 0 ? heatmap.maxCount : 1;
+    final double intensity = (count / max).clamp(0.0, 1.0);
+    return AppColors.primary.withOpacity(0.15 + 0.85 * intensity);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final int dayCount =
+        heatmap.cells.isNotEmpty ? heatmap.cells.length : heatmap.days.length;
+    return AppCard(
+      padding: const EdgeInsets.all(12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Row(
+            children: <Widget>[
+              Expanded(
+                child: Text(
+                  'Sebaran check-in per jam',
+                  style: AppText.labelMd.copyWith(fontWeight: FontWeight.w700),
+                ),
+              ),
+              Text(
+                '${heatmap.totalCheckIns} check-in',
+                style: AppText.labelSm.copyWith(color: AppColors.inkSecondary),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: <Widget>[
+              const SizedBox(width: 34),
+              for (int hour = 0; hour < 24; hour++)
+                Expanded(
+                  child: Text(
+                    hour % 3 == 0 ? '$hour' : '',
+                    textAlign: TextAlign.center,
+                    style: AppText.labelSm.copyWith(
+                      fontSize: 8,
+                      color: AppColors.outline,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          for (int day = 0; day < dayCount; day++) ...<Widget>[
+            Row(
+              children: <Widget>[
+                SizedBox(
+                  width: 34,
+                  child: Text(
+                    day < heatmap.days.length ? heatmap.days[day] : '',
+                    style:
+                        AppText.labelSm.copyWith(color: AppColors.inkSecondary),
+                  ),
+                ),
+                for (int hour = 0; hour < 24; hour++)
+                  Expanded(
+                    child: Tooltip(
+                      message:
+                          '${day < heatmap.days.length ? heatmap.days[day] : ''} '
+                          '${hour.toString().padLeft(2, '0')}:00 · '
+                          '${_count(day, hour)} check-in',
+                      child: Container(
+                        height: 18,
+                        margin: const EdgeInsets.all(1),
+                        decoration: BoxDecoration(
+                          color: _cellColor(_count(day, hour)),
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 2),
+          ],
+          const SizedBox(height: 8),
+          Row(
+            children: <Widget>[
+              Text(
+                'Rendah',
+                style: AppText.labelSm.copyWith(color: AppColors.outline),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Container(
+                  height: 8,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: <Color>[
+                        AppColors.surfaceContainer,
+                        AppColors.primary,
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                'Tinggi',
+                style: AppText.labelSm.copyWith(color: AppColors.outline),
+              ),
+            ],
+          ),
+          if (heatmap.peakDay != null && heatmap.peakHour != null) ...<Widget>[
+            const SizedBox(height: 10),
+            Text(
+              'Puncak: ${heatmap.peakDay} '
+              '${heatmap.peakHour!.toString().padLeft(2, '0')}:00 · '
+              '${heatmap.peakCount} check-in',
+              style: AppText.labelSm.copyWith(color: AppColors.inkSecondary),
+            ),
+          ],
+        ],
       ),
     );
   }

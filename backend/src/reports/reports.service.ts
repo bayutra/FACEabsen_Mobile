@@ -272,6 +272,87 @@ export class ReportsService {
     return this.render(report, format, `laporan-bulanan-${month}`);
   }
 
+  async heatmap(from: string, to: string, userId: string, roles: string[]) {
+    assertRangeDays(from, to);
+    const ids = await this.scopeOf(userId, roles);
+    const rows = await this.prisma.attendance.findMany({
+      where: {
+        ...(ids ? { employeeId: { in: ids } } : {}),
+        workDate: { gte: new Date(from), lte: new Date(to) },
+        checkInAt: { not: null },
+      },
+      select: {
+        workDate: true,
+        checkInAt: true,
+        checkInStatus: true,
+      },
+    });
+
+    const timeZone = process.env.HOSPITAL_TZ?.trim() || 'Asia/Jakarta';
+    const dayLabels = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'];
+    const dayNames = [
+      'Senin',
+      'Selasa',
+      'Rabu',
+      'Kamis',
+      'Jumat',
+      'Sabtu',
+      'Minggu',
+    ];
+    const hours = Array.from({ length: 24 }, (_, i) => i);
+    const cells = Array.from({ length: 7 }, () => Array<number>(24).fill(0));
+
+    let totalCheckIns = 0;
+    let lateCheckIns = 0;
+    let peakDay = 0;
+    let peakHour = 0;
+    let peakCount = 0;
+    for (const row of rows) {
+      if (!row.checkInAt) continue;
+      const day = mondayFirstDay(row.workDate);
+      const hour = hourInTimeZone(new Date(row.checkInAt), timeZone);
+      cells[day][hour] += 1;
+      const count = cells[day][hour];
+      totalCheckIns++;
+      if (row.checkInStatus === 'LATE' || row.checkInStatus === 'VERY_LATE') {
+        lateCheckIns++;
+      }
+      if (count > peakCount) {
+        peakCount = count;
+        peakDay = day;
+        peakHour = hour;
+      }
+    }
+
+    return {
+      title: `Heatmap Kehadiran ${from} s.d. ${to}`,
+      generatedAt: new Date().toISOString(),
+      from,
+      to,
+      timeZone,
+      days: dayLabels,
+      dayNames,
+      hours,
+      cells,
+      maxCount: peakCount,
+      totalCheckIns,
+      lateCheckIns,
+      peak:
+        peakCount > 0
+          ? { day: dayNames[peakDay], hour: peakHour, count: peakCount }
+          : null,
+      summary: [
+        ['Total check-in', String(totalCheckIns)],
+        ['Terlambat', String(lateCheckIns)],
+        [
+          'Jam tersibuk',
+          peakCount > 0 ? `${String(peakHour).padStart(2, '0')}:00` : '-',
+        ],
+        ['Hari tersibuk', peakCount > 0 ? dayNames[peakDay] : '-'],
+      ],
+    };
+  }
+
   async department(
     from: string,
     to: string,
@@ -526,4 +607,22 @@ export class ReportsService {
 
 function iso(d: Date | string): string {
   return new Date(d).toISOString().slice(0, 10);
+}
+
+function mondayFirstDay(value: Date | string): number {
+  const d = new Date(value);
+  const utc = new Date(
+    Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()),
+  );
+  return (utc.getUTCDay() + 6) % 7;
+}
+
+function hourInTimeZone(date: Date, timeZone: string): number {
+  const parts = new Intl.DateTimeFormat('en-GB', {
+    timeZone,
+    hour: '2-digit',
+    hour12: false,
+  }).formatToParts(date);
+  const raw = Number(parts.find((p) => p.type === 'hour')?.value ?? '0');
+  return raw === 24 ? 0 : raw;
 }

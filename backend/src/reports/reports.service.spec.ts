@@ -152,6 +152,33 @@ describe('ReportsService scope + daily', () => {
     expect(xlsx.body.length).toBeGreaterThan(1000);
   });
 
+  it('heatmap aggregates check-ins by weekday and hospital hour', async () => {
+    const previous = process.env.HOSPITAL_TZ;
+    process.env.HOSPITAL_TZ = 'Asia/Jakarta';
+    try {
+      const svc = new ReportsService(makePrisma());
+      const out = (await svc.heatmap('2026-10-01', '2026-10-31', 'u-sup', [
+        'SUPERVISOR',
+      ])) as unknown as {
+        totalCheckIns: number;
+        lateCheckIns: number;
+        cells: number[][];
+        maxCount: number;
+        peak: { day: string; hour: number; count: number } | null;
+        summary: Array<[string, string]>;
+      };
+      expect(out.totalCheckIns).toBe(1);
+      expect(out.lateCheckIns).toBe(1);
+      expect(out.cells[0][14]).toBe(1); // 07:20 UTC = 14:20 WIB
+      expect(out.maxCount).toBe(1);
+      expect(out.peak).toEqual({ day: 'Senin', hour: 14, count: 1 });
+      expect(out.summary).toContainEqual(['Total check-in', '1']);
+    } finally {
+      if (previous === undefined) delete process.env.HOSPITAL_TZ;
+      else process.env.HOSPITAL_TZ = previous;
+    }
+  });
+
   it('employee report enforces self/team/admin scope', async () => {
     const svc = new ReportsService(makePrisma());
     await expect(

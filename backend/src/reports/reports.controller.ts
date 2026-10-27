@@ -96,6 +96,15 @@ export class ReportsController {
   }
 
   @RequirePermissions('report:read:team')
+  @Get('heatmap')
+  async heatmap(
+    @Query() query: ReportRangeQuery,
+    @CurrentUser() user: AuthContext,
+  ) {
+    return this.reports.heatmap(query.from, query.to, user.userId, user.roles);
+  }
+
+  @RequirePermissions('report:read:team')
   @Get('department')
   async department(
     @Query() query: ReportRangeQuery,

@@ -327,7 +327,13 @@ beforeAll(async () => {
     providers: [
       ReportsService,
       AuthService,
-      { provide: EmailVerificationService, useValue: { issue: async () => undefined, verify: async () => ({ userId: 'u1' }) } },
+      {
+        provide: EmailVerificationService,
+        useValue: {
+          issue: async () => undefined,
+          verify: async () => ({ userId: 'u1' }),
+        },
+      },
       JwtAuthGuard,
       RolesGuard,
       PermissionsGuard,
@@ -386,6 +392,21 @@ describe('reports over HTTP (PRD §65)', () => {
     expect(
       (await request(server).get('/reports/daily?date=2026-10-05')).status,
     ).toBe(401);
+  });
+
+  it('heatmap returns 7x24 cells scoped to the caller', async () => {
+    const server = app.getHttpServer();
+    const adm = await tokenFor('u-adm', ['ADMIN']);
+    const res = await request(server)
+      .get('/reports/heatmap?from=2026-10-01&to=2026-10-31')
+      .set('Authorization', `Bearer ${adm}`);
+
+    expect(res.status).toBe(200);
+    expect(res.body.cells).toHaveLength(7);
+    expect(res.body.cells[0]).toHaveLength(24);
+    expect(res.body.cells[0][14]).toBe(2);
+    expect(res.body.totalCheckIns).toBe(2);
+    expect(res.body.peak).toMatchObject({ day: 'Senin', hour: 14 });
   });
 
   it('all report types render json/csv/xlsx/pdf', async () => {
