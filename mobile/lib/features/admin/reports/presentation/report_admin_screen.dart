@@ -1,5 +1,9 @@
+import 'dart:io';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/stitch.dart';
@@ -31,6 +35,7 @@ class _ReportAdminScreenState extends State<ReportAdminScreen> {
   AdminReport? _report;
   String? _error;
   bool _loading = true;
+  bool _exporting = false;
 
   List<AdminEmployeeOption> _employees = const <AdminEmployeeOption>[];
   String? _employeeId;
@@ -97,6 +102,42 @@ class _ReportAdminScreenState extends State<ReportAdminScreen> {
         _error = adminErrorText(e);
         _loading = false;
       });
+    }
+  }
+
+  Future<void> _export(String format) async {
+    if (_exporting || _report == null) return;
+    setState(() => _exporting = true);
+    try {
+      final bool single =
+          _kind == ReportKind.daily || _kind == ReportKind.monthly;
+      final ReportExport file = await _repo.export(
+        _kind,
+        format: format,
+        date: _kind == ReportKind.daily ? adminDate(_date) : null,
+        month: _kind == ReportKind.monthly ? _monthKey(_month) : null,
+        from: single ? null : adminDate(_from),
+        to: single ? null : adminDate(_to),
+        employeeId: _kind == ReportKind.employee ? _employeeId : null,
+      );
+      final Directory dir = await getTemporaryDirectory();
+      final String filename = file.filename.replaceAll(
+        RegExp(r'[\\/:*?"<>|]+'),
+        '_',
+      );
+      final File target = File('${dir.path}${Platform.pathSeparator}$filename');
+      await target.writeAsBytes(file.bytes, flush: true);
+      await Share.shareXFiles(
+        <XFile>[XFile(target.path, mimeType: file.mimeType)],
+        subject: 'Laporan ${_kind.label}',
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Gagal mengekspor laporan: $e')),
+      );
+    } finally {
+      if (mounted) setState(() => _exporting = false);
     }
   }
 
@@ -393,6 +434,9 @@ class _ReportAdminScreenState extends State<ReportAdminScreen> {
               else
                 _ReportTable(headers: report.headers, rows: report.rows),
             ],
+            const SizedBox(height: 20),
+            if (report.heatmap == null)
+              _ExportActions(busy: _exporting || _loading, onExport: _export),
           ],
         ],
       ),
@@ -728,6 +772,72 @@ class _HeatmapCard extends StatelessWidget {
           ],
         ],
       ),
+    );
+  }
+}
+
+class _ExportActions extends StatelessWidget {
+  const _ExportActions({required this.busy, required this.onExport});
+
+  final bool busy;
+  final ValueChanged<String> onExport;
+
+  @override
+  Widget build(BuildContext context) {
+    return AppCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Text(
+            'Ekspor laporan',
+            style: AppText.labelMd.copyWith(fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Berkas dibagikan lewat menu berbagi Android, lalu bisa disimpan '
+            'ke Files atau dikirim ke email.',
+            style: AppText.labelSm.copyWith(color: AppColors.inkSecondary),
+          ),
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: <Widget>[
+              _formatButton(
+                label: 'CSV',
+                icon: Icons.description_outlined,
+                format: 'csv',
+              ),
+              _formatButton(
+                label: 'Excel',
+                icon: Icons.table_chart_outlined,
+                format: 'xlsx',
+              ),
+              _formatButton(
+                label: 'PDF',
+                icon: Icons.picture_as_pdf_outlined,
+                format: 'pdf',
+              ),
+            ],
+          ),
+          if (busy) ...<Widget>[
+            const SizedBox(height: 10),
+            const LinearProgressIndicator(minHeight: 3),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _formatButton({
+    required String label,
+    required IconData icon,
+    required String format,
+  }) {
+    return OutlinedButton.icon(
+      onPressed: busy ? null : () => onExport(format),
+      icon: Icon(icon, size: 18),
+      label: Text(label),
     );
   }
 }

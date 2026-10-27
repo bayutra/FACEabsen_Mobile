@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 enum ReportKind {
   daily('daily', 'Harian'),
   monthly('monthly', 'Bulanan'),
@@ -172,4 +174,16 @@ class AdminHeatmap {
       peakCount: (peak['count'] as num?)?.toInt() ?? 0,
     );
   }
+}
+
+class ReportExport {
+  const ReportExport({
+    required this.bytes,
+    required this.filename,
+    required this.mimeType,
+  });
+
+  final Uint8List bytes;
+  final String filename;
+  final String mimeType;
 }

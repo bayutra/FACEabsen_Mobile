@@ -51,7 +51,7 @@ tidak ada logika bisnis yang diduplikasi.
 | Persetujuan | Koreksi Presensi | SUPERVISOR+ | `GET /corrections`, `POST /corrections/{id}/approve\|reject` |
 | Persetujuan | Tinjauan Presensi | SUPERVISOR+ | `GET /attendance/review`, `POST /attendance/{id}/review` |
 | Persetujuan | Cuti & Izin | SUPERVISOR+ | `GET /leaves`, `POST /leaves/{id}/approve\|reject` |
-| Laporan | Laporan | SUPERVISOR+ | `GET /reports/{daily,monthly,late,leaves,department,employee}` |
+| Laporan | Laporan | SUPERVISOR+ | `GET /reports/{daily,monthly,late,leaves,department,employee,heatmap}` + ekspor `csv/xlsx/pdf` |
 | Laporan | Tim Supervisor | SUPERVISOR+ | `GET /supervisor/{team,team/{id},attendance,summary}` |
 | Operasional | Perangkat | SUPER_ADMIN | `GET /devices`, `POST /devices/{id}/{activate,revoke,mark-lost}` |
 | Keamanan | Audit Log | SUPER_ADMIN | `GET /audit`, `GET /audit/actions` |

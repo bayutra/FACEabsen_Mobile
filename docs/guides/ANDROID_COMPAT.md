@@ -12,6 +12,8 @@ pilihan bebas — ia ditentukan oleh syarat maksimum semua plugin native.
 | google_mlkit_face_detection 0.9.0 | 21 | ← penentu floor |
 | camera_android 0.10.x | 21 | ← penentu floor |
 | device_info_plus / package_info_plus 10.x/8.x | 19 | |
+| share_plus **7.1.0** | 19 | JANGAN `^`: 12.x butuh AGP 8.12 + Java 17 |
+| path_provider **2.1.2** + path_provider_android **2.2.0** | 16/19 | Android impl 2.2.10 butuh AGP 8.5 |
 
 `android/app/build.gradle` mematok `minSdk = 21` eksplisit (bukan
 `flutter.minSdkVersion`) agar tidak bergeser diam-diam saat Flutter upgrade.
