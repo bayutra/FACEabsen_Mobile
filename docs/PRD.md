@@ -17,9 +17,11 @@ Face Absen Mobile adalah sistem presensi karyawan rumah sakit yang
 memverifikasi **wajah**, **liveness**, **perangkat**, dan **integritas
 request** sebelum satu pun check-in/check-out diterima server.
 
-Sejak versi 2.0, produk ini **mobile-only**:
+Sejak versi 2.0, klien karyawan **hanya mobile**; pengelola memakai dashboard
+web terpisah:
 
-- Tidak ada web dashboard, desktop app, atau target Flutter web/desktop.
+- Aplikasi karyawan: Android + iOS (tanpa target Flutter web/desktop).
+- Dashboard supervisor/admin/super admin: `web/` (Next.js).
 - Tidak ada GPS/geofence. Kepercayaan tidak dibangun dari lokasi, melainkan
 dari kecocokan wajah, liveness, binding perangkat, signature Ed25519,
 device integrity, dan risk engine.
@@ -70,8 +72,8 @@ yang dikirim klien tanpa verifikasi.
 
 | Area                       | v1.0                                     | v2.0 (dokumen ini)                                          |
 | -------------------------- | ---------------------------------------- | ----------------------------------------------------------- |
-| Platform                   | Mobile + Web                             | **Mobile saja** (Android + iOS)                             |
-| Dashboard admin/supervisor | Next.js                                  | Dihapus dari repo; API tetap ada                            |
+| Platform                   | Mobile + Web                             | Mobile (Android + iOS) + dashboard web                      |
+| Dashboard admin/supervisor | Next.js                                  | `web/` (Next.js); mode admin di mobile dihapus              |
 | GPS &amp; geofence         | Wajib                                    | **Dihapus total**                                           |
 | Bobot risk                 | Termasuk GPS/geofence                    | Wajah 45, liveness 20, device 15, integrity 15, signature 5 |
 | Target Flutter             | Android, iOS, web, Windows, Linux, macOS | Android + iOS                                               |
@@ -95,17 +97,20 @@ yang dikirim klien tanpa verifikasi.
 - Liveness aktif dan pasif.
 - Check-in, check-out, outbox offline, retry.
 - Riwayat presensi, jadwal dinas, koreksi presensi, izin/cuti.
+- Notifikasi push (FCM HTTP v1) untuk hasil koreksi, cuti, dan penggantian perangkat.
 - Profil, privasi (export/consent/hapus wajah), bantuan IT.
+- Dashboard web untuk supervisor/admin/super admin (monitoring, approval,
+  administrasi kepegawaian, laporan, audit).
 - API backend untuk seluruh fitur di atas.
 - Infrastruktur deploy: Docker, nginx, PostgreSQL, Redis.
 
 ### 3.2 Out of scope
 
-- Web dashboard, panel admin, panel supervisor (fase berikutnya).
-- Aplikasi desktop/web.
+- Aplikasi desktop.
+- Mode admin di aplikasi mobile (pengelolaan hanya lewat dashboard web).
 - GPS, geofence, anti mock-location.
 - Payroll, penjadwalan otomatis, integrasi SIMRS real-time.
-- Push notification (belum ada).
+- Notifikasi pengingat presensi terjadwal (push hanya untuk hasil approval).
 - Face recognition di server (server hanya mencocokkan embedding).
 - Deteksi wajah memakai foto referensi yang disimpan di server.
 
@@ -115,14 +120,14 @@ yang dikirim klien tanpa verifikasi.
 | Peran                   | Kebutuhan                               | Status di repo                 |
 | ----------------------- | --------------------------------------- | ------------------------------ |
 | **Karyawan**            | Semua fitur presensi mandiri            | Mobile app lengkap             |
-| **Atasan / Supervisor** | Approve koreksi/izin, lihat tim         | API tersedia, **belum ada UI** |
-| **Admin**               | Kelola karyawan, shift, device, laporan | API tersedia, **belum ada UI** |
-| **Super Admin**         | Kelola role, audit, retensi             | API tersedia, **belum ada UI** |
+| **Atasan / Supervisor** | Approve koreksi/izin, lihat tim         | Dashboard web (`web/`)         |
+| **Admin**               | Kelola karyawan, shift, device, laporan | Dashboard web (`web/`)         |
+| **Super Admin**         | Kelola role, audit, retensi             | Dashboard web (`web/`)         |
 
 
-Keputusan produk: fase 1 fokus pada pengalaman karyawan. Fungsi
-supervisor/admin tetap tersedia lewat API untuk integrasi, dan akan mendapat
-UI mobile pada fase 2 (lihat §15).
+Keputusan produk: aplikasi mobile hanya untuk karyawan. Fungsi
+supervisor/admin dijalankan dari dashboard web; login mobile dengan peran
+pengelola ditolak (`DASHBOARD_ONLY_ROLE`). API tetap tersedia untuk integrasi.
 
 ---
 
@@ -525,7 +530,7 @@ berikutnya.
 > produksi harus memakai `INTEGRITY_STRICT=false` sampai implementasi klien
 > dan verifikasi server selesai.
 
-### 6.13 API supervisor/admin (FR-ADM, tanpa UI)
+### 6.13 API supervisor/admin (FR-ADM, UI dashboard web)
 
 
 | ID        | Prioritas | Requirement                                                           |
@@ -535,7 +540,7 @@ berikutnya.
 | FR-ADM-03 | P1        | Laporan harian, bulanan, departemen, keterlambatan, cuti (Excel/PDF). |
 | FR-ADM-04 | P1        | Audit log read-only dan ekspor.                                       |
 | FR-ADM-05 | P1        | Revoke/activate device dan queue `needsReview`.                       |
-| FR-ADM-06 | P2        | UI mobile untuk supervisor/admin.                                     |
+| FR-ADM-06 | P1        | UI dashboard web untuk supervisor/admin; mode admin mobile dihapus.    |
 
 
 ---
@@ -1001,7 +1006,8 @@ POST                   /privacy/retention/run (SUPER_ADMIN)
 | Outbox + retry + cancel                         | Selesai            |
 | Riwayat, jadwal, koreksi, izin/cuti             | Selesai            |
 | Privasi (consent/export/erase/retensi)          | Selesai            |
-| API supervisor/admin/report/audit               | Selesai (tanpa UI) |
+| API supervisor/admin/report/audit               | Selesai            |
+| Dashboard web supervisor/admin                  | Selesai (`web/`)   |
 | Restrukturisasi mobile-only                     | Selesai            |
 
 
@@ -1010,10 +1016,9 @@ POST                   /privacy/retention/run (SUPER_ADMIN)
 
 | Item                              | Alasan                                   |
 | --------------------------------- | ---------------------------------------- |
-| UI mobile supervisor/admin        | Saat ini approval hanya lewat API        |
 | Play Integrity / App Attest penuh | Stub klien + verifikasi server-to-server |
 | Kalibrasi ambang produksi         | Default belum diukur                     |
-| Push notification                 | Belum ada notifikasi approval/pengingat  |
+| Notifikasi pengingat presensi     | Push saat ini hanya untuk hasil approval |
 | Liveness iOS final                | Ambang landmark masih provisional        |
 | Offline lebih lama                | Outbox saat ini untuk gangguan singkat   |
 
@@ -1041,10 +1046,12 @@ POST                   /privacy/retention/run (SUPER_ADMIN)
 1. **UI admin/supervisor**: mobile app terpisah, role-aware di app yang sama,
  atau integrasi SIMRS?
 2. **Kebijakan cuti**: kuota dan approval berlapis belum dimodelkan.
-3. **Push notification**: perlu atau cukup polling saat app dibuka?
-4. **Integrity produksi**: kapan `INTEGRITY_STRICT=true` diaktifkan?
-5. **Ambang risk**: perlu penurunan bobot face setelah kalibrasi?
-6. **Retensi audit**: berapa tahun sesuai kebijakan SDM/legal?
+3. **Integrity produksi**: kapan `INTEGRITY_STRICT=true` diaktifkan?
+4. **Ambang risk**: perlu penurunan bobot face setelah kalibrasi?
+5. **Retensi audit**: berapa tahun sesuai kebijakan SDM/legal?
+
+Keputusan push notification sudah diambil: memakai FCM HTTP v1
+(`guides/FCM_PUSH.md`), bukan polling.
 
 ---
 
@@ -1055,8 +1062,9 @@ POST                   /privacy/retention/run (SUPER_ADMIN)
 ```text
 mobile/       Flutter app (Android + iOS)
 backend/      NestJS API, Prisma, E2E
+web/          Dashboard web Next.js (supervisor/admin)
 docs/         PRD, panduan, mockup
-nginx/        reverse proxy API
+nginx/        reverse proxy API + dashboard
 scripts/      operasional host/DB/smoke
 ```
 

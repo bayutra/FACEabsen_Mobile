@@ -46,7 +46,7 @@ class AuthRepository {
   }) async {
     final Response res = await _dio.post(
       '/auth/login',
-      data: {'email': email, 'password': password},
+      data: {'email': email, 'password': password, 'client': 'MOBILE'},
     );
     final Map<String, dynamic> body =
         Map<String, dynamic>.from(res.data as Map);

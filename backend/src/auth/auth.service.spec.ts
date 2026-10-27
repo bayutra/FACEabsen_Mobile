@@ -80,6 +80,45 @@ describe('AuthService.login', () => {
     );
   });
 
+  it('rejects dashboard-only roles from MOBILE but allows WEB', async () => {
+    const roles = [{ role: { name: 'SUPERVISOR' } }];
+    const mobile = new AuthService(
+      makePrisma({ user: { findUnique: vi.fn(async () => userRow({ userRoles: roles })) } }),
+      jwt,
+      configStub,
+      auditStub,
+      emailVerificationStub,
+    );
+    await expect(
+      mobile.login(
+        { email: 'employee@rs.test', password: PASSWORD, client: 'MOBILE' },
+        {},
+      ),
+    ).rejects.toThrow('dashboard web');
+
+    const web = new AuthService(
+      makePrisma({
+        user: { findUnique: vi.fn(async () => userRow({ userRoles: roles })) },
+        session: {
+          create: vi.fn(async (a: { data: Record<string, unknown> }) => ({
+            id: 's1',
+            deviceId: null,
+            ...a.data,
+          })),
+        },
+      }),
+      jwt,
+      configStub,
+      auditStub,
+      emailVerificationStub,
+    );
+    const out = await web.login(
+      { email: 'employee@rs.test', password: PASSWORD, client: 'WEB' },
+      {},
+    );
+    expect(out.accessToken).toBeTruthy();
+  });
+
   it('wrong password increments attempts and audits LOGIN_FAILED', async () => {
     const update = vi.fn(async () => ({}));
     const prisma = makePrisma({

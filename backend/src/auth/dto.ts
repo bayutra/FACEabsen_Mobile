@@ -1,5 +1,6 @@
 import {
   IsEmail,
+  IsIn,
   IsOptional,
   IsString,
   Matches,
@@ -21,6 +22,14 @@ export class LoginDto {
   @IsString()
   @MaxLength(64)
   deviceId?: string;
+
+  /**
+   * Asal login. `MOBILE` menolak peran dashboard (ADMIN/SUPER_ADMIN/
+   * SUPERVISOR) karena area tersebut hanya tersedia di dashboard web.
+   */
+  @IsOptional()
+  @IsIn(['MOBILE', 'WEB'])
+  client?: 'MOBILE' | 'WEB';
 }
 
 export class RefreshDto {

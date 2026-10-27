@@ -22,7 +22,6 @@ class HomeDashboard extends StatefulWidget {
     required this.onOpenSchedule,
     required this.onOpenProfile,
     this.onOpenHistory,
-    this.onOpenAdmin,
     this.onOpenHandovers,
   });
 
@@ -39,7 +38,6 @@ class HomeDashboard extends StatefulWidget {
   final VoidCallback onOpenProfile;
   final VoidCallback? onOpenHistory;
 
-  final VoidCallback? onOpenAdmin;
   final VoidCallback? onOpenHandovers;
 
   @override
@@ -222,63 +220,6 @@ class _HomeDashboardState extends State<HomeDashboard> {
           ),
         );
       },
-    );
-  }
-
-  Widget _adminBanner() {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: widget.onOpenAdmin,
-        borderRadius: BorderRadius.circular(AppColors.radiusCard),
-        child: Container(
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            color: AppColors.primaryFixed,
-            borderRadius: BorderRadius.circular(AppColors.radiusCard),
-            border: Border.all(color: AppColors.primaryContainer),
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 38,
-                height: 38,
-                decoration: BoxDecoration(
-                  color: AppColors.primary,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Icon(
-                  Icons.admin_panel_settings_outlined,
-                  color: Colors.white,
-                  size: 20,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Mode Admin',
-                      style: AppText.labelMd.copyWith(
-                        color: AppColors.onPrimaryFixed,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    Text(
-                      'Kelola koreksi, izin, jadwal, karyawan & laporan',
-                      style: AppText.labelSm.copyWith(
-                        color: AppColors.onPrimaryFixed,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const Icon(Icons.chevron_right, color: AppColors.onPrimaryFixed),
-            ],
-          ),
-        ),
-      ),
     );
   }
 
@@ -597,10 +538,6 @@ class _HomeDashboardState extends State<HomeDashboard> {
                 ),
               ),
               const SizedBox(height: 12),
-            if (widget.onOpenAdmin != null) ...[
-              _adminBanner(),
-              const SizedBox(height: 12),
-            ],
             Row(
               children: [
                 const Icon(Icons.local_hospital,

@@ -1,0 +1,180 @@
+'use client';
+
+import { useState } from 'react';
+import { ReviewModal } from '@/components/ReviewModal';
+import {
+  DataTable,
+  ErrorBanner,
+  Loading,
+  PageHeader,
+  StatusBadge,
+  type Column,
+} from '@/components/ui';
+import { api } from '@/lib/api';
+import { formatDate, formatDateTime, statusLabel, typeLabel } from '@/lib/format';
+import { useResource } from '@/lib/useResource';
+
+type ReviewItem = {
+  id: string;
+  workDate?: string;
+  checkInAt?: string | null;
+  checkOutAt?: string | null;
+  checkInStatus?: string | null;
+  riskScore?: number | null;
+  riskCategory?: string | null;
+  employee?: {
+    name?: string;
+    employeeNo?: string;
+    department?: { name?: string };
+  };
+  shift?: { name?: string; startTime?: string; endTime?: string };
+};
+
+type PageResponse = {
+  data?: ReviewItem[];
+  pagination?: { totalItems?: number };
+};
+
+export default function AttendanceReviewPage() {
+  const [selected, setSelected] = useState<ReviewItem | null>(null);
+
+  const { data, loading, error, reload } = useResource(
+    async () => {
+      const response = await api<PageResponse | ReviewItem[]>('/attendance/review', {
+        query: { pageSize: 50 },
+      });
+      const rows = Array.isArray(response) ? response : response.data ?? [];
+      return rows;
+    },
+    [],
+  );
+
+  const decide = async (decision: 'APPROVE' | 'REJECT', note: string) => {
+    if (!selected) return;
+    await api(`/attendance/${selected.id}/review`, {
+      method: 'POST',
+      body: { decision, ...(note ? { note } : {}) },
+    });
+    reload();
+  };
+
+  const columns: Column<ReviewItem>[] = [
+    {
+      key: 'employee',
+      header: 'Karyawan',
+      render: (row) => (
+        <div>
+          <strong>{row.employee?.name ?? '—'}</strong>
+          <div className="muted small">
+            {row.employee?.employeeNo ?? '—'}
+            {row.employee?.department?.name ? ` · ${row.employee.department.name}` : ''}
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: 'shift',
+      header: 'Shift',
+      render: (row) => (
+        <div>
+          {row.shift?.name ?? '—'}
+          <div className="muted small">
+            {row.shift?.startTime && row.shift?.endTime
+              ? `${row.shift.startTime}–${row.shift.endTime}`
+              : ''}
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: 'workDate',
+      header: 'Tanggal',
+      render: (row) => (
+        <div>
+          {formatDate(row.workDate)}
+          <div className="muted small">
+            Masuk {formatDateTime(row.checkInAt)} · Pulang {formatDateTime(row.checkOutAt)}
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: 'checkIn',
+      header: 'Status masuk',
+      render: (row) => statusLabel(row.checkInStatus),
+    },
+    {
+      key: 'risk',
+      header: 'Risiko',
+      render: (row) => (
+        <div>
+          <StatusBadge status={row.riskCategory ?? 'LOW'} />
+          <div className="muted small">
+            {typeof row.riskScore === 'number' ? `Skor ${row.riskScore}` : '—'}
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: 'actions',
+      header: '',
+      render: (row) => (
+        <button type="button" className="btn ghost small" onClick={() => setSelected(row)}>
+          Tinjau
+        </button>
+      ),
+    },
+  ];
+
+  return (
+    <>
+      <PageHeader
+        title="Tinjauan Presensi"
+        description="Presensi yang ditandai sistem karena risiko sedang menunggu validasi supervisor."
+        actions={
+          <button type="button" className="btn ghost" onClick={reload}>
+            Muat ulang
+          </button>
+        }
+      />
+      <ErrorBanner message={error} />
+
+      {loading && !data ? (
+        <Loading />
+      ) : (
+        <DataTable
+          columns={columns}
+          rows={data ?? []}
+          rowKey={(row) => row.id}
+          empty="Tidak ada presensi yang menunggu tinjauan."
+        />
+      )}
+
+      <ReviewModal
+        open={selected !== null}
+        title="Tinjau presensi"
+        approveLabel="Validasi"
+        rejectLabel="Tandai tidak sah"
+        description={
+          selected ? (
+            <div className="card">
+              <strong>{selected.employee?.name ?? 'Karyawan'}</strong>
+              <div className="muted small">
+                {formatDate(selected.workDate)} · {selected.shift?.name ?? 'Shift'}
+              </div>
+              <div className="row" style={{ marginTop: 6 }}>
+                <StatusBadge status={selected.riskCategory ?? 'LOW'} />
+                <span className="muted small">{typeLabel(selected.riskCategory)}</span>
+                {typeof selected.riskScore === 'number' ? (
+                  <span className="muted small">Skor {selected.riskScore}</span>
+                ) : null}
+              </div>
+            </div>
+          ) : null
+        }
+        onClose={() => setSelected(null)}
+        onDecide={decide}
+      />
+    </>
+  );
+}

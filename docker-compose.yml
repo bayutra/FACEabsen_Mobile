@@ -1,5 +1,5 @@
-# Production stack: API backend untuk aplikasi mobile Face Absen.
-# Tidak ada web dashboard — satu-satunya klien adalah app Android/iOS.
+# Production stack: API backend + dashboard web (Next.js) Face Absen.
+# Mobile (Android/iOS) memakai API; supervisor/admin memakai dashboard.
 # Usage: cp .env.production.example .env.production  # isi secrets dulu
 #        docker compose --env-file .env.production up -d --build
 #        docker compose exec backend sh -c 'node -e "console.log(1)"'  # sanity
@@ -81,11 +81,31 @@ services:
     networks:
       - internal
 
+  web:
+    build:
+      context: ./web
+      args:
+        API_ORIGIN: http://backend:3000
+    restart: unless-stopped
+    environment:
+      API_ORIGIN: http://backend:3000
+    depends_on:
+      backend:
+        condition: service_healthy
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+    networks:
+      - internal
+
   nginx:
     image: nginx:1.27-alpine
     restart: unless-stopped
     depends_on:
       - backend
+      - web
     ports:
       - "80:80"
       - "443:443"

@@ -1,69 +1,17 @@
-# Menu Admin di Aplikasi Mobile
+# Mode Admin Mobile — Dihapus
 
-Area **Kelola** menjadikan aplikasi mobile sebagai konsol administrasi ringkas
-selain API. Setiap layar memanggil endpoint yang sama dengan backend, jadi
-tidak ada logika bisnis yang diduplikasi.
+Area **Kelola / Mode Admin** di aplikasi mobile sudah **dihapus**. Aplikasi
+mobile sekarang hanya untuk karyawan: presensi, riwayat, jadwal, koreksi,
+cuti, profil, dan privasi.
 
-## Akses
+Alasannya: approval dan administrasi kepegawaian lebih nyaman dan aman
+dilakukan di layar besar. Pengelolaan dipindahkan ke dashboard web:
 
-- Pintasan **"Mode Admin"** tampil di **Beranda** (banner di atas konten) dan
-  di halaman **Profil**, hanya untuk peran `SUPERVISOR`, `ADMIN`, atau
-  `SUPER_ADMIN`.
-- Karyawan biasa tidak pernah melihat pintasan maupun layar admin.
-- Server tetap menegakkan RBAC per endpoint; UI hanya menyembunyikan menu
-  yang tidak berhak diakses.
-- **Supervisor** dapat membuka **Karyawan** dan **Unit** untuk unit/timnya
-  sendiri. Supervisor hanya boleh mengubah nama, telepon, dan jabatan anggota;
-  email login, unit, atasan, NIP, status, dan peran tetap wewenang ADMIN.
-  Daftar karyawan/unit otomatis dibatasi server, bukan hanya disembunyikan di UI.
+- Panduan: [`WEB_DASHBOARD.md`](WEB_DASHBOARD.md)
+- Kode: [`web/`](../../web)
+- Login mobile dengan peran `SUPERVISOR`, `ADMIN`, atau `SUPER_ADMIN` ditolak
+  backend (`DASHBOARD_ONLY_ROLE`); akun tersebut harus memakai dashboard.
+- API supervisor/admin tetap sama dan tetap menegakkan RBAC untuk integrasi.
 
-## Pendaftaran akun
-
-- Layar login punya tautan **Daftar** untuk pendaftaran mandiri
-  (`POST /auth/register`). Akun baru otomatis mendapat peran `EMPLOYEE`,
-  nomor karyawan dibuat otomatis (`EMP-###`) bila dikosongkan, dan sesi
-  langsung terbit sehingga pengguna masuk ke Beranda tanpa login ulang.
-- **Unit kerja wajib dipilih** saat mendaftar. Pilihannya dimuat dari
-  `GET /departments/public` (daftar unit + rumah sakit induk, tanpa data
-  kepegawaian lain), sehingga karyawan baru langsung terlihat dan bisa
-  dijadwalkan oleh ADMIN unit tersebut.
-- Peran `SUPERVISOR`/`ADMIN`/`SUPER_ADMIN` **tidak** bisa dipilih saat
-  mendaftar; hanya SUPER_ADMIN yang dapat memberikannya lewat
-  **Kelola → Pengguna**.
-- Setelah login/daftar, aplikasi mendaftarkan perangkat secara otomatis dan
-  langsung membuka Beranda (tidak ada layar "menunggu aktivasi"). Satu akun
-  boleh dipakai di beberapa perangkat.
-- Pengajuan penggantian perangkat **dihapus** dari aplikasi. Perangkat baru
-  terdaftar otomatis; perangkat hilang/dicuri ditandai admin lewat
-  **Kelola → Perangkat**.
-- Karyawan dapat mengubah nama, email login, dan nomor HP sendiri lewat
-  **Profil → Akun & Keamanan → Ubah Profil** (`PATCH /employees/me`). Unit
-  kerja, NIP, dan peran tetap wewenang admin.
-
-## Modul
-
-| Seksi | Modul | Peran | Endpoint |
-|---|---|---|---|
-| SDM | Karyawan | ADMIN penuh; SUPERVISOR hanya unit/tim sendiri | `GET /employees` (otomatis dibatasi untuk supervisor), `GET /employees/{id}`, `PATCH /employees/{id}` (supervisor: nama, telepon, jabatan); `POST` dan `deactivate` ADMIN |
-| SDM | Unit Kerja | ADMIN penuh; SUPERVISOR hanya melihat unitnya | `GET /departments` (otomatis dibatasi untuk supervisor), `GET /employees?departmentId={id}`; tambah/ubah/hapus unit ADMIN |
-| SDM | Shift | ADMIN | `GET/POST /shifts`, `PATCH/DELETE /shifts/{id}` |
-| SDM | Jadwal | ADMIN | `GET/POST /schedules`, `DELETE /schedules/{id}` |
-| Persetujuan | Koreksi Presensi | SUPERVISOR+ | `GET /corrections`, `POST /corrections/{id}/approve\|reject` |
-| Persetujuan | Tinjauan Presensi | SUPERVISOR+ | `GET /attendance/review`, `POST /attendance/{id}/review` |
-| Persetujuan | Cuti & Izin | SUPERVISOR+ | `GET /leaves`, `POST /leaves/{id}/approve\|reject` |
-| Laporan | Laporan | SUPERVISOR+ | `GET /reports/{daily,monthly,late,leaves,department,employee,heatmap}` + ekspor `csv/xlsx/pdf` |
-| Laporan | Tim Supervisor | SUPERVISOR+ | `GET /supervisor/{team,team/{id},attendance,summary}` |
-| Operasional | Perangkat | SUPER_ADMIN | `GET /devices`, `POST /devices/{id}/{activate,revoke,mark-lost}` |
-| Keamanan | Audit Log | SUPER_ADMIN | `GET /audit`, `GET /audit/actions` |
-| Keamanan | Pengguna | SUPER_ADMIN | `GET/POST /users`, `PATCH /users/{id}`, `POST /users/{id}/reset-password` |
-| Keamanan | Privasi & Retensi | SUPER_ADMIN | `GET /privacy/notice`, `POST /privacy/retention/run` |
-
-## Catatan pengujian lokal
-
-- Akun demo: `supervisor@rs.test`, `admin@rs.test`, `superadmin@rs.test`
-  (semua password `Password123!`).
-- Perangkat baru langsung ACTIVE saat registrasi (multi-perangkat), jadi
-  aktivasi manual hanya diperlukan untuk perangkat lama yang masih PENDING.
-  Aktivasi bisa lewat layar **Kelola → Perangkat** atau skrip
-  `scripts/approve-device.ps1` yang memanggil endpoint yang sama.
-- Semua aksi di area ini tercatat di audit log (`GET /audit`).
+Pendaftaran akun mandiri dari mobile, pemilihan unit, pembatasan peran, dan
+kebijakan perangkat tidak berubah; lihat PRD §3 dan §6.

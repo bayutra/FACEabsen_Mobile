@@ -1,8 +1,9 @@
 # Face Absen — RSU Darmayu Madiun
 
-Sistem presensi karyawan **mobile-only** berbasis pengenalan wajah dan
-liveness on-device. Klien satu-satunya adalah aplikasi Flutter untuk
-Android dan iOS; backend NestJS melayani API, tanpa web dashboard.
+Sistem presensi karyawan berbasis pengenalan wajah dan liveness on-device.
+Karyawan memakai aplikasi Flutter (Android + iOS); supervisor, admin, dan
+super admin memakai dashboard web Next.js. Backend NestJS melayani API untuk
+keduanya.
 
 > Orang yang absen harus karyawan yang benar, memakai perangkat yang terikat,
 > pada shift yang benar, dan request tidak dapat diputar ulang.
@@ -12,13 +13,14 @@ Android dan iOS; backend NestJS melayani API, tanpa web dashboard.
 ## Arsitektur
 
 ```text
-┌──────────────────────────────┐
-│  Flutter App (Android / iOS) │
-│  kamera · liveness · face    │
-│  embedding on-device         │
-└──────────────┬───────────────┘
-               │ HTTPS (JSON)
-               ▼
+┌──────────────────────────────┐   ┌──────────────────────────────┐
+│  Flutter App (Android / iOS) │   │  Dashboard web (Next.js)     │
+│  kamera · liveness · face    │   │  monitoring · approval · SDM │
+│  embedding on-device         │   │  laporan · audit             │
+└──────────────┬───────────────┘   └──────────────┬───────────────┘
+               │ HTTPS (JSON)                     │ HTTPS
+               └────────────────┬─────────────────┘
+                                ▼
 ┌──────────────────────────────┐
 │  nginx (TLS, rate limit)     │
 └──────────────┬───────────────┘
@@ -35,8 +37,8 @@ Android dan iOS; backend NestJS melayani API, tanpa web dashboard.
   mengirim vektor itu; server menyimpannya terenkripsi AES-256-GCM.
 - **GPS/geofence tidak dipakai.** Kepercayaan dibangun dari kecocokan wajah,
   liveness, binding perangkat, signature Ed25519, dan device integrity.
-- **Web dashboard tidak ada.** Endpoint supervisor/admin tetap tersedia di
-  API untuk integrasi/fase berikutnya, tetapi tidak punya UI di repo ini.
+- **Mode admin tidak ada di mobile.** Approval dan administrasi hanya lewat
+  dashboard web (`web/`); login mobile dengan peran pengelola ditolak.
 
 ---
 
@@ -54,14 +56,18 @@ Android dan iOS; backend NestJS melayani API, tanpa web dashboard.
 │   ├── prisma/              # schema, migrations, seed
 │   ├── scripts/             # env-check, kalibrasi, farm cleanup
 │   └── test/                # E2E HTTP
+├── web/                     # Dashboard web Next.js (supervisor/admin)
+│   ├── app/                 # halaman + route grup dashboard
+│   ├── components/          # shell, tabel, modal, form
+│   └── lib/                 # API client, auth, hook data
 ├── docs/
-│   ├── PRD.md               # PRD mobile-only (sumber kebenaran)
+│   ├── PRD.md               # PRD (sumber kebenaran)
 │   ├── README.md            # indeks dokumen
 │   ├── design/mobile/       # mockup Stitch 20 layar
 │   └── guides/              # deploy, go-live, iOS, Android, privasi, dll.
-├── nginx/                   # reverse proxy API + TLS
+├── nginx/                   # reverse proxy API + dashboard + TLS
 ├── scripts/                 # host prep, backup, restore, smoke, cert
-├── docker-compose.yml       # postgres + redis + backend + nginx
+├── docker-compose.yml       # postgres + redis + backend + web + nginx
 └── .env.production.example
 ```
 
@@ -92,7 +98,19 @@ Emulator Android memakai `10.0.2.2`; HP fisik memakai IP LAN laptop.
 Panduan lengkap ada di [`mobile/README.md`](mobile/README.md) dan
 [`backend/README.md`](backend/README.md).
 
-### 3. Produksi
+### 3. Dashboard web
+
+```bash
+cd web
+npm install
+API_ORIGIN=http://localhost:3000 npm run dev   # http://localhost:3001
+```
+
+Login memakai akun supervisor/admin (`supervisor@rs.test`, `admin@rs.test`,
+`superadmin@rs.test` pada data seed). Detail: [`web/README.md`](web/README.md)
+dan [`docs/guides/WEB_DASHBOARD.md`](docs/guides/WEB_DASHBOARD.md).
+
+### 4. Produksi
 
 ```bash
 cp .env.production.example .env.production
@@ -114,6 +132,9 @@ cd backend && npm run lint && npm test && npm run test:e2e
 
 # mobile
 cd mobile && flutter analyze && flutter test
+
+# web
+cd web && npm run typecheck && npm run build
 ```
 
 ---
@@ -122,8 +143,9 @@ cd mobile && flutter analyze && flutter test
 
 | Dokumen | Isi |
 |---|---|
-| [`docs/PRD.md`](docs/PRD.md) | PRD mobile-only: ruang lingkup, alur, keamanan, API |
+| [`docs/PRD.md`](docs/PRD.md) | PRD: ruang lingkup, alur, keamanan, API |
 | [`docs/README.md`](docs/README.md) | Indeks seluruh dokumen |
+| [`docs/guides/WEB_DASHBOARD.md`](docs/guides/WEB_DASHBOARD.md) | Dashboard web supervisor/admin |
 | [`docs/guides/DEPLOY.md`](docs/guides/DEPLOY.md) | Deploy Docker + TLS |
 | [`docs/guides/GO_LIVE.md`](docs/guides/GO_LIVE.md) | Runbook go-live |
 | [`docs/guides/IOS_SETUP.md`](docs/guides/IOS_SETUP.md) | Build & liveness iOS |

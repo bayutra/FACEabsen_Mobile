@@ -1,0 +1,1327 @@
+<!DOCTYPE html>
+
+<html class="light" lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>RS Absen - Tata Kelola Shell &amp; Matriks Hak Akses</title>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Google Fonts Inter -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "on-surface": "#0b1c30",
+            "on-background": "#0b1c30",
+            "secondary-container": "#5bb8fe",
+            "on-tertiary-fixed": "#00201d",
+            "on-error": "#ffffff",
+            "secondary-fixed": "#cce5ff",
+            "on-primary": "#ffffff",
+            "on-surface-variant": "#3e4947",
+            "inverse-surface": "#213145",
+            "on-error-container": "#93000a",
+            "primary-fixed": "#9cf2e8",
+            "secondary-fixed-dim": "#93ccff",
+            "background": "#f8f9ff",
+            "outline-variant": "#bdc9c6",
+            "primary-container": "#0f766e",
+            "secondary": "#006398",
+            "on-secondary": "#ffffff",
+            "error": "#ba1a1a",
+            "tertiary": "#005c54",
+            "tertiary-fixed-dim": "#6bd8cb",
+            "on-primary-fixed": "#00201d",
+            "outline": "#6e7977",
+            "surface-container-high": "#dce9ff",
+            "primary": "#005c55",
+            "surface-container-low": "#eff4ff",
+            "inverse-primary": "#80d5cb",
+            "surface-container-highest": "#d3e4fe",
+            "surface-container": "#e5eeff",
+            "inverse-on-surface": "#eaf1ff",
+            "tertiary-fixed": "#89f5e7",
+            "tertiary-container": "#00776d",
+            "surface-dim": "#cbdbf5",
+            "on-primary-container": "#a3faef",
+            "surface-container-lowest": "#ffffff",
+            "error-container": "#ffdad6",
+            "surface": "#f8f9ff",
+            "on-secondary-fixed-variant": "#004b73",
+            "on-tertiary": "#ffffff",
+            "surface-tint": "#006a63",
+            "on-secondary-container": "#00476e",
+            "on-primary-fixed-variant": "#00504a",
+            "surface-bright": "#f8f9ff",
+            "on-tertiary-fixed-variant": "#005049",
+            "on-secondary-fixed": "#001d31",
+            "on-tertiary-container": "#91fdef",
+            "primary-fixed-dim": "#80d5cb",
+            "surface-variant": "#d3e4fe"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "margin": "1rem",
+            "space-md": "0.75rem",
+            "gutter": "1.25rem",
+            "space-xl": "2rem",
+            "space-lg": "1.25rem",
+            "margin-desktop": "2rem",
+            "space-sm": "0.5rem",
+            "margin-tablet": "1.5rem",
+            "space-xs": "0.25rem",
+            "gutter-desktop": "1.5rem"
+          },
+          "fontFamily": {
+            "headline-xl-mobile": ["Inter"],
+            "headline-lg": ["Inter"],
+            "body-sm": ["Inter"],
+            "body-lg": ["Inter"],
+            "headline-lg-mobile": ["Inter"],
+            "tabular-data": ["Inter"],
+            "body-md": ["Inter"],
+            "label-sm": ["Inter"],
+            "headline-md": ["Inter"],
+            "label-md": ["Inter"],
+            "body-md-medium": ["Inter"],
+            "headline-xl": ["Inter"]
+          },
+          "fontSize": {
+            "headline-xl-mobile": ["26px", { "lineHeight": "34px", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+            "headline-lg": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.015em", "fontWeight": "600" }],
+            "body-sm": ["13px", { "lineHeight": "18px", "fontWeight": "400" }],
+            "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+            "headline-lg-mobile": ["20px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "tabular-data": ["13px", { "lineHeight": "18px", "fontWeight": "500" }],
+            "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+            "label-sm": ["11px", { "lineHeight": "14px", "letterSpacing": "0.04em", "fontWeight": "500" }],
+            "headline-md": ["18px", { "lineHeight": "26px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600" }],
+            "body-md-medium": ["14px", { "lineHeight": "20px", "fontWeight": "500" }],
+            "headline-xl": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }]
+          }
+        }
+      }
+    };
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-family: 'Material Symbols Outlined';
+      font-weight: normal;
+      font-style: normal;
+      font-size: 20px;
+      line-height: 1;
+      letter-spacing: normal;
+      text-transform: none;
+      display: inline-block;
+      white-space: nowrap;
+      word-wrap: normal;
+      direction: ltr;
+      -webkit-font-feature-settings: 'liga';
+      -webkit-font-smoothing: antialiased;
+      vertical-align: middle;
+    }
+    /* Ambient micro-shadow for clinical containers */
+    .clinical-card {
+      background: #FFFFFF;
+      border: 1px solid #E2E8F0;
+      box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.04), 0 1px 2px -1px rgba(15, 23, 42, 0.02);
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #F8FAFC;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #CBD5E1;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body class="bg-surface text-on-surface antialiased min-h-screen flex flex-col font-body-md text-body-md">
+<!-- ==================== TOP NAVIGATION BAR ==================== -->
+<header class="fixed top-0 right-0 left-[260px] h-16 flex items-center justify-between px-space-lg z-30 bg-surface-container-lowest border-b border-outline-variant/30 shadow-sm">
+<!-- Left: Hospital Branch Selector & Global Search -->
+<div class="flex items-center gap-space-lg flex-1 max-w-2xl">
+<!-- Hospital Dropdown Selector -->
+<div class="relative group">
+<button class="flex items-center gap-space-sm px-space-md py-1.5 rounded-lg border border-outline-variant/40 bg-surface-container-low hover:bg-surface-container transition-colors duration-150 text-left">
+<span class="material-symbols-outlined text-primary text-[20px]" data-icon="apartment">apartment</span>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface-variant font-medium leading-none">Lokasi Fasilitas</span>
+<span class="font-body-md-medium text-body-md-medium text-on-surface leading-snug font-semibold flex items-center gap-1">
+              Gedung Utama (Pusat)
+              <span class="material-symbols-outlined text-[16px] text-outline" data-icon="expand_more">expand_more</span>
+</span>
+</div>
+</button>
+<!-- Hospital branch flyout menu -->
+<div class="absolute left-0 top-full mt-1 w-64 bg-surface-container-lowest border border-outline-variant/50 rounded-xl shadow-lg p-space-xs hidden group-hover:block z-50">
+<div class="px-space-sm py-1 font-label-sm text-label-sm text-outline uppercase tracking-wider font-semibold">Ganti Unit Gedung</div>
+<a class="flex items-center justify-between px-space-sm py-2 rounded-lg bg-surface-container-low text-primary font-body-md-medium text-body-md-medium" href="#">
+<span class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[18px]" data-icon="check_circle">check_circle</span>
+              Gedung Utama (Pusat)
+            </span>
+<span class="font-label-sm text-label-sm text-primary font-bold">Aktif</span>
+</a>
+<a class="flex items-center justify-between px-space-sm py-2 rounded-lg hover:bg-surface-container-low text-on-surface font-body-md text-body-md" href="#">
+<span class="flex items-center gap-2">
+<span class="material-symbols-outlined text-outline text-[18px]" data-icon="domain">domain</span>
+              Gedung Rawat Inap Terpadu
+            </span>
+</a>
+<a class="flex items-center justify-between px-space-sm py-2 rounded-lg hover:bg-surface-container-low text-on-surface font-body-md text-body-md" href="#">
+<span class="flex items-center gap-2">
+<span class="material-symbols-outlined text-outline text-[18px]" data-icon="local_hospital">local_hospital</span>
+              Paviliun Kartika VIP
+            </span>
+</a>
+</div>
+</div>
+<!-- Global Search Bar -->
+<div class="relative flex-1 max-w-md">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-outline">
+<span class="material-symbols-outlined text-[18px]" data-icon="search">search</span>
+</div>
+<input class="w-full h-10 pl-9 pr-16 bg-surface-container-low hover:bg-surface-container-lowest focus:bg-surface-container-lowest border border-outline-variant/40 rounded-lg text-on-surface font-body-md text-body-md placeholder:text-outline-variant focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Cari dokter, perawat, NIP, shift, atau modul..." type="text"/>
+<div class="absolute inset-y-0 right-0 pr-2.5 flex items-center">
+<kbd class="px-1.5 py-0.5 text-[11px] font-semibold text-outline bg-surface-container border border-outline-variant/50 rounded shadow-xs font-tabular-data text-tabular-data">Ctrl+K</kbd>
+</div>
+</div>
+</div>
+<!-- Right: Operational Status, Alerts, Notifications, Profile -->
+<div class="flex items-center gap-space-md">
+<!-- Live Shift Pill (from Shared Specs) -->
+<div class="hidden xl:flex items-center gap-2 px-space-md py-1.5 bg-emerald-50 text-emerald-900 border border-emerald-200 rounded-full font-label-md text-label-md">
+<span class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+<span class="font-tabular-data text-tabular-data font-semibold">Shift Pagi: 07:00 - 14:00 WIB</span>
+<span class="material-symbols-outlined text-emerald-700 text-[16px]" data-icon="schedule">schedule</span>
+</div>
+<!-- Emergency Broadcast Alert Icon -->
+<button class="p-2 rounded-lg text-on-surface-variant hover:text-error hover:bg-error-container/20 transition-colors relative" title="Peringatan Darurat Medis / Broadcast">
+<span class="material-symbols-outlined text-[20px]" data-icon="crisis_alert">crisis_alert</span>
+</button>
+<!-- Notification Bell with Counter -->
+<button class="p-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-colors relative" title="Pemberitahuan Sistem">
+<span class="material-symbols-outlined text-[20px]" data-icon="notifications">notifications</span>
+<span class="absolute top-1 right-1 h-4 w-4 rounded-full bg-error text-on-error font-tabular-data text-[10px] font-bold flex items-center justify-center leading-none">3</span>
+</button>
+<!-- Quick Action CTA from Shared Specs -->
+<button class="hidden lg:flex items-center gap-1.5 px-space-md py-1.5 bg-primary hover:bg-[#0d9488] active:bg-[#115e59] text-on-primary rounded-lg font-body-md-medium text-body-md-medium transition-colors shadow-xs">
+<span class="material-symbols-outlined text-[18px]" data-icon="offline_pin">offline_pin</span>
+<span>Persetujuan Cepat</span>
+</button>
+<div class="h-6 w-px bg-outline-variant/40"></div>
+<!-- User Profile Menu -->
+<div class="flex items-center gap- space-sm pl-1 cursor-pointer group">
+<div class="relative">
+<div class="w-9 h-9 rounded-full bg-primary-container text-on-primary flex items-center justify-center font-semibold text-sm border-2 border-surface-container-lowest shadow-sm">
+            RW
+          </div>
+<span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 border-2 border-white rounded-full"></span>
+</div>
+<div class="flex flex-col text-left pl-2">
+<span class="font-body-md-medium text-body-md-medium text-on-surface font-semibold leading-tight">dr. Ratna Wulandari, Sp.A</span>
+<span class="font-label-sm text-label-sm text-outline leading-tight">NIP: 198205142008012015</span>
+</div>
+<span class="material-symbols-outlined text-outline text-[18px] ml-1 group-hover:text-on-surface transition-colors" data-icon="arrow_drop_down">arrow_drop_down</span>
+</div>
+</div>
+</header>
+<!-- ==================== SIDEBAR NAVIGATION (260px) ==================== -->
+<aside class="fixed left-0 top-0 h-screen w-[260px] flex flex-col justify-between p-space-md z-40 bg-surface-container-lowest border-r border-outline-variant/30" id="main-sidebar">
+<!-- Top Area: Brand & Medical Badge -->
+<div>
+<div class="flex items-center gap-space-sm px-space-xs py-1.5 mb-2">
+<div class="w-10 h-10 rounded-xl bg-primary text-on-primary flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined text-[24px]" data-icon="local_hospital">local_hospital</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-1.5">
+<span class="font-headline-md text-headline-md font-extrabold text-primary tracking-tight">RS Absen</span>
+<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-primary-fixed text-on-primary-fixed uppercase tracking-wider font-tabular-data">v4.2</span>
+</div>
+<span class="font-label-sm text-label-sm text-outline font-medium">RSUD Sehat Medika Pusat</span>
+</div>
+</div>
+<!-- Active Role Pill Indicator inside Sidebar -->
+<div class="mx-1 my-2 px-space-sm py-1.5 bg-surface-container-low rounded-lg border border-outline-variant/30 flex items-center justify-between">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-primary" data-icon="admin_panel_settings">admin_panel_settings</span>
+<span class="font-label-sm text-label-sm text-primary font-bold" id="sidebar-role-indicator">Super Admin SIMRS</span>
+</div>
+<span class="h-2 w-2 rounded-full bg-primary animate-pulse"></span>
+</div>
+<!-- Navigation Menu Groups (Scrollable) -->
+<nav class="mt-3 space-y-4 max-h-[calc(100vh-270px)] overflow-y-auto custom-scrollbar pr-1" id="sidebar-nav-container">
+<!-- Group 1: KELOMPOK UTAMA -->
+<div class="menu-group" data-role="all">
+<div class="px-space-md py-1 font-label-sm text-label-sm text-outline uppercase tracking-wider font-semibold">Kelompok Utama</div>
+<div class="mt-1 space-y-0.5">
+<a class="nav-item active flex items-center justify-between gap-space-sm bg-surface-container-low text-primary font-body-md-medium text-body-md-medium rounded-lg px-space-md py-space-sm border-l-4 border-primary" data-menu-id="dashboard" href="#">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="menu-text">Ringkasan Utama</span>
+</div>
+</a>
+</div>
+</div>
+<!-- Group 2: MANAJEMEN SDM KLINIS -->
+<div class="menu-group" data-group="sdm">
+<div class="px-space-md py-1 font-label-sm text-label-sm text-outline uppercase tracking-wider font-semibold">Manajemen SDM Klinis</div>
+<div class="mt-1 space-y-0.5">
+<a class="nav-item flex items-center justify-between gap-space-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low font-body-md text-body-md rounded-lg px-space-md py-space-sm transition-colors duration-150" data-menu-id="karyawan" href="#">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined" data-icon="clinical_notes">clinical_notes</span>
+<span class="menu-text">Data Staf &amp; Dokter</span>
+</div>
+</a>
+<a class="nav-item flex items-center justify-between gap-space-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low font-body-md text-body-md rounded-lg px-space-md py-space-sm transition-colors duration-150" data-menu-id="departemen" href="#">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined" data-icon="apartment">apartment</span>
+<span class="menu-text">Unit &amp; Departemen</span>
+</div>
+</a>
+<a class="nav-item flex items-center justify-between gap-space-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low font-body-md text-body-md rounded-lg px-space-md py-space-sm transition-colors duration-150" data-menu-id="shift" href="#">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined" data-icon="schedule">schedule</span>
+<span class="menu-text">Master Shift Jaga</span>
+</div>
+</a>
+<a class="nav-item flex items-center justify-between gap-space-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low font-body-md text-body-md rounded-lg px-space-md py-space-sm transition-colors duration-150" data-menu-id="jadwal" href="#">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined" data-icon="calendar_clock">calendar_clock</span>
+<span class="menu-text">Jadwal Shift Roster</span>
+</div>
+<span class="px-1.5 py-0.5 text-[10px] font-bold bg-secondary-fixed text-on-secondary-container rounded font-tabular-data">Pagi</span>
+</a>
+</div>
+</div>
+<!-- Group 3: PRESENSI & OPERASIONAL -->
+<div class="menu-group" data-group="presensi">
+<div class="px-space-md py-1 font-label-sm text-label-sm text-outline uppercase tracking-wider font-semibold">Presensi &amp; Operasional</div>
+<div class="mt-1 space-y-0.5">
+<a class="nav-item flex items-center justify-between gap-space-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low font-body-md text-body-md rounded-lg px-space-md py-space-sm transition-colors duration-150" data-menu-id="absensi" href="#">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined" data-icon="how_to_reg">how_to_reg</span>
+<span class="menu-text">Presensi Harian</span>
+</div>
+<span class="h-2 w-2 rounded-full bg-emerald-500"></span>
+</a>
+<a class="nav-item flex items-center justify-between gap-space-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low font-body-md text-body-md rounded-lg px-space-md py-space-sm transition-colors duration-150" data-menu-id="device" href="#">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined" data-icon="fingerprint">fingerprint</span>
+<span class="menu-text">Device Face ID &amp; Biometrik</span>
+</div>
+</a>
+<a class="nav-item flex items-center justify-between gap-space-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low font-body-md text-body-md rounded-lg px-space-md py-space-sm transition-colors duration-150" data-menu-id="koreksi" href="#">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined" data-icon="published_with_changes">published_with_changes</span>
+<span class="menu-text">Koreksi Presensi</span>
+</div>
+<span class="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 font-tabular-data">6</span>
+</a>
+<a class="nav-item flex items-center justify-between gap-space-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low font-body-md text-body-md rounded-lg px-space-md py-space-sm transition-colors duration-150" data-menu-id="izin" href="#">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined" data-icon="approval_delegation">approval_delegation</span>
+<span class="menu-text">Persetujuan Cuti &amp; Lembur</span>
+</div>
+<span class="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-error-container text-on-error-container font-tabular-data">8</span>
+</a>
+</div>
+</div>
+<!-- Group 4: ANALITIK & KEPATUHAN -->
+<div class="menu-group" data-group="analitik">
+<div class="px-space-md py-1 font-label-sm text-label-sm text-outline uppercase tracking-wider font-semibold">Analitik &amp; Kepatuhan</div>
+<div class="mt-1 space-y-0.5">
+<a class="nav-item flex items-center justify-between gap-space-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low font-body-md text-body-md rounded-lg px-space-md py-space-sm transition-colors duration-150" data-menu-id="laporan" href="#">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined" data-icon="description">description</span>
+<span class="menu-text">Rekapitulasi &amp; Laporan</span>
+</div>
+</a>
+<a class="nav-item flex items-center justify-between gap-space-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low font-body-md text-body-md rounded-lg px-space-md py-space-sm transition-colors duration-150" data-menu-id="audit" href="#">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined" data-icon="history_edu">history_edu</span>
+<span class="menu-text">Audit Log Sistem</span>
+</div>
+</a>
+</div>
+</div>
+<!-- Group 5: SISTEM & KEAMANAN -->
+<div class="menu-group" data-group="keamanan">
+<div class="px-space-md py-1 font-label-sm text-label-sm text-outline uppercase tracking-wider font-semibold">Sistem &amp; Keamanan</div>
+<div class="mt-1 space-y-0.5">
+<a class="nav-item flex items-center justify-between gap-space-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low font-body-md text-body-md rounded-lg px-space-md py-space-sm transition-colors duration-150" data-menu-id="security" href="#">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined" data-icon="security">security</span>
+<span class="menu-text">Hak Akses &amp; Kunci IP</span>
+</div>
+</a>
+<a class="nav-item flex items-center justify-between gap-space-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low font-body-md text-body-md rounded-lg px-space-md py-space-sm transition-colors duration-150" data-menu-id="settings" href="#">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="menu-text">Pengaturan Sistem</span>
+</div>
+</a>
+</div>
+</div>
+</nav>
+</div>
+<!-- Sidebar Footer with SOP, Documentation, & Logout -->
+<div class="pt-3 border-t border-outline-variant/30 space-y-1">
+<a class="flex items-center gap-space-sm px-space-md py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low text-body-sm font-body-sm transition-colors" href="#">
+<span class="material-symbols-outlined text-[18px]" data-icon="help">help</span>
+<span>Bantuan &amp; SOP SIMRS</span>
+</a>
+<a class="flex items-center gap-space-sm px-space-md py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low text-body-sm font-body-sm transition-colors" href="#" id="footer-api-link">
+<span class="material-symbols-outlined text-[18px]" data-icon="api">api</span>
+<span>Dokumentasi API</span>
+</a>
+<a class="flex items-center gap-space-sm px-space-md py-2 rounded-lg text-error hover:bg-error-container/20 text-body-sm font-body-sm transition-colors" href="#">
+<span class="material-symbols-outlined text-[18px]" data-icon="logout">logout</span>
+<span>Keluar</span>
+</a>
+</div>
+</aside>
+<!-- ==================== MAIN CONTENT CANVAS ==================== -->
+<main class="ml-[260px] pt-16 flex-1 bg-surface min-h-screen p-space-xl">
+<div class="max-w-[1400px] mx-auto space-y-space-xl">
+<!-- Breadcrumbs & Header Section -->
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-space-md pb-2 border-b border-outline-variant/30">
+<div>
+<div class="flex items-center gap-2 font-label-sm text-label-sm text-outline mb-1">
+<span>RSUD Sehat Medika Pusat</span>
+<span>/</span>
+<span>Tata Kelola Sistem SIMRS</span>
+<span>/</span>
+<span class="text-primary font-semibold">Struktur Web App Shell &amp; Hak Akses</span>
+</div>
+<h1 class="font-headline-xl text-headline-xl text-on-surface font-bold tracking-tight">
+            Matriks Akses &amp; Tata Kelola Menu Web App Shell
+          </h1>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">
+            Audit komparatif konfigurasi navigasi, visibilitas modul klinis, dan hierarki perizinan multi-peran pengguna RS Absen.
+          </p>
+</div>
+<div class="flex items-center gap-space-sm">
+<button class="flex items-center gap-2 px-space-md py-2 rounded-lg border border-outline-variant/50 bg-surface-container-lowest hover:bg-surface-container-low text-on-surface font-body-md-medium text-body-md-medium transition-colors shadow-xs">
+<span class="material-symbols-outlined text-[18px]" data-icon="download">download</span>
+<span>Ekspor SOP Matriks (.PDF)</span>
+</button>
+<button class="flex items-center gap-2 px-space-md py-2 rounded-lg bg-primary hover:bg-[#0d9488] active:bg-[#115e59] text-on-primary font-body-md-medium text-body-md-medium transition-colors shadow-xs">
+<span class="material-symbols-outlined text-[18px]" data-icon="add_moderator">add_moderator</span>
+<span>Sinkronisasi Hak SIMRS</span>
+</button>
+</div>
+</div>
+<!-- ==================== INTERACTIVE ROLE SWITCHER TOOLBAR ==================== -->
+<div class="clinical-card rounded-xl p-space-md">
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-space-md">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-primary-fixed text-on-primary-fixed flex items-center justify-center">
+<span class="material-symbols-outlined text-[22px]" data-icon="swap_horiz">swap_horiz</span>
+</div>
+<div>
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider font-bold">Simulasi Interaktif Shell</span>
+<h2 class="font-headline-md text-headline-md text-on-surface font-semibold">Uji Coba Tampilan Sidebar Sesuai Peran Pengguna</h2>
+</div>
+</div>
+<!-- The Interactive Role Buttons -->
+<div class="inline-flex p-1 bg-surface-container rounded-xl border border-outline-variant/30 gap-1 self-start lg:self-auto" id="role-selector-container">
+<button class="role-btn flex items-center gap-2 px-space-md py-2 rounded-lg text-body-md-medium font-body-md-medium bg-surface-container-lowest text-primary shadow-xs transition-all duration-150" id="role-btn-superadmin" onclick="setRole('superadmin')">
+<span class="material-symbols-outlined text-[18px] text-primary" data-icon="shield_person">shield_person</span>
+<span>Super Admin SIMRS</span>
+<span class="px-1.5 py-0.5 rounded text-[11px] font-bold bg-primary-fixed text-on-primary-fixed font-tabular-data">13 Menu</span>
+</button>
+<button class="role-btn flex items-center gap-2 px-space-md py-2 rounded-lg text-body-md-medium font-body-md-medium text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-all duration-150" id="role-btn-admin" onclick="setRole('admin')">
+<span class="material-symbols-outlined text-[18px]" data-icon="manage_accounts">manage_accounts</span>
+<span>Admin Unit Operasional</span>
+<span class="px-1.5 py-0.5 rounded text-[11px] font-semibold bg-surface-container-high text-on-surface font-tabular-data">10 Menu</span>
+</button>
+<button class="role-btn flex items-center gap-2 px-space-md py-2 rounded-lg text-body-md-medium font-body-md-medium text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-all duration-150" id="role-btn-supervisor" onclick="setRole('supervisor')">
+<span class="material-symbols-outlined text-[18px]" data-icon="supervised_user_circle">supervised_user_circle</span>
+<span>Supervisor Jaga Tim</span>
+<span class="px-1.5 py-0.5 rounded text-[11px] font-semibold bg-surface-container-high text-on-surface font-tabular-data">5 Menu</span>
+</button>
+</div>
+</div>
+<!-- Role Context Banner -->
+<div class="mt-space-md p-space-md rounded-lg bg-surface-container-low border border-primary/20 flex items-start gap-3 transition-all" id="role-banner">
+<span class="material-symbols-outlined text-primary text-[22px] mt-0.5" data-icon="verified_user">verified_user</span>
+<div class="flex-1">
+<div class="flex items-center gap-2">
+<span class="font-body-md-medium text-body-md-medium text-primary font-bold" id="banner-role-title">Peran Aktif: Super Admin SIMRS (dr. Ratna Wulandari, Sp.A)</span>
+<span class="px-2 py-0.5 text-[11px] font-bold rounded bg-emerald-100 text-emerald-800 font-tabular-data">Akses Penuh Level 0</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5" id="banner-role-desc">
+              Memiliki wewenang absolut terhadap seluruh konfigurasi presensi RSUD, manajemen perangkat Face ID, kunci IP geofence, audit trail kepatuhan, serta integrasi webhook SIMRS.
+            </p>
+</div>
+</div>
+</div>
+<!-- ==================== 3 TIER SUMMARY BENTO CARDS ==================== -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-space-lg">
+<!-- Card 1: Supervisor Jaga -->
+<div class="clinical-card rounded-xl p-space-lg transition-all hover:border-outline duration-150 relative overflow-hidden" id="card-role-supervisor">
+<div class="flex items-start justify-between">
+<div class="w-10 h-10 rounded-lg bg-sky-50 text-sky-700 border border-sky-200 flex items-center justify-center">
+<span class="material-symbols-outlined text-[22px]" data-icon="groups">groups</span>
+</div>
+<span class="px-2.5 py-1 rounded-full text-label-sm font-label-sm bg-sky-100 text-sky-800 font-semibold font-tabular-data border border-sky-300">
+              5 Menu Aktif
+            </span>
+</div>
+<div class="mt-4">
+<h3 class="font-headline-md text-headline-md text-on-surface font-semibold">Supervisor Jaga</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">
+              Fokus pada tim perawat/dokter jaga di bangsal aktif, verifikasi harian, dan pertukaran shift darurat.
+            </p>
+</div>
+<div class="mt-4 pt-3 border-t border-slate-100 space-y-2 text-body-sm font-body-sm">
+<div class="flex items-center justify-between text-on-surface-variant">
+<span>Cakupan Data:</span>
+<span class="font-semibold text-on-surface">Khusus Unit Terdaftar</span>
+</div>
+<div class="flex items-center justify-between text-on-surface-variant">
+<span>Persetujuan Lembur:</span>
+<span class="text-emerald-700 font-semibold">Tingkat 1 (Verifikator)</span>
+</div>
+<div class="flex items-center justify-between text-on-surface-variant">
+<span>Akses Konfigurasi:</span>
+<span class="text-error font-semibold flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]" data-icon="lock">lock</span> Terkunci
+              </span>
+</div>
+</div>
+<div class="mt-4">
+<button class="w-full py-1.5 px-3 rounded-lg border border-sky-300 text-sky-800 hover:bg-sky-50 font-body-md-medium text-body-md-medium text-center transition-colors" onclick="setRole('supervisor')">
+              Tinjau Tampilan Sidebar
+            </button>
+</div>
+</div>
+<!-- Card 2: Admin Operasional -->
+<div class="clinical-card rounded-xl p-space-lg transition-all hover:border-outline duration-150 relative overflow-hidden" id="card-role-admin">
+<div class="flex items-start justify-between">
+<div class="w-10 h-10 rounded-lg bg-teal-50 text-teal-700 border border-teal-200 flex items-center justify-center">
+<span class="material-symbols-outlined text-[22px]" data-icon="corporate_fare">corporate_fare</span>
+</div>
+<span class="px-2.5 py-1 rounded-full text-label-sm font-label-sm bg-teal-100 text-teal-800 font-semibold font-tabular-data border border-teal-300">
+              10 Menu Aktif
+            </span>
+</div>
+<div class="mt-4">
+<h3 class="font-headline-md text-headline-md text-on-surface font-semibold">Admin Unit / Operasional</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">
+              Pengelolaan menyeluruh seluruh tenaga medis rumah sakit, master jadwal shift, perangkat presensi, dan rekap SDM.
+            </p>
+</div>
+<div class="mt-4 pt-3 border-t border-slate-100 space-y-2 text-body-sm font-body-sm">
+<div class="flex items-center justify-between text-on-surface-variant">
+<span>Cakupan Data:</span>
+<span class="font-semibold text-on-surface">Seluruh RSUD (Multi-Unit)</span>
+</div>
+<div class="flex items-center justify-between text-on-surface-variant">
+<span>Persetujuan Lembur:</span>
+<span class="text-emerald-700 font-semibold">Finalisasi SDM &amp; Payroll</span>
+</div>
+<div class="flex items-center justify-between text-on-surface-variant">
+<span>Akses Keamanan Global:</span>
+<span class="text-amber-700 font-semibold flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]" data-icon="shield">shield</span> Audit Dasar Saja
+              </span>
+</div>
+</div>
+<div class="mt-4">
+<button class="w-full py-1.5 px-3 rounded-lg border border-teal-300 text-teal-800 hover:bg-teal-50 font-body-md-medium text-body-md-medium text-center transition-colors" onclick="setRole('admin')">
+              Tinjau Tampilan Sidebar
+            </button>
+</div>
+</div>
+<!-- Card 3: Super Admin SIMRS -->
+<div class="clinical-card rounded-xl p-space-lg transition-all hover:border-outline duration-150 relative overflow-hidden ring-2 ring-primary/20" id="card-role-superadmin">
+<div class="absolute top-0 right-0 bg-primary text-on-primary text-[10px] font-bold px-3 py-0.5 rounded-bl uppercase font-tabular-data">
+            Tingkat Tertinggi
+          </div>
+<div class="flex items-start justify-between">
+<div class="w-10 h-10 rounded-lg bg-emerald-50 text-primary border border-emerald-200 flex items-center justify-center">
+<span class="material-symbols-outlined text-[22px]" data-icon="admin_panel_settings">admin_panel_settings</span>
+</div>
+<span class="px-2.5 py-1 rounded-full text-label-sm font-label-sm bg-primary-fixed text-on-primary-fixed font-bold font-tabular-data border border-primary/30">
+              13 Menu Total
+            </span>
+</div>
+<div class="mt-4">
+<h3 class="font-headline-md text-headline-md text-on-surface font-semibold">Super Admin SIMRS</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">
+              Arsitek tata kelola sistem, kontrol protokol IP/Geofencing rumah sakit, API webhook SIMRS, enkripsi biometrik, dan audit trail yudisial.
+            </p>
+</div>
+<div class="mt-4 pt-3 border-t border-slate-100 space-y-2 text-body-sm font-body-sm">
+<div class="flex items-center justify-between text-on-surface-variant">
+<span>Cakupan Data:</span>
+<span class="font-semibold text-primary">Unrestricted Root Access</span>
+</div>
+<div class="flex items-center justify-between text-on-surface-variant">
+<span>Kebijakan Keamanan:</span>
+<span class="text-emerald-700 font-semibold">Bypass &amp; Kunci Geofence</span>
+</div>
+<div class="flex items-center justify-between text-on-surface-variant">
+<span>Akses Konfigurasi:</span>
+<span class="text-primary font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]" data-icon="verified">verified</span> Penuh (Full Read/Write)
+              </span>
+</div>
+</div>
+<div class="mt-4">
+<button class="w-full py-1.5 px-3 rounded-lg bg-primary text-on-primary hover:bg-[#0d9488] font-body-md-medium text-body-md-medium text-center transition-colors shadow-xs" onclick="setRole('superadmin')">
+              Sedang Aktif
+            </button>
+</div>
+</div>
+</div>
+<!-- ==================== SIDE-BY-SIDE VISUAL SHELL COMPARISON ==================== -->
+<div class="clinical-card rounded-xl p-space-lg space-y-space-md">
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-space-sm pb-space-sm border-b border-outline-variant/30">
+<div>
+<h2 class="font-headline-md text-headline-md text-on-surface font-semibold flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[24px]" data-icon="view_sidebar">view_sidebar</span>
+              Komparasi Visual Struktur Sidebar (Side-by-Side Shell Architecture)
+            </h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">
+              Ilustrasi visual perbedaan tata letak dan pengelompokan menu navigasi yang dirender untuk setiap profil tenaga rumah sakit.
+            </p>
+</div>
+<div class="flex items-center gap-2 text-label-sm font-label-sm text-outline">
+<span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> Terbuka</span>
+<span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span> Khusus Tim</span>
+<span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-slate-300"></span> Dikecualikan</span>
+</div>
+</div>
+<!-- 3 Side-by-side Mockup Columns -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-space-lg">
+<!-- Mockup 1: Supervisor Jaga Shell -->
+<div class="bg-surface-container-low rounded-xl p-space-md border border-outline-variant/40 flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between pb-2 border-b border-outline-variant/30 mb-3">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-sky-700 text-[18px]" data-icon="supervised_user_circle">supervised_user_circle</span>
+<span class="font-body-md-medium text-body-md-medium text-on-surface font-bold">1. Supervisor Jaga</span>
+</div>
+<span class="px-2 py-0.5 text-[10px] font-bold bg-sky-100 text-sky-800 rounded font-tabular-data">5 Menu</span>
+</div>
+<div class="space-y-1.5 text-body-sm font-body-sm">
+<!-- Group 1 -->
+<div class="text-[10px] font-bold text-outline uppercase tracking-wider px-2">Kelompok Utama</div>
+<div class="px-2.5 py-1.5 rounded-lg bg-white border border-sky-200 text-sky-900 font-semibold flex items-center justify-between shadow-xs">
+<span class="flex items-center gap-2"><span class="material-symbols-outlined text-[16px] text-sky-700" data-icon="dashboard">dashboard</span> Dashboard Tim Jaga</span>
+<span class="material-symbols-outlined text-[14px] text-emerald-600" data-icon="check">check</span>
+</div>
+<!-- Group 2 -->
+<div class="text-[10px] font-bold text-outline uppercase tracking-wider px-2 pt-2">Operasional Shift</div>
+<div class="px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-on-surface flex items-center justify-between">
+<span class="flex items-center gap-2"><span class="material-symbols-outlined text-[16px] text-outline" data-icon="how_to_reg">how_to_reg</span> Absensi Tim</span>
+<span class="material-symbols-outlined text-[14px] text-emerald-600" data-icon="check">check</span>
+</div>
+<div class="px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-on-surface flex items-center justify-between">
+<span class="flex items-center gap-2"><span class="material-symbols-outlined text-[16px] text-outline" data-icon="published_with_changes">published_with_changes</span> Koreksi Presensi</span>
+<span class="px-1 py-0.2 bg-amber-100 text-amber-800 rounded text-[9px] font-bold font-tabular-data">3</span>
+</div>
+<div class="px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-on-surface flex items-center justify-between">
+<span class="flex items-center gap-2"><span class="material-symbols-outlined text-[16px] text-outline" data-icon="approval_delegation">approval_delegation</span> Izin &amp; Cuti Tim</span>
+<span class="px-1 py-0.2 bg-amber-100 text-amber-800 rounded text-[9px] font-bold font-tabular-data">2</span>
+</div>
+<!-- Group 3 -->
+<div class="text-[10px] font-bold text-outline uppercase tracking-wider px-2 pt-2">Analitik</div>
+<div class="px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-on-surface flex items-center justify-between">
+<span class="flex items-center gap-2"><span class="material-symbols-outlined text-[16px] text-outline" data-icon="description">description</span> Laporan Tim Jaga</span>
+<span class="material-symbols-outlined text-[14px] text-emerald-600" data-icon="check">check</span>
+</div>
+<!-- Stripped Out / Hidden Notice -->
+<div class="p-2.5 mt-3 rounded-lg bg-slate-100 border border-dashed border-slate-300 text-outline text-[11px] leading-tight">
+<span class="font-semibold block text-on-surface-variant mb-0.5">8 Menu Dikecualikan:</span>
+                  Master Shift Jaga, Device Presensi, Karyawan Pusat, Hak Akses, Audit Trail, &amp; Parameter SIMRS.
+                </div>
+</div>
+</div>
+<div class="mt-4 pt-2 border-t border-outline-variant/30 text-label-sm font-label-sm text-outline flex items-center justify-between">
+<span>Mode Tampilan:</span>
+<span class="font-semibold text-sky-800">Mobile &amp; Desktop Jaga</span>
+</div>
+</div>
+<!-- Mockup 2: Admin Unit / Operasional Shell -->
+<div class="bg-surface-container-low rounded-xl p-space-md border border-outline-variant/40 flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between pb-2 border-b border-outline-variant/30 mb-3">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-teal-700 text-[18px]" data-icon="corporate_fare">corporate_fare</span>
+<span class="font-body-md-medium text-body-md-medium text-on-surface font-bold">2. Admin Operasional</span>
+</div>
+<span class="px-2 py-0.5 text-[10px] font-bold bg-teal-100 text-teal-800 rounded font-tabular-data">10 Menu</span>
+</div>
+<div class="space-y-1 text-body-sm font-body-sm">
+<div class="text-[10px] font-bold text-outline uppercase tracking-wider px-2">Kelompok Utama &amp; SDM</div>
+<div class="px-2.5 py-1 rounded bg-white border border-slate-200 flex items-center justify-between">
+<span class="text-[12px] flex items-center gap-1.5"><span class="material-symbols-outlined text-[15px] text-teal-700" data-icon="dashboard">dashboard</span> Ringkasan Rumah Sakit</span>
+<span class="material-symbols-outlined text-[14px] text-emerald-600" data-icon="check">check</span>
+</div>
+<div class="px-2.5 py-1 rounded bg-white border border-slate-200 flex items-center justify-between">
+<span class="text-[12px] flex items-center gap-1.5"><span class="material-symbols-outlined text-[15px] text-outline" data-icon="clinical_notes">clinical_notes</span> Data Staf &amp; Dokter</span>
+<span class="material-symbols-outlined text-[14px] text-emerald-600" data-icon="check">check</span>
+</div>
+<div class="px-2.5 py-1 rounded bg-white border border-slate-200 flex items-center justify-between">
+<span class="text-[12px] flex items-center gap-1.5"><span class="material-symbols-outlined text-[15px] text-outline" data-icon="apartment">apartment</span> Unit &amp; Departemen</span>
+<span class="material-symbols-outlined text-[14px] text-emerald-600" data-icon="check">check</span>
+</div>
+<div class="px-2.5 py-1 rounded bg-white border border-slate-200 flex items-center justify-between">
+<span class="text-[12px] flex items-center gap-1.5"><span class="material-symbols-outlined text-[15px] text-outline" data-icon="calendar_clock">calendar_clock</span> Jadwal Shift Roster</span>
+<span class="material-symbols-outlined text-[14px] text-emerald-600" data-icon="check">check</span>
+</div>
+<div class="text-[10px] font-bold text-outline uppercase tracking-wider px-2 pt-1.5">Presensi, Device &amp; Laporan</div>
+<div class="px-2.5 py-1 rounded bg-white border border-slate-200 flex items-center justify-between">
+<span class="text-[12px] flex items-center gap-1.5"><span class="material-symbols-outlined text-[15px] text-outline" data-icon="how_to_reg">how_to_reg</span> Presensi Seluruh RS</span>
+<span class="material-symbols-outlined text-[14px] text-emerald-600" data-icon="check">check</span>
+</div>
+<div class="px-2.5 py-1 rounded bg-white border border-slate-200 flex items-center justify-between">
+<span class="text-[12px] flex items-center gap-1.5"><span class="material-symbols-outlined text-[15px] text-outline" data-icon="fingerprint">fingerprint</span> Device Biometrik RS</span>
+<span class="material-symbols-outlined text-[14px] text-emerald-600" data-icon="check">check</span>
+</div>
+<div class="px-2.5 py-1 rounded bg-white border border-slate-200 flex items-center justify-between">
+<span class="text-[12px] flex items-center gap-1.5"><span class="material-symbols-outlined text-[15px] text-outline" data-icon="published_with_changes">published_with_changes</span> Koreksi Presensi</span>
+<span class="px-1 py-0.2 bg-amber-100 text-amber-800 rounded text-[9px] font-bold font-tabular-data">6</span>
+</div>
+<div class="px-2.5 py-1 rounded bg-white border border-slate-200 flex items-center justify-between">
+<span class="text-[12px] flex items-center gap-1.5"><span class="material-symbols-outlined text-[15px] text-outline" data-icon="approval_delegation">approval_delegation</span> Persetujuan Izin &amp; Cuti</span>
+<span class="px-1 py-0.2 bg-error-container text-on-error-container rounded text-[9px] font-bold font-tabular-data">8</span>
+</div>
+<div class="px-2.5 py-1 rounded bg-white border border-slate-200 flex items-center justify-between">
+<span class="text-[12px] flex items-center gap-1.5"><span class="material-symbols-outlined text-[15px] text-outline" data-icon="description">description</span> Rekapitulasi &amp; Laporan</span>
+<span class="material-symbols-outlined text-[14px] text-emerald-600" data-icon="check">check</span>
+</div>
+<div class="px-2.5 py-1 rounded bg-white border border-slate-200 flex items-center justify-between">
+<span class="text-[12px] flex items-center gap-1.5"><span class="material-symbols-outlined text-[15px] text-outline" data-icon="history_edu">history_edu</span> Audit Log Dasar</span>
+<span class="material-symbols-outlined text-[14px] text-amber-600" data-icon="info">info</span>
+</div>
+<div class="p-2 mt-2 rounded bg-slate-100 border border-dashed border-slate-300 text-outline text-[11px]">
+<span class="font-semibold block text-on-surface-variant">3 Menu Dikecualikan:</span>
+                  Hak Akses &amp; Kunci IP, Audit Yurisdiksi Penuh, &amp; Pengaturan Global SIMRS.
+                </div>
+</div>
+</div>
+<div class="mt-4 pt-2 border-t border-outline-variant/30 text-label-sm font-label-sm text-outline flex items-center justify-between">
+<span>Mode Tampilan:</span>
+<span class="font-semibold text-teal-800">Desktop Operasional RS</span>
+</div>
+</div>
+<!-- Mockup 3: Super Admin SIMRS Shell -->
+<div class="bg-surface-container-low rounded-xl p-space-md border-2 border-primary/40 flex flex-col justify-between shadow-sm relative">
+<div class="absolute -top-2.5 right-4 bg-primary text-on-primary text-[10px] font-bold px-2 py-0.5 rounded shadow-xs">
+              LENGKAP
+            </div>
+<div>
+<div class="flex items-center justify-between pb-2 border-b border-outline-variant/30 mb-3">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[18px]" data-icon="admin_panel_settings">admin_panel_settings</span>
+<span class="font-body-md-medium text-body-md-medium text-on-surface font-bold">3. Super Admin SIMRS</span>
+</div>
+<span class="px-2 py-0.5 text-[10px] font-bold bg-primary-fixed text-on-primary-fixed rounded font-tabular-data">13 Menu</span>
+</div>
+<div class="space-y-1 text-body-sm font-body-sm">
+<div class="text-[10px] font-bold text-primary uppercase tracking-wider px-2">Semua 5 Kelompok Termasuk Keamanan</div>
+<div class="px-2 py-1 rounded bg-white border border-slate-200 flex items-center justify-between">
+<span class="text-[12px] flex items-center gap-1.5"><span class="material-symbols-outlined text-[14px] text-primary" data-icon="dashboard">dashboard</span> Dashboard Utama</span>
+<span class="material-symbols-outlined text-[14px] text-emerald-600" data-icon="check_circle">check_circle</span>
+</div>
+<div class="px-2 py-1 rounded bg-white border border-slate-200 flex items-center justify-between">
+<span class="text-[12px] flex items-center gap-1.5"><span class="material-symbols-outlined text-[14px] text-primary" data-icon="clinical_notes">clinical_notes</span> SDM &amp; Unit RSUD</span>
+<span class="material-symbols-outlined text-[14px] text-emerald-600" data-icon="check_circle">check_circle</span>
+</div>
+<div class="px-2 py-1 rounded bg-white border border-slate-200 flex items-center justify-between">
+<span class="text-[12px] flex items-center gap-1.5"><span class="material-symbols-outlined text-[14px] text-primary" data-icon="calendar_clock">calendar_clock</span> Master &amp; Shift Roster</span>
+<span class="material-symbols-outlined text-[14px] text-emerald-600" data-icon="check_circle">check_circle</span>
+</div>
+<div class="px-2 py-1 rounded bg-white border border-slate-200 flex items-center justify-between">
+<span class="text-[12px] flex items-center gap-1.5"><span class="material-symbols-outlined text-[14px] text-primary" data-icon="fingerprint">fingerprint</span> Face ID, Geofence &amp; Perangkat</span>
+<span class="material-symbols-outlined text-[14px] text-emerald-600" data-icon="check_circle">check_circle</span>
+</div>
+<div class="px-2 py-1 rounded bg-white border border-slate-200 flex items-center justify-between">
+<span class="text-[12px] flex items-center gap-1.5"><span class="material-symbols-outlined text-[14px] text-primary" data-icon="approval_delegation">approval_delegation</span> Presensi, Koreksi &amp; Izin</span>
+<span class="material-symbols-outlined text-[14px] text-emerald-600" data-icon="check_circle">check_circle</span>
+</div>
+<div class="px-2 py-1 rounded bg-white border border-slate-200 flex items-center justify-between">
+<span class="text-[12px] flex items-center gap-1.5"><span class="material-symbols-outlined text-[14px] text-primary" data-icon="description">description</span> Rekap Laporan &amp; Gaji</span>
+<span class="material-symbols-outlined text-[14px] text-emerald-600" data-icon="check_circle">check_circle</span>
+</div>
+<div class="px-2 py-1 rounded bg-white border border-slate-200 flex items-center justify-between">
+<span class="text-[12px] flex items-center gap-1.5"><span class="material-symbols-outlined text-[14px] text-primary" data-icon="history_edu">history_edu</span> Audit Log Lengkap (Yudisial)</span>
+<span class="material-symbols-outlined text-[14px] text-emerald-600" data-icon="check_circle">check_circle</span>
+</div>
+<!-- Highlight Security and Settings -->
+<div class="px-2 py-1 rounded bg-emerald-50 border border-primary/30 flex items-center justify-between text-primary font-semibold">
+<span class="text-[12px] flex items-center gap-1.5"><span class="material-symbols-outlined text-[14px]" data-icon="security">security</span> Hak Akses &amp; Kunci IP Geofence</span>
+<span class="px-1 py-0.2 bg-primary text-on-primary rounded text-[9px] font-bold">KUNCI</span>
+</div>
+<div class="px-2 py-1 rounded bg-emerald-50 border border-primary/30 flex items-center justify-between text-primary font-semibold">
+<span class="text-[12px] flex items-center gap-1.5"><span class="material-symbols-outlined text-[14px]" data-icon="settings">settings</span> Konfigurasi Sistem &amp; Webhook SIMRS</span>
+<span class="px-1 py-0.2 bg-primary text-on-primary rounded text-[9px] font-bold">ROOT</span>
+</div>
+</div>
+</div>
+<div class="mt-4 pt-2 border-t border-outline-variant/30 text-label-sm font-label-sm text-outline flex items-center justify-between">
+<span>Status Keamanan:</span>
+<span class="font-bold text-primary flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]" data-icon="shield">shield</span> Enkripsi TLS 1.3
+              </span>
+</div>
+</div>
+</div>
+</div>
+<!-- ==================== ROLE PERMISSIONS MATRIX TABLE ==================== -->
+<div class="clinical-card rounded-xl overflow-hidden">
+<div class="p-space-lg border-b border-outline-variant/30 flex flex-col md:flex-row md:items-center justify-between gap-space-sm bg-surface-container-lowest">
+<div>
+<h2 class="font-headline-md text-headline-md text-on-surface font-semibold flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[22px]" data-icon="grid_view">grid_view</span>
+              Matriks Hak Akses &amp; Otorisasi Menu Lengkap (13 Modul)
+            </h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">
+              Daftar komparasi granular hak Lihat, Edit, Persetujuan (Approval), dan Konfigurasi teknis untuk masing-masing peran.
+            </p>
+</div>
+<div class="flex items-center gap-2">
+<span class="font-label-sm text-label-sm text-outline">Filter Tampilan:</span>
+<select class="h-9 px-3 rounded-lg border border-outline-variant/50 bg-surface-container-lowest text-on-surface font-body-sm text-body-sm focus:border-primary focus:ring-1 focus:ring-primary">
+<option>Semua 13 Menu</option>
+<option>Kelompok Utama</option>
+<option>Manajemen SDM</option>
+<option>Operasional &amp; Device</option>
+<option>Keamanan &amp; Sistem</option>
+</select>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse font-body-sm text-body-sm">
+<thead>
+<tr class="bg-surface-container-low text-on-surface-variant font-label-md text-label-md uppercase tracking-wider border-b border-outline-variant/30">
+<th class="py-3 px-space-lg font-semibold w-12">No</th>
+<th class="py-3 px-space-md font-semibold">Nama Menu &amp; Modul</th>
+<th class="py-3 px-space-md font-semibold">Kelompok</th>
+<th class="py-3 px-space-md font-semibold text-center">Supervisor Jaga</th>
+<th class="py-3 px-space-md font-semibold text-center">Admin Operasional</th>
+<th class="py-3 px-space-md font-semibold text-center bg-primary-container/10 text-primary">Super Admin SIMRS</th>
+<th class="py-3 px-space-lg font-semibold text-right">Tingkat Risiko</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/20 bg-surface-container-lowest">
+<!-- Row 1: Dashboard -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-3 px-space-lg text-outline font-tabular-data">01</td>
+<td class="py-3 px-space-md">
+<div class="flex items-center gap-2 font-semibold text-on-surface">
+<span class="material-symbols-outlined text-[18px] text-primary" data-icon="dashboard">dashboard</span>
+<span>Dashboard Utama</span>
+</div>
+<span class="text-[11px] text-outline">Ringkasan KPI, kehadiran harian &amp; alert shift</span>
+</td>
+<td class="py-3 px-space-md text-on-surface-variant font-medium">KELOMPOK UTAMA</td>
+<td class="py-3 px-space-md text-center">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-sky-100 text-sky-800">
+                    Lihat (Tim Saja)
+                  </span>
+</td>
+<td class="py-3 px-space-md text-center">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-100 text-emerald-800">
+                    Lihat Seluruh RS
+                  </span>
+</td>
+<td class="py-3 px-space-md text-center bg-primary-container/5">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-primary-fixed text-on-primary-fixed">
+                    Penuh + Analitik Eksekutif
+                  </span>
+</td>
+<td class="py-3 px-space-lg text-right">
+<span class="px-2 py-0.5 text-[10px] font-semibold rounded bg-slate-100 text-slate-700">Rendah</span>
+</td>
+</tr>
+<!-- Row 2: Karyawan -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-3 px-space-lg text-outline font-tabular-data">02</td>
+<td class="py-3 px-space-md">
+<div class="flex items-center gap-2 font-semibold text-on-surface">
+<span class="material-symbols-outlined text-[18px] text-primary" data-icon="clinical_notes">clinical_notes</span>
+<span>Data Staf &amp; Dokter</span>
+</div>
+<span class="text-[11px] text-outline">Profil NIP, SIP, unit kerja &amp; kontak medis</span>
+</td>
+<td class="py-3 px-space-md text-on-surface-variant font-medium">SDM KLINIS</td>
+<td class="py-3 px-space-md text-center">
+<span class="inline-flex items-center gap-1 text-slate-400 font-semibold text-[11px]">
+<span class="material-symbols-outlined text-[14px]" data-icon="lock">lock</span> Tidak Ada Akses
+                  </span>
+</td>
+<td class="py-3 px-space-md text-center">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-100 text-emerald-800">
+                    Lihat / Tambah / Edit
+                  </span>
+</td>
+<td class="py-3 px-space-md text-center bg-primary-container/5">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-primary-fixed text-on-primary-fixed">
+                    Penuh + Hapus / Mutasi
+                  </span>
+</td>
+<td class="py-3 px-space-lg text-right">
+<span class="px-2 py-0.5 text-[10px] font-semibold rounded bg-amber-100 text-amber-800">Sedang</span>
+</td>
+</tr>
+<!-- Row 3: Departemen -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-3 px-space-lg text-outline font-tabular-data">03</td>
+<td class="py-3 px-space-md">
+<div class="flex items-center gap-2 font-semibold text-on-surface">
+<span class="material-symbols-outlined text-[18px] text-primary" data-icon="apartment">apartment</span>
+<span>Unit &amp; Departemen</span>
+</div>
+<span class="text-[11px] text-outline">Struktur poli, bangsal inap, ICU &amp; instalasi gawat</span>
+</td>
+<td class="py-3 px-space-md text-on-surface-variant font-medium">SDM KLINIS</td>
+<td class="py-3 px-space-md text-center">
+<span class="inline-flex items-center gap-1 text-slate-400 font-semibold text-[11px]">
+<span class="material-symbols-outlined text-[14px]" data-icon="lock">lock</span> Tidak Ada Akses
+                  </span>
+</td>
+<td class="py-3 px-space-md text-center">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-100 text-emerald-800">
+                    Lihat / Edit Kuota
+                  </span>
+</td>
+<td class="py-3 px-space-md text-center bg-primary-container/5">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-primary-fixed text-on-primary-fixed">
+                    Penuh + Hierarki Induk
+                  </span>
+</td>
+<td class="py-3 px-space-lg text-right">
+<span class="px-2 py-0.5 text-[10px] font-semibold rounded bg-slate-100 text-slate-700">Rendah</span>
+</td>
+</tr>
+<!-- Row 4: Shift -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-3 px-space-lg text-outline font-tabular-data">04</td>
+<td class="py-3 px-space-md">
+<div class="flex items-center gap-2 font-semibold text-on-surface">
+<span class="material-symbols-outlined text-[18px] text-primary" data-icon="schedule">schedule</span>
+<span>Master Shift Jaga</span>
+</div>
+<span class="text-[11px] text-outline">Pagi (07-14), Sore (14-21), Malam (21-07), &amp; On-Call</span>
+</td>
+<td class="py-3 px-space-md text-center">SDM KLINIS</td>
+<td class="py-3 px-space-md text-center">
+<span class="inline-flex items-center gap-1 text-slate-400 font-semibold text-[11px]">
+<span class="material-symbols-outlined text-[14px]" data-icon="lock">lock</span> Tidak Ada Akses
+                  </span>
+</td>
+<td class="py-3 px-space-md text-center">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-100 text-emerald-800">
+                    Konfigurasi Jam Shift
+                  </span>
+</td>
+<td class="py-3 px-space-md text-center bg-primary-container/5">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-primary-fixed text-on-primary-fixed">
+                    Penuh + Toleransi Tolerir
+                  </span>
+</td>
+<td class="py-3 px-space-lg text-right">
+<span class="px-2 py-0.5 text-[10px] font-semibold rounded bg-amber-100 text-amber-800">Sedang</span>
+</td>
+</tr>
+<!-- Row 5: Jadwal Shift Roster -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-3 px-space-lg text-outline font-tabular-data">05</td>
+<td class="py-3 px-space-md">
+<div class="flex items-center gap-2 font-semibold text-on-surface">
+<span class="material-symbols-outlined text-[18px] text-primary" data-icon="calendar_clock">calendar_clock</span>
+<span>Jadwal Shift Roster</span>
+</div>
+<span class="text-[11px] text-outline">Plotting giliran jaga mingguan &amp; bulanan dokter jaga</span>
+</td>
+<td class="py-3 px-space-md text-on-surface-variant font-medium">SDM KLINIS</td>
+<td class="py-3 px-space-md text-center">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-sky-100 text-sky-800">
+                    Ajukan Usulan Roster Tim
+                  </span>
+</td>
+<td class="py-3 px-space-md text-center">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-100 text-emerald-800">
+                    Publish &amp; Susun Jadwal
+                  </span>
+</td>
+<td class="py-3 px-space-md text-center bg-primary-container/5">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-primary-fixed text-on-primary-fixed">
+                    Penuh + Force Override
+                  </span>
+</td>
+<td class="py-3 px-space-lg text-right">
+<span class="px-2 py-0.5 text-[10px] font-semibold rounded bg-slate-100 text-slate-700">Rendah</span>
+</td>
+</tr>
+<!-- Row 6: Absensi -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-3 px-space-lg text-outline font-tabular-data">06</td>
+<td class="py-3 px-space-md">
+<div class="flex items-center gap-2 font-semibold text-on-surface">
+<span class="material-symbols-outlined text-[18px] text-primary" data-icon="how_to_reg">how_to_reg</span>
+<span>Presensi Harian</span>
+</div>
+<span class="text-[11px] text-outline">Monitoring log tap-in/out, GPS radius, &amp; foto selfie</span>
+</td>
+<td class="py-3 px-space-md text-on-surface-variant font-medium">PRESENSI &amp; OPS</td>
+<td class="py-3 px-space-md text-center">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-sky-100 text-sky-800">
+                    Pantau Tim Saat Jaga
+                  </span>
+</td>
+<td class="py-3 px-space-md text-center">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-100 text-emerald-800">
+                    Monitoring Rumah Sakit
+                  </span>
+</td>
+<td class="py-3 px-space-md text-center bg-primary-container/5">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-primary-fixed text-on-primary-fixed">
+                    Penuh + Live Telemetri
+                  </span>
+</td>
+<td class="py-3 px-space-lg text-right">
+<span class="px-2 py-0.5 text-[10px] font-semibold rounded bg-slate-100 text-slate-700">Rendah</span>
+</td>
+</tr>
+<!-- Row 7: Device Presensi -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-3 px-space-lg text-outline font-tabular-data">07</td>
+<td class="py-3 px-space-md">
+<div class="flex items-center gap-2 font-semibold text-on-surface">
+<span class="material-symbols-outlined text-[18px] text-primary" data-icon="fingerprint">fingerprint</span>
+<span>Device Face ID &amp; Biometrik</span>
+</div>
+<span class="text-[11px] text-outline">Status 24 mesin presensi fisik &amp; enroll wajah perawat</span>
+</td>
+<td class="py-3 px-space-md text-on-surface-variant font-medium">PRESENSI &amp; OPS</td>
+<td class="py-3 px-space-md text-center">
+<span class="inline-flex items-center gap-1 text-slate-400 font-semibold text-[11px]">
+<span class="material-symbols-outlined text-[14px]" data-icon="lock">lock</span> Tidak Ada Akses
+                  </span>
+</td>
+<td class="py-3 px-space-md text-center">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-100 text-emerald-800">
+                    Enroll Wajah &amp; Restart
+                  </span>
+</td>
+<td class="py-3 px-space-md text-center bg-primary-container/5">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-primary-fixed text-on-primary-fixed">
+                    Penuh + Firmware &amp; Geofence
+                  </span>
+</td>
+<td class="py-3 px-space-lg text-right">
+<span class="px-2 py-0.5 text-[10px] font-semibold rounded bg-amber-100 text-amber-800">Sedang</span>
+</td>
+</tr>
+<!-- Row 8: Koreksi Presensi -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-3 px-space-lg text-outline font-tabular-data">08</td>
+<td class="py-3 px-space-md">
+<div class="flex items-center gap-2 font-semibold text-on-surface">
+<span class="material-symbols-outlined text-[18px] text-primary" data-icon="published_with_changes">published_with_changes</span>
+<span>Koreksi Presensi</span>
+</div>
+<span class="text-[11px] text-outline">Klaim lupa absen karena tindakan operasi darurat</span>
+</td>
+<td class="py-3 px-space-md text-on-surface-variant font-medium">PRESENSI &amp; OPS</td>
+<td class="py-3 px-space-md text-center">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-amber-100 text-amber-800">
+                    Verifikasi Tingkat 1
+                  </span>
+</td>
+<td class="py-3 px-space-md text-center">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-100 text-emerald-800">
+                    Approval Final SDM
+                  </span>
+</td>
+<td class="py-3 px-space-md text-center bg-primary-container/5">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-primary-fixed text-on-primary-fixed">
+                    Penuh + Pembatalan SK
+                  </span>
+</td>
+<td class="py-3 px-space-lg text-right">
+<span class="px-2 py-0.5 text-[10px] font-semibold rounded bg-amber-100 text-amber-800">Sedang</span>
+</td>
+</tr>
+<!-- Row 9: Izin & Cuti -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-3 px-space-lg text-outline font-tabular-data">09</td>
+<td class="py-3 px-space-md">
+<div class="flex items-center gap-2 font-semibold text-on-surface">
+<span class="material-symbols-outlined text-[18px] text-primary" data-icon="approval_delegation">approval_delegation</span>
+<span>Persetujuan Cuti &amp; Lembur</span>
+</div>
+<span class="text-[11px] text-outline">Cuti tahunan, SIP dinas luar, &amp; lembur darurat IGD</span>
+</td>
+<td class="py-3 px-space-md text-on-surface-variant font-medium">PRESENSI &amp; OPS</td>
+<td class="py-3 px-space-md text-center">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-amber-100 text-amber-800">
+                    Paraf Rekomendasi
+                  </span>
+</td>
+<td class="py-3 px-space-md text-center">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-100 text-emerald-800">
+                    Otorisasi Kuota Cuti
+                  </span>
+</td>
+<td class="py-3 px-space-md text-center bg-primary-container/5">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-primary-fixed text-on-primary-fixed">
+                    Penuh + Dispensasi Direktur
+                  </span>
+</td>
+<td class="py-3 px-space-lg text-right">
+<span class="px-2 py-0.5 text-[10px] font-semibold rounded bg-amber-100 text-amber-800">Sedang</span>
+</td>
+</tr>
+<!-- Row 10: Laporan Kehadiran -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-3 px-space-lg text-outline font-tabular-data">10</td>
+<td class="py-3 px-space-md">
+<div class="flex items-center gap-2 font-semibold text-on-surface">
+<span class="material-symbols-outlined text-[18px] text-primary" data-icon="description">description</span>
+<span>Rekapitulasi &amp; Laporan</span>
+</div>
+<span class="text-[11px] text-outline">Rekap kehadiran bulanan dasar penggajian &amp; insentif jaga</span>
+</td>
+<td class="py-3 px-space-md text-on-surface-variant font-medium">ANALITIK</td>
+<td class="py-3 px-space-md text-center">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-sky-100 text-sky-800">
+                    Unduh Rekap Tim Unit
+                  </span>
+</td>
+<td class="py-3 px-space-md text-center">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-100 text-emerald-800">
+                    Kompilasi Payroll RS
+                  </span>
+</td>
+<td class="py-3 px-space-md text-center bg-primary-container/5">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-primary-fixed text-on-primary-fixed">
+                    Penuh + Audit Kemenkes
+                  </span>
+</td>
+<td class="py-3 px-space-lg text-right">
+<span class="px-2 py-0.5 text-[10px] font-semibold rounded bg-slate-100 text-slate-700">Rendah</span>
+</td>
+</tr>
+<!-- Row 11: Audit Log -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-3 px-space-lg text-outline font-tabular-data">11</td>
+<td class="py-3 px-space-md">
+<div class="flex items-center gap-2 font-semibold text-on-surface">
+<span class="material-symbols-outlined text-[18px] text-primary" data-icon="history_edu">history_edu</span>
+<span>Audit Log Sistem</span>
+</div>
+<span class="text-[11px] text-outline">Rekam jejak setiap perubahan status hadir &amp; edit manual</span>
+</td>
+<td class="py-3 px-space-md text-on-surface-variant font-medium">ANALITIK</td>
+<td class="py-3 px-space-md text-center">
+<span class="inline-flex items-center gap-1 text-slate-400 font-semibold text-[11px]">
+<span class="material-symbols-outlined text-[14px]" data-icon="lock">lock</span> Tidak Ada Akses
+                  </span>
+</td>
+<td class="py-3 px-space-md text-center">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-amber-100 text-amber-800">
+                    Lihat Aktivitas SDM
+                  </span>
+</td>
+<td class="py-3 px-space-md text-center bg-primary-container/5">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-primary-fixed text-on-primary-fixed">
+                    Penuh + Hash Forensik
+                  </span>
+</td>
+<td class="py-3 px-space-lg text-right">
+<span class="px-2 py-0.5 text-[10px] font-bold rounded bg-red-100 text-red-800">Kritis</span>
+</td>
+</tr>
+<!-- Row 12: Security & Kunci IP -->
+<tr class="hover:bg-surface-container-low transition-colors bg-amber-50/20">
+<td class="py-3 px-space-lg text-outline font-tabular-data">12</td>
+<td class="py-3 px-space-md">
+<div class="flex items-center gap-2 font-semibold text-on-surface">
+<span class="material-symbols-outlined text-[18px] text-red-600" data-icon="security">security</span>
+<span>Hak Akses &amp; Kunci IP</span>
+</div>
+<span class="text-[11px] text-outline">Whitelist IP Rumah Sakit, Geofence radius &amp; RBAC</span>
+</td>
+<td class="py-3 px-space-md text-on-surface-variant font-medium">KEAMANAN</td>
+<td class="py-3 px-space-md text-center">
+<span class="inline-flex items-center gap-1 text-slate-400 font-semibold text-[11px]">
+<span class="material-symbols-outlined text-[14px]" data-icon="lock">lock</span> Tidak Ada Akses
+                  </span>
+</td>
+<td class="py-3 px-space-md text-center">
+<span class="inline-flex items-center gap-1 text-slate-400 font-semibold text-[11px]">
+<span class="material-symbols-outlined text-[14px]" data-icon="lock">lock</span> Tidak Ada Akses
+                  </span>
+</td>
+<td class="py-3 px-space-md text-center bg-primary-container/5">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-primary-fixed text-on-primary-fixed">
+                    Eksklusif Super Admin
+                  </span>
+</td>
+<td class="py-3 px-space-lg text-right">
+<span class="px-2 py-0.5 text-[10px] font-bold rounded bg-red-100 text-red-800">Tinggi</span>
+</td>
+</tr>
+<!-- Row 13: Settings Global -->
+<tr class="hover:bg-surface-container-low transition-colors bg-amber-50/20">
+<td class="py-3 px-space-lg text-outline font-tabular-data">13</td>
+<td class="py-3 px-space-md">
+<div class="flex items-center gap-2 font-semibold text-on-surface">
+<span class="material-symbols-outlined text-[18px] text-primary" data-icon="settings">settings</span>
+<span>Pengaturan Sistem</span>
+</div>
+<span class="text-[11px] text-outline">Koneksi SIMRS HL7/FHIR, token bot WhatsApp, &amp; backup database</span>
+</td>
+<td class="py-3 px-space-md text-on-surface-variant font-medium">KEAMANAN</td>
+<td class="py-3 px-space-md text-center">
+<span class="inline-flex items-center gap-1 text-slate-400 font-semibold text-[11px]">
+<span class="material-symbols-outlined text-[14px]" data-icon="lock">lock</span> Tidak Ada Akses
+                  </span>
+</td>
+<td class="py-3 px-space-md text-center">
+<span class="inline-flex items-center gap-1 text-slate-400 font-semibold text-[11px]">
+<span class="material-symbols-outlined text-[14px]" data-icon="lock">lock</span> Tidak Ada Akses
+                  </span>
+</td>
+<td class="py-3 px-space-md text-center bg-primary-container/5">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-primary-fixed text-on-primary-fixed">
+                    Eksklusif Super Admin
+                  </span>
+</td>
+<td class="py-3 px-space-lg text-right">
+<span class="px-2 py-0.5 text-[10px] font-bold rounded bg-red-100 text-red-800">Kritis</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="p-space-md bg-surface-container-low border-t border-outline-variant/30 flex flex-col md:flex-row md:items-center justify-between text-body-sm font-body-sm text-on-surface-variant">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[18px]" data-icon="info">info</span>
+<span>Perubahan hak akses modul mewajibkan verifikasi token OTP 2FA dan terdaftar pada Audit Log Keamanan.</span>
+</div>
+<div class="font-tabular-data text-tabular-data mt-1 md:mt-0 font-medium">
+            Terakhir disinkronkan dengan SIMRS: Hari ini, 07:15:22 WIB
+          </div>
+</div>
+</div>
+</div>
+</main>
+<!-- ==================== JAVASCRIPT MICRO-INTERACTIONS ==================== -->
+<script>
+    // State management for interactive role switching simulation
+    const roleConfigurations = {
+      superadmin: {
+        title: "Peran Aktif: Super Admin SIMRS (dr. Ratna Wulandari, Sp.A)",
+        badge: "Akses Penuh Level 0",
+        desc: "Memiliki wewenang absolut terhadap seluruh konfigurasi presensi RSUD, manajemen perangkat Face ID, kunci IP geofence, audit trail kepatuhan, serta integrasi webhook SIMRS.",
+        visibleGroups: ["all", "sdm", "presensi", "analitik", "keamanan"],
+        showApi: true,
+        indicator: "Super Admin SIMRS",
+        activeMenuText: "Ringkasan Utama"
+      },
+      admin: {
+        title: "Peran Aktif: Admin Unit Operasional (Pak Hendra Santoso, S.Kom)",
+        badge: "Akses Operasional Rumah Sakit",
+        desc: "Mengelola seluruh data tenaga medis, pembuatan roster shift rumah sakit, verifikasi kehadiran 24 unit, dan sinkronisasi laporan penggajian bulanan.",
+        visibleGroups: ["all", "sdm", "presensi", "analitik"],
+        showApi: false,
+        indicator: "Admin Operasional",
+        activeMenuText: "Ringkasan RS"
+      },
+      supervisor: {
+        title: "Peran Aktif: Supervisor Jaga Tim (Ns. Dewi Anggraini, S.Kep)",
+        badge: "Akses Tim Terbatas",
+        desc: "Hanya dapat memantau perawat jaga shift bangsal, menyetujui koreksi absen mendesak, verifikasi tukar jaga, dan mengecek lembur unit rawat inap aktif.",
+        visibleGroups: ["all", "presensi", "analitik"],
+        showApi: false,
+        indicator: "Supervisor Jaga Tim",
+        activeMenuText: "Dashboard Tim Jaga"
+      }
+    };
+
+    function setRole(roleKey) {
+      const config = roleConfigurations[roleKey];
+      if (!config) return;
+
+      // Update Toolbar Buttons state
+      ['superadmin', 'admin', 'supervisor'].forEach(r => {
+        const btn = document.getElementById(`role-btn-${r}`);
+        const card = document.getElementById(`card-role-${r}`);
+        if (r === roleKey) {
+          btn.className = "role-btn flex items-center gap-2 px-space-md py-2 rounded-lg text-body-md-medium font-body-md-medium bg-surface-container-lowest text-primary shadow-xs transition-all duration-150";
+          if (card) card.classList.add('ring-2', 'ring-primary');
+        } else {
+          btn.className = "role-btn flex items-center gap-2 px-space-md py-2 rounded-lg text-body-md-medium font-body-md-medium text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low transition-all duration-150";
+          if (card) card.classList.remove('ring-2', 'ring-primary');
+        }
+      });
+
+      // Update Context Banner
+      const bannerTitle = document.getElementById("banner-role-title");
+      const bannerDesc = document.getElementById("banner-role-desc");
+      const sidebarIndicator = document.getElementById("sidebar-role-indicator");
+      
+      if (bannerTitle) bannerTitle.innerText = config.title;
+      if (bannerDesc) bannerDesc.innerText = config.desc;
+      if (sidebarIndicator) sidebarIndicator.innerText = config.indicator;
+
+      // Dynamically toggle Sidebar Menu groups based on permissions
+      const menuGroups = document.querySelectorAll(".menu-group");
+      menuGroups.forEach(group => {
+        const groupType = group.getAttribute("data-group");
+        if (!groupType || groupType === "all") {
+          group.style.display = "block";
+        } else if (config.visibleGroups.includes(groupType)) {
+          group.style.display = "block";
+        } else {
+          group.style.display = "none";
+        }
+      });
+
+      // Toggle Supervisor vs General dashboard text
+      const dashboardText = document.querySelector('[data-menu-id="dashboard"] .menu-text');
+      if (dashboardText) {
+        dashboardText.innerText = config.activeMenuText;
+      }
+
+      // Hide or show specific sub-items for supervisor (e.g., Device, Master Shift)
+      const deviceItem = document.querySelector('[data-menu-id="device"]');
+      if (deviceItem) {
+        deviceItem.style.display = (roleKey === 'supervisor') ? 'none' : 'flex';
+      }
+
+      // API docs link
+      const apiLink = document.getElementById("footer-api-link");
+      if (apiLink) {
+        apiLink.style.display = config.showApi ? 'flex' : 'none';
+      }
+    }
+  </script>
+</body></html>

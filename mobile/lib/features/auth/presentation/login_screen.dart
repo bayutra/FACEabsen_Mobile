@@ -194,6 +194,9 @@ class _LoginScreenState extends State<LoginScreen> {
       if (reason == 'PENDING_APPROVAL') {
         return 'Akun menunggu persetujuan admin. Coba lagi setelah disetujui.';
       }
+      if (reason == 'DASHBOARD_ONLY_ROLE') {
+        return 'Akun admin/supervisor hanya bisa masuk lewat dashboard web.';
+      }
       return 'Akun dikunci sementara. Hubungi Kepegawaian.';
     }
     if (code == 409) return 'Perangkat ini sudah terdaftar pada akun lain.';

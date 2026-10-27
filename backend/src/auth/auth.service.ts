@@ -31,6 +31,9 @@ interface RoleRow {
 const DUMMY_HASH =
   '$argon2id$v=19$m=65536,t=3,p=4$AAAAAAAAAAAAAAAAAAAAAA$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
 
+/** Peran yang area kerjanya hanya ada di dashboard web. */
+const DASHBOARD_ONLY_ROLES = new Set(['SUPERVISOR', 'ADMIN', 'SUPER_ADMIN']);
+
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
@@ -138,6 +141,27 @@ export class AuthService {
       });
     }
 
+    const roles = (user.userRoles as RoleRow[]).map((ur) => ur.role.name);
+    // Peran pengelola hanya boleh masuk lewat dashboard web. Mobile tetap
+    // menolak walau kredensial benar agar mode admin tidak ada di ponsel.
+    if (
+      dto.client === 'MOBILE' &&
+      roles.some((role) => DASHBOARD_ONLY_ROLES.has(role))
+    ) {
+      await this.audit.log({
+        actorId: user.id,
+        action: 'LOGIN_FAILED',
+        ipAddress: meta.ip,
+        result: 'DENIED',
+        metadata: { reason: 'DASHBOARD_ONLY_ROLE', roles },
+      });
+      throw new ForbiddenException({
+        reason: 'DASHBOARD_ONLY_ROLE',
+        message:
+          'Akun admin/supervisor hanya dapat masuk melalui dashboard web',
+      });
+    }
+
     await this.prisma.user.update({
       where: { id: user.id },
       data: { failedLoginAttempts: 0, lockedUntil: null },
@@ -159,7 +183,6 @@ export class AuthService {
       };
     }
 
-    const roles = (user.userRoles as RoleRow[]).map((ur) => ur.role.name);
     const session = await this.createSession(user.id, dto.deviceId, meta);
     const accessToken = await this.signAccess(
       user.id,

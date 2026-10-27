@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+
+<html class="light" lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>RS Absen - Portal Autentikasi Pengawas &amp; Tata Kelola Kehadiran Klinis</title>
+<!-- Fonts & Material Symbols -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Config verbatum from specification -->
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "surface-container-low": "#eff4ff",
+            "on-tertiary-fixed": "#00201d",
+            "background": "#f8f9ff",
+            "tertiary": "#005c54",
+            "surface-container": "#e5eeff",
+            "on-secondary-container": "#00476e",
+            "surface-tint": "#006a63",
+            "inverse-surface": "#213145",
+            "on-primary-fixed": "#00201d",
+            "inverse-on-surface": "#eaf1ff",
+            "surface-dim": "#cbdbf5",
+            "on-secondary": "#ffffff",
+            "outline": "#6e7977",
+            "on-surface": "#0b1c30",
+            "on-secondary-fixed-variant": "#004b73",
+            "on-error": "#ffffff",
+            "on-surface-variant": "#3e4947",
+            "on-primary": "#ffffff",
+            "surface-bright": "#f8f9ff",
+            "secondary-fixed": "#cce5ff",
+            "on-tertiary-fixed-variant": "#005049",
+            "primary-container": "#0f766e",
+            "on-primary-container": "#a3faef",
+            "surface-container-highest": "#d3e4fe",
+            "on-secondary-fixed": "#001d31",
+            "tertiary-fixed": "#89f5e7",
+            "error": "#ba1a1a",
+            "surface": "#f8f9ff",
+            "primary": "#005c55",
+            "surface-container-high": "#dce9ff",
+            "secondary": "#006398",
+            "inverse-primary": "#80d5cb",
+            "primary-fixed-dim": "#80d5cb",
+            "tertiary-fixed-dim": "#6bd8cb",
+            "error-container": "#ffdad6",
+            "surface-container-lowest": "#ffffff",
+            "on-error-container": "#93000a",
+            "primary-fixed": "#9cf2e8",
+            "on-tertiary": "#ffffff",
+            "tertiary-container": "#00776d",
+            "secondary-fixed-dim": "#93ccff",
+            "outline-variant": "#bdc9c6",
+            "surface-variant": "#d3e4fe",
+            "secondary-container": "#5bb8fe",
+            "on-background": "#0b1c30",
+            "on-tertiary-container": "#91fdef",
+            "on-primary-fixed-variant": "#00504a"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "space-xl": "2rem",
+            "gutter": "1.25rem",
+            "margin-desktop": "2rem",
+            "margin-tablet": "1.5rem",
+            "space-md": "0.75rem",
+            "space-xs": "0.25rem",
+            "margin": "1rem",
+            "gutter-desktop": "1.5rem",
+            "space-sm": "0.5rem",
+            "space-lg": "1.25rem"
+          },
+          "fontFamily": {
+            "body-md-medium": [
+              "Inter"
+            ],
+            "label-md": [
+              "Inter"
+            ],
+            "headline-md": [
+              "Inter"
+            ],
+            "label-sm": [
+              "Inter"
+            ],
+            "headline-lg": [
+              "Inter"
+            ],
+            "headline-lg-mobile": [
+              "Inter"
+            ],
+            "tabular-data": [
+              "Inter"
+            ],
+            "body-lg": [
+              "Inter"
+            ],
+            "headline-xl-mobile": [
+              "Inter"
+            ],
+            "headline-xl": [
+              "Inter"
+            ],
+            "body-md": [
+              "Inter"
+            ],
+            "body-sm": [
+              "Inter"
+            ]
+          },
+          "fontSize": {
+            "body-md-medium": [
+              "14px",
+              {
+                "lineHeight": "20px",
+                "fontWeight": "500"
+              }
+            ],
+            "label-md": [
+              "12px",
+              {
+                "lineHeight": "16px",
+                "letterSpacing": "0.02em",
+                "fontWeight": "600"
+              }
+            ],
+            "headline-md": [
+              "18px",
+              {
+                "lineHeight": "26px",
+                "letterSpacing": "-0.01em",
+                "fontWeight": "600"
+              }
+            ],
+            "label-sm": [
+              "11px",
+              {
+                "lineHeight": "14px",
+                "letterSpacing": "0.04em",
+                "fontWeight": "500"
+              }
+            ],
+            "headline-lg": [
+              "24px",
+              {
+                "lineHeight": "32px",
+                "letterSpacing": "-0.015em",
+                "fontWeight": "600"
+              }
+            ],
+            "headline-lg-mobile": [
+              "20px",
+              {
+                "lineHeight": "28px",
+                "letterSpacing": "-0.01em",
+                "fontWeight": "600"
+              }
+            ],
+            "tabular-data": [
+              "13px",
+              {
+                "lineHeight": "18px",
+                "fontWeight": "500"
+              }
+            ],
+            "body-lg": [
+              "16px",
+              {
+                "lineHeight": "24px",
+                "fontWeight": "400"
+              }
+            ],
+            "headline-xl-mobile": [
+              "26px",
+              {
+                "lineHeight": "34px",
+                "letterSpacing": "-0.01em",
+                "fontWeight": "700"
+              }
+            ],
+            "headline-xl": [
+              "32px",
+              {
+                "lineHeight": "40px",
+                "letterSpacing": "-0.02em",
+                "fontWeight": "700"
+              }
+            ],
+            "body-md": [
+              "14px",
+              {
+                "lineHeight": "20px",
+                "fontWeight": "400"
+              }
+            ],
+            "body-sm": [
+              "13px",
+              {
+                "lineHeight": "18px",
+                "fontWeight": "400"
+              }
+            ]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    /* Subtle clinical hygiene patterns & micro-shadow rules */
+    .clinical-card {
+      background: #FFFFFF;
+      border: 1px solid #E2E8F0;
+      box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.04), 0 1px 2px -1px rgba(15, 23, 42, 0.02);
+    }
+    .clinical-card-elevated {
+      background: #FFFFFF;
+      border: 1px solid #CBD5E1;
+      box-shadow: 0 4px 6px -1px rgba(15, 23, 42, 0.07), 0 2px 4px -2px rgba(15, 23, 42, 0.05);
+    }
+    .input-otp-box:focus {
+      border-color: #0F766E;
+      box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.15);
+      outline: none;
+    }
+    input:focus {
+      border-color: #0F766E !important;
+      box-shadow: 0 0 0 2px rgba(15, 118, 110, 0.15) !important;
+      outline: none !important;
+    }
+    .pulse-dot {
+      animation: pulse-opac 2s infinite ease-in-out;
+    }
+    @keyframes pulse-opac {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.9); }
+    }
+  </style>
+</head>
+<body class="bg-background text-on-surface min-h-screen flex flex-col font-body-md text-body-md antialiased selection:bg-primary-fixed selection:text-on-primary-fixed">
+<!-- Top System Announcement & Network Compliance Ribbon -->
+<header class="w-full bg-surface-container-lowest border-b border-outline-variant/30 py-space-xs px-margin-desktop text-on-surface-variant">
+<div class="max-w-[1440px] mx-auto flex items-center justify-between text-label-sm font-label-sm">
+<div class="flex items-center gap-space-sm">
+<span class="inline-flex items-center justify-center p-0.5 rounded-full bg-primary/10 text-primary">
+<span class="material-symbols-outlined text-[16px]">verified_user</span>
+</span>
+<span class="font-body-md-medium text-on-surface">Portal Autentikasi Pengawas &amp; Tata Kelola Kehadiran Klinis</span>
+<span class="hidden md:inline-block text-outline-variant">|</span>
+<span class="hidden md:inline-flex items-center gap-1 text-on-surface-variant">
+<span class="w-2 h-2 rounded-full bg-[#10B981] inline-block"></span>
+          Jaringan Intranet Terproteksi SIMRS Sehat Medika
+        </span>
+</div>
+<div class="flex items-center gap-space-md font-tabular-data text-tabular-data">
+<div class="flex items-center gap-1.5 text-on-surface-variant bg-surface-container-low px-2.5 py-0.5 rounded border border-outline-variant/20">
+<span class="material-symbols-outlined text-[15px] text-primary">wifi_lock</span>
+<span>IP 10.12.4.88 (Aman)</span>
+</div>
+<div class="hidden sm:flex items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined text-[15px]">lock</span>
+<span>SSL 256-Bit</span>
+</div>
+</div>
+</div>
+</header>
+<!-- Main Canvas Container: 1440px Fluid Administrative Layout -->
+<main class="flex-1 flex items-center justify-center py-space-xl px-margin-tablet lg:px-margin-desktop">
+<div class="w-full max-w-[1240px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-gutter-desktop items-stretch">
+<!-- LEFT SECTION: Two-Factor Hospital Credential Form (7 Columns on Desktop) -->
+<section class="lg:col-span-7 flex flex-col justify-between clinical-card rounded-xl p-space-lg md:p-space-xl">
+<div>
+<!-- Institutional Header Bar -->
+<div class="flex items-start justify-between pb-space-lg border-b border-outline-variant/25">
+<div class="flex items-center gap-space-md">
+<div class="w-12 h-12 rounded-xl bg-primary-container text-on-primary flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined text-[28px]" style="font-variation-settings: 'FILL' 1;">local_hospital</span>
+</div>
+<div>
+<div class="flex items-center gap-2">
+<h1 class="text-headline-lg font-headline-lg text-primary tracking-tight">RS Absen</h1>
+<span class="px-2 py-0.5 rounded bg-surface-container text-secondary text-label-sm font-label-sm font-semibold border border-secondary-fixed">v4.2 PRO</span>
+</div>
+<p class="text-body-sm font-body-sm text-on-surface-variant">RSUD Sehat Medika Pusat</p>
+</div>
+</div>
+<!-- Restricted Access Security Pill Badge -->
+<div class="hidden sm:flex items-center gap-1.5 bg-[#FFFBEB] text-[#92400E] border border-[#FDE68A] px-2.5 py-1 rounded-lg text-label-sm font-label-sm">
+<span class="w-2 h-2 rounded-full bg-[#F59E0B] pulse-dot"></span>
+<span>Akses Khusus Pengawas Medis</span>
+</div>
+</div>
+<!-- Step Progression Ribbon -->
+<div class="mt-space-lg mb-space-lg bg-surface-container-low rounded-lg p-space-sm border border-outline-variant/20 flex items-center justify-between">
+<div class="flex items-center gap-space-sm flex-1">
+<div class="w-7 h-7 rounded-full bg-primary text-on-primary flex items-center justify-center text-label-md font-label-md font-bold">1</div>
+<div>
+<div class="text-label-md font-label-md text-on-surface font-semibold leading-tight">Identitas &amp; Sandi</div>
+<div class="text-[11px] text-on-surface-variant">NIP &amp; Kata Sandi SIMRS</div>
+</div>
+</div>
+<div class="text-outline-variant flex items-center px-2">
+<span class="material-symbols-outlined text-[20px]">chevron_right</span>
+</div>
+<div class="flex items-center gap-space-sm flex-1">
+<div class="w-7 h-7 rounded-full bg-primary-container text-on-primary flex items-center justify-center text-label-md font-label-md font-bold">2</div>
+<div>
+<div class="text-label-md font-label-md text-primary font-semibold leading-tight">Verifikasi 2FA / TOTP</div>
+<div class="text-[11px] text-on-surface-variant">Authenticator 6-Digit</div>
+</div>
+</div>
+</div>
+<!-- Alert Context Box: Operational Restriction Warning -->
+<div class="mb-space-lg p-space-sm bg-surface-container rounded-lg border border-secondary-fixed flex items-start gap-space-sm">
+<span class="material-symbols-outlined text-secondary text-[20px] shrink-0 mt-0.5">shield</span>
+<p class="text-body-sm font-body-sm text-on-secondary-container">
+<span class="font-semibold">Akses Terbatas:</span> Portal ini khusus untuk Supervisor Jaga, Kepala Ruang / Unit Pelayanan Medis, dan Administrator SIMRS. Seluruh aktivitas audit presensi diawasi secara real-time.
+            </p>
+</div>
+<!-- Interactive Combined Dual-State Form -->
+<form class="space-y-space-lg" id="authForm" onsubmit="event.preventDefault();">
+<!-- SECTION 1: Credentials & Role Allocation -->
+<div class="space-y-space-md">
+<!-- Role Selector Segmented Switch -->
+<div>
+<label class="block text-label-md font-label-md text-on-surface-variant mb-1.5">
+                  Peran Otoritas Klinis
+                </label>
+<div class="grid grid-cols-3 gap-2 p-1 bg-surface-container-low rounded-lg border border-outline-variant/30 text-center">
+<label class="cursor-pointer">
+<input checked="" class="peer sr-only" name="role_type" type="radio" value="supervisor"/>
+<div class="py-1.5 px-2 rounded text-body-sm font-body-sm peer-checked:bg-surface-container-lowest peer-checked:text-primary peer-checked:shadow-sm peer-checked:font-semibold text-on-surface-variant transition-all">
+                      Supervisor Jaga
+                    </div>
+</label>
+<label class="cursor-pointer">
+<input class="peer sr-only" name="role_type" type="radio" value="unit_admin"/>
+<div class="py-1.5 px-2 rounded text-body-sm font-body-sm peer-checked:bg-surface-container-lowest peer-checked:text-primary peer-checked:shadow-sm peer-checked:font-semibold text-on-surface-variant transition-all">
+                      Admin Unit / Instalasi
+                    </div>
+</label>
+<label class="cursor-pointer">
+<input class="peer sr-only" name="role_type" type="radio" value="super_admin"/>
+<div class="py-1.5 px-2 rounded text-body-sm font-body-sm peer-checked:bg-surface-container-lowest peer-checked:text-primary peer-checked:shadow-sm peer-checked:font-semibold text-on-surface-variant transition-all">
+                      Super Admin SIMRS
+                    </div>
+</label>
+</div>
+</div>
+<!-- Input: NIP / Email Institusi -->
+<div>
+<div class="flex items-center justify-between mb-1">
+<label class="text-label-md font-label-md text-on-surface" for="nip_input">
+                    ID Pegawai (NIP) atau Email Institusi
+                  </label>
+<span class="text-label-sm font-label-sm text-outline">Terdaftar di Kepegawaian RS</span>
+</div>
+<div class="relative">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-outline">
+<span class="material-symbols-outlined text-[20px]">badge</span>
+</div>
+<input class="w-full h-10 pl-10 pr-3 rounded-lg border border-outline-variant bg-surface-container-lowest text-on-surface font-body-md text-body-md transition-colors" id="nip_input" placeholder="contoh: 198904122014022003 atau admin@rsud-sehatmedika.go.id" required="" type="text" value="198904122014022003"/>
+</div>
+</div>
+<!-- Input: Kata Sandi -->
+<div>
+<div class="flex items-center justify-between mb-1">
+<label class="text-label-md font-label-md text-on-surface" for="password_input">
+                    Kata Sandi
+                  </label>
+<a class="text-label-sm font-label-sm text-secondary hover:text-primary font-medium" href="#reset-dialog" onclick="alert('Silakan hubungi Helpdesk IT Ekstensi 1102 atau ajukan reset mandiri via email SIMRS resmi.');">
+                    Lupa Kata Sandi?
+                  </a>
+</div>
+<div class="relative">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-outline">
+<span class="material-symbols-outlined text-[20px]">key</span>
+</div>
+<input class="w-full h-10 pl-10 pr-10 rounded-lg border border-outline-variant bg-surface-container-lowest text-on-surface font-body-md text-body-md transition-colors" id="password_input" required="" type="password" value="MedikaPresensi#2025"/>
+<button class="absolute inset-y-0 right-0 pr-3 flex items-center text-outline hover:text-on-surface" onclick="togglePasswordVisibility()" type="button">
+<span class="material-symbols-outlined text-[20px]" id="eyeIcon">visibility</span>
+</button>
+</div>
+</div>
+</div>
+<!-- SECTION 2: 2FA / TOTP Authenticator Card -->
+<div class="p-space-md rounded-xl bg-surface-container-low border border-primary/25 space-y-space-md">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-sm">
+<div class="w-8 h-8 rounded-lg bg-primary-container text-on-primary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]">phonelink_lock</span>
+</div>
+<div>
+<h2 class="text-body-md-medium font-body-md-medium text-on-surface">Autentikasi Dua Faktor (2FA)</h2>
+<p class="text-body-sm font-body-sm text-on-surface-variant">Wajib bagi otorisasi jadwal jaga dan pengawasan presensi</p>
+</div>
+</div>
+<!-- Countdown Pill Indicator -->
+<div class="flex items-center gap-1.5 px-2.5 py-1 bg-surface-container-lowest rounded-full border border-outline-variant/40 text-label-sm font-label-sm font-tabular-data text-primary">
+<span class="material-symbols-outlined text-[15px] animate-spin">sync</span>
+<span id="countdown">Kode berlaku 28 detik</span>
+</div>
+</div>
+<div>
+<p class="text-body-sm font-body-sm text-on-surface mb-2">
+                  Masukkan 6-digit kode verifikasi dari aplikasi Google Authenticator atau Token Keamanan Rumah Sakit:
+                </p>
+<!-- 6 Digit Input Matrix -->
+<div class="flex items-center justify-between max-w-sm gap-2">
+<input class="input-otp-box w-12 h-12 text-center text-headline-md font-headline-md font-tabular-data rounded-lg border border-outline-variant bg-surface-container-lowest text-on-surface" maxlength="1" type="text" value="7"/>
+<input class="input-otp-box w-12 h-12 text-center text-headline-md font-headline-md font-tabular-data rounded-lg border border-outline-variant bg-surface-container-lowest text-on-surface" maxlength="1" type="text" value="4"/>
+<input class="input-otp-box w-12 h-12 text-center text-headline-md font-headline-md font-tabular-data rounded-lg border border-outline-variant bg-surface-container-lowest text-on-surface" maxlength="1" type="text" value="2"/>
+<span class="text-outline font-bold">-</span>
+<input class="input-otp-box w-12 h-12 text-center text-headline-md font-headline-md font-tabular-data rounded-lg border border-outline-variant bg-surface-container-lowest text-on-surface" maxlength="1" type="text" value="8"/>
+<input class="input-otp-box w-12 h-12 text-center text-headline-md font-headline-md font-tabular-data rounded-lg border border-outline-variant bg-surface-container-lowest text-on-surface" maxlength="1" type="text" value="9"/>
+<input class="input-otp-box w-12 h-12 text-center text-headline-md font-headline-md font-tabular-data rounded-lg border border-primary bg-surface-container-lowest text-primary ring-2 ring-primary/20" maxlength="1" placeholder="•" type="text"/>
+</div>
+</div>
+<!-- Fallback Options -->
+<div class="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-outline-variant/20 text-label-sm font-label-sm">
+<button class="text-secondary hover:text-primary flex items-center gap-1 font-medium transition-colors" type="button">
+<span class="material-symbols-outlined text-[16px]">sms</span>
+                  Kirim kode darurat via SMS / Email resmi
+                </button>
+<button class="text-on-surface-variant hover:text-on-surface flex items-center gap-1 transition-colors" type="button">
+<span class="material-symbols-outlined text-[16px]">key_off</span>
+                  Gunakan Kode Pemulihan Cadangan
+                </button>
+</div>
+</div>
+<!-- Device Trust Checkbox -->
+<div class="flex items-start gap-space-sm">
+<input checked="" class="mt-1 w-4 h-4 text-primary rounded border-outline-variant focus:ring-primary focus:ring-offset-0" id="remember_session" type="checkbox"/>
+<label class="text-body-sm font-body-sm text-on-surface" for="remember_session">
+                Ingat sesi perangkat kerja medis terverifikasi ini (12 jam)
+                <span class="block text-label-sm font-label-sm text-on-surface-variant">Hanya centang pada workstation ruang rawat atau komputer dinas resmi RSUD Sehat Medika.</span>
+</label>
+</div>
+<!-- Form Action Buttons -->
+<div class="pt-space-sm space-y-space-sm">
+<button class="w-full h-11 bg-primary hover:bg-[#0D9488] active:bg-[#115E59] text-on-primary font-body-md-medium text-body-md-medium rounded-lg flex items-center justify-center gap-2 shadow-sm transition-all focus:ring-2 focus:ring-primary focus:ring-offset-2" onclick="simulateAuthSuccess()" type="submit">
+<span class="material-symbols-outlined text-[20px]">verified</span>
+<span>Verifikasi &amp; Masuk ke Dashboard</span>
+</button>
+<button class="w-full h-9 bg-transparent hover:bg-surface-container text-on-surface-variant hover:text-on-surface font-body-md text-body-md rounded-lg flex items-center justify-center gap-1.5 transition-colors" onclick="resetFormState()" type="button">
+<span class="material-symbols-outlined text-[18px]">history</span>
+<span>Kembali ke Input Kredensial</span>
+</button>
+</div>
+</form>
+</div>
+<!-- Terminal Status Metadata Footer -->
+<div class="mt-space-lg pt-space-md border-t border-outline-variant/20 flex flex-wrap items-center justify-between gap-2 text-label-sm font-label-sm text-on-surface-variant">
+<div class="flex items-center gap-1.5 font-tabular-data">
+<span class="w-2 h-2 rounded-full bg-[#10B981]"></span>
+<span>Server Presensi: Normal (Latensi 24ms)</span>
+</div>
+<div>
+<span>ID Stasiun Kerja: <span class="font-tabular-data text-on-surface">WS-SEHAT-ICU03</span></span>
+</div>
+</div>
+</section>
+<!-- RIGHT SECTION: Security & Institutional Trust Assurance Panel (5 Columns on Desktop) -->
+<aside class="lg:col-span-5 flex flex-col justify-between space-y-gutter">
+<!-- Hospital Clinical Compliance Badge Card -->
+<div class="clinical-card rounded-xl p-space-lg">
+<div class="flex items-center justify-between mb-space-md">
+<div class="flex items-center gap-space-sm">
+<span class="w-9 h-9 rounded-lg bg-surface-container text-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-[22px]">policy</span>
+</span>
+<div>
+<h3 class="text-body-md-medium font-body-md-medium text-on-surface">Kepatuhan SIMRS &amp; KARS</h3>
+<p class="text-label-sm font-label-sm text-on-surface-variant">Akreditasi Paripurna Kemenkes RI</p>
+</div>
+</div>
+<span class="px-2 py-0.5 rounded text-label-sm font-label-sm font-bold bg-[#ECFDF5] text-[#065F46] border border-[#A7F3D0]">
+              ISO 27001
+            </span>
+</div>
+<p class="text-body-sm font-body-sm text-on-surface-variant mb-space-md">
+            Sistem absensi ini terintegrasi langsung dengan database kepegawaian RSUD Sehat Medika Pusat dan diaudit sesuai standar keamanan rekam medis dan data tenaga kesehatan nasional.
+          </p>
+<!-- Audit Metrics Bento Grid -->
+<div class="grid grid-cols-2 gap-space-sm">
+<div class="p-space-sm bg-surface-container-low rounded-lg border border-outline-variant/30">
+<div class="text-label-sm font-label-sm text-on-surface-variant">Status Akses IP</div>
+<div class="text-body-md-medium font-body-md-medium text-[#065F46] flex items-center gap-1 mt-0.5">
+<span class="material-symbols-outlined text-[16px]">check_circle</span>
+                Intranet RS Resmi
+              </div>
+<div class="text-[11px] font-tabular-data text-outline mt-1">10.12.0.0/16 Whitelist</div>
+</div>
+<div class="p-space-sm bg-surface-container-low rounded-lg border border-outline-variant/30">
+<div class="text-label-sm font-label-sm text-on-surface-variant">Integritas Shift</div>
+<div class="text-body-md-medium font-body-md-medium text-primary flex items-center gap-1 mt-0.5">
+<span class="material-symbols-outlined text-[16px]">verified</span>
+                Sinkron SIMRS
+              </div>
+<div class="text-[11px] font-tabular-data text-outline mt-1">3 Unit Jaga Aktif</div>
+</div>
+</div>
+</div>
+<!-- Security SOP Checklist Card -->
+<div class="clinical-card rounded-xl p-space-lg flex-1 flex flex-col justify-between">
+<div>
+<div class="flex items-center gap-2 mb-space-sm">
+<span class="material-symbols-outlined text-secondary text-[20px]">gavel</span>
+<h3 class="text-body-md-medium font-body-md-medium text-on-surface">Panduan SOP Keamanan Akses</h3>
+</div>
+<ul class="space-y-space-sm text-body-sm font-body-sm text-on-surface-variant">
+<li class="flex items-start gap-space-sm">
+<span class="material-symbols-outlined text-primary text-[18px] shrink-0 mt-0.5">timer</span>
+<span><strong class="text-on-surface">Time-out Otomatis:</strong> Sesi pengawas berakhir otomatis jika idle selama 15 menit untuk mencegah penyalahgunaan workstation bersama.</span>
+</li>
+<li class="flex items-start gap-space-sm">
+<span class="material-symbols-outlined text-primary text-[18px] shrink-0 mt-0.5">fingerprint</span>
+<span><strong class="text-on-surface">Audit Verifikasi Biometrik:</strong> Persetujuan anomali presensi &amp; tukar dinas perawat mewajibkan otorisasi token sekunder.</span>
+</li>
+<li class="flex items-start gap-space-sm">
+<span class="material-symbols-outlined text-primary text-[18px] shrink-0 mt-0.5">no_accounts</span>
+<span><strong class="text-on-surface">Dilarang Berbagi Kredensial:</strong> NIP dan token 2FA melekat pada hak pertanggungjawaban hukum dinas medis.</span>
+</li>
+</ul>
+</div>
+<!-- Helpdesk Support Contact Box -->
+<div class="mt-space-lg p-space-sm bg-surface-container rounded-lg border border-secondary-fixed">
+<div class="flex items-center justify-between mb-1">
+<div class="flex items-center gap-1.5 text-secondary font-body-md-medium text-body-md-medium">
+<span class="material-symbols-outlined text-[18px]">support_agent</span>
+<span>Komite SIMRS &amp; Helpdesk TI 24 Jam</span>
+</div>
+<span class="text-label-sm font-label-sm px-1.5 py-0.5 bg-surface-container-lowest rounded text-secondary font-semibold">Siaga IGD/Rawat</span>
+</div>
+<p class="text-body-sm font-body-sm text-on-secondary-container">
+              Mengalami kendala otentikasi token atau mutasi dinas?
+            </p>
+<div class="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-label-sm font-label-sm font-tabular-data text-on-surface">
+<div class="flex items-center gap-1">
+<span class="text-outline">Telepon Internal:</span>
+<strong class="text-primary">Ext. 1102 / 1105</strong>
+</div>
+<div class="flex items-center gap-1">
+<span class="text-outline">Email:</span>
+<strong class="text-primary">it-support@rsud-sehatmedika.go.id</strong>
+</div>
+</div>
+</div>
+</div>
+<!-- Shift Live Snapshot Ribbon -->
+<div class="p-space-sm bg-surface-container-lowest rounded-xl border border-outline-variant/30 flex items-center justify-between text-body-sm font-body-sm">
+<div class="flex items-center gap-space-sm">
+<div class="w-7 h-7 rounded-full bg-[#ECFDF5] text-[#065F46] flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">schedule</span>
+</div>
+<div>
+<span class="text-on-surface font-semibold">Shift Berjalan:</span>
+<span class="text-on-surface-variant"> Shift Pagi (07:00 - 14:00 WIB)</span>
+</div>
+</div>
+<span class="text-label-sm font-label-sm text-[#065F46] font-semibold bg-[#ECFDF5] px-2 py-0.5 rounded border border-[#A7F3D0]">
+            Kapasitas 98.4%
+          </span>
+</div>
+</aside>
+</div>
+</main>
+<!-- Global Footer Compliance Section -->
+<footer class="w-full bg-surface-container-lowest border-t border-outline-variant/30 py-space-md px-margin-desktop text-on-surface-variant">
+<div class="max-w-[1440px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-space-sm text-label-sm font-label-sm">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[18px]">domain_verification</span>
+<span>Hak Cipta © 2025 <strong>RSUD Sehat Medika Pusat</strong> - Sistem Presensi &amp; Audit Klinis v4.2. Terenkripsi SSL 256-bit.</span>
+</div>
+<div class="flex items-center gap-4 text-outline">
+<a class="hover:text-primary transition-colors" href="#kebijakan">Kebijakan Privasi Rekam Medis</a>
+<span>•</span>
+<a class="hover:text-primary transition-colors" href="#sop">SOP Kehadiran Tenaga Medis</a>
+<span>•</span>
+<a class="hover:text-primary transition-colors" href="#status">Status Cloud Klaster RS</a>
+</div>
+</div>
+</footer>
+<!-- Micro-interactions Script -->
+<script>
+    // Password Visibility Toggle
+    function togglePasswordVisibility() {
+      const passwordInput = document.getElementById('password_input');
+      const eyeIcon = document.getElementById('eyeIcon');
+      if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        eyeIcon.textContent = 'visibility_off';
+      } else {
+        passwordInput.type = 'password';
+        eyeIcon.textContent = 'visibility';
+      }
+    }
+
+    // OTP Box Navigation & Autofocus Logic
+    const otpInputs = document.querySelectorAll('.input-otp-box');
+    otpInputs.forEach((input, index) => {
+      input.addEventListener('keyup', (e) => {
+        if (e.key >= '0' && e.key <= '9') {
+          if (index < otpInputs.length - 1) {
+            otpInputs[index + 1].focus();
+          }
+        } else if (e.key === 'Backspace') {
+          if (index > 0 && !input.value) {
+            otpInputs[index - 1].focus();
+          }
+        }
+      });
+    });
+
+    // 2FA Countdown Simulation
+    let seconds = 28;
+    const countdownEl = document.getElementById('countdown');
+    setInterval(() => {
+      seconds--;
+      if (seconds <= 0) {
+        seconds = 30;
+      }
+      if (countdownEl) {
+        countdownEl.textContent = `Kode berlaku ${seconds} detik`;
+      }
+    }, 1000);
+
+    // Authentication Success Mock Feedback
+    function simulateAuthSuccess() {
+      const btn = event.currentTarget;
+      const originalText = btn.innerHTML;
+      btn.innerHTML = `<span class="material-symbols-outlined text-[20px] animate-spin">sync</span><span>Memvalidasi Kredensial Medis...</span>`;
+      btn.disabled = true;
+
+      setTimeout(() => {
+        btn.innerHTML = `<span class="material-symbols-outlined text-[20px]">check_circle</span><span>Otorisasi Berhasil! Mengalihkan...</span>`;
+        btn.classList.remove('bg-primary');
+        btn.classList.add('bg-[#065F46]');
+        setTimeout(() => {
+          alert('Autentikasi Sukses: Selamat bertugas di Portal Pengawas RS Absen (RSUD Sehat Medika Pusat).');
+          btn.innerHTML = originalText;
+          btn.disabled = false;
+          btn.classList.add('bg-primary');
+          btn.classList.remove('bg-[#065F46]');
+        }, 800);
+      }, 1200);
+    }
+
+    // Reset Form Input State
+    function resetFormState() {
+      document.getElementById('nip_input').value = '';
+      document.getElementById('password_input').value = '';
+      otpInputs.forEach(i => i.value = '');
+      otpInputs[0].focus();
+    }
+  </script>
+</body></html>
