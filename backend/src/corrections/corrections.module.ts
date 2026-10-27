@@ -1,11 +1,12 @@
 import { Module } from '@nestjs/common';
 import { AuditModule } from '../audit/audit.module.js';
 import { AuthModule } from '../auth/auth.module.js';
+import { PushModule } from '../push/push.module.js';
 import { CorrectionsController } from './corrections.controller.js';
 import { CorrectionsService } from './corrections.service.js';
 
 @Module({
-  imports: [AuthModule, AuditModule],
+  imports: [AuthModule, AuditModule, PushModule],
   controllers: [CorrectionsController],
   providers: [CorrectionsService],
   exports: [CorrectionsService],

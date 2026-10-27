@@ -1,10 +1,10 @@
+import 'dart:async';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
 import '../validation/password_policy.dart';
-import '../../features/admin/domain/admin_access.dart';
-import '../../features/admin/presentation/admin_home_screen.dart';
 import '../../features/attendance/data/attendance_repository.dart';
 import '../../features/attendance/presentation/attendance_screen.dart';
 import '../../features/attendance/presentation/history_screen.dart';
@@ -17,6 +17,8 @@ import '../../features/face/data/face_repository.dart';
 import '../../features/face/presentation/face_registration_screen.dart';
 import '../../features/leave/data/leave_repository.dart';
 import '../../features/leave/presentation/leave_list_screen.dart';
+import '../../features/notifications/data/push_notification_service.dart';
+import '../../features/notifications/domain/push_destination.dart';
 import '../../features/profile/data/profile_repository.dart';
 import '../../features/profile/presentation/profile_screen.dart';
 import '../../features/home/presentation/home_dashboard.dart';
@@ -38,6 +40,7 @@ class HomeShell extends StatefulWidget {
     required this.schedules,
     required this.profiles,
     required this.preflight,
+    required this.push,
     required this.onLogout,
     required this.dio,
   });
@@ -53,19 +56,20 @@ class HomeShell extends StatefulWidget {
   final ScheduleRepository schedules;
   final ProfileRepository profiles;
   final PreflightRepository preflight;
+  final PushNotificationService push;
   final VoidCallback onLogout;
 
   @override
   State<HomeShell> createState() => _HomeShellState();
 }
 
-class _HomeShellState extends State<HomeShell> {
+class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
   int _index = 0;
+  StreamSubscription<PushDestination>? _pushTapSub;
   bool _biometricConsent = true;
   int _pendingDeviceCount = 0;
   String _displayName = 'Karyawan';
   String _employeeNo = '—';
-  List<String> _roles = const <String>[];
 
   void _go(int i) => setState(() => _index = i);
 
@@ -187,6 +191,8 @@ class _HomeShellState extends State<HomeShell> {
       ),
     );
     if (confirmed != true) return;
+    // Lepas token selagi sesi masih berlaku supaya notifikasi akun ini berhenti.
+    await widget.push.unregisterToken();
     try {
       await widget.auth.logout();
     } catch (_) {}
@@ -201,7 +207,6 @@ class _HomeShellState extends State<HomeShell> {
           _displayName = snap.name == '—' ? 'Karyawan' : snap.name;
           _employeeNo = snap.employeeNo;
           _biometricConsent = snap.biometricConsent;
-          _roles = snap.roles;
         });
       }
     } catch (_) {}
@@ -234,8 +239,61 @@ class _HomeShellState extends State<HomeShell> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _pushTapSub = widget.push.taps.listen(_handlePushTap);
+    final PushDestination? pending = widget.push.takePendingTap();
+    if (pending != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _handlePushTap(pending);
+      });
+    }
+    unawaited(widget.push.registerToken());
     _syncConsent();
     _loadDeviceCount();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Perangkat yang baru disetujui admin mendaftarkan token pada resume.
+    if (state == AppLifecycleState.resumed) {
+      unawaited(widget.push.registerToken());
+    }
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _pushTapSub?.cancel();
+    super.dispose();
+  }
+
+  void _handlePushTap(PushDestination destination) {
+    if (!mounted) return;
+    switch (destination.target) {
+      case PushTarget.attendance:
+        _push(_preflight());
+      case PushTarget.correction:
+        _push(CorrectionListScreen(
+          corrections: widget.corrections,
+          attendance: widget.attendance,
+          displayName: _displayName,
+          employeeNo: _employeeNo,
+        ));
+      case PushTarget.leave:
+        _push(LeaveListScreen(
+          leaves: widget.leaves,
+          displayName: _displayName,
+          employeeNo: _employeeNo,
+        ));
+      case PushTarget.schedule:
+        _go(2);
+      case PushTarget.handover:
+        _push(HandoverListScreen(dio: widget.dio));
+      case PushTarget.device:
+        _go(3);
+      case PushTarget.unknown:
+        return;
+    }
   }
 
   Future<void> _loadDeviceCount() async {
@@ -257,11 +315,6 @@ class _HomeShellState extends State<HomeShell> {
       onRegisterFace: () => _push(FaceRegistrationScreen(faces: widget.faces)),
       onLogout: _logout,
       onChangePassword: _showChangePassword,
-      onOpenAdmin: canOpenAdminArea(_roles)
-          ? () => _push(
-                AdminHomeScreen(dio: widget.dio, roles: _roles),
-              )
-          : null,
     );
 
     final List<Widget> pages = [
@@ -287,9 +340,6 @@ class _HomeShellState extends State<HomeShell> {
         onOpenSchedule: () => _go(2),
         onOpenProfile: () => _go(3),
         onOpenHistory: () => _go(1),
-        onOpenAdmin: canOpenAdminArea(_roles)
-            ? () => _push(AdminHomeScreen(dio: widget.dio, roles: _roles))
-            : null,
         onOpenHandovers: () => _push(HandoverListScreen(dio: widget.dio)),
       ),
       HistoryScreen(

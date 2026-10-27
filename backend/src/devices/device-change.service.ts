@@ -2,6 +2,7 @@ import {
   ConflictException,
   Injectable,
   NotFoundException,
+  Optional,
   UnauthorizedException,
 } from '@nestjs/common';
 import * as argon2 from 'argon2';
@@ -9,6 +10,7 @@ import { AuditService } from '../audit/audit.service.js';
 import { satisfiesRole } from '../auth/rbac.js';
 import { resolveHospitalScope } from '../auth/tenant-scope.js';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { PushService } from '../push/push.service.js';
 import type {
   CreateChangeRequestDto,
   ListChangeRequestsQuery,
@@ -19,6 +21,7 @@ export class DeviceChangeService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly audit: AuditService,
+    @Optional() private readonly push?: PushService,
   ) {}
 
   async request(
@@ -230,6 +233,11 @@ export class DeviceChangeService {
         metadata: { reason: `replaced-by:${next.id}` },
       });
     }
+    this.push?.notifyEmployee(req.employeeId, {
+      title: 'Perangkat baru sudah aktif',
+      body: 'Penggantian perangkat Anda disetujui. Perangkat baru bisa dipakai untuk presensi.',
+      data: { type: 'device', id, status: 'APPROVED' },
+    });
     return updated;
   }
 
@@ -271,6 +279,11 @@ export class DeviceChangeService {
       targetId: id,
       ipAddress: meta.ip,
       metadata: { note: note ?? null },
+    });
+    this.push?.notifyEmployee(req.employeeId, {
+      title: 'Penggantian perangkat ditolak',
+      body: 'Pengajuan penggantian perangkat Anda ditolak. Buka aplikasi untuk melihat catatan peninjau.',
+      data: { type: 'device', id, status: 'REJECTED' },
     });
     return updated;
   }

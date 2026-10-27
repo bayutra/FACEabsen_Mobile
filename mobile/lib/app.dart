@@ -22,6 +22,8 @@ import 'features/device/data/device_repository.dart';
 import 'features/profile/data/profile_repository.dart';
 import 'features/schedule/data/schedule_repository.dart';
 import 'features/preflight/data/preflight_repository.dart';
+import 'features/notifications/data/push_notification_service.dart';
+import 'features/notifications/data/push_repository.dart';
 import 'core/navigation/home_shell.dart';
 
 class App extends StatelessWidget {
@@ -58,6 +60,7 @@ class _BootstrapGateState extends State<BootstrapGate> {
   late final ScheduleRepository _schedules;
   late final ProfileRepository _profiles;
   late final PreflightRepository _preflight;
+  late final PushNotificationService _push;
 
   bool? _authed;
   Object? _startupError;
@@ -90,6 +93,10 @@ class _BootstrapGateState extends State<BootstrapGate> {
     _preflight = PreflightRepository(
       profiles: _profiles,
       schedules: _schedules,
+    );
+    _push = PushNotificationService(
+      push: PushRepository(dio: _dio),
+      devices: _devices,
     );
     _restore();
   }
@@ -187,6 +194,7 @@ class _BootstrapGateState extends State<BootstrapGate> {
         schedules: _schedules,
         profiles: _profiles,
         preflight: _preflight,
+        push: _push,
         onLogout: _onLoggedOut,
         dio: _dio,
       );

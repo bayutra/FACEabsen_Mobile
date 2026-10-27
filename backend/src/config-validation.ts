@@ -37,4 +37,25 @@ export function validateEnv(env: Record<string, unknown>): void {
   if (!(lowMin > medMin)) {
     throw new Error('RISK_LOW_MIN must be greater than RISK_MEDIUM_MIN');
   }
+
+  // Push notifications are optional. Either point the backend at the Firebase
+  // service-account JSON, or supply the three split credential variables — a
+  // half-configured setup would silently disable delivery, so fail fast.
+  const str = (key: string): string => String(env[key] ?? '').trim();
+  const hasServiceAccount = Boolean(
+    str('FCM_SERVICE_ACCOUNT_PATH') || str('FCM_SERVICE_ACCOUNT_JSON'),
+  );
+  if (!hasServiceAccount) {
+    const parts = ['FCM_PROJECT_ID', 'FCM_CLIENT_EMAIL', 'FCM_PRIVATE_KEY'];
+    const provided = parts.filter((key) => str(key));
+    if (provided.length > 0 && provided.length < parts.length) {
+      throw new Error(
+        `FCM credentials are incomplete: set all of ${parts.join(', ')} (or FCM_SERVICE_ACCOUNT_PATH / FCM_SERVICE_ACCOUNT_JSON).`,
+      );
+    }
+  }
+  const fcmEnabled = str('FCM_ENABLED').toLowerCase();
+  if (fcmEnabled && fcmEnabled !== 'true' && fcmEnabled !== 'false') {
+    throw new Error('FCM_ENABLED must be "true" or "false"');
+  }
 }

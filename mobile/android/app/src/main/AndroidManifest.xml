@@ -5,6 +5,8 @@
     <!-- Release builds need explicit INTERNET (debug/profile manifests
          only grant it for dev). Without this the release APK has no network. -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Android 13+ runtime notification permission (FCM push). -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <!-- camera_android merges RECORD_AUDIO though every controller passes
          enableAudio: false and the app never requests the mic at runtime.
          Strip it so the Play Store never flags a microphone permission. -->
@@ -39,6 +41,11 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+        <!-- FCM uses the channel created by PushNotificationService. Without
+             this meta-data messages fall back to Firebase's default channel. -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="face_absen_notifications" />
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data

@@ -3,19 +3,26 @@ import {
   ForbiddenException,
   Injectable,
   NotFoundException,
+  Optional,
   UnprocessableEntityException,
 } from '@nestjs/common';
 import { AuditService } from '../audit/audit.service.js';
 import { satisfiesRole } from '../auth/rbac.js';
 import { resolveHospitalScope } from '../auth/tenant-scope.js';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { PushService } from '../push/push.service.js';
 import type { CreateLeaveDto, ListLeavesQuery } from './dto.js';
+
+function isoDate(value: Date): string {
+  return value.toISOString().slice(0, 10);
+}
 
 @Injectable()
 export class LeavesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly audit: AuditService,
+    @Optional() private readonly push?: PushService,
   ) {}
 
   async create(
@@ -146,6 +153,11 @@ export class LeavesService {
       ipAddress: meta.ip,
       metadata: { note: note ?? null },
     });
+    this.push?.notifyEmployee(req.employeeId, {
+      title: 'Pengajuan cuti disetujui',
+      body: `Cuti ${isoDate(req.startDate)} – ${isoDate(req.endDate)} telah disetujui.`,
+      data: { type: 'leave', id, status: 'APPROVED' },
+    });
     return updated;
   }
 
@@ -178,6 +190,11 @@ export class LeavesService {
       targetId: id,
       ipAddress: meta.ip,
       metadata: { note: note ?? null },
+    });
+    this.push?.notifyEmployee(req.employeeId, {
+      title: 'Pengajuan cuti ditolak',
+      body: 'Pengajuan cuti Anda ditolak. Buka aplikasi untuk melihat catatan peninjau.',
+      data: { type: 'leave', id, status: 'REJECTED' },
     });
     return updated;
   }

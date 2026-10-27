@@ -280,6 +280,7 @@ model Device {
   sessions        Session[]
   auditLogs       AuditLog[]
   attendances     Attendance[]
+  pushTokens      PushToken[]
   oldChanges      DeviceChangeRequest[] @relation("OldDevice")
   newChanges      DeviceChangeRequest[] @relation("NewDevice")
   // Catatan: index parsial "devices_one_active_per_employee" sudah DIHAPUS
@@ -532,4 +533,19 @@ model Handover {
   @@index([fromEmployeeId])
   @@index([status])
   @@map("handovers")
+}
+
+// ---------------- Push notifications (FCM HTTP v1) ----------------
+
+model PushToken {
+  id         String   @id @default(cuid())
+  deviceId   String   @map("device_id")
+  device     Device   @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  token      String   @unique
+  platform   String // ANDROID | IOS
+  createdAt  DateTime @default(now()) @map("created_at")
+  lastSeenAt DateTime @default(now()) @map("last_seen_at")
+
+  @@index([deviceId])
+  @@map("push_tokens")
 }

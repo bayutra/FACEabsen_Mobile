@@ -5,3 +5,8 @@ dist/
 *.log
 coverage/
 *.tsbuildinfo
+
+# Firebase/GCP service-account keys must never be committed.
+secrets/
+*service-account*.json
+*firebase-adminsdk*.json

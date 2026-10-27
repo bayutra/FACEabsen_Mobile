@@ -34,6 +34,22 @@ describe('validateEnv numeric bounds (M13)', () => {
     expect(() => validateEnv({ RISK_W_FACE: '45' })).not.toThrow();
   });
 
+  it('accepts missing or complete FCM credentials only', () => {
+    expect(() => validateEnv({})).not.toThrow();
+    expect(() => validateEnv({ FCM_PROJECT_ID: 'p' })).toThrow('FCM');
+    expect(() =>
+      validateEnv({
+        FCM_PROJECT_ID: 'p',
+        FCM_CLIENT_EMAIL: 'sa@p.iam.gserviceaccount.com',
+        FCM_PRIVATE_KEY: '-----BEGIN PRIVATE KEY-----',
+      }),
+    ).not.toThrow();
+    expect(() =>
+      validateEnv({ FCM_SERVICE_ACCOUNT_PATH: 'secrets/firebase.json' }),
+    ).not.toThrow();
+    expect(() => validateEnv({ FCM_ENABLED: 'nope' })).toThrow('FCM_ENABLED');
+  });
+
   it('rejects RISK_LOW_MIN <= RISK_MEDIUM_MIN', () => {
     expect(() =>
       validateEnv({ RISK_LOW_MIN: '70', RISK_MEDIUM_MIN: '70' }),

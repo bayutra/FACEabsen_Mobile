@@ -11,6 +11,7 @@ import { AuditService } from '../audit/audit.service.js';
 import { satisfiesRole } from '../auth/rbac.js';
 import { resolveHospitalScope } from '../auth/tenant-scope.js';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { PushService } from '../push/push.service.js';
 import {
   evaluateCheckIn,
   evaluateCheckOut,
@@ -26,6 +27,7 @@ export class CorrectionsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly audit: AuditService,
+    @Optional() private readonly push?: PushService,
     @Optional() config?: ConfigService,
   ) {
     const tz = config?.get('HOSPITAL_TZ', 'Asia/Jakarta') || 'Asia/Jakarta';
@@ -239,6 +241,11 @@ export class CorrectionsService {
       );
       return correction;
     });
+    this.push?.notifyEmployee(req.employeeId, {
+      title: 'Koreksi presensi disetujui',
+      body: `Koreksi tanggal ${workKey} telah disetujui.`,
+      data: { type: 'correction', id, status: 'APPROVED' },
+    });
     return updated;
   }
 
@@ -273,6 +280,11 @@ export class CorrectionsService {
       targetId: id,
       ipAddress: meta.ip,
       metadata: { note: note ?? null },
+    });
+    this.push?.notifyEmployee(req.employeeId, {
+      title: 'Koreksi presensi ditolak',
+      body: 'Pengajuan koreksi Anda ditolak. Buka aplikasi untuk melihat catatan peninjau.',
+      data: { type: 'correction', id, status: 'REJECTED' },
     });
     return updated;
   }

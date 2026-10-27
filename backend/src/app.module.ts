@@ -18,6 +18,7 @@ import { DevicesModule } from './devices/devices.module.js';
 import { EmployeesModule } from './employees/employees.module.js';
 import { FaceModule } from './face/face.module.js';
 import { PrismaModule } from './prisma/prisma.module.js';
+import { PushModule } from './push/push.module.js';
 import { RedisThrottlerStorage } from './rate-limit/redis-storage.js';
 import { UserThrottlerGuard } from './rate-limit/user-throttler.guard.js';
 import { ShiftsModule } from './shifts/shifts.module.js';
@@ -55,6 +56,7 @@ import { UsersModule } from './users/users.module.js';
       },
     }),
     PrismaModule,
+    PushModule,
     AuditModule,
     AttendanceModule,
     CorrectionsModule,
