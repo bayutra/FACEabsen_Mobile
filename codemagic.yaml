@@ -26,7 +26,7 @@ workflows:
     working_directory: mobile
     environment:
       flutter: 3.22.2
-      xcode: 15.3
+      xcode: 15.2
       cocoapods: default
       vars:
         # Alamat default yang dibakar saat build. Bisa diganti dari dalam
