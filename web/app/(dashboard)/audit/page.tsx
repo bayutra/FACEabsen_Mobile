@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { Icon } from '@/components/Icon';
 import {
   DataTable,
   ErrorBanner,
@@ -184,12 +185,26 @@ export default function AuditPage() {
         <Loading />
       ) : (
         <>
-          <DataTable
-            columns={columns}
-            rows={list.data?.data ?? []}
-            rowKey={(row) => row.id}
-            empty="Tidak ada log pada filter ini."
-          />
+          <div className="card">
+            <div className="card-head">
+              <div className="card-head-main">
+                <span className="card-head-icon">
+                  <Icon name="list" size={18} />
+                </span>
+                <div>
+                  <h2 className="card-title">Jejak audit</h2>
+                  <p className="card-sub">Aksi penting, login, dan perubahan data.</p>
+                </div>
+              </div>
+              <span className="count-badge">{list.data?.pagination?.totalItems ?? 0} log</span>
+            </div>
+            <DataTable
+              columns={columns}
+              rows={list.data?.data ?? []}
+              rowKey={(row) => row.id}
+              empty="Tidak ada log pada filter ini."
+            />
+          </div>
           <Pagination
             page={list.data?.pagination?.page ?? page}
             totalPages={list.data?.pagination?.totalPages ?? 1}

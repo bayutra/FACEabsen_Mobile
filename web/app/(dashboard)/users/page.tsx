@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, type FormEvent } from 'react';
+import { Icon } from '@/components/Icon';
 import {
   DataTable,
   ErrorBanner,
@@ -232,12 +233,26 @@ export default function UsersPage() {
         <Loading />
       ) : (
         <>
-          <DataTable
-            columns={columns}
-            rows={list.data?.data ?? []}
-            rowKey={(row) => row.id}
-            empty="Tidak ada pengguna pada filter ini."
-          />
+          <div className="card">
+            <div className="card-head">
+              <div className="card-head-main">
+                <span className="card-head-icon">
+                  <Icon name="users" size={18} />
+                </span>
+                <div>
+                  <h2 className="card-title">Pengguna & peran</h2>
+                  <p className="card-sub">Akun login dashboard/aplikasi.</p>
+                </div>
+              </div>
+              <span className="count-badge">{list.data?.pagination?.totalItems ?? 0} pengguna</span>
+            </div>
+            <DataTable
+              columns={columns}
+              rows={list.data?.data ?? []}
+              rowKey={(row) => row.id}
+              empty="Tidak ada pengguna pada filter ini."
+            />
+          </div>
           <Pagination
             page={list.data?.pagination?.page ?? page}
             totalPages={list.data?.pagination?.totalPages ?? 1}

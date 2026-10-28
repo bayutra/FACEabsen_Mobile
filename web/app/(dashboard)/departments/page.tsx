@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, type FormEvent } from 'react';
+import { Icon } from '@/components/Icon';
 import {
   DataTable,
   ErrorBanner,
@@ -97,12 +98,26 @@ export default function DepartmentsPage() {
       {list.loading && !list.data ? (
         <Loading />
       ) : (
-        <DataTable
-          columns={columns}
-          rows={list.data ?? []}
-          rowKey={(row) => row.id}
-          empty="Belum ada unit."
-        />
+        <div className="card">
+          <div className="card-head">
+            <div className="card-head-main">
+              <span className="card-head-icon">
+                <Icon name="building" size={18} />
+              </span>
+              <div>
+                <h2 className="card-title">Unit kerja</h2>
+                <p className="card-sub">Struktur unit rumah sakit.</p>
+              </div>
+            </div>
+            <span className="count-badge">{list.data?.length ?? 0} unit</span>
+          </div>
+          <DataTable
+            columns={columns}
+            rows={list.data ?? []}
+            rowKey={(row) => row.id}
+            empty="Belum ada unit."
+          />
+        </div>
       )}
 
       <DepartmentForm

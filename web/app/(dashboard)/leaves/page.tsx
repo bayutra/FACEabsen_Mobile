@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { Icon } from '@/components/Icon';
 import { ReviewModal } from '@/components/ReviewModal';
 import {
   DataTable,
@@ -127,17 +128,44 @@ export default function LeavesPage() {
           <span>Sampai</span>
           <TextInput type="date" value={to} onChange={(event) => setTo(event.target.value)} />
         </label>
+        <div className="filters-end">
+          <button
+            type="button"
+            className="btn ghost"
+            onClick={() => {
+              setStatus('PENDING');
+              setFrom('');
+              setTo('');
+            }}
+          >
+            Reset
+          </button>
+        </div>
       </div>
 
       {loading && !data ? (
         <Loading />
       ) : (
-        <DataTable
-          columns={columns}
-          rows={data ?? []}
-          rowKey={(row) => row.id}
-          empty="Tidak ada pengajuan pada filter ini."
-        />
+        <div className="card">
+          <div className="card-head">
+            <div className="card-head-main">
+              <span className="card-head-icon">
+                <Icon name="calendar" size={18} />
+              </span>
+              <div>
+                <h2 className="card-title">Pengajuan cuti &amp; izin</h2>
+                <p className="card-sub">Setujui atau tolak pengajuan karyawan.</p>
+              </div>
+            </div>
+            <span className="count-badge">{data?.length ?? 0} pengajuan</span>
+          </div>
+          <DataTable
+            columns={columns}
+            rows={data ?? []}
+            rowKey={(row) => row.id}
+            empty="Tidak ada pengajuan pada filter ini."
+          />
+        </div>
       )}
 
       <ReviewModal

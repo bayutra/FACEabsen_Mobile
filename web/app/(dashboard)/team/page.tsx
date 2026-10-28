@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { Icon } from '@/components/Icon';
 import {
   DataTable,
   ErrorBanner,
@@ -199,7 +200,18 @@ export default function TeamPage() {
       </div>
 
       <div className="card" style={{ marginTop: 16 }}>
-        <h2 className="section-title">Anggota & rekap hari</h2>
+        <div className="card-head">
+          <div className="card-head-main">
+            <span className="card-head-icon">
+              <Icon name="users" size={18} />
+            </span>
+            <div>
+              <h2 className="card-title">Anggota & rekap hari</h2>
+              <p className="card-sub">Kehadiran anggota tim pada rentang tanggal.</p>
+            </div>
+          </div>
+          <span className="count-badge">{members.length} anggota</span>
+        </div>
         {summary.loading && !summary.data ? (
           <Loading />
         ) : (
@@ -213,7 +225,18 @@ export default function TeamPage() {
       </div>
 
       <div className="card">
-        <h2 className="section-title">Presensi terbaru</h2>
+        <div className="card-head">
+          <div className="card-head-main">
+            <span className="card-head-icon">
+              <Icon name="list" size={18} />
+            </span>
+            <div>
+              <h2 className="card-title">Presensi terbaru</h2>
+              <p className="card-sub">Presensi anggota tim pada rentang tanggal.</p>
+            </div>
+          </div>
+          <span className="count-badge">{attendance.data?.length ?? 0} data</span>
+        </div>
         {attendance.loading && !attendance.data ? (
           <Loading />
         ) : (

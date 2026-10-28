@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { Icon } from '@/components/Icon';
 import { ReviewModal } from '@/components/ReviewModal';
 import {
   DataTable,
@@ -142,12 +143,26 @@ export default function AttendanceReviewPage() {
       {loading && !data ? (
         <Loading />
       ) : (
-        <DataTable
-          columns={columns}
-          rows={data ?? []}
-          rowKey={(row) => row.id}
-          empty="Tidak ada presensi yang menunggu tinjauan."
-        />
+        <div className="card">
+          <div className="card-head">
+            <div className="card-head-main">
+              <span className="card-head-icon">
+                <Icon name="checkCircle" size={18} />
+              </span>
+              <div>
+                <h2 className="card-title">Presensi menunggu tinjauan</h2>
+                <p className="card-sub">Validasi presensi berisiko sedang.</p>
+              </div>
+            </div>
+            <span className="count-badge">{data?.length ?? 0} data</span>
+          </div>
+          <DataTable
+            columns={columns}
+            rows={data ?? []}
+            rowKey={(row) => row.id}
+            empty="Tidak ada presensi yang menunggu tinjauan."
+          />
+        </div>
       )}
 
       <ReviewModal

@@ -13,6 +13,7 @@ import {
   TextInput,
   type Column,
 } from '@/components/ui';
+import { Icon } from '@/components/Icon';
 import { api } from '@/lib/api';
 import { formatDateTime } from '@/lib/format';
 import { useResource } from '@/lib/useResource';
@@ -206,18 +207,43 @@ export default function DevicesPage() {
         <button type="submit" className="btn ghost">
           Terapkan
         </button>
+        <button
+          type="button"
+          className="btn ghost"
+          onClick={() => {
+            setSearchInput('');
+            setSearch('');
+            setStatus('');
+          }}
+        >
+          Reset
+        </button>
       </form>
 
       {list.loading && !list.data ? (
         <Loading />
       ) : (
         <>
-          <DataTable
-            columns={columns}
-            rows={list.data?.data ?? []}
-            rowKey={(row) => row.id}
-            empty="Tidak ada perangkat pada filter ini."
-          />
+          <div className="card">
+            <div className="card-head">
+              <div className="card-head-main">
+                <span className="card-head-icon">
+                  <Icon name="device" size={18} />
+                </span>
+                <div>
+                  <h2 className="card-title">Data perangkat</h2>
+                  <p className="card-sub">Aktivasi, pencabutan, dan penandaan hilang.</p>
+                </div>
+              </div>
+              <span className="count-badge">{list.data?.pagination?.totalItems ?? 0} perangkat</span>
+            </div>
+            <DataTable
+              columns={columns}
+              rows={list.data?.data ?? []}
+              rowKey={(row) => row.id}
+              empty="Tidak ada perangkat pada filter ini."
+            />
+          </div>
           <Pagination
             page={list.data?.pagination?.page ?? page}
             totalPages={list.data?.pagination?.totalPages ?? 1}

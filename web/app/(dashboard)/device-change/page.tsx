@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { Icon } from '@/components/Icon';
 import { ReviewModal } from '@/components/ReviewModal';
 import {
   DataTable,
@@ -130,12 +131,26 @@ export default function DeviceChangePage() {
       {loading && !data ? (
         <Loading />
       ) : (
-        <DataTable
-          columns={columns}
-          rows={data ?? []}
-          rowKey={(row) => row.id}
-          empty="Tidak ada permintaan penggantian pada filter ini."
-        />
+        <div className="card">
+          <div className="card-head">
+            <div className="card-head-main">
+              <span className="card-head-icon">
+                <Icon name="device" size={18} />
+              </span>
+              <div>
+                <h2 className="card-title">Permintaan penggantian perangkat</h2>
+                <p className="card-sub">Persetujuan mencabut perangkat lama.</p>
+              </div>
+            </div>
+            <span className="count-badge">{data?.length ?? 0} permintaan</span>
+          </div>
+          <DataTable
+            columns={columns}
+            rows={data ?? []}
+            rowKey={(row) => row.id}
+            empty="Tidak ada permintaan penggantian pada filter ini."
+          />
+        </div>
       )}
 
       <ReviewModal

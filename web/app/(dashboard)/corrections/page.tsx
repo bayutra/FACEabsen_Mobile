@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { Icon } from '@/components/Icon';
 import { ReviewModal } from '@/components/ReviewModal';
 import {
   DataTable,
@@ -146,12 +147,26 @@ export default function CorrectionsPage() {
       {loading && !data ? (
         <Loading />
       ) : (
-        <DataTable
-          columns={columns}
-          rows={rows}
-          rowKey={(row) => row.id}
-          empty="Tidak ada permintaan koreksi pada filter ini."
-        />
+        <div className="card">
+          <div className="card-head">
+            <div className="card-head-main">
+              <span className="card-head-icon">
+                <Icon name="fileText" size={18} />
+              </span>
+              <div>
+                <h2 className="card-title">Permintaan koreksi presensi</h2>
+                <p className="card-sub">Tinjau permintaan perbaikan jam masuk/pulang.</p>
+              </div>
+            </div>
+            <span className="count-badge">{rows.length} permintaan</span>
+          </div>
+          <DataTable
+            columns={columns}
+            rows={rows}
+            rowKey={(row) => row.id}
+            empty="Tidak ada permintaan koreksi pada filter ini."
+          />
+        </div>
       )}
 
       <ReviewModal
