@@ -61,8 +61,14 @@ workflows:
           sed -i '' 's/"CODE_SIGN_IDENTITY\[sdk=iphoneos\*\]" = "iPhone Developer";/"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";/g' ios/Runner.xcodeproj/project.pbxproj
       - name: Build iOS (unsigned, arm64 device)
         script: |
-          flutter build ios --release --no-codesign \
+          flutter build ios --release --no-codesign --config-only \
             --dart-define=API_BASE_URL=$API_BASE_URL
+          cd ios
+          xcodebuild -workspace Runner.xcworkspace -scheme Runner -configuration Release \
+            -sdk iphoneos -destination 'generic/platform=iOS' \
+            CONFIGURATION_BUILD_DIR="$(pwd)/../build/ios/iphoneos" \
+            CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO build
+          cd ..
       - name: Package IPA
         script: |
           # `ditto` menjaga symlink di dalam framework — wajib agar IPA valid.
