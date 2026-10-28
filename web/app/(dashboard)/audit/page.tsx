@@ -9,6 +9,7 @@ import {
   PageHeader,
   Pagination,
   Select,
+  StatCard,
   StatusBadge,
   TextInput,
   type Column,
@@ -45,6 +46,20 @@ export default function AuditPage() {
   const [page, setPage] = useState(1);
 
   const actions = useResource(() => api<string[]>('/audit/actions'), []);
+  const stats = useResource(async () => {
+    const [all, success, failed, denied] = await Promise.all([
+      api<AuditPage>('/audit', { query: { pageSize: 1 } }),
+      api<AuditPage>('/audit', { query: { pageSize: 1, result: 'SUCCESS' } }),
+      api<AuditPage>('/audit', { query: { pageSize: 1, result: 'FAILED' } }),
+      api<AuditPage>('/audit', { query: { pageSize: 1, result: 'DENIED' } }),
+    ]);
+    return {
+      total: all.pagination?.totalItems ?? 0,
+      success: success.pagination?.totalItems ?? 0,
+      failed: failed.pagination?.totalItems ?? 0,
+      denied: denied.pagination?.totalItems ?? 0,
+    };
+  }, []);
   const list = useResource(
     () =>
       api<AuditPage>('/audit', {
@@ -128,6 +143,13 @@ export default function AuditPage() {
         }
       />
       <ErrorBanner message={list.error} />
+
+      <div className="kpi-grid">
+        <StatCard label="Total log" value={stats.data?.total ?? 0} hint="Seluruh entri audit" icon="list" />
+        <StatCard label="Berhasil" value={stats.data?.success ?? 0} hint="Aksi sukses" tone="success" icon="checkCircle" />
+        <StatCard label="Gagal" value={stats.data?.failed ?? 0} hint="Aksi gagal" tone={(stats.data?.failed ?? 0) > 0 ? 'danger' : 'default'} icon="alert" />
+        <StatCard label="Ditolak" value={stats.data?.denied ?? 0} hint="Aksi ditolak" tone={(stats.data?.denied ?? 0) > 0 ? 'warn' : 'default'} icon="alert" />
+      </div>
 
       <div className="filters">
         <label className="field">

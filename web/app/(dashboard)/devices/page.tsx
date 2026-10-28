@@ -9,6 +9,7 @@ import {
   PageHeader,
   Pagination,
   Select,
+  StatCard,
   StatusBadge,
   TextInput,
   type Column,
@@ -46,6 +47,22 @@ export default function DevicesPage() {
   const [revoking, setRevoking] = useState<Device | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  const stats = useResource(async () => {
+    const [all, pending, active, revoked, lost] = await Promise.all([
+      api<DevicePage>('/devices', { query: { pageSize: 1 } }),
+      api<DevicePage>('/devices', { query: { pageSize: 1, status: 'PENDING' } }),
+      api<DevicePage>('/devices', { query: { pageSize: 1, status: 'ACTIVE' } }),
+      api<DevicePage>('/devices', { query: { pageSize: 1, status: 'REVOKED' } }),
+      api<DevicePage>('/devices', { query: { pageSize: 1, status: 'LOST' } }),
+    ]);
+    return {
+      total: all.pagination?.totalItems ?? 0,
+      pending: pending.pagination?.totalItems ?? 0,
+      active: active.pagination?.totalItems ?? 0,
+      revoked: (revoked.pagination?.totalItems ?? 0) + (lost.pagination?.totalItems ?? 0),
+    };
+  }, []);
+
   const list = useResource(
     () =>
       api<DevicePage>('/devices', {
@@ -64,6 +81,7 @@ export default function DevicesPage() {
     try {
       await action();
       list.reload();
+      stats.reload();
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     }
@@ -177,6 +195,13 @@ export default function DevicesPage() {
         }
       />
       <ErrorBanner message={error ?? list.error} />
+
+      <div className="kpi-grid">
+        <StatCard label="Total perangkat" value={stats.data?.total ?? 0} hint="Terdaftar di sistem" icon="device" />
+        <StatCard label="Aktif" value={stats.data?.active ?? 0} hint="Dapat melakukan presensi" tone="success" icon="checkCircle" />
+        <StatCard label="Menunggu aktivasi" value={stats.data?.pending ?? 0} hint="Perlu disetujui admin" tone={(stats.data?.pending ?? 0) > 0 ? 'warn' : 'default'} icon="alert" />
+        <StatCard label="Dicabut / hilang" value={stats.data?.revoked ?? 0} hint="Akses dinonaktifkan" tone={(stats.data?.revoked ?? 0) > 0 ? 'danger' : 'default'} icon="alert" />
+      </div>
 
       <form
         className="filters"

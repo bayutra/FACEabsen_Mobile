@@ -11,6 +11,7 @@ import {
   PageHeader,
   Pagination,
   Select,
+  StatCard,
   StatusBadge,
   TextInput,
   type Column,
@@ -52,6 +53,17 @@ export default function UsersPage() {
   const [resetting, setResetting] = useState<AdminUser | null>(null);
   const [editingRoles, setEditingRoles] = useState<AdminUser | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  const stats = useResource(async () => {
+    const [all, active] = await Promise.all([
+      api<UserPage>('/users', { query: { pageSize: 1 } }),
+      api<UserPage>('/users', { query: { pageSize: 1, active: true } }),
+    ]);
+    return {
+      total: all.pagination?.totalItems ?? 0,
+      active: active.pagination?.totalItems ?? 0,
+    };
+  }, []);
 
   const list = useResource(
     () =>
@@ -186,6 +198,13 @@ export default function UsersPage() {
         }
       />
       <ErrorBanner message={error ?? list.error} />
+
+      <div className="kpi-grid">
+        <StatCard label="Total pengguna" value={stats.data?.total ?? 0} hint="Akun terdaftar" icon="users" />
+        <StatCard label="Aktif" value={stats.data?.active ?? 0} hint="Dapat login" tone="success" icon="checkCircle" />
+        <StatCard label="Nonaktif" value={Math.max((stats.data?.total ?? 0) - (stats.data?.active ?? 0), 0)} hint="Dinonaktifkan" tone="warn" icon="alert" />
+        <StatCard label="Pada filter" value={list.data?.pagination?.totalItems ?? 0} hint="Hasil filter" icon="list" />
+      </div>
 
       <form
         className="filters"

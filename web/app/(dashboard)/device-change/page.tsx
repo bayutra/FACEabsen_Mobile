@@ -9,6 +9,7 @@ import {
   Loading,
   PageHeader,
   Select,
+  StatCard,
   StatusBadge,
   type Column,
 } from '@/components/ui';
@@ -114,6 +115,21 @@ export default function DeviceChangePage() {
         }
       />
       <ErrorBanner message={error} />
+
+      {(() => {
+        const all = data ?? [];
+        const pending = all.filter((item) => item.status === 'PENDING').length;
+        const approved = all.filter((item) => item.status === 'APPROVED').length;
+        const rejected = all.filter((item) => item.status === 'REJECTED').length;
+        return (
+          <div className="kpi-grid">
+            <StatCard label="Menunggu" value={pending} hint="Perlu ditinjau" tone={pending > 0 ? 'warn' : 'default'} icon="device" />
+            <StatCard label="Disetujui" value={approved} hint="Penggantian disetujui" tone="success" icon="checkCircle" />
+            <StatCard label="Ditolak" value={rejected} hint="Penggantian ditolak" tone={rejected > 0 ? 'danger' : 'default'} icon="alert" />
+            <StatCard label="Total" value={all.length} hint="Pada filter ini" icon="list" />
+          </div>
+        );
+      })()}
 
       <div className="filters">
         <label className="field">

@@ -191,7 +191,7 @@ export default function TeamPage() {
         </label>
       </div>
 
-      <div className="grid stats">
+      <div className="kpi-grid">
         <StatCard label="Anggota tim" value={summary.data?.totals?.members ?? members.length} />
         <StatCard label="Hadir" value={summary.data?.totals?.present ?? 0} tone="success" />
         <StatCard label="Terlambat" value={summary.data?.totals?.late ?? 0} tone="warn" />

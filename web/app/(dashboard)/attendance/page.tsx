@@ -8,6 +8,7 @@ import {
   ErrorBanner,
   Loading,
   PageHeader,
+  StatCard,
   StatusBadge,
   type Column,
 } from '@/components/ui';
@@ -139,6 +140,21 @@ export default function AttendanceReviewPage() {
         }
       />
       <ErrorBanner message={error} />
+
+      {(() => {
+        const rows = data ?? [];
+        const high = rows.filter((item) => item.riskCategory === 'HIGH').length;
+        const medium = rows.filter((item) => item.riskCategory === 'MEDIUM').length;
+        const low = rows.filter((item) => item.riskCategory === 'LOW' || !item.riskCategory).length;
+        return (
+          <div className="kpi-grid">
+            <StatCard label="Menunggu tinjauan" value={rows.length} hint="Presensi berisiko sedang" icon="list" />
+            <StatCard label="Risiko tinggi" value={high} hint="Perlu validasi segera" tone={high > 0 ? 'danger' : 'default'} icon="alert" />
+            <StatCard label="Risiko sedang" value={medium} hint="Menunggu supervisor" tone={medium > 0 ? 'warn' : 'default'} icon="alert" />
+            <StatCard label="Risiko rendah" value={low} hint="Informasi tambahan" icon="checkCircle" />
+          </div>
+        );
+      })()}
 
       {loading && !data ? (
         <Loading />

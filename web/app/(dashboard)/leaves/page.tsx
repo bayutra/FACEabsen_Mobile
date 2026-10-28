@@ -9,6 +9,7 @@ import {
   Loading,
   PageHeader,
   Select,
+  StatCard,
   StatusBadge,
   TextInput,
   type Column,
@@ -38,6 +39,11 @@ export default function LeavesPage() {
   const { data, loading, error, reload } = useResource(
     () => api<Leave[]>('/leaves', { query: { status, from, to } }),
     [status, from, to],
+  );
+
+  const stats = useResource(
+    () => api<Leave[]>('/leaves', { query: { from, to } }),
+    [from, to],
   );
 
   const decide = async (decision: 'APPROVE' | 'REJECT', note: string) => {
@@ -108,6 +114,22 @@ export default function LeavesPage() {
         }
       />
       <ErrorBanner message={error} />
+
+      {(() => {
+        const all = stats.data ?? data ?? [];
+        const pending = all.filter((item) => item.status === 'PENDING').length;
+        const approved = all.filter((item) => item.status === 'APPROVED').length;
+        const rejected = all.filter((item) => item.status === 'REJECTED').length;
+        const cancelled = all.filter((item) => item.status === 'CANCELLED').length;
+        return (
+          <div className="kpi-grid">
+            <StatCard label="Menunggu" value={pending} hint="Perlu ditinjau" tone={pending > 0 ? 'warn' : 'default'} icon="calendar" />
+            <StatCard label="Disetujui" value={approved} hint="Pengajuan disetujui" tone="success" icon="checkCircle" />
+            <StatCard label="Ditolak" value={rejected} hint="Pengajuan ditolak" tone={rejected > 0 ? 'danger' : 'default'} icon="alert" />
+            <StatCard label="Dibatalkan" value={cancelled} hint="Dibatalkan karyawan" icon="list" />
+          </div>
+        );
+      })()}
 
       <div className="filters">
         <label className="field">

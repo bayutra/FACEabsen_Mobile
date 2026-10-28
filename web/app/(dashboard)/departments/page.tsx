@@ -10,6 +10,7 @@ import {
   Modal,
   PageHeader,
   Select,
+  StatCard,
   TextInput,
   type Column,
 } from '@/components/ui';
@@ -95,6 +96,12 @@ export default function DepartmentsPage() {
         }
       />
       <ErrorBanner message={error ?? list.error} />
+
+      <div className="kpi-grid">
+        <StatCard label="Total unit" value={list.data?.length ?? 0} hint="Unit terdaftar" icon="building" />
+        <StatCard label="Rumah sakit" value={hospitals.data?.length ?? 0} hint="Rumah sakit dengan unit" icon="building" />
+      </div>
+
       {list.loading && !list.data ? (
         <Loading />
       ) : (
