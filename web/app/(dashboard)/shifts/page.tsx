@@ -1,14 +1,14 @@
 'use client';
 
 import { useEffect, useState, type FormEvent } from 'react';
+import { Icon } from '@/components/Icon';
 import {
-  DataTable,
   ErrorBanner,
   Field,
   Loading,
   Modal,
   PageHeader,
-  StatusBadge,
+  StatCard,
   TextInput,
   type Column,
 } from '@/components/ui';
@@ -52,85 +52,134 @@ export default function ShiftsPage() {
     }
   };
 
-  const columns: Column<Shift>[] = [
-    {
-      key: 'name',
-      header: 'Shift',
-      render: (row) => (
-        <div>
-          <strong>{row.name}</strong>
-          <div className="muted small">{row.hospital?.name ?? '—'}</div>
-        </div>
-      ),
-    },
-    {
-      key: 'window',
-      header: 'Jam',
-      render: (row) => (
-        <div>
-          {row.startTime}–{row.endTime}
-          <div className="muted small">
-            {row.overnight ? (
-              <span className="badge badge-pending">Lintas hari</span>
-            ) : (
-              'Hari sama'
-            )}
-          </div>
-        </div>
-      ),
-    },
-    {
-      key: 'thresholds',
-      header: 'Toleransi',
-      render: (row) => (
-        <div className="small">
-          <div>Masuk: {row.gracePeriodMin} menit</div>
-          <div>Terlambat: {row.lateThresholdMin} menit</div>
-          <div>Pulang awal: {row.earlyCheckoutThresholdMin} menit</div>
-        </div>
-      ),
-    },
-    {
-      key: 'actions',
-      header: '',
-      render: (row) =>
-        admin ? (
-          <div className="cell-actions">
-            <button type="button" className="btn ghost small" onClick={() => setEditing(row)}>
-              Ubah
-            </button>
-            <button type="button" className="btn ghost small" onClick={() => remove(row)}>
-              Hapus
-            </button>
-          </div>
-        ) : null,
-    },
-  ];
+  const toneFor = (name: string) => {
+    const value = name.toLowerCase();
+    if (value.includes('malam') || value.includes('night')) return 'night';
+    if (value.includes('siang') || value.includes('sore')) return 'evening';
+    if (value.includes('libur') || value.includes('off')) return 'off';
+    return 'morning';
+  };
+
+  const shifts = list.data ?? [];
+  const overnightCount = shifts.filter((item) => item.overnight).length;
+  const avgGrace = shifts.length
+    ? Math.round(shifts.reduce((sum, item) => sum + item.gracePeriodMin, 0) / shifts.length)
+    : 0;
+  const hospitalCount = new Set(shifts.map((item) => item.hospital?.code ?? item.hospital?.name).filter(Boolean)).size;
 
   return (
     <>
       <PageHeader
-        title="Shift Kerja"
+        title="Master Shift & Jam Kerja"
         description="Jam kerja, toleransi keterlambatan, dan aturan pulang awal per shift."
         actions={
           admin ? (
             <button type="button" className="btn" onClick={() => setCreating(true)}>
-              + Shift
+              <Icon name="clock" size={15} />
+              Tambah shift
             </button>
           ) : null
         }
       />
       <ErrorBanner message={error ?? list.error} />
+
+      <div className="kpi-grid">
+        <StatCard label="Total shift" value={shifts.length} hint="Shift terdaftar" icon="clock" />
+        <StatCard label="Lintas hari" value={overnightCount} hint="Shift selesai keesokan hari" icon="calendar" />
+        <StatCard label="Rata-rata toleransi" value={`${avgGrace} mnt`} hint="Toleransi masuk" icon="checkCircle" />
+        <StatCard label="Rumah sakit" value={hospitalCount || '—'} hint="Rumah sakit dengan shift" icon="building" />
+      </div>
+
       {list.loading && !list.data ? (
         <Loading />
+      ) : shifts.length === 0 ? (
+        <div className="empty-state">
+          <Icon name="clock" size={26} />
+          <strong>Belum ada shift</strong>
+          <span>Buat shift pertama untuk mulai menyusun jadwal.</span>
+        </div>
       ) : (
-        <DataTable
-          columns={columns}
-          rows={list.data ?? []}
-          rowKey={(row) => row.id}
-          empty="Belum ada shift."
-        />
+        <div className="shift-grid">
+          {shifts.map((shift) => (
+            <article key={shift.id} className={`shift-card ${toneFor(shift.name)}`}>
+              <div className="shift-card-head">
+                <div className="shift-card-name">
+                  <span className="shift-card-icon">
+                    <Icon name="clock" size={16} />
+                  </span>
+                  <div>
+                    <h3 className="card-title" style={{ marginBottom: 2 }}>{shift.name}</h3>
+                    <p className="card-sub">{shift.hospital?.name ?? 'Rumah sakit'}</p>
+                  </div>
+                </div>
+                {shift.overnight ? (
+                  <span className="badge badge-pending">Lintas hari</span>
+                ) : (
+                  <span className="badge badge-active">Hari sama</span>
+                )}
+              </div>
+
+              <div className="shift-window">
+                <Icon name="clock" size={14} />
+                {shift.startTime} – {shift.endTime}
+              </div>
+
+              <div className="shift-meta">
+                <div className="shift-meta-row">
+                  <span>Toleransi masuk</span>
+                  <strong>{shift.gracePeriodMin} menit</strong>
+                </div>
+                <div className="shift-meta-row">
+                  <span>Ambang terlambat</span>
+                  <strong>{shift.lateThresholdMin} menit</strong>
+                </div>
+                <div className="shift-meta-row">
+                  <span>Ambang pulang awal</span>
+                  <strong>{shift.earlyCheckoutThresholdMin} menit</strong>
+                </div>
+              </div>
+
+              {admin ? (
+                <div className="shift-card-foot">
+                  <button
+                    type="button"
+                    className="btn ghost small"
+                    onClick={() => setEditing(shift)}
+                  >
+                    Ubah
+                  </button>
+                  <button
+                    type="button"
+                    className="btn ghost small"
+                    onClick={() => remove(shift)}
+                  >
+                    Hapus
+                  </button>
+                </div>
+              ) : null}
+            </article>
+          ))}
+        </div>
       )}
+
+      <div className="card" style={{ marginTop: 18 }}>
+        <div className="card-head">
+          <div className="card-head-main">
+            <span className="card-head-icon">
+              <Icon name="checkCircle" size={18} />
+            </span>
+            <div>
+              <h2 className="card-title">Validasi pertukaran shift &amp; matriks kompetensi</h2>
+              <p className="card-sub">
+                Pertukaran shift dan handover klinis divalidasi melalui persetujuan supervisor di menu Persetujuan.
+              </p>
+            </div>
+          </div>
+        </div>
+        <p className="muted small" style={{ margin: 0 }}>
+          Shift lintas hari menandakan jadwal yang berakhir keesokan hari. Pastikan toleransi dan ambang sesuai SOP unit sebelum menetapkan jadwal.
+        </p>
+      </div>
 
       <ShiftForm
         open={creating || editing !== null}

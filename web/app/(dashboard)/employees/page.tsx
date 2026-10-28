@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, type FormEvent } from 'react';
+import { Icon } from '@/components/Icon';
 import {
   DataTable,
   ErrorBanner,
@@ -10,6 +11,7 @@ import {
   PageHeader,
   Pagination,
   Select,
+  StatCard,
   StatusBadge,
   TextInput,
   type Column,
@@ -57,6 +59,17 @@ export default function EmployeesPage() {
     [],
   );
 
+  const stats = useResource(async () => {
+    const [all, active] = await Promise.all([
+      api<EmployeePage>('/employees', { query: { pageSize: 1 } }),
+      api<EmployeePage>('/employees', { query: { pageSize: 1, status: 'ACTIVE' } }),
+    ]);
+    return {
+      total: all.pagination?.totalItems ?? 0,
+      active: active.pagination?.totalItems ?? 0,
+    };
+  }, []);
+
   const list = useResource(
     () =>
       api<EmployeePage>('/employees', {
@@ -72,6 +85,7 @@ export default function EmployeesPage() {
   const reloadAll = () => {
     list.reload();
     departments.reload();
+    stats.reload();
   };
 
   const deactivate = async (employee: Employee) => {
@@ -80,6 +94,7 @@ export default function EmployeesPage() {
     try {
       await api(`/employees/${employee.id}/deactivate`, { method: 'POST' });
       list.reload();
+      stats.reload();
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     }
@@ -89,14 +104,27 @@ export default function EmployeesPage() {
     {
       key: 'employee',
       header: 'Karyawan',
-      render: (row) => (
-        <div>
-          <strong>{row.name}</strong>
-          <div className="muted small">
-            {row.employeeNo} · {row.email}
+      render: (row) => {
+        const initials = row.name
+          .split(/\s+/)
+          .filter(Boolean)
+          .slice(0, 2)
+          .map((part) => part[0]?.toUpperCase() ?? '')
+          .join('');
+        return (
+          <div className="cell-person">
+            <span className="avatar" aria-hidden>
+              {initials || '—'}
+            </span>
+            <div className="cell-person-text">
+              <strong>{row.name}</strong>
+              <div className="muted small">
+                {row.employeeNo} · {row.email}
+              </div>
+            </div>
           </div>
-        </div>
-      ),
+        );
+      },
     },
     {
       key: 'department',
@@ -108,13 +136,21 @@ export default function EmployeesPage() {
         </div>
       ),
     },
-    { key: 'phone', header: 'Telepon', render: (row) => row.phone ?? '—' },
     {
-      key: 'supervisor',
-      header: 'Atasan',
-      render: (row) => row.supervisor?.name ?? '—',
+      key: 'contact',
+      header: 'Kontak & Atasan',
+      render: (row) => (
+        <div>
+          {row.phone || '—'}
+          <div className="muted small">{row.supervisor?.name ?? 'Tanpa atasan'}</div>
+        </div>
+      ),
     },
-    { key: 'status', header: 'Status', render: (row) => <StatusBadge status={row.status} /> },
+    {
+      key: 'status',
+      header: 'Status',
+      render: (row) => <StatusBadge status={row.status} />,
+    },
     {
       key: 'actions',
       header: '',
@@ -137,20 +173,33 @@ export default function EmployeesPage() {
     },
   ];
 
+  const total = stats.data?.total ?? list.data?.pagination?.totalItems ?? 0;
+  const active = stats.data?.active ?? 0;
+  const units = departments.data?.length ?? 0;
+  const inactive = Math.max(total - active, 0);
+
   return (
     <>
       <PageHeader
-        title="Karyawan"
-        description="Data induk karyawan beserta unit, jabatan, dan status kepegawaian."
+        title="Manajemen Staf & Tenaga Medis"
+        description="Data induk karyawan, unit, jabatan, dan status kepegawaian."
         actions={
           admin ? (
             <button type="button" className="btn" onClick={() => setCreating(true)}>
-              + Karyawan
+              <Icon name="users" size={15} />
+              Tambah karyawan
             </button>
           ) : null
         }
       />
       <ErrorBanner message={error ?? list.error} />
+
+      <div className="kpi-grid">
+        <StatCard label="Total tenaga kerja" value={total} hint="Seluruh karyawan terdaftar" icon="users" />
+        <StatCard label="Akun aktif" value={active} hint="Dapat melakukan presensi" tone="success" icon="checkCircle" />
+        <StatCard label="Unit / instalasi" value={units} hint="Unit yang memiliki staf" icon="building" />
+        <StatCard label="Nonaktif" value={inactive} hint="Dinonaktifkan atau menunggu" tone={inactive > 0 ? 'warn' : 'default'} icon="alert" />
+      </div>
 
       <form
         className="filters"
@@ -189,21 +238,51 @@ export default function EmployeesPage() {
             ))}
           </Select>
         </label>
-        <button type="submit" className="btn ghost">
-          Terapkan
-        </button>
+        <div className="filters-end">
+          <button type="submit" className="btn">
+            Terapkan
+          </button>
+          <button
+            type="button"
+            className="btn ghost"
+            onClick={() => {
+              setSearchInput('');
+              setSearch('');
+              setStatus('');
+              setDepartmentId('');
+            }}
+          >
+            Reset
+          </button>
+        </div>
       </form>
 
       {list.loading && !list.data ? (
         <Loading />
       ) : (
         <>
-          <DataTable
-            columns={columns}
-            rows={list.data?.data ?? []}
-            rowKey={(row) => row.id}
-            empty="Tidak ada karyawan pada filter ini."
-          />
+          <div className="card">
+            <div className="card-head">
+              <div className="card-head-main">
+                <span className="card-head-icon">
+                  <Icon name="users" size={18} />
+                </span>
+                <div>
+                  <h2 className="card-title">Data karyawan</h2>
+                  <p className="card-sub">
+                    Menampilkan {list.data?.data?.length ?? 0} dari {total} karyawan.
+                  </p>
+                </div>
+              </div>
+              <span className="count-badge">{total} total</span>
+            </div>
+            <DataTable
+              columns={columns}
+              rows={list.data?.data ?? []}
+              rowKey={(row) => row.id}
+              empty="Tidak ada karyawan pada filter ini."
+            />
+          </div>
           <Pagination
             page={list.data?.pagination?.page ?? page}
             totalPages={list.data?.pagination?.totalPages ?? 1}

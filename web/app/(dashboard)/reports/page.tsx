@@ -1,10 +1,12 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { Icon } from '@/components/Icon';
 import {
   DataTable,
   ErrorBanner,
   Field,
+  InfoBanner,
   Loading,
   PageHeader,
   Select,
@@ -139,6 +141,14 @@ export default function ReportsPage() {
     }
   };
 
+  const resetFilters = () => {
+    setDate(today());
+    setMonth(monthKey());
+    setFrom(startOfMonthIso());
+    setTo(endOfMonthIso());
+    setApplied((value) => value + 1);
+  };
+
   const columns: Column<string[]>[] = (report.data?.headers ?? []).map(
     (header, index) => ({
       key: String(index),
@@ -150,7 +160,7 @@ export default function ReportsPage() {
   return (
     <>
       <PageHeader
-        title="Laporan"
+        title="Pusat Laporan & Rekapitulasi"
         description="Rekap presensi, keterlambatan, cuti, per unit, dan heatmap jam. Ekspor tersedia dalam CSV, Excel, dan PDF."
         actions={
           <>
@@ -169,22 +179,40 @@ export default function ReportsPage() {
         }
       />
       <ErrorBanner message={report.error ?? exportError} />
+      <InfoBanner>
+        Laporan mengikuti hak akses dan filter yang dipilih. Pilih modul di katalog,
+        sesuaikan periode, lalu tekan "Terapkan".
+      </InfoBanner>
+
+      <div className="card" style={{ marginBottom: 16 }}>
+        <div className="card-head">
+          <div className="card-head-main">
+            <span className="card-head-icon">
+              <Icon name="fileText" size={18} />
+            </span>
+            <div>
+              <h2 className="card-title">Katalog modul laporan</h2>
+              <p className="card-sub">Pilih jenis laporan untuk dijalankan.</p>
+            </div>
+          </div>
+          <span className="count-badge">{Object.keys(KIND_LABELS).length} kategori</span>
+        </div>
+        <div className="catalog">
+          {(Object.keys(KIND_LABELS) as ReportKind[]).map((item) => (
+            <button
+              key={item}
+              type="button"
+              className="catalog-btn"
+              aria-pressed={kind === item}
+              onClick={() => setKind(item)}
+            >
+              {KIND_LABELS[item]}
+            </button>
+          ))}
+        </div>
+      </div>
 
       <div className="filters">
-        <label className="field">
-          <span>Jenis laporan</span>
-          <Select
-            value={kind}
-            onChange={(event) => setKind(event.target.value as ReportKind)}
-          >
-            {(Object.keys(KIND_LABELS) as ReportKind[]).map((item) => (
-              <option key={item} value={item}>
-                {KIND_LABELS[item]}
-              </option>
-            ))}
-          </Select>
-        </label>
-
         {kind === 'daily' ? (
           <label className="field">
             <span>Tanggal</span>
@@ -229,50 +257,62 @@ export default function ReportsPage() {
           </label>
         ) : null}
 
-        <button
-          type="button"
-          className="btn"
-          onClick={() => setApplied((value) => value + 1)}
-          disabled={kind === 'employee' && !employeeId}
-        >
-          Tampilkan
-        </button>
+        <div className="filters-end">
+          <button
+            type="button"
+            className="btn"
+            onClick={() => setApplied((value) => value + 1)}
+            disabled={kind === 'employee' && !employeeId}
+          >
+            Terapkan
+          </button>
+          <button type="button" className="btn ghost" onClick={resetFilters}>
+            Reset
+          </button>
+        </div>
       </div>
 
       {report.loading && !report.data ? (
         <Loading />
       ) : report.data ? (
         <div className="stack">
-          <div className="card">
-            <h2 style={{ margin: 0, fontSize: 16 }}>
-              {report.data.title ?? 'Laporan'}
-            </h2>
-            <div className="muted small">
-              Dibuat {formatDateTime(report.data.generatedAt)}
+          {report.data.summary?.length ? (
+            <div className="kpi-grid">
+              {report.data.summary.map(([label, value]) => (
+                <StatCard key={label} label={label} value={value} />
+              ))}
             </div>
-            {report.data.summary?.length ? (
-              <div className="grid stats" style={{ marginTop: 14 }}>
-                {report.data.summary.map(([label, value]) => (
-                  <StatCard key={label} label={label} value={value} />
-                ))}
-              </div>
-            ) : null}
-          </div>
-
-          {report.data.cells?.length ? (
-            <Heatmap report={report.data} />
           ) : null}
 
-          {columns.length > 0 ? (
-            <DataTable
-              columns={columns}
-              rows={report.data.rows ?? []}
-              rowKey={(_, index) => String(index)}
-              empty="Laporan kosong untuk periode ini."
-            />
-          ) : report.data.cells?.length ? null : (
-            <div className="empty-state">Tidak ada data untuk periode ini.</div>
-          )}
+          <div className="card">
+            <div className="card-head">
+              <div className="card-head-main">
+                <span className="card-head-icon">
+                  <Icon name="list" size={18} />
+                </span>
+                <div>
+                  <h2 className="card-title">{report.data.title ?? 'Laporan'}</h2>
+                  <p className="card-sub">Dibuat {formatDateTime(report.data.generatedAt)}</p>
+                </div>
+              </div>
+              <span className="count-badge">{report.data.rows?.length ?? 0} baris</span>
+            </div>
+
+            {report.data.cells?.length ? (
+              <Heatmap report={report.data} />
+            ) : null}
+
+            {columns.length > 0 ? (
+              <DataTable
+                columns={columns}
+                rows={report.data.rows ?? []}
+                rowKey={(_, index) => String(index)}
+                empty="Laporan kosong untuk periode ini."
+              />
+            ) : report.data.cells?.length ? null : (
+              <div className="empty-state">Tidak ada data untuk periode ini.</div>
+            )}
+          </div>
         </div>
       ) : null}
     </>
@@ -286,7 +326,7 @@ function Heatmap({ report }: { report: Report }) {
   const max = Math.max(report.maxCount ?? 0, 1);
 
   return (
-    <div className="card">
+    <div className="card" style={{ marginTop: 16 }}>
       <h2 className="section-title">Heatmap check-in</h2>
       <div className="row" style={{ marginBottom: 10 }}>
         <span className="muted small">
