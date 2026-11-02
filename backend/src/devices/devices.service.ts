@@ -189,6 +189,7 @@ export class DevicesService {
               data: {
                 status: 'REVOKED',
                 revokedAt: new Date(),
+                revokedBy: null,
                 revokeReason: `auto-replaced-by:${target.id}`,
               },
             });

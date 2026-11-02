@@ -668,7 +668,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                             AppColors.radiusFull),
                                       ),
                                       child: Text(
-                                        'Multi-Perangkat',
+                                        'Satu Perangkat',
                                         style: AppText.labelSm.copyWith(
                                           color: AppColors.onSecondaryContainer,
                                           fontWeight: FontWeight.w600,
@@ -679,7 +679,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ),
                                 const SizedBox(height: 2),
                                 Text(
-                                  'Perangkat ini didaftarkan otomatis untuk presensi. Anda tetap bisa masuk dari perangkat lain dengan akun yang sama.',
+                                  'Perangkat ini didaftarkan otomatis untuk presensi. Saat Anda masuk di HP baru, perangkat lama otomatis dilepas dan tidak bisa dipakai presensi lagi.',
                                   style: AppText.labelSm.copyWith(
                                     color: AppColors.inkSecondary,
                                   ),

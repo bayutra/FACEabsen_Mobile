@@ -85,7 +85,9 @@ describe('DevicesService.register', () => {
     }));
     const updateMany = vi.fn(async () => ({ count: 1 }));
     const sessionUpdateMany = vi.fn(async () => ({ count: 1 }));
+    const push = { notifyEmployee: vi.fn() };
     const prisma = makePrisma({
+      employee: { findUnique: vi.fn(async () => ({ id: 'e1' })) },
       device: {
         findFirst: vi.fn(async () => null),
         findMany: vi.fn(async () => [{ id: 'd1' }]),
@@ -94,7 +96,13 @@ describe('DevicesService.register', () => {
       },
       session: { updateMany: sessionUpdateMany },
     });
-    const svc = new DevicesService(prisma, auditStub, jwtFor('u1'));
+    const svc = new DevicesService(
+      prisma,
+      auditStub,
+      jwtFor('u1'),
+      undefined,
+      push as never,
+    );
 
     const out = (await svc.register(dto(), 'u1')) as {
       id: string;
@@ -106,6 +114,8 @@ describe('DevicesService.register', () => {
       where: { id: { in: ['d1'] } },
       data: expect.objectContaining({
         status: 'REVOKED',
+        revokedAt: expect.any(Date),
+        revokedBy: null,
         revokeReason: 'auto-replaced-by:d2',
       }),
     });
@@ -115,6 +125,17 @@ describe('DevicesService.register', () => {
     });
     expect(auditStub.log).toHaveBeenCalledWith(
       expect.objectContaining({ action: 'DEVICE_REVOKED', targetId: 'd1' }),
+    );
+    expect(auditStub.log).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: 'DEVICE_REGISTERED',
+        targetId: 'd2',
+        metadata: expect.objectContaining({ replacedDeviceIds: ['d1'] }),
+      }),
+    );
+    expect(push.notifyEmployee).toHaveBeenCalledWith(
+      'e1',
+      expect.objectContaining({ data: expect.objectContaining({ id: 'd2' }) }),
     );
   });
 
