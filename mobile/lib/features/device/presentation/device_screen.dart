@@ -72,8 +72,8 @@ class _DeviceScreenState extends State<DeviceScreen> {
           padding: const EdgeInsets.all(AppColors.pageMargin),
           children: [
             const InfoBanner(
-              'Akun boleh aktif di beberapa perangkat. Perangkat baru otomatis '
-              'terdaftar saat Anda masuk, dan perangkat yang hilang dapat '
+              'Satu akun aktif di satu perangkat. Saat Anda masuk di HP baru, '
+              'perangkat lama otomatis dilepas. Perangkat yang hilang juga dapat '
               'dicabut oleh Admin IT.',
               title: 'Perangkat Saya',
             ),

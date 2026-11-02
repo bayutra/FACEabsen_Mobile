@@ -90,8 +90,9 @@ class DeviceRegisterScreen extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             const InfoBanner(
-              'Akun boleh dipakai di lebih dari satu perangkat. Perangkat yang dipakai akan terdaftar otomatis untuk presensi.',
-              title: 'Kebijakan Multi-Perangkat',
+              'Satu akun aktif di satu perangkat. Saat Anda masuk di HP baru, '
+              'perangkat lama otomatis dilepas dan tidak bisa dipakai presensi lagi.',
+              title: 'Kebijakan Satu Perangkat',
             ),
             const SizedBox(height: 8),
             const AppCard(

@@ -379,7 +379,9 @@ class _DeviceStatusSectionState extends State<DeviceStatusSection> {
                 ),
                 const SizedBox(height: 3),
                 const Text(
-                  'Presensi kehadiran dan verifikasi biometrik sah dilakukan dari perangkat yang terdaftar pada akun SIMRS Anda. Lebih dari satu perangkat diperbolehkan.',
+                  'Presensi kehadiran dan verifikasi biometrik sah dilakukan dari perangkat '
+                  'yang terdaftar pada akun SIMRS Anda. Satu akun hanya aktif di satu '
+                  'perangkat; masuk di HP baru memindahkan perangkat aktif.',
                   style: TextStyle(
                     fontSize: 11.5,
                     height: 1.4,
