@@ -60,8 +60,9 @@ berikutnya `PENDING` (`devices.service.ts:143-149`), sehingga akun terlihat
      - milik karyawan lain → `409` (tidak berubah);
      - milik karyawan ini dan status `REVOKED`/`LOST`/`REPLACED` → `409`,
        sehingga mobile membuat identitas baru dan mendaftar ulang;
-     - milik karyawan ini dan status `ACTIVE` → kembalikan baris itu
-       (idempotent, tidak ada perubahan);
+     - milik karyawan ini dan status `ACTIVE` → jadikan target, tetapi perangkat
+       `ACTIVE`/`PENDING` lain tetap dicabut (menjaga invariant satu perangkat
+       aktif);
      - milik karyawan ini dan status `PENDING` → baris itu yang diaktifkan
        (bukan membuat baris baru, agar tidak melanggar unique constraint).
    - Transaksi:

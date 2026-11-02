@@ -21,7 +21,7 @@ const jwtFor = (sub = 'u1', purpose = 'device-register') =>
   }) as never;
 
 function makePrisma(over: Record<string, Record<string, unknown>> = {}) {
-  return {
+  const prisma = {
     employee: {
       findUnique: vi.fn(async (a: { where: Record<string, unknown> }) =>
         'userId' in a.where
@@ -35,12 +35,22 @@ function makePrisma(over: Record<string, Record<string, unknown>> = {}) {
       findMany: vi.fn(async () => []),
       findUnique: vi.fn(async () => null),
       create: vi.fn(),
-      update: vi.fn(),
+      update: vi.fn(
+        async (a: { where: { id: string }; data: Record<string, unknown> }) => ({
+          id: a.where.id,
+          ...a.data,
+        }),
+      ),
+      updateMany: vi.fn(async () => ({ count: 0 })),
       count: vi.fn(async () => 0),
       ...over.device,
     },
     session: { updateMany: vi.fn(async () => ({ count: 0 })), ...over.session },
-  } as unknown as PrismaService;
+  } as Record<string, unknown>;
+  prisma.$transaction = vi.fn(
+    async (fn: (tx: Record<string, unknown>) => unknown) => fn(prisma),
+  );
+  return prisma as unknown as PrismaService;
 }
 
 const dto = () => ({
@@ -68,19 +78,128 @@ describe('DevicesService.register', () => {
     );
   });
 
-  it('second device also ACTIVE (multi-perangkat)', async () => {
+  it('perangkat kedua menggantikan perangkat pertama', async () => {
+    const create = vi.fn(async (a: { data: Record<string, unknown> }) => ({
+      id: 'd2',
+      ...a.data,
+    }));
+    const updateMany = vi.fn(async () => ({ count: 1 }));
+    const sessionUpdateMany = vi.fn(async () => ({ count: 1 }));
     const prisma = makePrisma({
       device: {
         findFirst: vi.fn(async () => null),
-        create: vi.fn(async (a: { data: Record<string, unknown> }) => ({
+        findMany: vi.fn(async () => [{ id: 'd1' }]),
+        create,
+        updateMany,
+      },
+      session: { updateMany: sessionUpdateMany },
+    });
+    const svc = new DevicesService(prisma, auditStub, jwtFor('u1'));
+
+    const out = (await svc.register(dto(), 'u1')) as {
+      id: string;
+      status: string;
+    };
+
+    expect(out).toMatchObject({ id: 'd2', status: 'ACTIVE' });
+    expect(updateMany).toHaveBeenCalledWith({
+      where: { id: { in: ['d1'] } },
+      data: expect.objectContaining({
+        status: 'REVOKED',
+        revokeReason: 'auto-replaced-by:d2',
+      }),
+    });
+    expect(sessionUpdateMany).toHaveBeenCalledWith({
+      where: { deviceId: { in: ['d1'] }, revokedAt: null },
+      data: { revokedAt: expect.any(Date) },
+    });
+    expect(auditStub.log).toHaveBeenCalledWith(
+      expect.objectContaining({ action: 'DEVICE_REVOKED', targetId: 'd1' }),
+    );
+  });
+
+  it('clash PENDING diaktifkan tanpa membuat baris baru', async () => {
+    const create = vi.fn();
+    const update = vi.fn(
+      async (a: { where: { id: string }; data: Record<string, unknown> }) => ({
+        id: a.where.id,
+        ...a.data,
+      }),
+    );
+    const prisma = makePrisma({
+      employee: { findUnique: vi.fn(async () => ({ id: 'e1' })) },
+      device: {
+        findFirst: vi.fn(async () => ({
           id: 'd2',
-          ...a.data,
+          employeeId: 'e1',
+          status: 'PENDING',
         })),
+        findMany: vi.fn(async () => []),
+        update,
+        create,
       },
     });
     const svc = new DevicesService(prisma, auditStub, jwtFor('u1'));
-    const out = (await svc.register(dto(), 'u1')) as { status: string };
-    expect(out.status).toBe('ACTIVE');
+
+    const out = (await svc.register(dto(), 'u1')) as {
+      id: string;
+      status: string;
+    };
+
+    expect(out).toMatchObject({ id: 'd2', status: 'ACTIVE' });
+    expect(create).not.toHaveBeenCalled();
+    expect(update).toHaveBeenCalledWith({
+      where: { id: 'd2' },
+      data: expect.objectContaining({ status: 'ACTIVE' }),
+    });
+  });
+
+  it.each(['REVOKED', 'LOST', 'REPLACED'])(
+    'clash %s milik sendiri -> 409 agar mobile daftar ulang',
+    async (status) => {
+      const prisma = makePrisma({
+        device: {
+          findFirst: vi.fn(async () => ({
+            id: 'd1',
+            employeeId: 'e1',
+            status,
+          })),
+        },
+      });
+      const svc = new DevicesService(prisma, auditStub, jwtFor('u1'));
+
+      await expect(svc.register(dto(), 'u1')).rejects.toThrow(
+        'already registered',
+      );
+    },
+  );
+
+  it('clash ACTIVE milik sendiri tetap idempotent tapi mencabut aktif lain', async () => {
+    const create = vi.fn();
+    const updateMany = vi.fn(async () => ({ count: 1 }));
+    const prisma = makePrisma({
+      employee: { findUnique: vi.fn(async () => ({ id: 'e1' })) },
+      device: {
+        findFirst: vi.fn(async () => ({
+          id: 'd1',
+          employeeId: 'e1',
+          status: 'ACTIVE',
+        })),
+        findMany: vi.fn(async () => [{ id: 'd2' }]),
+        updateMany,
+        create,
+      },
+    });
+    const svc = new DevicesService(prisma, auditStub, jwtFor('u1'));
+
+    await expect(svc.register(dto(), 'u1')).resolves.toMatchObject({
+      id: 'd1',
+      status: 'ACTIVE',
+    });
+    expect(create).not.toHaveBeenCalled();
+    expect(updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { id: { in: ['d2'] } } }),
+    );
   });
 
   it('duplicate installationId -> 409; no employee profile -> 404', async () => {
@@ -91,6 +210,12 @@ describe('DevicesService.register', () => {
     await expect(svc.register(dto(), 'u1')).rejects.toThrow(
       'already registered',
     );
+    const updateMany = (
+      prisma as unknown as {
+        device: { updateMany: ReturnType<typeof vi.fn> };
+      }
+    ).device.updateMany;
+    expect(updateMany).not.toHaveBeenCalled();
 
     const svc2 = new DevicesService(
       makePrisma({ employee: { findUnique: vi.fn(async () => null) } }),

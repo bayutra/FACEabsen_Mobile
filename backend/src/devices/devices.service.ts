@@ -2,6 +2,7 @@ import {
   ConflictException,
   Injectable,
   NotFoundException,
+  Optional,
   UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -13,6 +14,7 @@ import { AUTH_POLICY } from '../auth/constants.js';
 import { satisfiesRole } from '../auth/rbac.js';
 import { resolveHospitalScope } from '../auth/tenant-scope.js';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { PushService } from '../push/push.service.js';
 import type { ListDevicesQuery, RegisterDeviceDto } from './dto.js';
 
 export type DeviceCheck =
@@ -90,6 +92,7 @@ export class DevicesService {
     private readonly config: ConfigService = {
       get: (_k: string, d: unknown) => d,
     } as ConfigService,
+    @Optional() private readonly push?: PushService,
   ) {}
   private get maxActive(): number {
     const v = Number(this.config.get('MAX_ACTIVE_DEVICES_PER_EMPLOYEE', 2));
@@ -135,35 +138,95 @@ export class DevicesService {
         ],
       },
     });
-    if (clash) {
-      if (clash.employeeId === employee.id) return clash;
+    if (clash && clash.employeeId !== employee.id) {
+      throw new ConflictException('Device already registered');
+    }
+    if (
+      clash &&
+      (clash.status === 'REVOKED' ||
+        clash.status === 'LOST' ||
+        clash.status === 'REPLACED')
+    ) {
       throw new ConflictException('Device already registered');
     }
 
     try {
-      const activeCount =
-        (await this.prisma.device.count?.({
-          where: { employeeId: employee.id, status: 'ACTIVE' },
-        })) ?? 0;
-      const status = activeCount === 0 ? 'ACTIVE' : 'PENDING';
-      const device = await this.prisma.device.create({
-        data: {
-          employeeId: employee.id,
-          installationId: dto.installationId,
-          platform: dto.platform,
-          deviceName: dto.deviceName,
-          appVersion: dto.appVersion,
-          devicePublicKey: dto.devicePublicKey,
-          status,
+      const { device, revokedIds } = await this.prisma.$transaction(
+        async (tx) => {
+          const target = clash
+            ? await tx.device.update({
+                where: { id: clash.id },
+                data: {
+                  status: 'ACTIVE',
+                  deviceName: dto.deviceName,
+                  appVersion: dto.appVersion,
+                },
+              })
+            : await tx.device.create({
+                data: {
+                  employeeId: employee.id,
+                  installationId: dto.installationId,
+                  platform: dto.platform,
+                  deviceName: dto.deviceName,
+                  appVersion: dto.appVersion,
+                  devicePublicKey: dto.devicePublicKey,
+                  status: 'ACTIVE',
+                },
+              });
+
+          const others = await tx.device.findMany({
+            where: {
+              employeeId: employee.id,
+              status: { in: ['ACTIVE', 'PENDING'] },
+              id: { not: target.id },
+            },
+            select: { id: true },
+          });
+          const revokedIds = others.map((row) => row.id);
+          if (revokedIds.length > 0) {
+            await tx.device.updateMany({
+              where: { id: { in: revokedIds } },
+              data: {
+                status: 'REVOKED',
+                revokedAt: new Date(),
+                revokeReason: `auto-replaced-by:${target.id}`,
+              },
+            });
+            await tx.session.updateMany({
+              where: { deviceId: { in: revokedIds }, revokedAt: null },
+              data: { revokedAt: new Date() },
+            });
+          }
+          return { device: target, revokedIds };
         },
-      });
+      );
+
       await this.audit.log({
         actorId: userId,
         action: 'DEVICE_REGISTERED',
         targetType: 'device',
         targetId: device.id,
         ipAddress: meta.ip,
-        metadata: { status: device.status, platform: dto.platform },
+        metadata: {
+          status: device.status,
+          platform: dto.platform,
+          replacedDeviceIds: revokedIds,
+        },
+      });
+      for (const id of revokedIds) {
+        await this.audit.log({
+          actorId: userId,
+          action: 'DEVICE_REVOKED',
+          targetType: 'device',
+          targetId: id,
+          ipAddress: meta.ip,
+          metadata: { reason: `auto-replaced-by:${device.id}` },
+        });
+      }
+      this.push?.notifyEmployee(employee.id, {
+        title: 'Perangkat aktif dipindahkan',
+        body: 'Akun Anda kini aktif di perangkat baru. Perangkat lama otomatis dinonaktifkan.',
+        data: { type: 'device', id: device.id, status: 'ACTIVE' },
       });
       return device;
     } catch (e) {
