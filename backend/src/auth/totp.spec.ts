@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import {
   base32Decode,
   base32Encode,
+  decryptTotpSecret,
+  encryptTotpSecret,
   generateTotpSecret,
   hotp,
   totp,
@@ -64,6 +66,25 @@ describe('verifyTotp window', () => {
 
   it('returns false (never throws) for a corrupt stored secret', () => {
     expect(verifyTotp('!!!not-base32!!!', '123456')).toBe(false);
+  });
+});
+
+describe('totp secret encryption', () => {
+  const key = Buffer.alloc(32, 3);
+
+  it('round-trips and binds the ciphertext to the user id', () => {
+    const enc = encryptTotpSecret('JBSWY3DPEHPK3PXP', 'u1', key);
+    expect(enc.startsWith('enc:v1:')).toBe(true);
+    expect(enc).not.toContain('JBSWY3DPEHPK3PXP');
+    expect(decryptTotpSecret(enc, 'u1', key)).toBe('JBSWY3DPEHPK3PXP');
+    expect(() => decryptTotpSecret(enc, 'u2', key)).toThrow();
+    expect(() => decryptTotpSecret(enc, 'u1', Buffer.alloc(32, 4))).toThrow();
+  });
+
+  it('passes legacy plaintext through for lazy migration', () => {
+    expect(decryptTotpSecret('JBSWY3DPEHPK3PXP', 'u1', key)).toBe(
+      'JBSWY3DPEHPK3PXP',
+    );
   });
 });
 

@@ -1,4 +1,10 @@
-import { createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
+import {
+  createCipheriv,
+  createDecipheriv,
+  createHmac,
+  randomBytes,
+  timingSafeEqual,
+} from 'node:crypto';
 
 export const TOTP_PERIOD_SEC = 30;
 export const TOTP_DIGITS = 6;
@@ -10,10 +16,55 @@ export const TOTP_SECRET_BYTES = 20;
 export const TOTP_TOKEN_TTL_SEC = 300;
 export const TOTP_TOKEN_PURPOSE = 'totp';
 
+/** Versioned envelope for TOTP secrets stored at rest (AES-256-GCM). */
+export const TOTP_SECRET_PREFIX = 'enc:v1:';
+
 const BASE32_ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
 
 export function generateTotpSecret(bytes: number = TOTP_SECRET_BYTES): string {
   return base32Encode(randomBytes(bytes));
+}
+
+/**
+ * Encrypt a base32 TOTP secret for storage. The userId is bound as AAD so a
+ * ciphertext copied to another row cannot be decrypted.
+ */
+export function encryptTotpSecret(
+  secret: string,
+  userId: string,
+  key: Buffer,
+): string {
+  const iv = randomBytes(12);
+  const cipher = createCipheriv('aes-256-gcm', key, iv);
+  cipher.setAAD(Buffer.from(`totp:${userId}`, 'utf8'));
+  const ct = Buffer.concat([cipher.update(secret, 'utf8'), cipher.final()]);
+  const tag = cipher.getAuthTag();
+  return `${TOTP_SECRET_PREFIX}${Buffer.concat([iv, tag, ct]).toString(
+    'base64url',
+  )}`;
+}
+
+/**
+ * Decrypt a stored TOTP secret. Legacy plaintext base32 values (pre-encryption
+ * deployments) are returned as-is so existing enrollments keep working; they
+ * are re-encrypted on the next successful use.
+ */
+export function decryptTotpSecret(
+  stored: string,
+  userId: string,
+  key: Buffer,
+): string {
+  if (!stored.startsWith(TOTP_SECRET_PREFIX)) return stored;
+  const blob = Buffer.from(stored.slice(TOTP_SECRET_PREFIX.length), 'base64url');
+  const iv = blob.subarray(0, 12);
+  const tag = blob.subarray(12, 28);
+  const ct = blob.subarray(28);
+  const decipher = createDecipheriv('aes-256-gcm', key, iv);
+  decipher.setAAD(Buffer.from(`totp:${userId}`, 'utf8'));
+  decipher.setAuthTag(tag);
+  return Buffer.concat([decipher.update(ct), decipher.final()]).toString(
+    'utf8',
+  );
 }
 
 export function base32Encode(data: Uint8Array): string {

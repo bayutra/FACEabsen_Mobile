@@ -7,7 +7,11 @@ import { TotpService } from './totp.service.js';
 const PASSWORD = 'Password123!';
 let HASH = '';
 
-const configStub = { get: (_key: string, dflt: unknown) => dflt } as never;
+const TEST_KEY = Buffer.alloc(32, 7).toString('base64');
+const configStub = {
+  get: (key: string, dflt: unknown) =>
+    key === 'DATA_ENCRYPTION_KEY' ? TEST_KEY : dflt,
+} as never;
 const auditStub = { log: vi.fn(async () => undefined) } as never;
 const jwt = new JwtService({ secret: 'test-secret' });
 
@@ -116,7 +120,8 @@ describe('TotpService.setup/enable', () => {
       `otpauth://totp/face-absen:employee@rs.test?secret=${out.secret}` +
         `&issuer=face-absen&algorithm=SHA1&digits=6&period=30`,
     );
-    expect(users.get('u1').totpSecret).toBe(out.secret);
+    expect(users.get('u1').totpSecret).toMatch(/^enc:v1:/);
+    expect(users.get('u1').totpSecret).not.toContain(out.secret);
     expect(users.get('u1').totpEnabled).toBe(false);
   });
 
@@ -142,7 +147,7 @@ describe('TotpService.setup/enable', () => {
 
     expect(codes.size).toBe(8);
     for (const row of codes.values()) {
-      expect(row.codeHash).toMatch(/^[0-9a-f]{64}$/);
+      expect(row.codeHash).toMatch(/^\$argon2/);
       expect(JSON.stringify(row)).not.toContain(out.recoveryCodes[0]);
     }
     expect(auditStub.log).toHaveBeenCalledWith(
@@ -295,6 +300,30 @@ describe('TotpService.verify', () => {
     expect(auditStub.log).toHaveBeenCalledWith(
       expect.objectContaining({ action: 'TOTP_FAILED', result: 'FAILED' }),
     );
+  });
+
+  it('locks the account after repeated wrong codes', async () => {
+    const { users, svc, secret, token } = await enrolled();
+    const current = totp(secret);
+    const wrong = current === '000000' ? '000001' : '000000';
+    for (let i = 0; i < 5; i++) {
+      await expect(svc.verify(token, wrong, {})).rejects.toThrow();
+    }
+    expect(users.get('u1').failedLoginAttempts).toBe(5);
+    expect(users.get('u1').lockedUntil).toBeInstanceOf(Date);
+    // Even the correct code is refused while the lock is active.
+    await expect(svc.verify(token, totp(secret), {})).rejects.toThrow(
+      'locked',
+    );
+  });
+
+  it('successful verify resets failure counters', async () => {
+    const { users, svc, secret, token } = await enrolled();
+    users.get('u1').failedLoginAttempts = 3;
+    const out = await svc.verify(token, totp(secret), {});
+    expect(out.accessToken).toBeTruthy();
+    expect(users.get('u1').failedLoginAttempts).toBe(0);
+    expect(users.get('u1').lockedUntil).toBeNull();
   });
 
   it('expired challenge token is 401', async () => {

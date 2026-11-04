@@ -7,5 +7,9 @@ export default defineConfig({
     globals: true,
     root: './',
     include: ['**/*.e2e-spec.ts'],
+    // Argon2 recovery-code hashing/verification is intentionally slow; give
+    // the HTTP suites the same headroom as the unit config.
+    testTimeout: 30_000,
+    hookTimeout: 30_000,
   },
 });

@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -15,6 +16,8 @@ import type { RequestMeta } from './auth.service.js';
 import { AUTH_POLICY } from './constants.js';
 import {
   buildOtpauthUri,
+  decryptTotpSecret,
+  encryptTotpSecret,
   generateTotpSecret,
   safeEqual,
   TOTP_TOKEN_PURPOSE,
@@ -25,6 +28,8 @@ import {
 const RECOVERY_CODE_COUNT = 8;
 
 const RECOVERY_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+
+const LEGACY_SHA256_HASH = /^[0-9a-f]{64}$/;
 
 export function normalizeRecoveryCode(input: string): string {
   return (input ?? '').replace(/[^a-z0-9]/gi, '').toUpperCase();
@@ -43,6 +48,8 @@ export class TotpService {
   private readonly accessTtlSec: number;
   private readonly refreshTtlDays: number;
   private readonly totpIssuer: string;
+  private readonly maxFailedAttempts: number;
+  private readonly lockoutMinutes: number;
 
   constructor(
     private readonly prisma: PrismaService,
@@ -59,6 +66,25 @@ export class TotpService {
     this.totpIssuer = String(
       config.get('TOTP_ISSUER', AUTH_POLICY.jwtIssuer) ?? AUTH_POLICY.jwtIssuer,
     );
+    this.maxFailedAttempts = Number(
+      config.get('LOGIN_MAX_ATTEMPTS', AUTH_POLICY.maxFailedAttempts),
+    );
+    this.lockoutMinutes = Number(
+      config.get('LOCKOUT_MINUTES', AUTH_POLICY.lockoutMinutes),
+    );
+  }
+
+  private secretKey(): Buffer {
+    const raw = this.config.get<string>('DATA_ENCRYPTION_KEY', '');
+    const key = raw ? Buffer.from(raw, 'base64') : Buffer.alloc(0);
+    if (key.length !== 32) {
+      throw new Error('DATA_ENCRYPTION_KEY must be base64 of 32 bytes');
+    }
+    return key;
+  }
+
+  private decryptSecret(user: { id: string; totpSecret: string }): string {
+    return decryptTotpSecret(user.totpSecret, user.id, this.secretKey());
   }
 
   async setup(userId: string) {
@@ -67,7 +93,10 @@ export class TotpService {
     const secret = generateTotpSecret();
     await this.prisma.user.update({
       where: { id: userId },
-      data: { totpSecret: secret, totpEnabled: false },
+      data: {
+        totpSecret: encryptTotpSecret(secret, userId, this.secretKey()),
+        totpEnabled: false,
+      },
     });
 
     await this.prisma.totpRecoveryCode.deleteMany({ where: { userId } });
@@ -84,13 +113,14 @@ export class TotpService {
       throw new ConflictException('TOTP is already enabled');
     if (!user.totpSecret)
       throw new BadRequestException('TOTP setup has not been started');
-    if (!verifyTotp(user.totpSecret, code)) {
-      await this.audit.log({
-        actorId: userId,
-        action: 'TOTP_FAILED',
-        result: 'FAILED',
-        metadata: { stage: 'enable' },
-      });
+    let secret: string;
+    try {
+      secret = this.decryptSecret({ id: userId, totpSecret: user.totpSecret });
+    } catch {
+      secret = '';
+    }
+    if (!secret || !verifyTotp(secret, code)) {
+      await this.registerFailedAttempt(user, 'enable');
       throw new UnauthorizedException('Invalid code');
     }
     const recoveryCodes: string[] = [];
@@ -101,16 +131,22 @@ export class TotpService {
       seen.add(candidate);
       recoveryCodes.push(candidate);
     }
+    const codeHashes = await Promise.all(
+      recoveryCodes.map((c) => argon2.hash(normalizeRecoveryCode(c))),
+    );
     await this.prisma.totpRecoveryCode.deleteMany({ where: { userId } });
     await this.prisma.totpRecoveryCode.createMany({
-      data: recoveryCodes.map((c) => ({
-        userId,
-        codeHash: sha256(normalizeRecoveryCode(c)),
-      })),
+      data: codeHashes.map((codeHash) => ({ userId, codeHash })),
     });
     await this.prisma.user.update({
       where: { id: userId },
-      data: { totpEnabled: true },
+      data: {
+        totpEnabled: true,
+        // Lazy migration: plaintext legacy secrets are re-encrypted.
+        totpSecret: encryptTotpSecret(secret, userId, this.secretKey()),
+        failedLoginAttempts: 0,
+        lockedUntil: null,
+      },
     });
     await this.audit.log({ actorId: userId, action: 'TOTP_ENABLED' });
     return { recoveryCodes };
@@ -171,10 +207,18 @@ export class TotpService {
       await this.fail(userId, meta, 'verify');
       throw new UnauthorizedException('Invalid code');
     }
-    if (!verifyTotp(user.totpSecret, code)) {
-      await this.fail(user.id, meta, 'verify');
+    this.assertNotLocked(user);
+    let secret = '';
+    try {
+      secret = this.decryptSecret({ id: user.id, totpSecret: user.totpSecret });
+    } catch {
+      secret = '';
+    }
+    if (!secret || !verifyTotp(secret, code)) {
+      await this.registerFailedAttempt(user, 'verify');
       throw new UnauthorizedException('Invalid code');
     }
+    await this.resetAttempts(user.id);
     return this.issueLogin(user, meta, 'totp');
   }
 
@@ -188,19 +232,28 @@ export class TotpService {
       where: { id: userId },
       include: { userRoles: { include: { role: true } } },
     });
-    const presentedHash = sha256(normalizeRecoveryCode(recoveryCode));
+    const normalized = normalizeRecoveryCode(recoveryCode);
+    const legacyHash = sha256(normalized);
     const rows = user
       ? await this.prisma.totpRecoveryCode.findMany({
           where: { userId: user.id, usedAt: null },
         })
       : [];
 
+    if (user) this.assertNotLocked(user);
+
+    // Verify every row (no early exit) so timing does not reveal which code
+    // matched. Hashes are Argon2; legacy SHA-256 rows still verify once.
     let matchId: string | null = null;
     for (const row of rows) {
-      if (safeEqual(row.codeHash, presentedHash)) matchId = row.id;
+      const ok = LEGACY_SHA256_HASH.test(row.codeHash)
+        ? safeEqual(row.codeHash, legacyHash)
+        : await argon2.verify(row.codeHash, normalized).catch(() => false);
+      if (ok) matchId = row.id;
     }
     if (!user || !user.isActive || !user.totpEnabled || !matchId) {
-      await this.fail(userId, meta, 'recover');
+      if (user) await this.registerFailedAttempt(user, 'recover');
+      else await this.fail(userId, meta, 'recover');
       throw new UnauthorizedException('Invalid recovery code');
     }
     const consumed = await this.prisma.totpRecoveryCode.updateMany({
@@ -208,10 +261,53 @@ export class TotpService {
       data: { usedAt: new Date() },
     });
     if (consumed.count === 0) {
-      await this.fail(user.id, meta, 'recover');
+      await this.registerFailedAttempt(user, 'recover');
       throw new UnauthorizedException('Invalid recovery code');
     }
+    await this.resetAttempts(user.id);
     return this.issueLogin(user, meta, 'totp-recovery');
+  }
+
+  private assertNotLocked(user: {
+    lockedUntil?: Date | string | null;
+  }): void {
+    const lockedUntil = user.lockedUntil ? new Date(user.lockedUntil) : null;
+    if (lockedUntil && lockedUntil.getTime() > Date.now()) {
+      throw new ForbiddenException(
+        'Account temporarily locked. Try again later.',
+      );
+    }
+  }
+
+  /** Reuse the account lockout counters for TOTP brute-force protection. */
+  private async registerFailedAttempt(
+    user: { id: string; failedLoginAttempts?: number | null },
+    stage: string,
+  ): Promise<void> {
+    const next = (user.failedLoginAttempts ?? 0) + 1;
+    const locked = next >= this.maxFailedAttempts;
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        failedLoginAttempts: next,
+        ...(locked
+          ? { lockedUntil: new Date(Date.now() + this.lockoutMinutes * 60_000) }
+          : {}),
+      },
+    });
+    await this.audit.log({
+      actorId: user.id,
+      action: 'TOTP_FAILED',
+      result: 'FAILED',
+      metadata: { stage, failedAttempts: next, locked },
+    });
+  }
+
+  private async resetAttempts(userId: string): Promise<void> {
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { failedLoginAttempts: 0, lockedUntil: null },
+    });
   }
 
   private async fail(userId: string, meta: RequestMeta, stage: string) {

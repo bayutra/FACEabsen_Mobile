@@ -133,6 +133,9 @@ function makeFake() {
 
 let app: INestApplication;
 let fake: ReturnType<typeof makeFake>;
+let activeSecret = '';
+
+const TEST_KEY = Buffer.alloc(32, 9).toString('base64');
 
 async function seedUser(id: string, email: string, password = 'Password123!') {
   fake.users.set(id, {
@@ -177,7 +180,10 @@ beforeAll(async () => {
       { provide: PrismaService, useValue: fake },
       {
         provide: ConfigService,
-        useValue: { get: (_k: string, d: unknown) => d },
+        useValue: {
+          get: (key: string, fallback: unknown) =>
+            key === 'DATA_ENCRYPTION_KEY' ? TEST_KEY : fallback,
+        },
       },
       { provide: AuditService, useValue: { log: async () => undefined } },
     ],
@@ -233,6 +239,9 @@ describe('TOTP over HTTP', () => {
       `otpauth://totp/face-absen:totp@rs.test?secret=${res.body.secret}` +
         `&issuer=face-absen&algorithm=SHA1&digits=6&period=30`,
     );
+    // Secret tersimpan terenkripsi; simpan versi plaintext untuk uji berikutnya.
+    expect(fake.users.get('u-totp').totpSecret).toMatch(/^enc:v1:/);
+    activeSecret = res.body.secret as string;
   });
 
   it('enable -> login challenge -> verify wrong 401 -> verify correct session', async () => {
@@ -243,7 +252,7 @@ describe('TOTP over HTTP', () => {
     const token = login.body.accessToken as string;
     const auth = { Authorization: `Bearer ${token}` };
 
-    const secret = fake.users.get('u-totp').totpSecret as string;
+    const secret = activeSecret;
     expect(secret).toBeTruthy();
 
     const badEnable = await request(server)
@@ -301,7 +310,7 @@ describe('TOTP over HTTP', () => {
       .post('/auth/login')
       .send({ email: 'totp@rs.test', password: 'Password123!' });
     expect(ch.body.totpRequired).toBe(true);
-    const secret = fake.users.get('u-totp').totpSecret as string;
+    const secret = activeSecret;
     const verified = await request(server)
       .post('/auth/totp/verify')
       .send({ totpToken: ch.body.totpToken, code: totp(secret) });
@@ -326,6 +335,7 @@ describe('TOTP over HTTP', () => {
       .set('Authorization', `Bearer ${freshToken}`);
     expect(setup.status).toBe(200);
     const freshSecret = setup.body.secret as string;
+    activeSecret = freshSecret;
     const enabled = await request(server)
       .post('/auth/totp/enable')
       .set('Authorization', `Bearer ${freshToken}`)
@@ -358,7 +368,7 @@ describe('TOTP over HTTP', () => {
     const ch = await request(server)
       .post('/auth/login')
       .send({ email: 'totp@rs.test', password: 'Password123!' });
-    const secret = fake.users.get('u-totp').totpSecret as string;
+    const secret = activeSecret;
     const verified = await request(server)
       .post('/auth/totp/verify')
       .send({ totpToken: ch.body.totpToken, code: totp(secret) });
