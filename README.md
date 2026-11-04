@@ -48,11 +48,11 @@ keduanya.
 .
 ├── mobile/                  # Flutter app (Android + iOS)
 │   ├── lib/core/            # config, network, storage, theme, navigation
-│   ├── lib/features/        # 12 fitur (attendance, face, device, ...)
+│   ├── lib/features/        # 14 fitur (attendance, face, device, ...)
 │   ├── assets/models/       # mobilefacenet.tflite
 │   └── test/                # unit + widget test
 ├── backend/                 # NestJS API
-│   ├── src/                 # 18 modul domain
+│   ├── src/                 # 21 modul domain
 │   ├── prisma/              # schema, migrations, seed
 │   ├── scripts/             # env-check, kalibrasi, farm cleanup
 │   └── test/                # E2E HTTP
@@ -63,8 +63,9 @@ keduanya.
 ├── docs/
 │   ├── PRD.md               # PRD (sumber kebenaran)
 │   ├── README.md            # indeks dokumen
-│   ├── design/mobile/       # mockup Stitch 20 layar
-│   └── guides/              # deploy, go-live, iOS, Android, privasi, dll.
+│   ├── design/              # mockup Stitch: mobile/ + dashboard web
+│   ├── guides/              # deploy, go-live, iOS, Android, privasi, dll.
+│   └── superpowers/         # plan & spec internal agent
 ├── nginx/                   # reverse proxy API + dashboard + TLS
 ├── scripts/                 # host prep, backup, restore, smoke, cert
 ├── docker-compose.yml       # postgres + redis + backend + web + nginx

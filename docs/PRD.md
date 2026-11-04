@@ -1,10 +1,10 @@
 # PRD — Face Absen Mobile
 
-**Versi:** 2.0 (mobile-only)
+**Versi:** 2.1
 **Tanggal:** 20 Oktober 2026
 **Status:** Baseline implementasi — inti presensi mobile sudah berjalan
 **Produk:** Presensi karyawan RSU Darmayu Madiun
-**Klien:** Aplikasi Flutter Android + iOS (satu-satunya klien)
+**Klien:** Aplikasi Flutter Android + iOS dan dashboard web Next.js (`web/`)
 **Backend:** NestJS / Node.js / PostgreSQL / Redis
 **Face Recognition:** MobileFaceNet — on-device
 **Dokumen terkait:** [`README.md`](README.md), [`guides/`](guides/), [`design/mobile/`](design/mobile/)

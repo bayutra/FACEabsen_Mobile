@@ -16,6 +16,20 @@ docker compose --env-file .env.production config >/dev/null
 
 Bukti: `env-check → OK`, `config` exit 0, `ufw status` hanya 80/443 publik.
 
+### Script ops (root `scripts/`)
+
+| Script | Keterangan |
+|---|---|
+| `host-prepare.sh` | Persiapan host Linux (Docker, ufw). Tanpa argumen. |
+| `gen-cert.sh` | Generate sertifikat TLS. Tambahkan `curl` langkah 3 setelah sertifikat terbit. |
+| `db-go-live.sh` | Migrate deploy + seed prod. Tanpa argumen. |
+| `smoke-api.sh` | Smoke test API: `sh scripts/smoke-api.sh <url>`. |
+| `backup-db.sh` | Backup DB (terhubung dengan `restore-db.sh`). |
+| `restore-db.sh` | Restore DB dari hasil backup. |
+| `rotate-secrets.sh` | Rotasi secret. |
+| `approve-device.ps1` | Alat operator Windows untuk menyetujui perangkat (manual). |
+| `download-ipa.ps1` | Alat operator Windows untuk mengunduh iOS `IPP` dari CI (manual). |
+
 ## 2. Postgres + migrate deploy + seed prod
 
 ```sh
@@ -56,8 +70,8 @@ curl -sk https://absen.rumahsakit.example/api/v1/health   # JSON health
 curl -sk -o /dev/null -w '%{http_code}\n' https://absen.rumahsakit.example/  # 404
 ```
 
-Tidak ada web dashboard; `/` memang harus 404 dan hanya `/api/v1/*` yang
-diteruskan ke backend.
+Tidak ada login dashboard; `/` memang harus 404 dan hanya `/api/v1/*` yang
+diteruskan ke backend. Dashboard supervisor/admin berjalan di `web/` (Next.js, `web/README.md`).
 
 ## 3b. Operasi jam sibuk / rush hour (500 karyawan)
 

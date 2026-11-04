@@ -7,8 +7,9 @@ perilaku produk; panduan teknis menjelaskan cara menjalankan dan merilis.
 
 | Dokumen | Isi |
 |---|---|
-| [`PRD.md`](PRD.md) | PRD versi 2.0 — mobile-only, alur presensi, keamanan, API, kriteria terima |
+| [`PRD.md`](PRD.md) | PRD versi 2.1 — mobile + dashboard web, alur presensi, keamanan, API, kriteria terima |
 | [`design/mobile/`](design/mobile/) | Mockup Stitch 20 layar (HTML + PNG), termasuk `DESIGN.md` |
+| [`design/stitch_rs_absen_hospital_dashboard/`](design/stitch_rs_absen_hospital_dashboard/) | Mockup Stitch dashboard web admin/supervisor |
 
 ## Panduan teknis
 

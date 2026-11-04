@@ -1,8 +1,9 @@
 # Face Absen API
 
 Backend **NestJS + PostgreSQL + Redis** untuk aplikasi mobile Face Absen.
-Tidak menyajikan web dashboard; seluruh trafik klien masuk lewat
-`/api/v1/` dari aplikasi Android/iOS melalui nginx.
+Backend hanya menyajikan API `/api/v1/`; dashboard web Next.js komponen terpisah
+di [`web/](../web/README.md). Seluruh trafik klien masuk lewat nginx,
+dari aplikasi Android/iOS maupun dashboard web.
 
 ## Stack
 

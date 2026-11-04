@@ -9,3 +9,20 @@ backups/
 
 # Koneksi Database Client lokal (berisi password dev).
 .vscode/database-client-config.json
+
+# Environment values — local and per-developer; the tracked .example files stay.
+.env
+.env.local
+!.env.example
+!.env.production.example
+
+# Certificates and signing keys — generated at deploy time, never tracked.
+nginx/certs/
+*.pem
+*.key
+*.jks
+*.keystore
+
+# Agent and editor scratch directories (local-only).
+/.freebuff/
+/.superpowers/
