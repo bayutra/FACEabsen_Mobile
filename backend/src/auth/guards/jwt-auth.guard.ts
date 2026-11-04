@@ -60,15 +60,25 @@ export class JwtAuthGuard implements CanActivate {
     }
     const user = await this.prisma.user.findUnique({
       where: { id: payload.sub },
+      include: { userRoles: { include: { role: true } } },
     });
     if (!user || !user.isActive) {
       throw new UnauthorizedException('Account inactive');
     }
 
+    // Roles selalu diambil dari database, bukan dari payload token: perubahan
+    // peran oleh admin langsung berlaku tanpa menunggu access token kedaluwarsa.
+    const roles = (
+      (user as { userRoles?: Array<{ role?: { name?: string } }> })
+        .userRoles ?? []
+    )
+      .map((ur) => ur.role?.name)
+      .filter((name): name is string => typeof name === 'string');
+
     req.auth = {
       userId: user.id,
       email: user.email,
-      roles: Array.isArray(payload.roles) ? payload.roles : [],
+      roles,
       sessionId: session.id,
     };
     return true;

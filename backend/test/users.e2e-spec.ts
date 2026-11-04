@@ -127,11 +127,17 @@ function makeFake() {
   };
 
   const userApi = {
-    findUnique: async ({ where }: any) => {
+    findUnique: async ({ where, include }: any) => {
       const u = where.email
         ? [...users.values()].find((x) => x.email === where.email)
         : users.get(where.id);
       if (!u) return null;
+      if (include?.userRoles) {
+        return {
+          ...u,
+          userRoles: rolesOf(u.id).map((name) => ({ role: { name } })),
+        };
+      }
       return { ...u };
     },
     findMany: async ({ where, orderBy, skip = 0, take }: any) => {

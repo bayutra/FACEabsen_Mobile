@@ -131,6 +131,11 @@ function makeFake() {
         for (const s of sessions.values()) {
           if (where.userId && s.userId !== where.userId) continue;
           if (where.id && s.id !== where.id) continue;
+          if (
+            where.refreshTokenHash &&
+            s.refreshTokenHash !== where.refreshTokenHash
+          )
+            continue;
           if (where.NOT?.id && s.id === where.NOT.id) continue;
           if (where.revokedAt === null && s.revokedAt) continue;
           Object.assign(s, data);
@@ -246,7 +251,7 @@ afterAll(async () => {
 });
 
 describe('auth flow over HTTP', () => {
-  it('login -> me -> refresh rotation -> logout invalidates', async () => {
+  it('login -> me -> refresh rotation; stale reuse rejected', async () => {
     const server = app.getHttpServer();
     const login = await request(server)
       .post('/auth/login')
@@ -269,13 +274,28 @@ describe('auth flow over HTTP', () => {
       .send({ refreshToken: login.body.refreshToken });
     expect(stale.status).toBe(401);
 
+    // Token rotasi masih hidup; keluarga hanya dicabut saat race terdeteksi
+    // (lihat unit test REFRESH_CONFLICT).
+    const stillAlive = await request(server)
+      .get('/auth/me')
+      .set('Authorization', `Bearer ${r1.body.accessToken}`);
+    expect(stillAlive.status).toBe(200);
+  });
+
+  it('logout invalidates the session', async () => {
+    const server = app.getHttpServer();
+    const login = await request(server)
+      .post('/auth/login')
+      .send({ email: 'employee@rs.test', password: 'Password123!' });
+    expect(login.status).toBe(200);
+
     const out = await request(server)
       .post('/auth/logout')
-      .set('Authorization', `Bearer ${r1.body.accessToken}`);
+      .set('Authorization', `Bearer ${login.body.accessToken}`);
     expect(out.status).toBe(200);
     const after = await request(server)
       .get('/auth/me')
-      .set('Authorization', `Bearer ${r1.body.accessToken}`);
+      .set('Authorization', `Bearer ${login.body.accessToken}`);
     expect(after.status).toBe(401);
   });
 
@@ -325,6 +345,42 @@ describe('auth flow over HTTP', () => {
       .post('/auth/login')
       .send({ email: 'employee@rs.test', password: 'Password123!' });
     expect(employee.status).toBe(200);
+  });
+
+  it('role changes from DB apply to existing tokens immediately', async () => {
+    const server = app.getHttpServer();
+    const login = await request(server)
+      .post('/auth/login')
+      .send({ email: 'employee@rs.test', password: 'Password123!' });
+    expect(login.status).toBe(200);
+    const token = login.body.accessToken as string;
+
+    expect(
+      (
+        await request(server)
+          .get('/probe/admin')
+          .set('Authorization', `Bearer ${token}`)
+      ).status,
+    ).toBe(403);
+
+    const user = fake.users.get('u-emp');
+    user.roles = ['EMPLOYEE', 'ADMIN'];
+    expect(
+      (
+        await request(server)
+          .get('/probe/admin')
+          .set('Authorization', `Bearer ${token}`)
+      ).status,
+    ).toBe(200);
+
+    user.roles = ['EMPLOYEE'];
+    expect(
+      (
+        await request(server)
+          .get('/probe/admin')
+          .set('Authorization', `Bearer ${token}`)
+      ).status,
+    ).toBe(403);
   });
 
   it('5 wrong passwords lock the account even for the right password', async () => {

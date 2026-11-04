@@ -263,20 +263,26 @@ describe('AuthService.refresh/logout', () => {
     expect(r2.accessToken).toBeTruthy();
   });
 
-  it('concurrent refresh with the same token lets exactly one through', async () => {
+  it('concurrent refresh revokes the token family (reuse detection)', async () => {
     let storedHash = '';
+    let revoked = false;
     const prisma = makePrisma({
       session: {
-        findUnique: vi.fn(async (a: { where: { refreshTokenHash: string } }) =>
-          a.where.refreshTokenHash === storedHash ? sessionRow() : null,
-        ),
+        findUnique: vi.fn(async (a: { where: { refreshTokenHash: string } }) => {
+          if (revoked) return sessionRow({ revokedAt: new Date() });
+          return a.where.refreshTokenHash === storedHash ? sessionRow() : null;
+        }),
         updateMany: vi.fn(
           async (a: {
-            where: { refreshTokenHash: string };
-            data: { refreshTokenHash: string };
+            where: { refreshTokenHash?: string; id?: string };
+            data: { refreshTokenHash?: string; revokedAt?: Date };
           }) => {
+            if (a.data.revokedAt) {
+              revoked = true;
+              return { count: 1 };
+            }
             if (a.where.refreshTokenHash !== storedHash) return { count: 0 };
-            storedHash = a.data.refreshTokenHash;
+            storedHash = a.data.refreshTokenHash ?? storedHash;
             return { count: 1 };
           },
         ),
@@ -301,10 +307,13 @@ describe('AuthService.refresh/logout', () => {
       refreshToken: string;
     };
 
-    await expect(svc.refresh(first, {})).rejects.toThrow(
+    // Reuse terdeteksi → seluruh sesi dicabut, token pemenang ikut mati.
+    await expect(svc.refresh(winner.refreshToken, {})).rejects.toThrow(
       'Invalid refresh token',
     );
-    await expect(svc.refresh(winner.refreshToken, {})).resolves.toBeDefined();
+    expect(auditStub.log).toHaveBeenCalledWith(
+      expect.objectContaining({ action: 'REFRESH_CONFLICT' }),
+    );
   });
 
   it('revoked/expired refresh rejected; logout revokes + audits', async () => {

@@ -313,9 +313,13 @@ function makeFake(crypto: TemplateCryptoService) {
       findUnique: async ({ where, include }: any) => {
         const u = users.get(where.id) ?? null;
         if (!u) return null;
-        return include?.userRoles
-          ? { ...u, userRoles: [{ role: { name: 'EMPLOYEE' } }] }
-          : { ...u };
+        if (!include?.userRoles) return { ...u };
+        return {
+          ...u,
+          userRoles: userRoles
+            .filter((r) => r.userId === u.id)
+            .map((r) => ({ role: { name: r.role } })),
+        };
       },
     },
     userRole: {

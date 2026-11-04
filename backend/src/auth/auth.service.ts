@@ -344,12 +344,18 @@ export class AuthService {
       },
     });
     if (rotated.count === 0) {
+      // Refresh token reuse/race terdeteksi. Cabut sesi (keluarga token) agar
+      // token hasil rotasi pertama juga tidak bisa dipakai penyerang.
+      await this.prisma.session.updateMany({
+        where: { id: prev.id, revokedAt: null },
+        data: { revokedAt: new Date() },
+      });
       await this.audit.log({
         actorId: prev.user.id,
         action: 'REFRESH_CONFLICT',
         ipAddress: meta.ip,
         result: 'DENIED',
-        metadata: { sessionId: prev.id },
+        metadata: { sessionId: prev.id, revokedFamily: true },
       });
       throw new UnauthorizedException('Invalid refresh token');
     }
