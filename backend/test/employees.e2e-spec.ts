@@ -17,6 +17,7 @@ import { RolesGuard } from '../src/auth/guards/roles.guard.js';
 import { EmployeesController } from '../src/employees/employees.controller.js';
 import { DepartmentsController } from '../src/employees/departments.controller.js';
 import { EmployeesService } from '../src/employees/employees.service.js';
+import { DepartmentsService } from '../src/employees/departments.service.js';
 import { PrismaService } from '../src/prisma/prisma.service.js';
 
 const ROLE_PERMS: Record<string, string[]> = {
@@ -341,6 +342,7 @@ beforeAll(async () => {
     controllers: [EmployeesController, DepartmentsController],
     providers: [
       EmployeesService,
+      DepartmentsService,
       AuthService,
       { provide: EmailVerificationService, useValue: { issue: async () => undefined, verify: async () => ({ userId: 'u1' }) } },
       JwtAuthGuard,

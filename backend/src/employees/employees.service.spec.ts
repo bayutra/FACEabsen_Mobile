@@ -1,6 +1,7 @@
 import * as argon2 from 'argon2';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import type { PrismaService } from '../prisma/prisma.service.js';
+import { DepartmentsService } from './departments.service.js';
 import { EmployeesService } from './employees.service.js';
 
 let HASH = '';
@@ -519,7 +520,7 @@ describe('EmployeesService supervisor scoping', () => {
     const prisma = supervisorPrisma({
       department: { findUnique: vi.fn(), findMany },
     });
-    const svc = new EmployeesService(prisma, auditStub);
+    const svc = new DepartmentsService(prisma, auditStub);
     await svc.listDepartments(undefined, 'u-sup', ['SUPERVISOR']);
     expect(findMany).toHaveBeenCalledWith(
       expect.objectContaining({ where: { id: 'd1' } }),

@@ -21,6 +21,7 @@ import {
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
 import { PermissionsGuard } from '../auth/guards/permissions.guard.js';
 import { RolesGuard } from '../auth/guards/roles.guard.js';
+import { AttendanceQueryService } from './attendance-query.service.js';
 import { AttendanceService } from './attendance.service.js';
 import { ChallengeService } from './challenge.service.js';
 import {
@@ -37,6 +38,7 @@ import {
 export class AttendanceController {
   constructor(
     private readonly attendance: AttendanceService,
+    private readonly queries: AttendanceQueryService,
     private readonly challengeService: ChallengeService,
   ) {}
 
@@ -77,7 +79,7 @@ export class AttendanceController {
     @Query() query: MyHistoryQuery,
     @CurrentUser() user: AuthContext,
   ) {
-    return this.attendance.listMine(user.userId, query);
+    return this.queries.listMine(user.userId, query);
   }
 
   @UseGuards(RolesGuard, PermissionsGuard)
@@ -88,7 +90,7 @@ export class AttendanceController {
     @Query() query: AdminHistoryQuery,
     @CurrentUser() user: AuthContext,
   ) {
-    return this.attendance.listAll(query, user.userId, user.roles);
+    return this.queries.listAll(query, user.userId, user.roles);
   }
 
   @UseGuards(RolesGuard, PermissionsGuard)
@@ -99,7 +101,7 @@ export class AttendanceController {
     @Query() query: ReviewQueueQuery,
     @CurrentUser() user: AuthContext,
   ) {
-    return this.attendance.listReview(query, user.userId, user.roles);
+    return this.queries.listReview(query, user.userId, user.roles);
   }
 
   @UseGuards(RolesGuard, PermissionsGuard)
@@ -113,13 +115,13 @@ export class AttendanceController {
     @CurrentUser() user: AuthContext,
     @Req() req: Request,
   ) {
-    return this.attendance.review(id, dto, user.userId, user.roles, {
+    return this.queries.review(id, dto, user.userId, user.roles, {
       ip: req.ip,
     });
   }
 
   @Get(':id')
   historyOne(@Param('id') id: string, @CurrentUser() user: AuthContext) {
-    return this.attendance.getOne(id, user.userId, user.roles);
+    return this.queries.getOne(id, user.userId, user.roles);
   }
 }

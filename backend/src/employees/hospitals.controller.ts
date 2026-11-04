@@ -8,17 +8,17 @@ import {
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
 import { PermissionsGuard } from '../auth/guards/permissions.guard.js';
 import { RolesGuard } from '../auth/guards/roles.guard.js';
-import { EmployeesService } from './employees.service.js';
+import { DepartmentsService } from './departments.service.js';
 
 @UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
 @Controller('hospitals')
 export class HospitalsController {
-  constructor(private readonly employees: EmployeesService) {}
+  constructor(private readonly departments: DepartmentsService) {}
 
   @Roles('ADMIN')
   @RequirePermissions('employee:read')
   @Get()
   list(@CurrentUser() user: AuthContext) {
-    return this.employees.listHospitals(user.userId, user.roles);
+    return this.departments.listHospitals(user.userId, user.roles);
   }
 }

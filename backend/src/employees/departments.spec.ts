@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { PrismaService } from '../prisma/prisma.service.js';
-import { EmployeesService } from './employees.service.js';
+import { DepartmentsService } from './departments.service.js';
 
 const auditStub = { log: vi.fn(async () => undefined) } as never;
 
@@ -49,14 +49,14 @@ function makePrisma(over: Record<string, Record<string, unknown>> = {}) {
 
 const dto = () => ({ hospitalId: 'h1', name: 'Radiologi' });
 
-describe('EmployeesService.createDepartment', () => {
+describe('DepartmentsService.createDepartment', () => {
   it('creates the row and audits it inside the transaction', async () => {
     const create = vi.fn(async (a: { data: Record<string, unknown> }) => ({
       id: 'd9',
       ...a.data,
     }));
     const prisma = makePrisma({ department: { create } });
-    const svc = new EmployeesService(prisma, auditStub);
+    const svc = new DepartmentsService(prisma, auditStub);
 
     const out = (await svc.createDepartment(dto(), 'admin', {
       ip: '1.1.1.1',
@@ -78,7 +78,7 @@ describe('EmployeesService.createDepartment', () => {
   });
 
   it('rejects an unknown hospital', async () => {
-    const svc = new EmployeesService(
+    const svc = new DepartmentsService(
       makePrisma({ hospital: { findUnique: vi.fn(async () => null) } }),
       auditStub,
     );
@@ -88,7 +88,7 @@ describe('EmployeesService.createDepartment', () => {
   });
 
   it('rejects a duplicate name within the same hospital', async () => {
-    const svc = new EmployeesService(
+    const svc = new DepartmentsService(
       makePrisma({
         department: { findUnique: vi.fn(async () => ({ id: 'dx' })) },
       }),
@@ -106,7 +106,7 @@ describe('EmployeesService.createDepartment', () => {
         meta: { target: ['hospitalId', 'name'] },
       });
     });
-    const svc = new EmployeesService(
+    const svc = new DepartmentsService(
       makePrisma({ department: { create } }),
       auditStub,
     );
@@ -116,12 +116,12 @@ describe('EmployeesService.createDepartment', () => {
   });
 });
 
-describe('EmployeesService.updateDepartment', () => {
+describe('DepartmentsService.updateDepartment', () => {
   it('renames and audits', async () => {
     const findUnique = vi.fn(async (a: { where: Record<string, unknown> }) =>
       'id' in a.where ? { id: 'd1', name: 'IGD', hospitalId: 'h1' } : null,
     );
-    const svc = new EmployeesService(
+    const svc = new DepartmentsService(
       makePrisma({ department: { findUnique } }),
       auditStub,
     );
@@ -139,7 +139,7 @@ describe('EmployeesService.updateDepartment', () => {
   });
 
   it('404s on an unknown id', async () => {
-    const svc = new EmployeesService(makePrisma(), auditStub);
+    const svc = new DepartmentsService(makePrisma(), auditStub);
     await expect(
       svc.updateDepartment('nope', { name: 'X' }, 'admin'),
     ).rejects.toThrow('Department not found');
@@ -151,7 +151,7 @@ describe('EmployeesService.updateDepartment', () => {
         ? { id: 'd1', name: 'IGD', hospitalId: 'h1' }
         : { id: 'd2', name: 'Radiologi', hospitalId: 'h1' },
     );
-    const svc = new EmployeesService(
+    const svc = new DepartmentsService(
       makePrisma({ department: { findUnique } }),
       auditStub,
     );
@@ -161,10 +161,10 @@ describe('EmployeesService.updateDepartment', () => {
   });
 });
 
-describe('EmployeesService.deleteDepartment', () => {
+describe('DepartmentsService.deleteDepartment', () => {
   it('deletes and audits', async () => {
     const del = vi.fn(async () => ({}));
-    const svc = new EmployeesService(
+    const svc = new DepartmentsService(
       makePrisma({
         department: {
           findUnique: vi.fn(async () => ({ id: 'd1', name: 'IGD' })),
@@ -185,7 +185,7 @@ describe('EmployeesService.deleteDepartment', () => {
   });
 
   it('refuses while employees are still assigned (history protection)', async () => {
-    const svc = new EmployeesService(
+    const svc = new DepartmentsService(
       makePrisma({
         department: {
           findUnique: vi.fn(async () => ({ id: 'd1', name: 'IGD' })),
@@ -200,19 +200,19 @@ describe('EmployeesService.deleteDepartment', () => {
   });
 
   it('404s on an unknown id', async () => {
-    const svc = new EmployeesService(makePrisma(), auditStub);
+    const svc = new DepartmentsService(makePrisma(), auditStub);
     await expect(svc.deleteDepartment('nope', 'admin')).rejects.toThrow(
       'Department not found',
     );
   });
 });
 
-describe('EmployeesService.listHospitals', () => {
+describe('DepartmentsService.listHospitals', () => {
   it('returns the reference list used by the master-data forms', async () => {
     const findMany = vi.fn(async () => [
       { id: 'h1', code: 'RS-A', name: 'RS Contoh' },
     ]);
-    const svc = new EmployeesService(
+    const svc = new DepartmentsService(
       makePrisma({ hospital: { findMany } }),
       auditStub,
     );
@@ -239,7 +239,7 @@ describe('EmployeesService department facility scoping (ADMIN)', () => {
   }
 
   it('createDepartment in another hospital reads as 404', async () => {
-    const svc = new EmployeesService(scopedPrisma(), auditStub);
+    const svc = new DepartmentsService(scopedPrisma(), auditStub);
     await expect(
       svc.createDepartment({ hospitalId: 'h2', name: 'X' }, 'u-adm'),
     ).rejects.toThrow('Hospital not found');
@@ -247,7 +247,7 @@ describe('EmployeesService department facility scoping (ADMIN)', () => {
 
   it('listDepartments ignores a foreign hospitalId filter', async () => {
     const findMany = vi.fn(async () => []);
-    const svc = new EmployeesService(
+    const svc = new DepartmentsService(
       scopedPrisma({ department: { findMany } }),
       auditStub,
     );
@@ -258,7 +258,7 @@ describe('EmployeesService department facility scoping (ADMIN)', () => {
   });
 
   it('deleteDepartment in another hospital reads as 404', async () => {
-    const svc = new EmployeesService(
+    const svc = new DepartmentsService(
       scopedPrisma({
         department: {
           findUnique: vi.fn(async () => ({ id: 'd9', hospitalId: 'h2' })),

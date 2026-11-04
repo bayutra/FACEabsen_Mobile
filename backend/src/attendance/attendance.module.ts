@@ -8,6 +8,7 @@ import { PrismaModule } from '../prisma/prisma.module.js';
 import { PrivacyModule } from '../privacy/privacy.module.js';
 import { RiskModule } from '../risk/risk.module.js';
 import { AttendanceController } from './attendance.controller.js';
+import { AttendanceQueryService } from './attendance-query.service.js';
 import { AttendanceService } from './attendance.service.js';
 import { ChallengeService } from './challenge.service.js';
 import { IdempotencyService } from './idempotency.service.js';
@@ -24,7 +25,12 @@ import { IdempotencyService } from './idempotency.service.js';
     RiskModule,
   ],
   controllers: [AttendanceController],
-  providers: [AttendanceService, ChallengeService, IdempotencyService],
-  exports: [AttendanceService, ChallengeService, IdempotencyService],
+  providers: [
+    AttendanceService,
+    AttendanceQueryService,
+    ChallengeService,
+    IdempotencyService,
+  ],
+  exports: [AttendanceService, AttendanceQueryService, ChallengeService, IdempotencyService],
 })
 export class AttendanceModule {}

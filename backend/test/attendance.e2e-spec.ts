@@ -17,6 +17,7 @@ import {
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { AttendanceController } from '../src/attendance/attendance.controller.js';
+import { AttendanceQueryService } from '../src/attendance/attendance-query.service.js';
 import { AttendanceService } from '../src/attendance/attendance.service.js';
 import { ChallengeService } from '../src/attendance/challenge.service.js';
 import { buildSignMessageV1 } from '../src/common/crypto.js';
@@ -563,6 +564,7 @@ beforeAll(async () => {
     controllers: [AttendanceController],
     providers: [
       AttendanceService,
+      AttendanceQueryService,
       DevicesService,
       DeviceChangeService,
       FaceService,

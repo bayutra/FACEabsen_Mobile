@@ -12,13 +12,16 @@ import { resolveHospitalScope } from '../auth/tenant-scope.js';
 import { validatePasswordPolicy } from '../auth/password.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import type {
-  CreateDepartmentDto,
   CreateEmployeeDto,
   ListEmployeesQuery,
-  UpdateDepartmentDto,
   UpdateEmployeeDto,
   UpdateMyProfileDto,
 } from './dto.js';
+import {
+  assertSameFacility,
+  mapUniqueError,
+  rolesOf,
+} from './support.js';
 
 @Injectable()
 export class EmployeesService {
@@ -40,7 +43,7 @@ export class EmployeesService {
     validatePasswordPolicy(dto.password);
 
     const roles = [...new Set(['EMPLOYEE', ...(dto.roles ?? [])])];
-    const actorRoles = await this.getRoles(actorId);
+    const actorRoles = await rolesOf(this.prisma, actorId);
     for (const role of roles) {
       if (!canAssignRole(actorRoles, role)) {
         throw new ForbiddenException(`Not allowed to grant role ${role}`);
@@ -85,7 +88,7 @@ export class EmployeesService {
       });
       return this.loadOne(employee.id);
     } catch (e) {
-      throw this.mapUnique(e);
+      throw mapUniqueError(e);
     }
   }
 
@@ -181,7 +184,7 @@ export class EmployeesService {
       },
     });
     if (!employee) throw new NotFoundException('Employee not found');
-    const roles = employee.userId ? await this.getRoles(employee.userId) : [];
+    const roles = employee.userId ? await rolesOf(this.prisma, employee.userId) : [];
     return { ...employee, roles };
   }
 
@@ -234,7 +237,7 @@ export class EmployeesService {
         }
       });
     } catch (e) {
-      throw this.mapUnique(e);
+      throw mapUniqueError(e);
     }
 
     await this.audit.log({
@@ -264,14 +267,14 @@ export class EmployeesService {
     });
     if (!existing) throw new NotFoundException('Employee not found');
 
-    await this.assertSameFacility(
+    await assertSameFacility(this.prisma, 
       actorId,
       existing.department?.hospitalId,
       'Employee not found',
     );
     await this.assertRankBelow(actorId, existing.userId);
 
-    const actorRoles = await this.getRoles(actorId);
+    const actorRoles = await rolesOf(this.prisma, actorId);
     const supervisorOnly = !satisfiesRole(actorRoles, 'ADMIN');
     if (supervisorOnly) {
       await this.assertSupervisorScope(actorId, existing);
@@ -328,7 +331,7 @@ export class EmployeesService {
       });
       return this.loadOne(employee.id);
     } catch (e) {
-      throw this.mapUnique(e);
+      throw mapUniqueError(e);
     }
   }
 
@@ -338,7 +341,7 @@ export class EmployeesService {
       include: { department: { select: { hospitalId: true } } },
     });
     if (!existing) throw new NotFoundException('Employee not found');
-    await this.assertSameFacility(
+    await assertSameFacility(this.prisma, 
       actorId,
       existing.department?.hospitalId,
       'Employee not found',
@@ -369,200 +372,6 @@ export class EmployeesService {
       metadata: { employeeNo: existing.employeeNo },
     });
     return this.loadOne(employee.id);
-  }
-
-  async listDepartments(
-    hospitalId: string | undefined,
-    userId: string,
-    roles: string[],
-  ) {
-    if (!satisfiesRole(roles, 'ADMIN')) {
-      const me = await this.prisma.employee.findUnique({
-        where: { userId },
-        select: { departmentId: true },
-      });
-      if (!me?.departmentId) return [];
-      return this.prisma.department.findMany({
-        where: { id: me.departmentId },
-        include: { hospital: { select: { id: true, code: true, name: true } } },
-      });
-    }
-    if (!satisfiesRole(roles, 'SUPER_ADMIN')) {
-      const scope = await resolveHospitalScope(this.prisma, userId, roles);
-      if (scope.kind !== 'hospital') return [];
-      hospitalId = scope.hospitalId;
-    }
-    return this.prisma.department.findMany({
-      where: hospitalId ? { hospitalId } : {},
-      orderBy: { name: 'asc' },
-      include: { hospital: { select: { id: true, code: true, name: true } } },
-    });
-  }
-
-  async listPublicDepartments() {
-    const rows = await this.prisma.department.findMany({
-      take: 500,
-      orderBy: [{ hospital: { name: 'asc' } }, { name: 'asc' }],
-      select: {
-        id: true,
-        name: true,
-        hospitalId: true,
-        hospital: { select: { name: true } },
-      },
-    });
-    return rows.map((row) => ({
-      id: row.id,
-      name: row.name,
-      hospitalId: row.hospitalId,
-      hospitalName: row.hospital.name,
-    }));
-  }
-
-  async listHospitals(userId: string, roles: string[]) {
-    if (satisfiesRole(roles, 'SUPER_ADMIN')) {
-      return this.prisma.hospital.findMany({
-        orderBy: { code: 'asc' },
-        select: { id: true, code: true, name: true },
-      });
-    }
-    const scope = await resolveHospitalScope(this.prisma, userId, roles);
-    if (scope.kind !== 'hospital') return [];
-    return this.prisma.hospital.findMany({
-      where: { id: scope.hospitalId },
-      orderBy: { code: 'asc' },
-      select: { id: true, code: true, name: true },
-    });
-  }
-
-  async createDepartment(
-    dto: CreateDepartmentDto,
-    actorId: string,
-    meta: { ip?: string } = {},
-  ) {
-    const hospital = await this.prisma.hospital.findUnique({
-      where: { id: dto.hospitalId },
-    });
-    if (!hospital) throw new NotFoundException('Hospital not found');
-    await this.assertSameFacility(
-      actorId,
-      dto.hospitalId,
-      'Hospital not found',
-    );
-
-    const clash = await this.prisma.department.findUnique({
-      where: {
-        hospitalId_name: { hospitalId: dto.hospitalId, name: dto.name },
-      },
-    });
-    if (clash)
-      throw new ConflictException(
-        'Department name already exists for this hospital',
-      );
-
-    try {
-      return await this.prisma.$transaction(async (tx) => {
-        const dept = await tx.department.create({
-          data: { hospitalId: dto.hospitalId, name: dto.name },
-          include: {
-            hospital: { select: { id: true, code: true, name: true } },
-          },
-        });
-        await this.audit.log(
-          {
-            actorId,
-            action: 'DEPARTMENT_CREATED',
-            targetType: 'department',
-            targetId: dept.id,
-            ipAddress: meta.ip,
-            metadata: { name: dto.name, hospitalId: dto.hospitalId },
-          },
-          tx,
-        );
-        return dept;
-      });
-    } catch (e) {
-      throw this.mapUnique(e);
-    }
-  }
-
-  async updateDepartment(
-    id: string,
-    dto: UpdateDepartmentDto,
-    actorId: string,
-    meta: { ip?: string } = {},
-  ) {
-    const existing = await this.prisma.department.findUnique({ where: { id } });
-    if (!existing) throw new NotFoundException('Department not found');
-    await this.assertSameFacility(
-      actorId,
-      existing.hospitalId,
-      'Department not found',
-    );
-
-    if (dto.name && dto.name !== existing.name) {
-      const clash = await this.prisma.department.findUnique({
-        where: {
-          hospitalId_name: { hospitalId: existing.hospitalId, name: dto.name },
-        },
-      });
-      if (clash)
-        throw new ConflictException(
-          'Department name already exists for this hospital',
-        );
-    }
-
-    try {
-      const dept = await this.prisma.department.update({
-        where: { id },
-        data: { name: dto.name },
-        include: { hospital: { select: { id: true, code: true, name: true } } },
-      });
-      await this.audit.log({
-        actorId,
-        action: 'DEPARTMENT_UPDATED',
-        targetType: 'department',
-        targetId: id,
-        ipAddress: meta.ip,
-        metadata: { updated: Object.keys(dto) },
-      });
-      return dept;
-    } catch (e) {
-      throw this.mapUnique(e);
-    }
-  }
-
-  async deleteDepartment(
-    id: string,
-    actorId: string,
-    meta: { ip?: string } = {},
-  ) {
-    const existing = await this.prisma.department.findUnique({ where: { id } });
-    if (!existing) throw new NotFoundException('Department not found');
-    await this.assertSameFacility(
-      actorId,
-      existing.hospitalId,
-      'Department not found',
-    );
-
-    const staff = await this.prisma.employee.count({
-      where: { departmentId: id },
-    });
-    if (staff > 0) {
-      throw new ConflictException(
-        `Department still has ${staff} employee assigned; move them first`,
-      );
-    }
-
-    await this.prisma.department.delete({ where: { id } });
-    await this.audit.log({
-      actorId,
-      action: 'DEPARTMENT_DELETED',
-      targetType: 'department',
-      targetId: id,
-      ipAddress: meta.ip,
-      metadata: { name: existing.name },
-    });
-    return { removed: true };
   }
 
   private async assertUnique(
@@ -606,30 +415,14 @@ export class EmployeesService {
     if (!directReport && !sameUnit) throw new NotFoundException(message);
   }
 
-  private async assertSameFacility(
-    actorId: string,
-    targetHospitalId: string | null | undefined,
-    message: string,
-  ) {
-    const actorRoles = await this.getRoles(actorId);
-    if (satisfiesRole(actorRoles, 'SUPER_ADMIN')) return;
-    const scope = await resolveHospitalScope(this.prisma, actorId, actorRoles);
-    if (
-      scope.kind !== 'hospital' ||
-      !targetHospitalId ||
-      targetHospitalId !== scope.hospitalId
-    ) {
-      throw new NotFoundException(message);
-    }
-  }
-
   private async assertDepartmentInFacility(id: string, actorId: string) {
     const dept = await this.prisma.department.findUnique({
       where: { id },
       select: { hospitalId: true },
     });
     if (!dept) throw new NotFoundException('Department not found');
-    await this.assertSameFacility(
+    await assertSameFacility(
+      this.prisma,
       actorId,
       dept.hospitalId,
       'Department not found',
@@ -642,7 +435,8 @@ export class EmployeesService {
       include: { department: { select: { hospitalId: true } } },
     });
     if (!sup) throw new NotFoundException('Supervisor not found');
-    await this.assertSameFacility(
+    await assertSameFacility(
+      this.prisma,
       actorId,
       sup.department?.hospitalId,
       'Supervisor not found',
@@ -653,35 +447,15 @@ export class EmployeesService {
     actorId: string,
     targetUserId: string | null | undefined,
   ) {
-    const actorRoles = await this.getRoles(actorId);
+    const actorRoles = await rolesOf(this.prisma, actorId);
     if (actorRoles.includes('SUPER_ADMIN')) return;
-    const targetRoles = targetUserId ? await this.getRoles(targetUserId) : [];
+    const targetRoles = targetUserId
+      ? await rolesOf(this.prisma, targetUserId)
+      : [];
     if (highestRoleRank(targetRoles) >= highestRoleRank(actorRoles)) {
       throw new ForbiddenException(
         'Cannot administer an account at or above your own rank',
       );
     }
-  }
-
-  private async getRoles(userId: string): Promise<string[]> {
-    const rows = await this.prisma.userRole.findMany({
-      where: { userId },
-      include: { role: true },
-    });
-    return rows.map((r) => r.role.name);
-  }
-
-  private mapUnique(e: unknown): unknown {
-    if (
-      typeof e === 'object' &&
-      e !== null &&
-      (e as { code?: string }).code === 'P2002'
-    ) {
-      const fields =
-        (e as { meta?: { target?: string[] } }).meta?.target?.join(', ') ??
-        'field';
-      return new ConflictException(`${fields} already in use`);
-    }
-    return e;
   }
 }

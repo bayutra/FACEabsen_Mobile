@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { AuthModule } from '../auth/auth.module.js';
 import { DepartmentsController } from './departments.controller.js';
+import { DepartmentsService } from './departments.service.js';
 import { EmployeesController } from './employees.controller.js';
 import { EmployeesService } from './employees.service.js';
 import { HospitalsController } from './hospitals.controller.js';
@@ -12,7 +13,7 @@ import { HospitalsController } from './hospitals.controller.js';
     DepartmentsController,
     HospitalsController,
   ],
-  providers: [EmployeesService],
-  exports: [EmployeesService],
+  providers: [EmployeesService, DepartmentsService],
+  exports: [EmployeesService, DepartmentsService],
 })
 export class EmployeesModule {}

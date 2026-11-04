@@ -24,17 +24,17 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
 import { PermissionsGuard } from '../auth/guards/permissions.guard.js';
 import { RolesGuard } from '../auth/guards/roles.guard.js';
 import { CreateDepartmentDto, UpdateDepartmentDto } from './dto.js';
-import { EmployeesService } from './employees.service.js';
+import { DepartmentsService } from './departments.service.js';
 
 @UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
 @Controller('departments')
 export class DepartmentsController {
-  constructor(private readonly employees: EmployeesService) {}
+  constructor(private readonly departments: DepartmentsService) {}
 
   @Public()
   @Get('public')
   listPublic() {
-    return this.employees.listPublicDepartments();
+    return this.departments.listPublicDepartments();
   }
 
   @Roles('SUPERVISOR')
@@ -44,7 +44,7 @@ export class DepartmentsController {
     @Query('hospitalId') hospitalId: string | undefined,
     @CurrentUser() user: AuthContext,
   ) {
-    return this.employees.listDepartments(hospitalId, user.userId, user.roles);
+    return this.departments.listDepartments(hospitalId, user.userId, user.roles);
   }
 
   @Roles('ADMIN')
@@ -55,7 +55,7 @@ export class DepartmentsController {
     @CurrentUser() actor: AuthContext,
     @Req() req: Request,
   ) {
-    return this.employees.createDepartment(dto, actor.userId, { ip: req.ip });
+    return this.departments.createDepartment(dto, actor.userId, { ip: req.ip });
   }
 
   @Roles('ADMIN')
@@ -67,7 +67,7 @@ export class DepartmentsController {
     @CurrentUser() actor: AuthContext,
     @Req() req: Request,
   ) {
-    return this.employees.updateDepartment(id, dto, actor.userId, {
+    return this.departments.updateDepartment(id, dto, actor.userId, {
       ip: req.ip,
     });
   }
@@ -81,6 +81,6 @@ export class DepartmentsController {
     @CurrentUser() actor: AuthContext,
     @Req() req: Request,
   ) {
-    return this.employees.deleteDepartment(id, actor.userId, { ip: req.ip });
+    return this.departments.deleteDepartment(id, actor.userId, { ip: req.ip });
   }
 }

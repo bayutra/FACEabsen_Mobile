@@ -1,12 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { PrismaService } from '../prisma/prisma.service.js';
-import { AttendanceService } from './attendance.service.js';
+import { AttendanceQueryService } from './attendance-query.service.js';
 
 const auditStub = { log: vi.fn(async () => undefined) } as never;
-const configStub = { get: (_k: string, d: unknown) => d } as never;
-const depsStub = {} as never;
-const challengeStub = { consume: vi.fn(async () => ({ jti: 'j1' })), release: vi.fn(async () => undefined), issue: vi.fn() } as never;
-const idempotencyStub = { begin: vi.fn(async () => ({ mode: 'new' })), complete: vi.fn(async () => undefined), release: vi.fn(async () => undefined), maybePurge: vi.fn(async () => undefined) } as never;
 
 function makePrisma(over: Record<string, Record<string, unknown>> = {}) {
   return {
@@ -32,17 +28,7 @@ function makePrisma(over: Record<string, Record<string, unknown>> = {}) {
 }
 
 const svcOf = (prisma: PrismaService) =>
-  new AttendanceService(
-    prisma,
-    depsStub,
-    depsStub,
-    depsStub,
-    depsStub,
-    auditStub,
-    challengeStub,
-    idempotencyStub,
-    configStub,
-  );
+  new AttendanceQueryService(prisma, auditStub);
 
 describe('AttendanceService.listMine', () => {
   it('scopes to caller + envelope + no profile 404', async () => {
