@@ -1,5 +1,21 @@
 import { describe, expect, it } from 'vitest';
-import { assertProductionEnv } from './security.js';
+import { assertProductionEnv, requireJwtSecret } from './security.js';
+
+describe('requireJwtSecret', () => {
+  it('fails fast when the secret is missing, a placeholder, or too short', () => {
+    expect(() => requireJwtSecret(undefined)).toThrow('required');
+    expect(() => requireJwtSecret('   ')).toThrow('required');
+    expect(() => requireJwtSecret('dev-only-secret')).toThrow('placeholder');
+    expect(() =>
+      requireJwtSecret('change-me-in-production-min-32-chars'),
+    ).toThrow('placeholder');
+    expect(() => requireJwtSecret('short-secret')).toThrow('at least 32 chars');
+  });
+
+  it('accepts a strong secret', () => {
+    expect(requireJwtSecret('a'.repeat(32))).toBe('a'.repeat(32));
+  });
+});
 
 describe('assertProductionEnv (STEP 22)', () => {
   it('non-production always boots', () => {

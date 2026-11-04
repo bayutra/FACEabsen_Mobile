@@ -11,15 +11,38 @@ export interface EnvLike {
   EMAIL_CODE_SECRET?: string;
 }
 
+const PLACEHOLDER_SECRETS = new Set([
+  'dev-only-secret',
+  'change-me-in-production-min-32-chars',
+]);
+
+/**
+ * Resolve the JWT signing secret, failing fast in every environment.
+ *
+ * A development fallback used to sign tokens with a publicly known string, so
+ * any deployment that forgot to set JWT_ACCESS_SECRET (or left NODE_ENV unset)
+ * produced forgeable access tokens. There is no safe default: refuse to boot.
+ */
+export function requireJwtSecret(raw: string | undefined | null): string {
+  const secret = (raw ?? '').trim();
+  if (!secret || PLACEHOLDER_SECRETS.has(secret)) {
+    throw new Error(
+      'JWT_ACCESS_SECRET is required and must not be a placeholder value',
+    );
+  }
+  if (secret.length < AUTH_POLICY.jwtMinSecretLength) {
+    throw new Error(
+      `JWT_ACCESS_SECRET must be at least ${AUTH_POLICY.jwtMinSecretLength} chars`,
+    );
+  }
+  return secret;
+}
+
 export function assertProductionEnv(env: EnvLike): void {
   if (env.NODE_ENV !== 'production') return;
   const problems: string[] = [];
   const secret = env.JWT_ACCESS_SECRET ?? '';
-  if (
-    !secret ||
-    secret === 'dev-only-secret' ||
-    secret === 'change-me-in-production-min-32-chars'
-  ) {
+  if (!secret || PLACEHOLDER_SECRETS.has(secret)) {
     problems.push('JWT_ACCESS_SECRET is missing or still a placeholder');
   } else if (secret.length < AUTH_POLICY.jwtMinSecretLength) {
     problems.push(

@@ -6,6 +6,7 @@ import { AuthService } from './auth.service.js';
 import { EmailVerificationService } from './email-verification.service.js';
 import { EmailModule } from '../email/email.module.js';
 import { AUTH_POLICY } from './constants.js';
+import { requireJwtSecret } from '../security.js';
 import { JwtAuthGuard } from './guards/jwt-auth.guard.js';
 import { PermissionsGuard } from './guards/permissions.guard.js';
 import { RolesGuard } from './guards/roles.guard.js';
@@ -17,7 +18,7 @@ import { TotpService } from './totp.service.js';
     JwtModule.registerAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
-        secret: config.get('JWT_ACCESS_SECRET', 'dev-only-secret'),
+        secret: requireJwtSecret(config.get<string>('JWT_ACCESS_SECRET')),
         signOptions: {
           algorithm: AUTH_POLICY.jwtAlgorithm,
           issuer: AUTH_POLICY.jwtIssuer,

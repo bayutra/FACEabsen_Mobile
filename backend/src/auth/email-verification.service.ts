@@ -8,6 +8,7 @@ import { createHmac, randomInt, timingSafeEqual } from 'node:crypto';
 import { AuditService } from '../audit/audit.service.js';
 import { EmailService } from '../email/email.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { requireJwtSecret } from '../security.js';
 
 @Injectable()
 export class EmailVerificationService {
@@ -19,7 +20,9 @@ export class EmailVerificationService {
   ) {}
 
   private secret(): string {
-    return this.config.get('EMAIL_CODE_SECRET', this.config.get('JWT_ACCESS_SECRET', 'dev-only-secret'));
+    const emailSecret = this.config.get<string>('EMAIL_CODE_SECRET');
+    if (emailSecret) return emailSecret;
+    return requireJwtSecret(this.config.get<string>('JWT_ACCESS_SECRET'));
   }
 
   private hashCode(code: string): string {
