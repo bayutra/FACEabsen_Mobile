@@ -21,9 +21,9 @@ npm run build
 API_ORIGIN=http://localhost:3000 npm run start
 ```
 
-Browser memanggil `/api/v1/*` pada origin yang sama; Next.js mem-proxy ke
-`API_ORIGIN` (lihat `next.config.mjs`) sehingga tidak perlu CORS di backend.
-`NEXT_PUBLIC_API_BASE_URL` bisa dipakai bila ingin memanggil API absolut.
+Browser hanya memanggil origin yang sama. Route handler Next.js
+(`app/api/proxy/*` dan `app/api/session/*`) mem-proxy ke `API_ORIGIN`, sehingga
+tidak perlu CORS di backend dan token tidak pernah dikirim ke JavaScript klien.
 
 ## Akun
 
@@ -32,8 +32,9 @@ Browser memanggil `/api/v1/*` pada origin yang sama; Next.js mem-proxy ke
 - Peran `SUPERVISOR`, `ADMIN`, atau `SUPER_ADMIN` hanya bisa masuk dari
   dashboard. Login mobile dengan peran tersebut ditolak
   (`DASHBOARD_ONLY_ROLE`).
-- Token disimpan di `localStorage` setelah login; refresh token diputar
-  otomatis oleh `lib/api.ts` saat menerima 401.
+- Access & refresh token disimpan di cookie `httpOnly` (`fa_dashboard_access`,
+  `fa_dashboard_refresh`) yang di-set oleh route handler server. Rotasi refresh
+  token terjadi di server saat proxy menerima 401.
 
 ## Halaman
 
@@ -61,10 +62,11 @@ Backend tetap menegakkan RBAC; UI hanya menyembunyikan menu yang tidak relevan.
 
 ```text
 web/
-├── app/                 # App Router (login + route group dashboard)
+├── app/                 # App Router (login, dashboard, route handler API)
 ├── components/          # shell, tabel, modal, form, badge
-├── lib/api.ts           # fetch + refresh token + unduh laporan
+├── lib/api.ts           # fetch same-origin + unduh laporan
 ├── lib/auth.tsx         # AuthProvider (login/TOTP/logout)
+├── lib/server/session.ts # cookie httpOnly + proxy/rotasi token (server-only)
 ├── lib/useResource.ts   # hook loading/error/reload
 └── Dockerfile           # image produksi (node:22-alpine)
 ```

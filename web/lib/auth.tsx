@@ -9,16 +9,7 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import {
-  api,
-  clearSession,
-  readAccessToken,
-  readStoredUser,
-  writeSession,
-  writeStoredUser,
-  type LoginResponse,
-  type SessionUser,
-} from './api';
+import { api, sessionApi, type SessionUser } from './api';
 
 export type LoginResult =
   | { totpRequired: true; totpToken: string }
@@ -32,6 +23,8 @@ type AuthState = {
   logout: () => Promise<void>;
 };
 
+type SessionResponse = { user: SessionUser };
+
 const AuthContext = createContext<AuthState | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -40,25 +33,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let active = true;
+
     const restore = async () => {
-      const stored = readStoredUser();
-      if (!stored || !readAccessToken()) {
-        if (active) setLoading(false);
-        return;
-      }
-      if (active) setUser(stored);
       try {
+        // The cookie may still be valid even after a reload; ask the backend
+        // who the session belongs to instead of trusting local state.
         const me = await api<SessionUser>('/auth/me');
-        if (!active) return;
-        setUser(me);
-        writeStoredUser(me);
+        if (active) setUser(me);
       } catch {
-        clearSession();
         if (active) setUser(null);
       } finally {
         if (active) setLoading(false);
       }
     };
+
     void restore();
     return () => {
       active = false;
@@ -66,34 +54,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
-    const body = await api<LoginResponse>('/auth/login', {
+    const body = await sessionApi<SessionResponse & {
+      totpRequired?: boolean;
+      totpToken?: string;
+    }>('/login', {
       method: 'POST',
       body: { email, password, client: 'WEB' },
     });
+
     if (body.totpRequired) {
       return { totpRequired: true, totpToken: body.totpToken ?? '' } as const;
     }
-    writeSession(body);
     setUser(body.user);
     return { totpRequired: false } as const;
   }, []);
 
   const verifyTotp = useCallback(async (totpToken: string, code: string) => {
-    const body = await api<LoginResponse>('/auth/totp/verify', {
+    const body = await sessionApi<SessionResponse>('/totp', {
       method: 'POST',
       body: { totpToken, code },
     });
-    writeSession(body);
     setUser(body.user);
   }, []);
 
   const logout = useCallback(async () => {
     try {
-      await api('/auth/logout', { method: 'POST' });
+      await sessionApi('/logout', { method: 'POST' });
     } catch {
-      // Sesi mungkin sudah dicabut; tetap bersihkan penyimpanan lokal.
+      // Sesi mungkin sudah dicabut; cookie tetap dibersihkan oleh route handler.
     }
-    clearSession();
     setUser(null);
   }, []);
 
