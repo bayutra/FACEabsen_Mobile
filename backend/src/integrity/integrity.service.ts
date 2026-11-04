@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 export interface IntegrityVerdict {
@@ -16,16 +16,27 @@ export interface IntegrityVerdict {
 
 @Injectable()
 export class IntegrityService {
+  private readonly logger = new Logger(IntegrityService.name);
   private readonly strict: boolean;
   private readonly androidPackage: string;
   private readonly iosBundle: string;
 
   constructor(config: ConfigService) {
-    this.strict =
-      String(config.get('INTEGRITY_STRICT', 'false')).toLowerCase() !== 'false'
-        ? String(config.get('INTEGRITY_STRICT', 'false')).toLowerCase() ===
-          'true'
-        : false;
+    const isProduction =
+      String(config.get('NODE_ENV', '')).toLowerCase() === 'production';
+    const configured = config.get<string>('INTEGRITY_STRICT');
+    if (configured === undefined) {
+      // Secure by default: production rejects missing/invalid tokens unless
+      // the pilot explicitly opts out while the client cannot send them yet.
+      this.strict = isProduction;
+    } else {
+      this.strict = String(configured).toLowerCase() === 'true';
+      if (isProduction && !this.strict) {
+        this.logger.warn(
+          'INTEGRITY_STRICT=false in production: attendance accepts missing integrity tokens (pilot mode)',
+        );
+      }
+    }
 
     this.androidPackage = String(config.get('ANDROID_PACKAGE_NAME', ''));
     this.iosBundle = String(config.get('IOS_BUNDLE_ID', ''));

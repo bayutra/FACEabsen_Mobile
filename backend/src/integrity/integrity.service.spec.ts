@@ -111,4 +111,18 @@ describe('IntegrityService', () => {
     expect(lax.resolveSignal({ deviceCompromised: false }).ok).toBe(false);
     expect(lax.resolveSignal({ deviceCompromised: true }).ok).toBe(false);
   });
+
+  it('defaults to strict in production; explicit false is a pilot opt-out', () => {
+    const prod = new IntegrityService(cfg({ NODE_ENV: 'production' }));
+    expect(prod.strictMode).toBe(true);
+    expect(prod.resolveSignal({ deviceCompromised: false }).ok).toBe(false);
+
+    const dev = new IntegrityService(cfg({ NODE_ENV: 'development' }));
+    expect(dev.strictMode).toBe(false);
+
+    const pilot = new IntegrityService(
+      cfg({ NODE_ENV: 'production', INTEGRITY_STRICT: 'false' }),
+    );
+    expect(pilot.strictMode).toBe(false);
+  });
 });
