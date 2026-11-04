@@ -11,7 +11,17 @@ String? normalizeBaseUrl(String raw) {
 
   final Uri? uri = Uri.tryParse(value);
   if (uri == null) return null;
-  if (uri.scheme != 'http' && uri.scheme != 'https') return null;
+  if (uri.scheme == 'http') {
+    // HTTP hanya diizinkan untuk loopback development (emulator/perangkat
+    // yang sama), atau saat build demo memakai ALLOW_INSECURE_HTTP.
+    final bool loopback = uri.host == 'localhost' ||
+        uri.host == '127.0.0.1' ||
+        uri.host == '::1' ||
+        uri.host == '10.0.2.2';
+    if (!Env.allowInsecureHttp && (kReleaseMode || !loopback)) return null;
+  } else if (uri.scheme != 'https') {
+    return null;
+  }
   if (uri.host.isEmpty) return null;
 
   final String path =
@@ -44,11 +54,12 @@ class ServerSettings extends ChangeNotifier {
   Future<void> restore() async {
     final String? saved = await _store.readApiBaseUrl();
     if (saved == null || saved.isEmpty) return;
-    if (normalizeBaseUrl(saved) == null) {
+    final String? normalized = normalizeBaseUrl(saved);
+    if (normalized == null) {
       await _store.clearApiBaseUrl();
       return;
     }
-    _dio.options.baseUrl = saved;
+    _dio.options.baseUrl = normalized;
   }
 
   Future<String> apply(String raw) async {

@@ -75,12 +75,15 @@ Variabel yang dipakai:
 
 | Variabel | Arti |
 |---|---|
-| `API_ORIGIN` | Origin backend untuk rewrite `/api` (compose: `http://backend:3000`) |
-| `NEXT_PUBLIC_API_BASE_URL` | Opsional; panggil API absolut dari browser |
+| `API_ORIGIN` | Origin backend untuk route handler server (compose: `http://backend:3000`) |
+| `DASHBOARD_CLIENT_SECRET` | Rahasia server-to-server bukti login dashboard; harus sama dengan backend |
 
 Catatan keamanan:
 
 - Dashboard harus di belakang TLS (nginx), seperti API.
-- Jangan set `NEXT_PUBLIC_API_BASE_URL` ke origin lain tanpa CORS yang ketat.
-- Peran dashboard tidak lagi bisa login mobile; pastikan akun pengelola
+- Token disimpan di cookie `httpOnly` (`fa_dashboard_access`,
+  `fa_dashboard_refresh`); browser tidak pernah menerima token.
+- Login pengelola hanya lolos bila server dashboard mengirim bukti
+  `x-dashboard-secret`; field `client` pada body tidak lagi dipercaya.
+- Peran dashboard tidak bisa login mobile; pastikan akun pengelola
   didaftarkan dengan peran yang benar dari halaman **Pengguna**.

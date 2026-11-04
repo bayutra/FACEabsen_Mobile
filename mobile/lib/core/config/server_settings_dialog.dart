@@ -64,7 +64,7 @@ Future<bool> showServerSettingsDialog(
                 saved = true;
                 if (ctx.mounted) Navigator.of(ctx).pop();
               } on FormatException {
-                setState(() => error = 'Format alamat tidak valid.');
+                setState(() => error = 'Gunakan alamat https:// yang valid.');
               }
             },
             child: const Text('Simpan'),

@@ -55,8 +55,10 @@ Lalu uji manual:
 2. Pendaftaran wajah: template 192-d terkirim, `POST /face/register` 200.
 3. Liveness: challenge kedip **lolos** (kalau macet, cek ambang iOS di atas).
 4. Check-in: wajah cocok + liveness valid → 200.
-5. Ganti IP di `--dart-define=API_BASE_URL` (iPhone tidak bisa `10.0.2.2`;
-   pakai IP LAN laptop, sama seperti Android).
+5. Ganti alamat server lewat dialog **"Server: …"** di dalam aplikasi
+   (iPhone tidak bisa `10.0.2.2`). Gunakan URL HTTPS (ngrok/Tailscale) karena
+   aplikasi menolak `http://` selain loopback. Untuk demo LAN darurat, build
+   dengan `--dart-define=ALLOW_INSECURE_HTTP=true` (jelas tidak aman).
 
 ## Ganti alamat backend tanpa build ulang
 

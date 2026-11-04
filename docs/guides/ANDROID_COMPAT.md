@@ -35,5 +35,7 @@ pilihan bebas — ia ditentukan oleh syarat maksimum semua plugin native.
 - **API 29+:** scoped storage — aplikasi hanya pakai kamera langsung, aman.
 - **API 31+:** permission kamera model baru — ditangani plugin.
 - **Rilis Play Store:** ABI default Flutter (arm64 + arm-v7a) JANGAN difilter
-  agar HP 32-bit tetap bisa install; `usesCleartextTraffic` dev-only WAJIB
-  dicabut dan diganti `https://` sebelum rilis.
+  agar HP 32-bit tetap bisa install. Aplikasi hanya menerima `https://`
+  (loopback development dikecualikan); build release wajib
+  `--dart-define=API_CERT_SHA256=<fingerprint>` atau menolak start. Flag
+  `--dart-define=ALLOW_INSECURE_HTTP=true` hanya untuk demo LAN, bukan rilis.

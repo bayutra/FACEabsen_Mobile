@@ -108,6 +108,7 @@ class _BootstrapGateState extends State<BootstrapGate> {
       _update = null;
     });
     try {
+      Env.assertSecureConfiguration();
       await _servers.restore();
       final AppUpdateStatus? update = await _appConfig.check();
       if (!mounted) return;

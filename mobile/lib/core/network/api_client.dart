@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart' show visibleForTesting;
 
 import '../config/env.dart';
 import '../storage/secure_store.dart';
+import 'certificate_pinning.dart';
 
 @visibleForTesting
 Duration parseRetryAfter(String? raw,
@@ -50,6 +51,7 @@ Dio createApiClient(
       },
     ),
   );
+  dio.httpClientAdapter = createPinnedHttpClientAdapter();
 
   Future<String?>? refreshInFlight;
 

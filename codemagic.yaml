@@ -31,9 +31,12 @@ workflows:
       vars:
         # Alamat default yang dibakar saat build. Bisa diganti dari dalam
         # aplikasi (Login -> "Server: ...") tanpa build ulang, jadi nilai ini
-        # hanya titik awal. IP LAN dipakai agar uji di Wi-Fi rumah langsung
-        # jalan; untuk jaringan lain isi URL ngrok/Tailscale di aplikasi.
+        # hanya titik awal.
+        # CATATAN KEAMANAN: rilis asli wajib https + API_CERT_SHA256
+        # (fingerprint sertifikat). Flag ALLOW_INSECURE_HTTP di bawah hanya
+        # untuk build demo/sideload di LAN; cabut sebelum rilis store.
         API_BASE_URL: "http://192.168.120.111:3000/api/v1"
+        ALLOW_INSECURE_HTTP: "true"
     triggering:
       events:
         - push
@@ -62,7 +65,9 @@ workflows:
       - name: Build iOS (unsigned, arm64 device)
         script: |
           flutter build ios --release --no-codesign --config-only \
-            --dart-define=API_BASE_URL=$API_BASE_URL
+            --dart-define=API_BASE_URL=$API_BASE_URL \
+            --dart-define=ALLOW_INSECURE_HTTP=$ALLOW_INSECURE_HTTP \
+            --dart-define=API_CERT_SHA256=$API_CERT_SHA256
           cd ios
           xcodebuild -workspace Runner.xcworkspace -scheme Runner -configuration Release \
             -sdk iphoneos -destination 'generic/platform=iOS' \
@@ -118,7 +123,8 @@ workflows:
       - name: Build Android debug APK
         script: |
           flutter build apk --debug \
-            --dart-define=API_BASE_URL=$API_BASE_URL
+            --dart-define=API_BASE_URL=$API_BASE_URL \
+            --dart-define=ALLOW_INSECURE_HTTP=$ALLOW_INSECURE_HTTP
     artifacts:
       - build/app/outputs/flutter-apk/app-debug.apk
       - mobile/build/app/outputs/flutter-apk/app-debug.apk
@@ -132,9 +138,12 @@ workflows:
       flutter: 3.22.2
       vars:
         API_BASE_URL: "http://192.168.120.111:3000/api/v1"
+        ALLOW_INSECURE_HTTP: "true"
         # Isi variabel berikut di Codemagic (Environment variables, secure):
         # CM_KEYSTORE, CM_KEYSTORE_PASSWORD, CM_KEY_ALIAS, CM_KEY_PASSWORD
         # (base64 dari file keystore). Lihat docs/guides/ANDROID_COMPAT.md.
+        # Untuk rilis store: ganti API_BASE_URL ke https, hapus
+        # ALLOW_INSECURE_HTTP, dan set API_CERT_SHA256 (fingerprint TLS).
     triggering:
       events:
         - push
@@ -159,7 +168,9 @@ workflows:
       - name: Build Android release AAB
         script: |
           flutter build appbundle --release \
-            --dart-define=API_BASE_URL=$API_BASE_URL
+            --dart-define=API_BASE_URL=$API_BASE_URL \
+            --dart-define=ALLOW_INSECURE_HTTP=$ALLOW_INSECURE_HTTP \
+            --dart-define=API_CERT_SHA256=$API_CERT_SHA256
     artifacts:
       - build/app/outputs/bundle/release/app-release.aab
       - mobile/build/app/outputs/bundle/release/app-release.aab

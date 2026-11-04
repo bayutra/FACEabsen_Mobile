@@ -10,10 +10,23 @@ void main() {
       );
     });
 
-    test('mempertahankan http dan port untuk backend LAN', () {
+    test('menolak http untuk host non-loopback', () {
+      expect(normalizeBaseUrl('http://192.168.1.10:3000'), isNull);
+      expect(normalizeBaseUrl('http://api.example.com'), isNull);
+    });
+
+    test('mengizinkan http loopback hanya untuk development', () {
       expect(
-        normalizeBaseUrl('http://192.168.1.10:3000'),
-        'http://192.168.1.10:3000/api/v1',
+        normalizeBaseUrl('http://localhost:3000'),
+        'http://localhost:3000/api/v1',
+      );
+      expect(
+        normalizeBaseUrl('http://10.0.2.2:3000'),
+        'http://10.0.2.2:3000/api/v1',
+      );
+      expect(
+        normalizeBaseUrl('http://127.0.0.1:3000/api/v1'),
+        'http://127.0.0.1:3000/api/v1',
       );
     });
 

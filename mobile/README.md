@@ -43,9 +43,14 @@ flutter run \
 ```
 
 - Emulator Android: `10.0.2.2` = localhost host.
-- HP fisik: pakai IP LAN laptop, mis. `http://192.168.1.10:3000/api/v1`.
-- iOS: `localhost` bekerja di simulator; HP fisik pakai IP LAN.
-- Produksi: `https://<domain>/api/v1` (wajib HTTPS).
+- HP fisik (debug): pakai IP LAN laptop hanya dengan
+  `--dart-define=ALLOW_INSECURE_HTTP=true`, mis.
+  `http://192.168.1.10:3000/api/v1`.
+- iOS: `localhost` bekerja di simulator; HP fisik sebaiknya pakai tunnel
+  HTTPS (ngrok/Tailscale).
+- Produksi/rilis: `https://<domain>/api/v1` **wajib**, plus
+  `--dart-define=API_CERT_SHA256=<fingerprint SHA-256 leaf certificate>`.
+  Build release tanpa HTTPS + pin akan menolak start (fail-fast).
 
 ## Testing
 
