@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { ServiceUnavailableException } from '@nestjs/common';
 import { RedisThrottlerStorage, type RateStore } from './redis-storage.js';
 
 function fakeStore(): RateStore & { calls: string[] } {
@@ -32,7 +33,7 @@ describe('RedisThrottlerStorage (STEP 25)', () => {
     expect(r3).toMatchObject({ totalHits: 3, isBlocked: true });
   });
 
-  it('fails open when Redis is unreachable', async () => {
+  it('fails closed when Redis is unreachable', async () => {
     const store: RateStore = {
       incr: async () => {
         throw new Error('ECONNREFUSED');
@@ -41,8 +42,8 @@ describe('RedisThrottlerStorage (STEP 25)', () => {
       ttl: async () => 60,
     };
     const svc = new RedisThrottlerStorage(store);
-    const r = await svc.increment('k', 60_000, 1, 0, 'default');
-    expect(r.isBlocked).toBe(false);
-    expect(r.totalHits).toBe(1);
+    await expect(svc.increment('k', 60_000, 1, 0, 'default')).rejects.toThrow(
+      ServiceUnavailableException,
+    );
   });
 });

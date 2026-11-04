@@ -1,30 +1,51 @@
 import { Injectable } from '@nestjs/common';
 import { ThrottlerGuard } from '@nestjs/throttler';
+import { createHash } from 'node:crypto';
+
+/**
+ * Key trackers are hashed so Redis never stores raw emails, refresh tokens, or
+ * user ids. Auth endpoints are keyed by IP + account: one attacker cannot lock
+ * an account from a single IP for everyone behind a different NAT, and a single
+ * IP cannot spray unlimited accounts without hitting its own bucket.
+ */
+function trackerDigest(value: string): string {
+  return createHash('sha256').update(value).digest('hex').slice(0, 32);
+}
 
 @Injectable()
 export class UserThrottlerGuard extends ThrottlerGuard {
   protected async getTracker(req: Record<string, any>): Promise<string> {
     const path: string = typeof req.path === 'string' ? req.path : '';
     const body: unknown = (req as { body?: unknown }).body;
+    const ip =
+      typeof req.ip === 'string' && req.ip.length > 0 ? req.ip : 'unknown';
+
+    let account: string | undefined;
     if (
       path.includes('/auth/login') &&
       isRecord(body) &&
       typeof body.email === 'string' &&
       body.email.length > 0
     ) {
-      return `auth-email:${body.email.trim().toLowerCase()}`;
-    }
-    if (
+      account = `email:${body.email.trim().toLowerCase()}`;
+    } else if (
       path.includes('/auth/refresh') &&
       isRecord(body) &&
       typeof body.refreshToken === 'string' &&
       body.refreshToken.length >= 8
     ) {
-      return `auth-refresh:${body.refreshToken.slice(0, 12)}`;
+      account = `refresh:${body.refreshToken}`;
     }
+
+    if (account) {
+      return `auth-${trackerDigest(`${ip}|${account}`)}`;
+    }
+
     const sub = bearerSub((req as { headers?: unknown }).headers);
-    if (sub) return `user-${sub}`;
-    return super.getTracker(req);
+    if (sub) return `user-${trackerDigest(sub)}`;
+
+    const fallback = await super.getTracker(req);
+    return `ip-${trackerDigest(fallback)}`;
   }
 }
 

@@ -1,4 +1,4 @@
-import { Logger } from '@nestjs/common';
+import { Logger, ServiceUnavailableException } from '@nestjs/common';
 import type { ThrottlerStorage } from '@nestjs/throttler';
 
 interface ThrottlerRecord {
@@ -47,15 +47,12 @@ export class RedisThrottlerStorage implements ThrottlerStorage {
         timeToBlockExpire: blocked ? timeToExpire : 0,
       };
     } catch (e) {
-      this.logger.warn(
-        `Rate-limit store unreachable, failing open: ${(e as Error).message}`,
+      // Fail closed: if the shared limiter cannot be consulted, accepting the
+      // request would remove brute-force protection everywhere at once.
+      this.logger.error(
+        `Rate-limit store unreachable, rejecting request: ${(e as Error).message}`,
       );
-      return {
-        totalHits: 1,
-        timeToExpire: ttl,
-        isBlocked: false,
-        timeToBlockExpire: 0,
-      };
+      throw new ServiceUnavailableException('Rate limit store unavailable');
     }
   }
 }
