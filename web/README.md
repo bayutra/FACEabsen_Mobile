@@ -11,6 +11,8 @@ cd web
 npm install
 # opsional bila backend bukan http://localhost:3000
 # API_ORIGIN=http://localhost:3000
+# wajib: sama dengan DASHBOARD_CLIENT_SECRET di backend
+# DASHBOARD_CLIENT_SECRET=...
 npm run dev        # http://localhost:3001
 ```
 
@@ -18,7 +20,7 @@ Build produksi:
 
 ```bash
 npm run build
-API_ORIGIN=http://localhost:3000 npm run start
+API_ORIGIN=http://localhost:3000 DASHBOARD_CLIENT_SECRET=... npm run start
 ```
 
 Browser hanya memanggil origin yang sama. Route handler Next.js
@@ -27,11 +29,13 @@ tidak perlu CORS di backend dan token tidak pernah dikirim ke JavaScript klien.
 
 ## Akun
 
-- Login memakai endpoint backend yang sama (`POST /auth/login`) dengan
-  `client: 'WEB'`. TOTP didukung (`/auth/totp/verify`).
+- Login memakai `POST /auth/login` lewat route handler server. Handler mengirim
+  header bukti `x-dashboard-secret` (dari `DASHBOARD_CLIENT_SECRET`), sehingga
+  backend bisa membedakan dashboard dari mobile tanpa mempercayai field body.
+  TOTP didukung (`/auth/totp/verify`).
 - Peran `SUPERVISOR`, `ADMIN`, atau `SUPER_ADMIN` hanya bisa masuk dari
-  dashboard. Login mobile dengan peran tersebut ditolak
-  (`DASHBOARD_ONLY_ROLE`).
+  dashboard. Login tanpa bukti server-to-server ditolak
+  (`DASHBOARD_ONLY_ROLE`), termasuk bila body mengirim `client: 'WEB'`.
 - Access & refresh token disimpan di cookie `httpOnly` (`fa_dashboard_access`,
   `fa_dashboard_refresh`) yang di-set oleh route handler server. Rotasi refresh
   token terjadi di server saat proxy menerima 401.

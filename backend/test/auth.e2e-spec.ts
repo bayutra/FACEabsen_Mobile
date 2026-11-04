@@ -38,6 +38,7 @@ const PERMS: Record<string, string[]> = {
   SUPER_ADMIN: ['role:manage', 'security:manage'],
 };
 const RANK = ['EMPLOYEE', 'SUPERVISOR', 'ADMIN', 'SUPER_ADMIN'];
+const DASHBOARD_SECRET = 'e2e-dashboard-secret-0123456789abcdef';
 const permsFor = (role: string) =>
   RANK.filter((r) => RANK.indexOf(r) <= RANK.indexOf(role)).flatMap(
     (r) => PERMS[r] ?? [],
@@ -170,6 +171,7 @@ let fake: ReturnType<typeof makeFake>;
 async function loginAs(email: string, password = 'Password123!') {
   const res = await request(app.getHttpServer())
     .post('/auth/login')
+    .set('x-dashboard-secret', DASHBOARD_SECRET)
     .send({ email, password });
   expect(res.status).toBe(200);
   return res.body.accessToken as string;
@@ -219,7 +221,10 @@ beforeAll(async () => {
       { provide: PrismaService, useValue: fake },
       {
         provide: ConfigService,
-        useValue: { get: (_k: string, d: unknown) => d },
+        useValue: {
+          get: (key: string, fallback: unknown) =>
+            key === 'DASHBOARD_CLIENT_SECRET' ? DASHBOARD_SECRET : fallback,
+        },
       },
       { provide: AuditService, useValue: { log: async () => undefined } },
     ],
@@ -286,16 +291,54 @@ describe('auth flow over HTTP', () => {
     expect(unknown.status).toBe(401);
   });
 
+  it('dashboard roles require the server-to-server proof, not client: WEB', async () => {
+    const server = app.getHttpServer();
+
+    const spoofed = await request(server)
+      .post('/auth/login')
+      .send({
+        email: 'supervisor@rs.test',
+        password: 'Password123!',
+        client: 'WEB',
+      });
+    expect(spoofed.status).toBe(403);
+    expect(spoofed.body.reason).toBe('DASHBOARD_ONLY_ROLE');
+
+    const wrongProof = await request(server)
+      .post('/auth/login')
+      .set('x-dashboard-secret', 'not-the-configured-secret')
+      .send({ email: 'admin@rs.test', password: 'Password123!' });
+    expect(wrongProof.status).toBe(403);
+
+    const proven = await request(server)
+      .post('/auth/login')
+      .set('x-dashboard-secret', DASHBOARD_SECRET)
+      .send({
+        email: 'supervisor@rs.test',
+        password: 'Password123!',
+        client: 'MOBILE',
+      });
+    expect(proven.status).toBe(200);
+    expect(proven.body.accessToken).toBeTruthy();
+
+    const employee = await request(server)
+      .post('/auth/login')
+      .send({ email: 'employee@rs.test', password: 'Password123!' });
+    expect(employee.status).toBe(200);
+  });
+
   it('5 wrong passwords lock the account even for the right password', async () => {
     const server = app.getHttpServer();
     for (let i = 0; i < 5; i++) {
       const r = await request(server)
         .post('/auth/login')
+        .set('x-dashboard-secret', DASHBOARD_SECRET)
         .send({ email: 'supervisor@rs.test', password: 'Wrong123!' });
       expect(r.status).toBe(401);
     }
     const locked = await request(server)
       .post('/auth/login')
+      .set('x-dashboard-secret', DASHBOARD_SECRET)
       .send({ email: 'supervisor@rs.test', password: 'Password123!' });
     expect(locked.status).toBe(403);
   });
@@ -304,9 +347,11 @@ describe('auth flow over HTTP', () => {
     const server = app.getHttpServer();
     const a = await request(server)
       .post('/auth/login')
+      .set('x-dashboard-secret', DASHBOARD_SECRET)
       .send({ email: 'admin@rs.test', password: 'Password123!' });
     const b = await request(server)
       .post('/auth/login')
+      .set('x-dashboard-secret', DASHBOARD_SECRET)
       .send({ email: 'admin@rs.test', password: 'Password123!' });
     const ch = await request(server)
       .post('/auth/change-password')

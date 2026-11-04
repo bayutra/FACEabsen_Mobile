@@ -59,7 +59,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       totpToken?: string;
     }>('/login', {
       method: 'POST',
-      body: { email, password, client: 'WEB' },
+      body: { email, password },
     });
 
     if (body.totpRequired) {

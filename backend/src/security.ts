@@ -1,8 +1,10 @@
+import { timingSafeEqual } from 'node:crypto';
 import { AUTH_POLICY } from './auth/constants.js';
 
 export interface EnvLike {
   NODE_ENV?: string;
   JWT_ACCESS_SECRET?: string;
+  DASHBOARD_CLIENT_SECRET?: string;
   DATABASE_URL?: string;
   DATA_ENCRYPTION_KEY?: string;
   HOSPITAL_TZ?: string;
@@ -38,6 +40,22 @@ export function requireJwtSecret(raw: string | undefined | null): string {
   return secret;
 }
 
+/**
+ * Dashboard logins are proven by a server-to-server shared secret sent by the
+ * Next.js BFF. The browser (and therefore a mobile client) cannot read it, so
+ * a request without a matching proof is treated as a mobile client.
+ */
+export function matchesDashboardSecret(
+  provided: unknown,
+  expected: string | undefined | null,
+): boolean {
+  const secret = (expected ?? '').trim();
+  if (!secret || typeof provided !== 'string') return false;
+  const a = Buffer.from(provided);
+  const b = Buffer.from(secret);
+  return a.length === b.length && timingSafeEqual(a, b);
+}
+
 export function assertProductionEnv(env: EnvLike): void {
   if (env.NODE_ENV !== 'production') return;
   const problems: string[] = [];
@@ -47,6 +65,12 @@ export function assertProductionEnv(env: EnvLike): void {
   } else if (secret.length < AUTH_POLICY.jwtMinSecretLength) {
     problems.push(
       `JWT_ACCESS_SECRET must be at least ${AUTH_POLICY.jwtMinSecretLength} chars`,
+    );
+  }
+  const dashboardSecret = env.DASHBOARD_CLIENT_SECRET ?? '';
+  if (dashboardSecret.length < AUTH_POLICY.jwtMinSecretLength) {
+    problems.push(
+      `DASHBOARD_CLIENT_SECRET must be at least ${AUTH_POLICY.jwtMinSecretLength} chars`,
     );
   }
   if (!env.DATABASE_URL) problems.push('DATABASE_URL is missing');

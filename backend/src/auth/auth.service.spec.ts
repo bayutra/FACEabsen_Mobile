@@ -91,7 +91,9 @@ describe('AuthService.login', () => {
     );
     await expect(
       mobile.login(
-        { email: 'employee@rs.test', password: PASSWORD, client: 'MOBILE' },
+        // `client: 'WEB'` in the body must not grant dashboard access; the
+        // platform comes from the third argument (server-to-server proof).
+        { email: 'employee@rs.test', password: PASSWORD, client: 'WEB' },
         {},
       ),
     ).rejects.toThrow('dashboard web');
@@ -113,8 +115,9 @@ describe('AuthService.login', () => {
       emailVerificationStub,
     );
     const out = await web.login(
-      { email: 'employee@rs.test', password: PASSWORD, client: 'WEB' },
+      { email: 'employee@rs.test', password: PASSWORD },
       {},
+      'WEB',
     );
     expect(out.accessToken).toBeTruthy();
   });

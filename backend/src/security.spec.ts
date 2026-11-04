@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { assertProductionEnv, requireJwtSecret } from './security.js';
+import {
+  assertProductionEnv,
+  matchesDashboardSecret,
+  requireJwtSecret,
+} from './security.js';
 
 describe('requireJwtSecret', () => {
   it('fails fast when the secret is missing, a placeholder, or too short', () => {
@@ -14,6 +18,17 @@ describe('requireJwtSecret', () => {
 
   it('accepts a strong secret', () => {
     expect(requireJwtSecret('a'.repeat(32))).toBe('a'.repeat(32));
+  });
+});
+
+describe('matchesDashboardSecret', () => {
+  it('only accepts an exact, configured server-to-server secret', () => {
+    expect(matchesDashboardSecret('s'.repeat(32), 's'.repeat(32))).toBe(true);
+    expect(matchesDashboardSecret('wrong', 's'.repeat(32))).toBe(false);
+    expect(matchesDashboardSecret(undefined, 's'.repeat(32))).toBe(false);
+    expect(matchesDashboardSecret(['s'.repeat(32)], 's'.repeat(32))).toBe(false);
+    expect(matchesDashboardSecret('s'.repeat(32), undefined)).toBe(false);
+    expect(matchesDashboardSecret('s'.repeat(32), '   ')).toBe(false);
   });
 });
 
@@ -42,6 +57,12 @@ describe('assertProductionEnv (STEP 22)', () => {
         JWT_ACCESS_SECRET: 'short-secret',
       }),
     ).toThrow('at least 32 chars');
+    expect(() =>
+      assertProductionEnv({
+        NODE_ENV: 'production',
+        JWT_ACCESS_SECRET: 'a'.repeat(32),
+      }),
+    ).toThrow('DASHBOARD_CLIENT_SECRET');
   });
 
   it('production boots only with real secrets + DB + encryption key', () => {
@@ -49,6 +70,7 @@ describe('assertProductionEnv (STEP 22)', () => {
     const goodEnv = {
       NODE_ENV: 'production',
       JWT_ACCESS_SECRET: 'a'.repeat(32),
+      DASHBOARD_CLIENT_SECRET: 'c'.repeat(32),
       DATABASE_URL: 'postgresql://x',
       DATA_ENCRYPTION_KEY: goodKey,
       SMTP_HOST: 'smtp.example.com',

@@ -11,12 +11,14 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
+import { ConfigService } from '@nestjs/config';
 import type { Request } from 'express';
 import { AuthService, type RequestMeta } from './auth.service.js';
 import { AUTH_POLICY } from './constants.js';
 import { CurrentUser, Public, type AuthContext } from './decorators.js';
 import { ChangePasswordDto, LoginDto, RefreshDto, RegisterDto, ResendVerificationDto, VerifyEmailDto } from './dto.js';
 import { JwtAuthGuard } from './guards/jwt-auth.guard.js';
+import { matchesDashboardSecret } from '../security.js';
 
 const loginThrottle = {
   default: {
@@ -32,14 +34,21 @@ function metaOf(req: Request): RequestMeta {
 @UseGuards(JwtAuthGuard)
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly auth: AuthService) {}
+  constructor(
+    private readonly auth: AuthService,
+    private readonly config: ConfigService,
+  ) {}
 
   @Public()
   @Throttle(loginThrottle)
   @HttpCode(HttpStatus.OK)
   @Post('login')
   login(@Body() dto: LoginDto, @Req() req: Request) {
-    return this.auth.login(dto, metaOf(req));
+    const dashboard = matchesDashboardSecret(
+      req.headers['x-dashboard-secret'],
+      this.config.get<string>('DASHBOARD_CLIENT_SECRET'),
+    );
+    return this.auth.login(dto, metaOf(req), dashboard ? 'WEB' : 'MOBILE');
   }
 
   @Public()

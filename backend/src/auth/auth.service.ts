@@ -3,7 +3,6 @@ import {
   ConflictException,
   ForbiddenException,
   Injectable,
-  Logger,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -24,6 +23,12 @@ export interface RequestMeta {
   userAgent?: string;
 }
 
+/**
+ * Platform proof comes from the server-to-server dashboard secret, never from
+ * a request body field the caller can choose freely.
+ */
+export type LoginPlatform = 'WEB' | 'MOBILE';
+
 interface RoleRow {
   role: { name: string };
 }
@@ -36,7 +41,6 @@ const DASHBOARD_ONLY_ROLES = new Set(['SUPERVISOR', 'ADMIN', 'SUPER_ADMIN']);
 
 @Injectable()
 export class AuthService {
-  private readonly logger = new Logger(AuthService.name);
   private readonly accessTtlSec: number;
   private readonly refreshTtlDays: number;
   private readonly maxFailedAttempts: number;
@@ -61,11 +65,6 @@ export class AuthService {
     this.lockoutMinutes = Number(
       config.get('LOCKOUT_MINUTES', AUTH_POLICY.lockoutMinutes),
     );
-    if (!config.get('JWT_ACCESS_SECRET')) {
-      this.logger.warn(
-        'JWT_ACCESS_SECRET missing â€” using dev fallback. Set it in production.',
-      );
-    }
   }
 
   async getRoles(userId: string): Promise<string[]> {
@@ -94,7 +93,11 @@ export class AuthService {
     return [...out];
   }
 
-  async login(dto: LoginDto, meta: RequestMeta = {}) {
+  async login(
+    dto: LoginDto,
+    meta: RequestMeta = {},
+    platform: LoginPlatform = 'MOBILE',
+  ) {
     const user = await this.prisma.user.findUnique({
       where: { email: dto.email },
       include: { userRoles: { include: { role: true } } },
@@ -142,10 +145,11 @@ export class AuthService {
     }
 
     const roles = (user.userRoles as RoleRow[]).map((ur) => ur.role.name);
-    // Peran pengelola hanya boleh masuk lewat dashboard web. Mobile tetap
-    // menolak walau kredensial benar agar mode admin tidak ada di ponsel.
+    // Peran pengelola hanya boleh masuk lewat dashboard web. Platform berasal
+    // dari bukti server-to-server (header rahasia), bukan field `client` yang
+    // bisa dikirim bebas oleh aplikasi mobile.
     if (
-      dto.client === 'MOBILE' &&
+      platform !== 'WEB' &&
       roles.some((role) => DASHBOARD_ONLY_ROLES.has(role))
     ) {
       await this.audit.log({
@@ -153,7 +157,7 @@ export class AuthService {
         action: 'LOGIN_FAILED',
         ipAddress: meta.ip,
         result: 'DENIED',
-        metadata: { reason: 'DASHBOARD_ONLY_ROLE', roles },
+        metadata: { reason: 'DASHBOARD_ONLY_ROLE', roles, platform },
       });
       throw new ForbiddenException({
         reason: 'DASHBOARD_ONLY_ROLE',

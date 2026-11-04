@@ -24,8 +24,9 @@ export class LoginDto {
   deviceId?: string;
 
   /**
-   * Asal login. `MOBILE` menolak peran dashboard (ADMIN/SUPER_ADMIN/
-   * SUPERVISOR) karena area tersebut hanya tersedia di dashboard web.
+   * @deprecated Dipertahankan hanya agar aplikasi mobile versi lama tidak
+   * ditolak oleh `forbidNonWhitelisted`. Nilainya tidak pernah dipakai untuk
+   * otorisasi; platform ditentukan dari bukti server-to-server di controller.
    */
   @IsOptional()
   @IsIn(['MOBILE', 'WEB'])

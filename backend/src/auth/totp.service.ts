@@ -2,7 +2,6 @@ import {
   BadRequestException,
   ConflictException,
   Injectable,
-  Logger,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -41,7 +40,6 @@ function mintRecoveryCode(): string {
 
 @Injectable()
 export class TotpService {
-  private readonly logger = new Logger(TotpService.name);
   private readonly accessTtlSec: number;
   private readonly refreshTtlDays: number;
   private readonly totpIssuer: string;
@@ -61,11 +59,6 @@ export class TotpService {
     this.totpIssuer = String(
       config.get('TOTP_ISSUER', AUTH_POLICY.jwtIssuer) ?? AUTH_POLICY.jwtIssuer,
     );
-    if (!config.get('JWT_ACCESS_SECRET')) {
-      this.logger.warn(
-        'JWT_ACCESS_SECRET missing — using dev fallback. Set it in production.',
-      );
-    }
   }
 
   async setup(userId: string) {
