@@ -88,8 +88,7 @@ class _FaceScanIssueScreenState extends State<FaceScanIssueScreen> {
           'Mata tertutup saat pemindaian sehingga liveness tidak terpenuhi.',
         FaceGate.multipleFaces =>
           'Terdeteksi lebih dari satu wajah di area kamera.',
-        FaceGate.noFace =>
-          'Wajah tidak terdeteksi di dalam bingkai kamera.',
+        FaceGate.noFace => 'Wajah tidak terdeteksi di dalam bingkai kamera.',
         FaceGate.tooSmall =>
           'Wajah terlalu jauh sehingga detail biometrik tidak cukup.',
         FaceGate.ok => 'Posisikan wajah di tengah bingkai dan coba kembali.',

@@ -444,8 +444,8 @@ class _PassiveScanScreenState extends State<PassiveScanScreen>
                   color: Colors.white.withOpacity(0.1),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.arrow_back,
-                    color: Colors.white, size: 20),
+                child:
+                    const Icon(Icons.arrow_back, color: Colors.white, size: 20),
               ),
             ),
             const SizedBox(width: 12),
@@ -480,8 +480,8 @@ class _PassiveScanScreenState extends State<PassiveScanScreen>
               decoration: BoxDecoration(
                 color: AppColors.primaryContainer.withOpacity(0.85),
                 borderRadius: BorderRadius.circular(AppColors.radiusFull),
-                border: Border.all(
-                    color: AppColors.primaryFixed.withOpacity(0.4)),
+                border:
+                    Border.all(color: AppColors.primaryFixed.withOpacity(0.4)),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -768,18 +768,16 @@ class _PassiveScanScreenState extends State<PassiveScanScreen>
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 12, vertical: 5),
                               decoration: BoxDecoration(
-                                color: AppColors.primaryContainer
-                                    .withOpacity(0.9),
-                                borderRadius: BorderRadius.circular(
-                                    AppColors.radiusFull),
+                                color:
+                                    AppColors.primaryContainer.withOpacity(0.9),
+                                borderRadius:
+                                    BorderRadius.circular(AppColors.radiusFull),
                               ),
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: <Widget>[
                                   Icon(
-                                    _passed
-                                        ? Icons.verified
-                                        : Icons.straighten,
+                                    _passed ? Icons.verified : Icons.straighten,
                                     size: 13,
                                     color: Colors.white,
                                   ),
@@ -816,8 +814,7 @@ class _PassiveScanScreenState extends State<PassiveScanScreen>
         decoration: BoxDecoration(
           color: AppColors.inverseSurface.withOpacity(0.85),
           borderRadius: BorderRadius.circular(AppColors.radiusFull),
-          border: Border.all(
-              color: AppColors.primaryFixed.withOpacity(0.35)),
+          border: Border.all(color: AppColors.primaryFixed.withOpacity(0.35)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -825,7 +822,8 @@ class _PassiveScanScreenState extends State<PassiveScanScreen>
             Container(
               width: 7,
               height: 7,
-              decoration: BoxDecoration(color: dotColor, shape: BoxShape.circle),
+              decoration:
+                  BoxDecoration(color: dotColor, shape: BoxShape.circle),
             ),
             const SizedBox(width: 6),
             Icon(icon, size: 12, color: AppColors.onInverseSurface),
@@ -887,8 +885,8 @@ class _PassiveScanScreenState extends State<PassiveScanScreen>
     );
   }
 
-  Widget _telemetryDivider() => Container(
-      width: 1, height: 26, color: Colors.white.withOpacity(0.15));
+  Widget _telemetryDivider() =>
+      Container(width: 1, height: 26, color: Colors.white.withOpacity(0.15));
 
   Widget _telemetryColumn({
     required String title,
@@ -994,13 +992,10 @@ class _PassiveScanScreenState extends State<PassiveScanScreen>
                       AppColors.primaryContainer.withOpacity(0.6),
                   disabledForegroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
-                    borderRadius:
-                        BorderRadius.circular(AppColors.radiusButton),
+                    borderRadius: BorderRadius.circular(AppColors.radiusButton),
                   ),
                 ),
-                onPressed: _passed
-                    ? null
-                    : (_error != null ? _retry : _tick),
+                onPressed: _passed ? null : (_error != null ? _retry : _tick),
                 icon: Icon(
                   _passed
                       ? Icons.verified
@@ -1012,7 +1007,9 @@ class _PassiveScanScreenState extends State<PassiveScanScreen>
                 label: Text(
                   _passed
                       ? 'Wajah Terverifikasi'
-                      : (_error != null ? 'Coba Pindai Ulang' : 'Pindai Sekarang'),
+                      : (_error != null
+                          ? 'Coba Pindai Ulang'
+                          : 'Pindai Sekarang'),
                   style: const TextStyle(
                       fontSize: 15, fontWeight: FontWeight.w600),
                 ),

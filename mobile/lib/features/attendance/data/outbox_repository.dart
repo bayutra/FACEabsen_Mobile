@@ -76,9 +76,8 @@ class OutboxEntry {
     final String? queuedRaw = json['queuedAt'] as String?;
     DateTime queuedAt;
     try {
-      queuedAt = queuedRaw != null
-          ? DateTime.parse(queuedRaw).toUtc()
-          : captureAt;
+      queuedAt =
+          queuedRaw != null ? DateTime.parse(queuedRaw).toUtc() : captureAt;
     } catch (_) {
       return null;
     }
@@ -86,7 +85,9 @@ class OutboxEntry {
     return OutboxEntry(
       kind: kind,
       payload: payload,
-      requestId: requestId.isEmpty ? 'legacy-${captureAt.millisecondsSinceEpoch}' : requestId,
+      requestId: requestId.isEmpty
+          ? 'legacy-${captureAt.millisecondsSinceEpoch}'
+          : requestId,
       captureAt: captureAt,
       queuedAt: queuedAt,
       attempts: (json['attempts'] as num?)?.toInt() ?? 0,
@@ -127,12 +128,14 @@ class OutboxRepository {
       throw OutboxFullException();
     }
     current.add(entry);
-    await store.writeOutbox(jsonEncode(current.map((e) => e.toJson()).toList()));
+    await store
+        .writeOutbox(jsonEncode(current.map((e) => e.toJson()).toList()));
   }
 
   Future<void> replaceAll(List<OutboxEntry> entries) async {
     if (entries.length > maxEntries) throw OutboxFullException();
-    await store.writeOutbox(jsonEncode(entries.map((e) => e.toJson()).toList()));
+    await store
+        .writeOutbox(jsonEncode(entries.map((e) => e.toJson()).toList()));
   }
 
   Future<int> count() async => (await load()).length;

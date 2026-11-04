@@ -353,298 +353,19 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
               ),
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppColors.pageMargin,
-                  vertical: 20,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Row(
-                      children: [
-                        const HospitalMark(size: 48),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Text(
-                                    'Darmayu Face ID',
-                                    style: AppText.headlineLg.copyWith(
-                                      color: AppColors.primary,
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 6,
-                                      vertical: 2,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: AppColors.primaryFixed,
-                                      borderRadius: BorderRadius.circular(
-                                          AppColors.radiusFull),
-                                    ),
-                                    child: Text(
-                                      'v2.4',
-                                      style: AppText.labelSm.copyWith(
-                                        color: AppColors.onPrimaryFixed,
-                                        fontWeight: FontWeight.w700,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              Text(
-                                'Sistem Presensi & Verifikasi Nakes RSU Darmayu Madiun',
-                                style: AppText.labelSm.copyWith(
-                                  color: AppColors.inkSecondary,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 24),
-                    Text(
-                      'Selamat Datang',
-                      style: AppText.displayMobile.copyWith(
-                        color: AppColors.ink,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Silakan masuk dengan akun kredensial kepegawaian Anda untuk memulai dinas kerja.',
-                      style: AppText.bodyMd.copyWith(
-                        color: AppColors.inkSecondary,
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    if (_totpToken == null)
-                      AppCard(
-                        padding: const EdgeInsets.all(20),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Email *',
-                              style: AppText.labelMd
-                                  .copyWith(color: AppColors.ink),
-                            ),
-                            const SizedBox(height: 6),
-                            TextField(
-                              controller: _email,
-                              keyboardType: TextInputType.emailAddress,
-                              decoration: const InputDecoration(
-                                hintText: 'nama@rumahsakit.example',
-                                prefixIcon: Icon(Icons.mail_outline),
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Row(
-                              children: [
-                                const Icon(
-                                  Icons.verified_user_outlined,
-                                  size: 14,
-                                  color: AppColors.inkSecondary,
-                                ),
-                                const SizedBox(width: 4),
-                                Expanded(
-                                  child: Text(
-                                    'Nomor Induk Pegawai terdaftar di Kepegawaian RS',
-                                    style: AppText.labelSm.copyWith(
-                                      color: AppColors.inkSecondary,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 16),
-                            Text(
-                              'Kata Sandi *',
-                              style: AppText.labelMd
-                                  .copyWith(color: AppColors.ink),
-                            ),
-                            const SizedBox(height: 6),
-                            TextField(
-                              controller: _password,
-                              obscureText: _obscurePassword,
-                              decoration: InputDecoration(
-                                hintText: '••••••••••••',
-                                prefixIcon: const Icon(Icons.lock_outline),
-                                suffixIcon: IconButton(
-                                  icon: Icon(
-                                    _obscurePassword
-                                        ? Icons.visibility_outlined
-                                        : Icons.visibility_off_outlined,
-                                  ),
-                                  onPressed: () {
-                                    setState(() {
-                                      _obscurePassword = !_obscurePassword;
-                                    });
-                                  },
-                                ),
-                              ),
-                              onSubmitted: (_) => _submit(),
-                            ),
-                            const SizedBox(height: 12),
-                            Row(
-                              children: [
-                                SizedBox(
-                                  width: 24,
-                                  height: 24,
-                                  child: Checkbox(
-                                    value: _rememberMe,
-                                    onChanged: (val) {
-                                      setState(() {
-                                        _rememberMe = val ?? true;
-                                      });
-                                    },
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  'Ingat Saya',
-                                  style: AppText.bodyMd
-                                      .copyWith(color: AppColors.ink),
-                                ),
-                                const Spacer(),
-                                TextButton(
-                                  onPressed: () {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text(
-                                          'Hubungi SIMRS & SDM Kepegawaian (Ext. 104) untuk reset kata sandi.',
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                  child: Text(
-                                    'Lupa password?',
-                                    style: AppText.labelMd.copyWith(
-                                      color: AppColors.secondary,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 12),
-                            if (_error != null) ...[
-                              InfoBanner(
-                                _error!,
-                                tone: _error!.startsWith('Perangkat')
-                                    ? InfoBannerTone.warning
-                                    : InfoBannerTone.error,
-                                title: 'Tidak dapat masuk',
-                              ),
-                              if (_unverifiedEmail != null)
-                                Align(
-                                  alignment: Alignment.centerRight,
-                                  child: TextButton.icon(
-                                    onPressed: () {
-                                      Navigator.of(context).push<void>(
-                                        MaterialPageRoute<void>(
-                                          builder: (_) => VerifyEmailScreen(
-                                            email: _unverifiedEmail!,
-                                            auth: widget.auth,
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                    icon: const Icon(Icons.mark_email_read,
-                                        size: 18),
-                                    label: const Text('Verifikasi email'),
-                                  ),
-                                ),
-                              const SizedBox(height: 16),
-                            ],
-                            SizedBox(
-                              width: double.infinity,
-                              height: AppColors.buttonHeight,
-                              child: FilledButton(
-                                onPressed: _busy ? null : _submit,
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      _busy ? 'Memverifikasi...' : 'Masuk',
-                                      style: AppText.bodyLgMedium.copyWith(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    const Icon(Icons.arrow_forward,
-                                        size: 20, color: Colors.white),
-                                  ],
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  'Belum punya akun?',
-                                  style: AppText.labelSm.copyWith(
-                                    color: AppColors.inkSecondary,
-                                  ),
-                                ),
-                                TextButton(
-                                  onPressed: _busy ? null : _openRegister,
-                                  child: Text(
-                                    'Daftar',
-                                    style: AppText.labelMd.copyWith(
-                                      color: AppColors.secondary,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    if (_totpToken != null) _totpCard(),
-                    const SizedBox(height: 16),
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: AppColors.surfaceLow,
-                        borderRadius:
-                            BorderRadius.circular(AppColors.radiusCard),
-                        border: Border.all(
-                          color: AppColors.border,
-                        ),
-                      ),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppColors.pageMargin,
+                    vertical: 20,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Row(
                         children: [
-                          Container(
-                            width: 32,
-                            height: 32,
-                            decoration: BoxDecoration(
-                              color: AppColors.surfaceLowest,
-                              borderRadius: BorderRadius.circular(10),
-                              border: Border.all(
-                                color: AppColors.border,
-                              ),
-                            ),
-                            child: const Icon(
-                              Icons.devices,
-                              color: AppColors.secondary,
-                              size: 18,
-                            ),
-                          ),
-                          const SizedBox(width: 10),
+                          const HospitalMark(size: 48),
+                          const SizedBox(width: 12),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -652,144 +373,425 @@ class _LoginScreenState extends State<LoginScreen> {
                                 Row(
                                   children: [
                                     Text(
-                                      'Keamanan Akun',
-                                      style: AppText.labelMd
-                                          .copyWith(color: AppColors.ink),
+                                      'Darmayu Face ID',
+                                      style: AppText.headlineLg.copyWith(
+                                        color: AppColors.primary,
+                                        fontWeight: FontWeight.w700,
+                                      ),
                                     ),
-                                    const SizedBox(width: 6),
+                                    const SizedBox(width: 8),
                                     Container(
                                       padding: const EdgeInsets.symmetric(
                                         horizontal: 6,
-                                        vertical: 1,
+                                        vertical: 2,
                                       ),
                                       decoration: BoxDecoration(
-                                        color: AppColors.surfaceContainer,
+                                        color: AppColors.primaryFixed,
                                         borderRadius: BorderRadius.circular(
                                             AppColors.radiusFull),
                                       ),
                                       child: Text(
-                                        'Satu Perangkat',
+                                        'v2.4',
                                         style: AppText.labelSm.copyWith(
-                                          color: AppColors.onSecondaryContainer,
-                                          fontWeight: FontWeight.w600,
+                                          color: AppColors.onPrimaryFixed,
+                                          fontWeight: FontWeight.w700,
                                         ),
                                       ),
                                     ),
                                   ],
                                 ),
-                                const SizedBox(height: 2),
                                 Text(
-                                  'Perangkat ini didaftarkan otomatis untuk presensi. Saat Anda masuk di HP baru, perangkat lama otomatis dilepas dan tidak bisa dipakai presensi lagi.',
+                                  'Sistem Presensi & Verifikasi Nakes RSU Darmayu Madiun',
                                   style: AppText.labelSm.copyWith(
                                     color: AppColors.inkSecondary,
                                   ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ],
                             ),
                           ),
                         ],
                       ),
-                    ),
-                    const SizedBox(height: 12),
-                    const Center(
-                      child: AppPill(
-                        'Verifikasi Wajah Biometrik aktif',
-                        AppColors.tealBadgeBg,
-                        AppColors.tealBadgeText,
-                        icon: Icons.face,
-                        border: AppColors.tealBadgeBorder,
-                      ),
-                    ),
-                    if (widget.servers != null) ...[
-                      const SizedBox(height: 8),
-                      Center(
-                        child: ListenableBuilder(
-                          listenable: widget.servers!,
-                          builder: (BuildContext context, Widget? _) {
-                            return TextButton.icon(
-                              onPressed: _busy
-                                  ? null
-                                  : () => showServerSettingsDialog(
-                                        context,
-                                        widget.servers!,
-                                      ),
-                              icon: const Icon(
-                                Icons.dns_outlined,
-                                size: 16,
-                                color: AppColors.inkSecondary,
-                              ),
-                              label: Text(
-                                'Server: ${widget.servers!.hostLabel}',
-                                style: AppText.labelSm.copyWith(
-                                  color: AppColors.inkSecondary,
-                                ),
-                              ),
-                            );
-                          },
+                      const SizedBox(height: 24),
+                      Text(
+                        'Selamat Datang',
+                        style: AppText.displayMobile.copyWith(
+                          color: AppColors.ink,
                         ),
                       ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Silakan masuk dengan akun kredensial kepegawaian Anda untuk memulai dinas kerja.',
+                        style: AppText.bodyMd.copyWith(
+                          color: AppColors.inkSecondary,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      if (_totpToken == null)
+                        AppCard(
+                          padding: const EdgeInsets.all(20),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Email *',
+                                style: AppText.labelMd
+                                    .copyWith(color: AppColors.ink),
+                              ),
+                              const SizedBox(height: 6),
+                              TextField(
+                                controller: _email,
+                                keyboardType: TextInputType.emailAddress,
+                                decoration: const InputDecoration(
+                                  hintText: 'nama@rumahsakit.example',
+                                  prefixIcon: Icon(Icons.mail_outline),
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Row(
+                                children: [
+                                  const Icon(
+                                    Icons.verified_user_outlined,
+                                    size: 14,
+                                    color: AppColors.inkSecondary,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Expanded(
+                                    child: Text(
+                                      'Nomor Induk Pegawai terdaftar di Kepegawaian RS',
+                                      style: AppText.labelSm.copyWith(
+                                        color: AppColors.inkSecondary,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                'Kata Sandi *',
+                                style: AppText.labelMd
+                                    .copyWith(color: AppColors.ink),
+                              ),
+                              const SizedBox(height: 6),
+                              TextField(
+                                controller: _password,
+                                obscureText: _obscurePassword,
+                                decoration: InputDecoration(
+                                  hintText: '••••••••••••',
+                                  prefixIcon: const Icon(Icons.lock_outline),
+                                  suffixIcon: IconButton(
+                                    icon: Icon(
+                                      _obscurePassword
+                                          ? Icons.visibility_outlined
+                                          : Icons.visibility_off_outlined,
+                                    ),
+                                    onPressed: () {
+                                      setState(() {
+                                        _obscurePassword = !_obscurePassword;
+                                      });
+                                    },
+                                  ),
+                                ),
+                                onSubmitted: (_) => _submit(),
+                              ),
+                              const SizedBox(height: 12),
+                              Row(
+                                children: [
+                                  SizedBox(
+                                    width: 24,
+                                    height: 24,
+                                    child: Checkbox(
+                                      value: _rememberMe,
+                                      onChanged: (val) {
+                                        setState(() {
+                                          _rememberMe = val ?? true;
+                                        });
+                                      },
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    'Ingat Saya',
+                                    style: AppText.bodyMd
+                                        .copyWith(color: AppColors.ink),
+                                  ),
+                                  const Spacer(),
+                                  TextButton(
+                                    onPressed: () {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        const SnackBar(
+                                          content: Text(
+                                            'Hubungi SIMRS & SDM Kepegawaian (Ext. 104) untuk reset kata sandi.',
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                    child: Text(
+                                      'Lupa password?',
+                                      style: AppText.labelMd.copyWith(
+                                        color: AppColors.secondary,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 12),
+                              if (_error != null) ...[
+                                InfoBanner(
+                                  _error!,
+                                  tone: _error!.startsWith('Perangkat')
+                                      ? InfoBannerTone.warning
+                                      : InfoBannerTone.error,
+                                  title: 'Tidak dapat masuk',
+                                ),
+                                if (_unverifiedEmail != null)
+                                  Align(
+                                    alignment: Alignment.centerRight,
+                                    child: TextButton.icon(
+                                      onPressed: () {
+                                        Navigator.of(context).push<void>(
+                                          MaterialPageRoute<void>(
+                                            builder: (_) => VerifyEmailScreen(
+                                              email: _unverifiedEmail!,
+                                              auth: widget.auth,
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                      icon: const Icon(Icons.mark_email_read,
+                                          size: 18),
+                                      label: const Text('Verifikasi email'),
+                                    ),
+                                  ),
+                                const SizedBox(height: 16),
+                              ],
+                              SizedBox(
+                                width: double.infinity,
+                                height: AppColors.buttonHeight,
+                                child: FilledButton(
+                                  onPressed: _busy ? null : _submit,
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        _busy ? 'Memverifikasi...' : 'Masuk',
+                                        style: AppText.bodyLgMedium.copyWith(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      const Icon(Icons.arrow_forward,
+                                          size: 20, color: Colors.white),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    'Belum punya akun?',
+                                    style: AppText.labelSm.copyWith(
+                                      color: AppColors.inkSecondary,
+                                    ),
+                                  ),
+                                  TextButton(
+                                    onPressed: _busy ? null : _openRegister,
+                                    child: Text(
+                                      'Daftar',
+                                      style: AppText.labelMd.copyWith(
+                                        color: AppColors.secondary,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      if (_totpToken != null) _totpCard(),
+                      const SizedBox(height: 16),
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: AppColors.surfaceLow,
+                          borderRadius:
+                              BorderRadius.circular(AppColors.radiusCard),
+                          border: Border.all(
+                            color: AppColors.border,
+                          ),
+                        ),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              width: 32,
+                              height: 32,
+                              decoration: BoxDecoration(
+                                color: AppColors.surfaceLowest,
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(
+                                  color: AppColors.border,
+                                ),
+                              ),
+                              child: const Icon(
+                                Icons.devices,
+                                color: AppColors.secondary,
+                                size: 18,
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Text(
+                                        'Keamanan Akun',
+                                        style: AppText.labelMd
+                                            .copyWith(color: AppColors.ink),
+                                      ),
+                                      const SizedBox(width: 6),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 6,
+                                          vertical: 1,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: AppColors.surfaceContainer,
+                                          borderRadius: BorderRadius.circular(
+                                              AppColors.radiusFull),
+                                        ),
+                                        child: Text(
+                                          'Satu Perangkat',
+                                          style: AppText.labelSm.copyWith(
+                                            color:
+                                                AppColors.onSecondaryContainer,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    'Perangkat ini didaftarkan otomatis untuk presensi. Saat Anda masuk di HP baru, perangkat lama otomatis dilepas dan tidak bisa dipakai presensi lagi.',
+                                    style: AppText.labelSm.copyWith(
+                                      color: AppColors.inkSecondary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      const Center(
+                        child: AppPill(
+                          'Verifikasi Wajah Biometrik aktif',
+                          AppColors.tealBadgeBg,
+                          AppColors.tealBadgeText,
+                          icon: Icons.face,
+                          border: AppColors.tealBadgeBorder,
+                        ),
+                      ),
+                      if (widget.servers != null) ...[
+                        const SizedBox(height: 8),
+                        Center(
+                          child: ListenableBuilder(
+                            listenable: widget.servers!,
+                            builder: (BuildContext context, Widget? _) {
+                              return TextButton.icon(
+                                onPressed: _busy
+                                    ? null
+                                    : () => showServerSettingsDialog(
+                                          context,
+                                          widget.servers!,
+                                        ),
+                                icon: const Icon(
+                                  Icons.dns_outlined,
+                                  size: 16,
+                                  color: AppColors.inkSecondary,
+                                ),
+                                label: Text(
+                                  'Server: ${widget.servers!.hostLabel}',
+                                  style: AppText.labelSm.copyWith(
+                                    color: AppColors.inkSecondary,
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ],
                     ],
+                  ),
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: AppColors.pageMargin, vertical: 10),
+                decoration: const BoxDecoration(
+                  color: AppColors.surfaceLow,
+                  border: Border(
+                    top: BorderSide(color: AppColors.border),
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.help_outline,
+                            size: 16, color: AppColors.inkSecondary),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Butuh bantuan aktivasi akun?',
+                          style: AppText.labelSm.copyWith(
+                            color: AppColors.inkSecondary,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 2),
+                    RichText(
+                      text: TextSpan(
+                        style: AppText.labelSm
+                            .copyWith(color: AppColors.inkSecondary),
+                        children: const [
+                          TextSpan(text: 'Hubungi '),
+                          TextSpan(
+                            text: 'SIMRS & SDM Kepegawaian',
+                            style: TextStyle(
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.ink),
+                          ),
+                          TextSpan(text: ' ('),
+                          TextSpan(
+                            text: 'Ext. 104',
+                            style: TextStyle(
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.primary),
+                          ),
+                          TextSpan(text: ')'),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
               ),
-            ),
-            Container(
-              padding: const EdgeInsets.symmetric(
-                  horizontal: AppColors.pageMargin, vertical: 10),
-              decoration: const BoxDecoration(
-                color: AppColors.surfaceLow,
-                border: Border(
-                  top: BorderSide(color: AppColors.border),
-                ),
-              ),
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.help_outline,
-                          size: 16, color: AppColors.inkSecondary),
-                      const SizedBox(width: 4),
-                      Text(
-                        'Butuh bantuan aktivasi akun?',
-                        style: AppText.labelSm.copyWith(
-                          color: AppColors.inkSecondary,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 2),
-                  RichText(
-                    text: TextSpan(
-                      style: AppText.labelSm
-                          .copyWith(color: AppColors.inkSecondary),
-                      children: const [
-                        TextSpan(text: 'Hubungi '),
-                        TextSpan(
-                          text: 'SIMRS & SDM Kepegawaian',
-                          style: TextStyle(
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.ink),
-                        ),
-                        TextSpan(text: ' ('),
-                        TextSpan(
-                          text: 'Ext. 104',
-                          style: TextStyle(
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.primary),
-                        ),
-                        TextSpan(text: ')'),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
-    ),
     );
   }
 }

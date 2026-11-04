@@ -174,7 +174,6 @@ class FaceGuidanceCard extends StatelessWidget {
       ),
     );
   }
-
 }
 
 /// Two-column quality indicator grid whose rows grow with their text instead
@@ -229,9 +228,8 @@ class _GuidanceTileBox extends StatelessWidget {
   Widget build(BuildContext context) => Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: tile.ok
-              ? AppColors.canvas
-              : AppColors.errorTint.withOpacity(0.4),
+          color:
+              tile.ok ? AppColors.canvas : AppColors.errorTint.withOpacity(0.4),
           borderRadius: BorderRadius.circular(AppColors.radiusInput),
           border: Border.all(
               color: tile.ok ? AppColors.border : AppColors.errorBorder),

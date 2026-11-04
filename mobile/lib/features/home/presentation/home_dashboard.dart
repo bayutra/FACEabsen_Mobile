@@ -164,7 +164,8 @@ class _HomeDashboardState extends State<HomeDashboard> {
             icon: Icons.cloud_off,
             color: AppColors.warningText,
             title: 'Presensi offline tertunda',
-            body: '$_outboxCount presensi tersimpan di perangkat, akan dikirim saat online.',
+            body:
+                '$_outboxCount presensi tersimpan di perangkat, akan dikirim saat online.',
           ));
         }
         if (widget.pendingDevices > 0) {
@@ -207,8 +208,8 @@ class _HomeDashboardState extends State<HomeDashboard> {
                                     style: AppText.bodyMdMedium
                                         .copyWith(color: AppColors.ink)),
                                 Text(n.body,
-                                    style: AppText.bodyMd
-                                        .copyWith(color: AppColors.inkSecondary)),
+                                    style: AppText.bodyMd.copyWith(
+                                        color: AppColors.inkSecondary)),
                               ],
                             ),
                           ),
@@ -336,208 +337,208 @@ class _HomeDashboardState extends State<HomeDashboard> {
         child: ListView(
           padding: const EdgeInsets.all(AppColors.pageMargin),
           children: [
-              if (_needsCheckoutReminder) ...[
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: AppColors.warningTint,
-                    borderRadius: BorderRadius.circular(AppColors.radiusCard),
-                    border: Border.all(color: AppColors.warningBorder),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.logout, color: AppColors.warningText, size: 20),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          'Anda sudah check-in. Jangan lupa check-out setelah pulang.',
-                          style: AppText.bodyMd.copyWith(
-                            color: AppColors.warningText,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 12),
-              ],
-              if (_needsCheckoutReminder) ...[
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: AppColors.warningTint,
-                    borderRadius: BorderRadius.circular(AppColors.radiusCard),
-                    border: Border.all(color: AppColors.warningBorder),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.logout, color: AppColors.warningText, size: 20),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          'Anda sudah check-in. Jangan lupa check-out setelah pulang.',
-                          style: AppText.bodyMd.copyWith(
-                            color: AppColors.warningText,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 12),
-              ],
-              if (_outboxCount > 0) ...[
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: AppColors.warningTint,
-                    borderRadius: BorderRadius.circular(AppColors.radiusCard),
-                    border: Border.all(color: AppColors.warningBorder),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.cloud_off,
-                          color: AppColors.warningText, size: 20),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          '$_outboxCount presensi tersimpan offline, akan dikirim saat online.',
-                          style: AppText.bodyMd.copyWith(
-                            color: AppColors.warningText,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 12),
-              ],
-              if (_outboxCount > 0) ...[
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: AppColors.warningTint,
-                    borderRadius: BorderRadius.circular(AppColors.radiusCard),
-                    border: Border.all(color: AppColors.warningBorder),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.cloud_off,
-                          color: AppColors.warningText, size: 20),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          '$_outboxCount presensi tersimpan offline, akan dikirim saat online.',
-                          style: AppText.bodyMd.copyWith(
-                            color: AppColors.warningText,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 12),
-              ],
+            if (_needsCheckoutReminder) ...[
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: AppColors.surfaceLowest,
+                  color: AppColors.warningTint,
                   borderRadius: BorderRadius.circular(AppColors.radiusCard),
-                  border: Border.all(color: AppColors.border),
+                  border: Border.all(color: AppColors.warningBorder),
                 ),
                 child: Row(
                   children: [
+                    const Icon(Icons.logout,
+                        color: AppColors.warningText, size: 20),
+                    const SizedBox(width: 10),
                     Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('Status Hari Ini',
-                              style: AppText.labelSm.copyWith(
-                                  color: AppColors.inkSecondary)),
-                          const SizedBox(height: 4),
-                          Text(
-                            _today == null
-                                ? 'Belum presensi'
-                                : (_today!.checkOutAt == null
-                                    ? 'Sudah check-in'
-                                    : 'Sudah check-out'),
-                            style: AppText.bodyLgMedium
-                                .copyWith(color: AppColors.ink),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: AppColors.primaryContainer.withOpacity(0.12),
-                        borderRadius:
-                            BorderRadius.circular(AppColors.radiusFull),
-                      ),
                       child: Text(
-                        '${_week.length} shift minggu ini',
-                        style: AppText.labelSm.copyWith(
-                            color: AppColors.primary,
-                            fontWeight: FontWeight.w700),
+                        'Anda sudah check-in. Jangan lupa check-out setelah pulang.',
+                        style: AppText.bodyMd.copyWith(
+                          color: AppColors.warningText,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                   ],
                 ),
               ),
               const SizedBox(height: 12),
+            ],
+            if (_needsCheckoutReminder) ...[
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: AppColors.surfaceLowest,
+                  color: AppColors.warningTint,
                   borderRadius: BorderRadius.circular(AppColors.radiusCard),
-                  border: Border.all(color: AppColors.border),
+                  border: Border.all(color: AppColors.warningBorder),
                 ),
                 child: Row(
                   children: [
+                    const Icon(Icons.logout,
+                        color: AppColors.warningText, size: 20),
+                    const SizedBox(width: 10),
                     Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('Status Hari Ini',
-                              style: AppText.labelSm.copyWith(
-                                  color: AppColors.inkSecondary)),
-                          const SizedBox(height: 4),
-                          Text(
-                            _today == null
-                                ? 'Belum presensi'
-                                : (_today!.checkOutAt == null
-                                    ? 'Sudah check-in'
-                                    : 'Sudah check-out'),
-                            style: AppText.bodyLgMedium
-                                .copyWith(color: AppColors.ink),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: AppColors.primaryContainer.withOpacity(0.12),
-                        borderRadius:
-                            BorderRadius.circular(AppColors.radiusFull),
-                      ),
                       child: Text(
-                        '${_week.length} shift minggu ini',
-                        style: AppText.labelSm.copyWith(
-                            color: AppColors.primary,
-                            fontWeight: FontWeight.w700),
+                        'Anda sudah check-in. Jangan lupa check-out setelah pulang.',
+                        style: AppText.bodyMd.copyWith(
+                          color: AppColors.warningText,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                   ],
                 ),
               ),
               const SizedBox(height: 12),
+            ],
+            if (_outboxCount > 0) ...[
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppColors.warningTint,
+                  borderRadius: BorderRadius.circular(AppColors.radiusCard),
+                  border: Border.all(color: AppColors.warningBorder),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.cloud_off,
+                        color: AppColors.warningText, size: 20),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        '$_outboxCount presensi tersimpan offline, akan dikirim saat online.',
+                        style: AppText.bodyMd.copyWith(
+                          color: AppColors.warningText,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+            ],
+            if (_outboxCount > 0) ...[
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppColors.warningTint,
+                  borderRadius: BorderRadius.circular(AppColors.radiusCard),
+                  border: Border.all(color: AppColors.warningBorder),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.cloud_off,
+                        color: AppColors.warningText, size: 20),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        '$_outboxCount presensi tersimpan offline, akan dikirim saat online.',
+                        style: AppText.bodyMd.copyWith(
+                          color: AppColors.warningText,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+            ],
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColors.surfaceLowest,
+                borderRadius: BorderRadius.circular(AppColors.radiusCard),
+                border: Border.all(color: AppColors.border),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Status Hari Ini',
+                            style: AppText.labelSm
+                                .copyWith(color: AppColors.inkSecondary)),
+                        const SizedBox(height: 4),
+                        Text(
+                          _today == null
+                              ? 'Belum presensi'
+                              : (_today!.checkOutAt == null
+                                  ? 'Sudah check-in'
+                                  : 'Sudah check-out'),
+                          style: AppText.bodyLgMedium
+                              .copyWith(color: AppColors.ink),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryContainer.withOpacity(0.12),
+                      borderRadius: BorderRadius.circular(AppColors.radiusFull),
+                    ),
+                    child: Text(
+                      '${_week.length} shift minggu ini',
+                      style: AppText.labelSm.copyWith(
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.w700),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColors.surfaceLowest,
+                borderRadius: BorderRadius.circular(AppColors.radiusCard),
+                border: Border.all(color: AppColors.border),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Status Hari Ini',
+                            style: AppText.labelSm
+                                .copyWith(color: AppColors.inkSecondary)),
+                        const SizedBox(height: 4),
+                        Text(
+                          _today == null
+                              ? 'Belum presensi'
+                              : (_today!.checkOutAt == null
+                                  ? 'Sudah check-in'
+                                  : 'Sudah check-out'),
+                          style: AppText.bodyLgMedium
+                              .copyWith(color: AppColors.ink),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryContainer.withOpacity(0.12),
+                      borderRadius: BorderRadius.circular(AppColors.radiusFull),
+                    ),
+                    child: Text(
+                      '${_week.length} shift minggu ini',
+                      style: AppText.labelSm.copyWith(
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.w700),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
             Row(
               children: [
                 const Icon(Icons.local_hospital,
@@ -1292,7 +1293,6 @@ class _HomeDashboardState extends State<HomeDashboard> {
     return '${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}';
   }
 }
-
 
 class _Notif {
   const _Notif({

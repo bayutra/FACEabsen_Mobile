@@ -602,7 +602,8 @@ class _DeviceStatusSectionState extends State<DeviceStatusSection> {
                       decoration: BoxDecoration(
                         color: AppColors.surfaceLow,
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: AppColors.border.withOpacity(0.2)),
+                        border: Border.all(
+                            color: AppColors.border.withOpacity(0.2)),
                       ),
                       child: const Icon(
                         Icons.smartphone_rounded,

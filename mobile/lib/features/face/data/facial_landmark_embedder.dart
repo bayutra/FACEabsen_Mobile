@@ -40,19 +40,16 @@ class FacialLandmarkEmbedder {
     required double faceHeight,
   }) async {
     await load();
-    final img.Image? decoded = img.decodeImage(await File(imagePath).readAsBytes());
+    final img.Image? decoded =
+        img.decodeImage(await File(imagePath).readAsBytes());
     if (decoded == null) return null;
 
     final int left = leftEdge.floor().clamp(0, decoded.width - 1).toInt();
     final int top = topEdge.floor().clamp(0, decoded.height - 1).toInt();
-    final int right = (leftEdge + faceWidth)
-        .ceil()
-        .clamp(left + 1, decoded.width)
-        .toInt();
-    final int bottom = (topEdge + faceHeight)
-        .ceil()
-        .clamp(top + 1, decoded.height)
-        .toInt();
+    final int right =
+        (leftEdge + faceWidth).ceil().clamp(left + 1, decoded.width).toInt();
+    final int bottom =
+        (topEdge + faceHeight).ceil().clamp(top + 1, decoded.height).toInt();
     final img.Image face = img.copyCrop(
       decoded,
       x: left,

@@ -1842,4 +1842,3 @@ class _DetailSheet extends StatelessWidget {
     );
   }
 }
-

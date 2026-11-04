@@ -25,7 +25,8 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
       _error = null;
     });
     try {
-      await widget.auth.verifyEmail(email: widget.email, code: _code.text.trim());
+      await widget.auth
+          .verifyEmail(email: widget.email, code: _code.text.trim());
       if (!mounted) return;
       setState(() {
         _info = 'Email terverifikasi. Akun menunggu persetujuan admin.';
@@ -78,7 +79,8 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
               onPressed: _busy ? null : _verify,
               child: Text(_busy ? 'Memverifikasi...' : 'Verifikasi'),
             ),
-            TextButton(onPressed: _resend, child: const Text('Kirim ulang kode')),
+            TextButton(
+                onPressed: _resend, child: const Text('Kirim ulang kode')),
           ],
         ),
       ),

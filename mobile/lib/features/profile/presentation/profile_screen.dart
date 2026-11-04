@@ -24,7 +24,6 @@ class ProfileScreen extends StatefulWidget {
   final VoidCallback onLogout;
   final VoidCallback onChangePassword;
 
-
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
 }
@@ -575,7 +574,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     decoration: BoxDecoration(
                       color: AppColors.surfaceLow,
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: AppColors.border.withOpacity(0.25)),
+                      border:
+                          Border.all(color: AppColors.border.withOpacity(0.25)),
                     ),
                     child: Row(
                       children: [
@@ -1401,5 +1401,3 @@ class _ProfileScreenState extends State<ProfileScreen> {
         .toUpperCase();
   }
 }
-
-

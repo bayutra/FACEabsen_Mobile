@@ -18,7 +18,8 @@ class HandoverRepository {
     if (data is! List) return const <Handover>[];
     return data
         .whereType<Map<dynamic, dynamic>>()
-        .map((Map<dynamic, dynamic> e) => Handover.fromJson(Map<String, dynamic>.from(e)))
+        .map((Map<dynamic, dynamic> e) =>
+            Handover.fromJson(Map<String, dynamic>.from(e)))
         .toList();
   }
 

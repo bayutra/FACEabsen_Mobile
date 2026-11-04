@@ -41,7 +41,8 @@ void main() {
     FaceGate.multipleFaces,
     FaceGate.noFace,
   ]) {
-    testWidgets('scan issue ${gate.name} fits 320px', (WidgetTester tester) async {
+    testWidgets('scan issue ${gate.name} fits 320px',
+        (WidgetTester tester) async {
       await _pumpAt(
         tester,
         const Size(320, 640),

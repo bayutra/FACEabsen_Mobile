@@ -211,8 +211,7 @@ class _FaceRegistrationScreenState extends State<FaceRegistrationScreen>
 
   void _toggleConsent(bool? value) {
     if ((value ?? false) && !_noticeRead) {
-      setState(() =>
-          _message = 'Baca pemberitahuan privasi terlebih dahulu.');
+      setState(() => _message = 'Baca pemberitahuan privasi terlebih dahulu.');
       return;
     }
     setState(() => _consented = value ?? false);
@@ -315,8 +314,8 @@ class _FaceRegistrationScreenState extends State<FaceRegistrationScreen>
                 child: Text(
                   'Data biometrik dilindungi sesuai Permenkes RI',
                   textAlign: TextAlign.center,
-                  style: AppText.labelSm
-                      .copyWith(color: AppColors.inkSecondary),
+                  style:
+                      AppText.labelSm.copyWith(color: AppColors.inkSecondary),
                 ),
               ),
             ],
@@ -387,12 +386,11 @@ class _FaceRegistrationScreenState extends State<FaceRegistrationScreen>
                   top: 12,
                   left: 12,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 10, vertical: 5),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                     decoration: BoxDecoration(
                       color: AppColors.inverseSurface.withOpacity(0.85),
-                      borderRadius:
-                          BorderRadius.circular(AppColors.radiusFull),
+                      borderRadius: BorderRadius.circular(AppColors.radiusFull),
                       border: Border.all(
                           color: AppColors.primaryFixed.withOpacity(0.4)),
                     ),
@@ -436,9 +434,7 @@ class _FaceRegistrationScreenState extends State<FaceRegistrationScreen>
                         child: Padding(
                           padding: const EdgeInsets.all(9),
                           child: Icon(
-                            _useScreenFlash
-                                ? Icons.flash_on
-                                : Icons.flash_off,
+                            _useScreenFlash ? Icons.flash_on : Icons.flash_off,
                             size: 18,
                             color: _useScreenFlash
                                 ? AppColors.inverseSurface
@@ -454,12 +450,11 @@ class _FaceRegistrationScreenState extends State<FaceRegistrationScreen>
                   right: 12,
                   bottom: 12,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 6),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
                       color: AppColors.primaryContainer.withOpacity(0.9),
-                      borderRadius:
-                          BorderRadius.circular(AppColors.radiusFull),
+                      borderRadius: BorderRadius.circular(AppColors.radiusFull),
                     ),
                     child: const Row(
                       mainAxisSize: MainAxisSize.min,
@@ -503,8 +498,7 @@ class _FaceRegistrationScreenState extends State<FaceRegistrationScreen>
                 Expanded(
                   child: Text(
                     'Panduan Perekaman',
-                    style: TextStyle(
-                        fontSize: 14, fontWeight: FontWeight.w600),
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
                   ),
                 ),
               ],
@@ -518,12 +512,14 @@ class _FaceRegistrationScreenState extends State<FaceRegistrationScreen>
             _GuideRow(
               icon: Icons.light_mode_outlined,
               title: 'Pencahayaan merata',
-              detail: 'Hindari cahaya langsung ke kamera dan bayangan di wajah.',
+              detail:
+                  'Hindari cahaya langsung ke kamera dan bayangan di wajah.',
             ),
             _GuideRow(
               icon: Icons.straighten,
               title: 'Jarak ideal ± 45 cm',
-              detail: 'Pegang ponsel stabil setinggi wajah, tanpa gerakan cepat.',
+              detail:
+                  'Pegang ponsel stabil setinggi wajah, tanpa gerakan cepat.',
             ),
           ],
         ),
@@ -550,8 +546,7 @@ class _FaceRegistrationScreenState extends State<FaceRegistrationScreen>
                 children: <Widget>[
                   Text(
                     'Cahaya layar (mode gelap)',
-                    style:
-                        TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
                   ),
                   SizedBox(height: 2),
                   Text(
@@ -566,8 +561,9 @@ class _FaceRegistrationScreenState extends State<FaceRegistrationScreen>
             Switch(
               value: _useScreenFlash,
               activeTrackColor: AppColors.primaryContainer,
-              onChanged:
-                  _busy ? null : (bool v) => setState(() => _useScreenFlash = v),
+              onChanged: _busy
+                  ? null
+                  : (bool v) => setState(() => _useScreenFlash = v),
             ),
           ],
         ),
@@ -585,8 +581,7 @@ class _FaceRegistrationScreenState extends State<FaceRegistrationScreen>
                 Expanded(
                   child: Text(
                     'Persetujuan Privasi',
-                    style: TextStyle(
-                        fontSize: 14, fontWeight: FontWeight.w600),
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
                   ),
                 ),
               ],
@@ -674,7 +669,8 @@ class _GuideRow extends StatelessWidget {
                   Text(
                     detail,
                     style: const TextStyle(
-                        fontSize: 11, color: AppColors.inkSecondary,
+                        fontSize: 11,
+                        color: AppColors.inkSecondary,
                         height: 1.45),
                   ),
                 ],

@@ -170,9 +170,8 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
                 }
               },
               style: FilledButton.styleFrom(
-                backgroundColor: _tab == 1
-                    ? AppColors.primary
-                    : AppColors.primaryContainer,
+                backgroundColor:
+                    _tab == 1 ? AppColors.primary : AppColors.primaryContainer,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
@@ -555,7 +554,8 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.face, size: 18, color: AppColors.inkSecondary),
+                    const Icon(Icons.face,
+                        size: 18, color: AppColors.inkSecondary),
                     const SizedBox(width: 8),
                     const Text(
                       'Pencocokan Biometrik Wajah',
@@ -663,7 +663,8 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
                 child: const Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.schedule, size: 14, color: AppColors.warningText),
+                    Icon(Icons.schedule,
+                        size: 14, color: AppColors.warningText),
                     SizedBox(width: 4),
                     Text(
                       'Menunggu Review',
@@ -1281,9 +1282,7 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
               Icon(
                 icon,
                 size: 14,
-                color: isSuccess
-                    ? AppColors.successText
-                    : AppColors.outline,
+                color: isSuccess ? AppColors.successText : AppColors.outline,
               ),
               const SizedBox(width: 4),
               Expanded(
@@ -1305,8 +1304,7 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
             value,
             style: TextStyle(
               fontSize: 13,
-              color:
-                  isSuccess ? AppColors.successText : AppColors.ink,
+              color: isSuccess ? AppColors.successText : AppColors.ink,
               fontWeight: FontWeight.w700,
             ),
             maxLines: 1,
@@ -1317,8 +1315,7 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
             subtitle,
             style: TextStyle(
               fontSize: 10,
-              color:
-                  isSuccess ? AppColors.successText : AppColors.outline,
+              color: isSuccess ? AppColors.successText : AppColors.outline,
             ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
@@ -1516,8 +1513,7 @@ class _AttendanceResultScreenState extends State<AttendanceResultScreen> {
                     ),
                   ),
                   style: OutlinedButton.styleFrom(
-                    side:
-                        BorderSide(color: AppColors.border, width: 1.2),
+                    side: BorderSide(color: AppColors.border, width: 1.2),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
                     ),
@@ -1654,4 +1650,3 @@ class _PipelineStep extends StatelessWidget {
     );
   }
 }
-

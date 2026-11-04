@@ -106,7 +106,8 @@ class _PreflightScreenState extends State<PreflightScreen> {
         actions: [
           IconButton(
             onPressed: _load,
-            icon: const Icon(Icons.refresh, color: AppColors.inkSecondary, size: 20),
+            icon: const Icon(Icons.refresh,
+                color: AppColors.inkSecondary, size: 20),
             tooltip: 'Muat Ulang',
           ),
           Container(
@@ -285,8 +286,7 @@ class _PreflightScreenState extends State<PreflightScreen> {
               padding:
                   const EdgeInsets.symmetric(horizontal: 10, vertical: 3.5),
               decoration: BoxDecoration(
-                color:
-                    ready ? AppColors.successTint : AppColors.warningTint,
+                color: ready ? AppColors.successTint : AppColors.warningTint,
                 borderRadius: BorderRadius.circular(999),
                 border: Border.all(
                   color:
@@ -300,9 +300,7 @@ class _PreflightScreenState extends State<PreflightScreen> {
                     width: 6,
                     height: 6,
                     decoration: BoxDecoration(
-                      color: ready
-                          ? AppColors.success
-                          : AppColors.warning,
+                      color: ready ? AppColors.success : AppColors.warning,
                       shape: BoxShape.circle,
                     ),
                   ),
@@ -312,9 +310,8 @@ class _PreflightScreenState extends State<PreflightScreen> {
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
-                      color: ready
-                          ? AppColors.successText
-                          : AppColors.warningText,
+                      color:
+                          ready ? AppColors.successText : AppColors.warningText,
                     ),
                   ),
                 ],
@@ -451,8 +448,7 @@ class _PreflightScreenState extends State<PreflightScreen> {
                                   borderRadius: BorderRadius.circular(999),
                                   border: Border.all(
                                     color: active
-                                        ? AppColors.primary
-                                            .withOpacity(0.25)
+                                        ? AppColors.primary.withOpacity(0.25)
                                         : AppColors.errorBorder,
                                   ),
                                 ),
@@ -561,11 +557,7 @@ class _PreflightScreenState extends State<PreflightScreen> {
           AppColors.warningTint,
           Icons.error_outline
         ),
-      GateState.fail => (
-          AppColors.roseText,
-          AppColors.roseTint,
-          Icons.cancel
-        ),
+      GateState.fail => (AppColors.roseText, AppColors.roseTint, Icons.cancel),
     };
     final Color borderCol = switch (g.state) {
       GateState.pass => AppColors.successBorder,
@@ -581,7 +573,9 @@ class _PreflightScreenState extends State<PreflightScreen> {
         border: Border.all(color: AppColors.border.withOpacity(0.5)),
         boxShadow: [
           BoxShadow(
-              color: AppColors.ink.withOpacity(0.04), blurRadius: 8, offset: Offset(0, 2)),
+              color: AppColors.ink.withOpacity(0.04),
+              blurRadius: 8,
+              offset: Offset(0, 2)),
         ],
       ),
       child: Row(
@@ -696,11 +690,7 @@ class _PreflightScreenState extends State<PreflightScreen> {
           AppColors.warningTint,
           Icons.error_outline
         ),
-      GateState.fail => (
-          AppColors.roseText,
-          AppColors.roseTint,
-          Icons.cancel
-        ),
+      GateState.fail => (AppColors.roseText, AppColors.roseTint, Icons.cancel),
     };
     final Color borderCol = switch (g.state) {
       GateState.pass => AppColors.successBorder,
@@ -722,7 +712,9 @@ class _PreflightScreenState extends State<PreflightScreen> {
         border: Border.all(color: AppColors.border.withOpacity(0.5)),
         boxShadow: [
           BoxShadow(
-              color: AppColors.ink.withOpacity(0.04), blurRadius: 8, offset: Offset(0, 2)),
+              color: AppColors.ink.withOpacity(0.04),
+              blurRadius: 8,
+              offset: Offset(0, 2)),
         ],
       ),
       child: Row(
@@ -806,8 +798,8 @@ class _PreflightScreenState extends State<PreflightScreen> {
                 ] else
                   Text(
                     g.detail,
-                    style:
-                        const TextStyle(fontSize: 12, color: AppColors.inkSecondary),
+                    style: const TextStyle(
+                        fontSize: 12, color: AppColors.inkSecondary),
                   ),
                 const SizedBox(height: 8),
                 Container(
@@ -950,9 +942,8 @@ class _PreflightScreenState extends State<PreflightScreen> {
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
-                    color: ready
-                        ? AppColors.successText
-                        : AppColors.warningText,
+                    color:
+                        ready ? AppColors.successText : AppColors.warningText,
                   ),
                 ),
                 const SizedBox(height: 2),
@@ -962,9 +953,8 @@ class _PreflightScreenState extends State<PreflightScreen> {
                       : 'Selesaikan parameter yang ditandai sebelum melanjutkan.',
                   style: TextStyle(
                     fontSize: 11.5,
-                    color: ready
-                        ? AppColors.successText
-                        : AppColors.warningText,
+                    color:
+                        ready ? AppColors.successText : AppColors.warningText,
                     height: 1.3,
                   ),
                 ),
@@ -983,4 +973,3 @@ class _PreflightScreenState extends State<PreflightScreen> {
     return (parts.first[0] + parts[1][0]).toUpperCase();
   }
 }
-

@@ -54,4 +54,3 @@ class SignatureV1 {
     ].join('|');
   }
 }
-

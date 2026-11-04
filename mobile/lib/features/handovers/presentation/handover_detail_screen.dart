@@ -104,7 +104,8 @@ class _HandoverDetailScreenState extends State<HandoverDetailScreen> {
                   : ListView(
                       padding: const EdgeInsets.all(16),
                       children: <Widget>[
-                        Text(h.title, style: Theme.of(context).textTheme.titleLarge),
+                        Text(h.title,
+                            style: Theme.of(context).textTheme.titleLarge),
                         const SizedBox(height: 8),
                         Text('Dari: ${h.fromName ?? '-'} (${h.fromNo ?? '-'})'),
                         Text('Unit: ${h.departmentName ?? '-'}'),

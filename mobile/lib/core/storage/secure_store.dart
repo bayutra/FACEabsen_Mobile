@@ -79,16 +79,15 @@ class SecureStore {
 
   static const _noncePoolKey = 'attendance_nonce_pool';
 
-  Future<String> _outboxKey() async => 'attendance_outbox_v1_${await _deviceScope()}';
+  Future<String> _outboxKey() async =>
+      'attendance_outbox_v1_${await _deviceScope()}';
 
-  Future<String?> readOutbox() async =>
-      _storage.read(key: await _outboxKey());
+  Future<String?> readOutbox() async => _storage.read(key: await _outboxKey());
 
   Future<void> writeOutbox(String v) async =>
       _storage.write(key: await _outboxKey(), value: v);
 
-  Future<void> clearOutbox() async =>
-      _storage.delete(key: await _outboxKey());
+  Future<void> clearOutbox() async => _storage.delete(key: await _outboxKey());
 
   Future<List<String>?> readNoncePool() async {
     final String? raw =

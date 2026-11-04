@@ -166,8 +166,8 @@ class PushNotificationService {
       const InitializationSettings(android: android, iOS: darwin),
       onDidReceiveNotificationResponse: _onLocalNotificationTap,
     );
-    final AndroidFlutterLocalNotificationsPlugin? androidImpl = _local
-        .resolvePlatformSpecificImplementation<
+    final AndroidFlutterLocalNotificationsPlugin? androidImpl =
+        _local.resolvePlatformSpecificImplementation<
             AndroidFlutterLocalNotificationsPlugin>();
     await androidImpl?.createNotificationChannel(
       const AndroidNotificationChannel(

@@ -205,7 +205,9 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
         return;
       }
       try {
-        await widget.attendance.outbox().save(OutboxEntry.fromPrepared(prepared));
+        await widget.attendance
+            .outbox()
+            .save(OutboxEntry.fromPrepared(prepared));
         setState(() {
           _queued = 'Presensi tersimpan, akan dikirim saat online.';
           _busy = false;
@@ -991,9 +993,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
               shape: BoxShape.circle,
               color: isDone
                   ? AppColors.successTint
-                  : (isInProgress
-                      ? AppColors.infoTint
-                      : AppColors.surfaceLow),
+                  : (isInProgress ? AppColors.infoTint : AppColors.surfaceLow),
               border: Border.all(
                 color: isDone
                     ? AppColors.success
@@ -1036,9 +1036,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
-                        color: isInProgress
-                            ? AppColors.primary
-                            : AppColors.ink,
+                        color: isInProgress ? AppColors.primary : AppColors.ink,
                       ),
                     ),
                     Container(

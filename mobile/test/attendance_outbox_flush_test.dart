@@ -219,7 +219,8 @@ void main() {
       expect(await repo.outbox().count(), 0);
       final String idB = flushed.bodies.single['requestId'] as String;
       expect(idB, prepared.requestId);
-      expect(flushed.bodies.single['captureAt'], stored.captureAt.toIso8601String());
+      expect(flushed.bodies.single['captureAt'],
+          stored.captureAt.toIso8601String());
       expect(flushed.bodies.single['signature'], storedSignature);
       expect(flushed.bodies.single['signatureVersion'], 'v1');
       expect(flushed.bodies.single.containsKey('requestTimestamp'), isFalse);
@@ -233,17 +234,18 @@ void main() {
       final _Harness h = await _repoWithSeed(dio);
       final AttendanceRepository repo = h.repo;
 
-      await repo.outbox().save(
-          _queued(kind: PunchKind.checkIn, requestId: 'r-in'));
-      await repo.outbox().save(
-          _queued(kind: PunchKind.checkOut, requestId: 'r-out'));
+      await repo
+          .outbox()
+          .save(_queued(kind: PunchKind.checkIn, requestId: 'r-in'));
+      await repo
+          .outbox()
+          .save(_queued(kind: PunchKind.checkOut, requestId: 'r-out'));
       final FlushResult result = await repo.flushOutbox(outbox: repo.outbox());
 
       expect(result.sent, 2);
       expect(result.pending, 0);
       expect(cap.bodies, hasLength(2));
-      final List<Object?> ids =
-          cap.bodies.map((b) => b['requestId']).toList();
+      final List<Object?> ids = cap.bodies.map((b) => b['requestId']).toList();
       expect(ids, <Object?>['r-in', 'r-out']);
       expect(
           cap.paths, <String>['/attendance/check-in', '/attendance/check-out']);
