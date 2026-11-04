@@ -19,7 +19,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { AttendanceController } from '../src/attendance/attendance.controller.js';
 import { AttendanceService } from '../src/attendance/attendance.service.js';
 import { ChallengeService } from '../src/attendance/challenge.service.js';
-import { buildSignMessageV1 } from '../src/attendance/helpers.js';
+import { buildSignMessageV1 } from '../src/common/crypto.js';
 import { IdempotencyService } from '../src/attendance/idempotency.service.js';
 import { AuditService } from '../src/audit/audit.service.js';
 import { AuthService } from '../src/auth/auth.service.js';

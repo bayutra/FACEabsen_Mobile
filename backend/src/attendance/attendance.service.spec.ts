@@ -2,10 +2,10 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { PrismaService } from '../prisma/prisma.service.js';
 import { RiskService } from '../risk/risk.service.js';
 import { AttendanceService } from './attendance.service.js';
-import { verifyDeviceSignature } from './helpers.js';
+import { verifyDeviceSignature } from '../common/crypto.js';
 
-vi.mock('./helpers.js', async (importOriginal) => {
-  const mod = await importOriginal<typeof import('./helpers.js')>();
+vi.mock('../common/crypto.js', async (importOriginal) => {
+  const mod = await importOriginal<typeof import('../common/crypto.js')>();
   return { ...mod, verifyDeviceSignature: vi.fn(() => true) };
 });
 

@@ -17,7 +17,7 @@ import {
   evaluateCheckOut,
   workDateKeyIn,
 } from '../shifts/shift-time.js';
-import { assertTimeZone } from '../attendance/helpers.js';
+import { assertTimeZone } from '../common/time.js';
 import type { CreateCorrectionDto, ListCorrectionsQuery } from './dto.js';
 
 @Injectable()

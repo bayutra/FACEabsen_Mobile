@@ -11,7 +11,7 @@ import { PrismaService } from '../prisma/prisma.service.js';
 import { PrivacyService } from '../privacy/privacy.service.js';
 import { TemplateCryptoService } from './crypto.service.js';
 import { FACE_DIM, MIN_QUALITY, type RegisterFaceDto } from './dto.js';
-import { cosineSimilarity } from '../attendance/helpers.js';
+import { cosineSimilarity } from '../common/crypto.js';
 
 @Injectable()
 export class FaceService {
