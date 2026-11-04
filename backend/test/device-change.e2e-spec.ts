@@ -67,6 +67,7 @@ function makeFake(hash: string) {
   const devices = new Map<string, any>();
   const changeReqs = new Map<string, any>();
   const audits: any[] = [];
+  const idemKeys = new Set<string>();
   let seq = 100;
 
   const fake: any = {
@@ -77,6 +78,15 @@ function makeFake(hash: string) {
     changeReqs,
     audits,
     userRoles,
+    idempotencyKey: {
+      create: async ({ data }: any) => {
+        if (idemKeys.has(data.key)) {
+          throw Object.assign(new Error('duplicate'), { code: 'P2002' });
+        }
+        idemKeys.add(data.key);
+        return { ...data };
+      },
+    },
     user: {
       findUnique: async ({ where, include }: any) => {
         const u =
@@ -174,9 +184,15 @@ function makeFake(hash: string) {
         return { ...d };
       },
       findMany: async ({ where }: any) => {
+        const match = (d: any, w: Record<string, any>) =>
+          Object.entries(w).every(([k, v]) => {
+            if (v && typeof v === 'object' && 'not' in v) return d[k] !== v.not;
+            if (v && typeof v === 'object' && 'in' in v)
+              return v.in.includes(d[k]);
+            return d[k] === v;
+          });
         let rows = [...devices.values()];
-        if (where?.employeeId)
-          rows = rows.filter((d) => d.employeeId === where.employeeId);
+        if (where) rows = rows.filter((d) => match(d, where));
         return rows.map((d) => ({ ...d }));
       },
       create: async ({ data }: any) => {
@@ -193,6 +209,18 @@ function makeFake(hash: string) {
         const d = devices.get(where.id);
         Object.assign(d, data);
         return { ...d };
+      },
+      updateMany: async ({ where, data }: any) => {
+        let count = 0;
+        for (const d of devices.values()) {
+          if (where.id?.in && !where.id.in.includes(d.id)) continue;
+          if (where.id?.not && d.id === where.id.not) continue;
+          if (where.employeeId && d.employeeId !== where.employeeId) continue;
+          if (where.status?.in && !where.status.in.includes(d.status)) continue;
+          Object.assign(d, data);
+          count++;
+        }
+        return { count };
       },
     },
     deviceChangeRequest: {
@@ -435,9 +463,23 @@ describe('replacement lifecycle (broken-device case)', () => {
     const sa = await tokenFor('u-sa', ['SUPER_ADMIN'], 'sa@rs.test');
 
     const d1 = (await reg(server, emp, 'install-old-001', makeKeypair())).body;
-    const d2 = (await reg(server, emp, 'install-new-002', makeKeypair())).body;
     expect(d1.status).toBe('ACTIVE');
-    expect(d2.status).toBe('PENDING');
+
+    // Auto-replace menangani penggantian normal; skenario ini menguji alur
+    // persetujuan admin saat perangkat baru berstatus PENDING.
+    const d2 = {
+      id: 'd-pending-002',
+      employeeId: 'e-emp',
+      status: 'PENDING',
+      installationId: 'install-new-002',
+      platform: 'ANDROID',
+      deviceName: 'Galaxy baru',
+      appVersion: '1.0.0',
+      devicePublicKey: makeKeypair().pubB64,
+      registeredAt: new Date(),
+      lastSeenAt: null,
+    };
+    fake.devices.set(d2.id, d2);
 
     const req = await request(server)
       .post('/device-change')
@@ -519,7 +561,22 @@ describe('replacement lifecycle (broken-device case)', () => {
     const adm = await tokenFor('u-adm', ['ADMIN'], 'admin@rs.test');
     const sa = await tokenFor('u-sa', ['SUPER_ADMIN'], 'sa@rs.test');
 
-    const d3 = (await reg(server, emp, 'install-new-003', makeKeypair())).body;
+    const dOld = (await reg(server, emp, 'install-new-003', makeKeypair()))
+      .body;
+    expect(dOld.status).toBe('ACTIVE');
+    const d3 = {
+      id: 'd-pending-003',
+      employeeId: 'e-emp',
+      status: 'PENDING',
+      installationId: 'install-new-004',
+      platform: 'ANDROID',
+      deviceName: 'Galaxy cadangan',
+      appVersion: '1.0.0',
+      devicePublicKey: makeKeypair().pubB64,
+      registeredAt: new Date(),
+      lastSeenAt: null,
+    };
+    fake.devices.set(d3.id, d3);
     const r2 = await request(server)
       .post('/device-change')
       .set('Authorization', `Bearer ${emp}`)

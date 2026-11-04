@@ -52,8 +52,16 @@ class AttendanceRepository {
   }
 
   Future<void> ensureNoncePool() async {
-    final List<String>? pool = await _store.readNoncePool();
-    if (pool != null && pool.length >= 3) return;
+    final List<String> stored =
+        (await _store.readNoncePool()) ?? const <String>[];
+    final DateTime now = DateTime.now().toUtc();
+    final List<String> usable = stored
+        .where((String nonce) => !nonceExpired(nonce, now))
+        .toList(growable: false);
+    if (usable.length != stored.length) {
+      await _store.writeNoncePool(usable);
+    }
+    if (usable.length >= 3) return;
     final String? deviceId = await _store.readDeviceId();
     try {
       final Response res = await _dio.post(
@@ -67,6 +75,37 @@ class AttendanceRepository {
     }
   }
 
+  /// Nonce server berumur pendek (<=10 menit). Nonce JWT yang `exp`-nya sudah
+  /// lewat dibuang agar pool tidak menyimpan sampah. Nonce tanpa `exp` yang
+  /// bisa dibaca (mis. fixture lama) dianggap tetap dipakai; server tetap
+  /// memvalidasi.
+  @visibleForTesting
+  static bool nonceExpired(String nonce, DateTime now) {
+    final DateTime? exp = nonceExpiryUtc(nonce);
+    if (exp == null) return false;
+    return !exp.isAfter(now.add(const Duration(seconds: 30)));
+  }
+
+  @visibleForTesting
+  static DateTime? nonceExpiryUtc(String nonce) {
+    final List<String> parts = nonce.split('.');
+    if (parts.length != 3) return null;
+    try {
+      final String payload =
+          utf8.decode(base64Url.decode(base64Url.normalize(parts[1])));
+      final Object? decoded = jsonDecode(payload);
+      if (decoded is! Map) return null;
+      final Object? exp = decoded['exp'];
+      if (exp is! num) return null;
+      return DateTime.fromMillisecondsSinceEpoch(
+        exp.toInt() * 1000,
+        isUtc: true,
+      );
+    } catch (_) {
+      return null;
+    }
+  }
+
   /// Capture is blocked before the scan when there are not enough nonces.
   Future<bool> hasNonceSession() async {
     await ensureNoncePool();
@@ -75,12 +114,20 @@ class AttendanceRepository {
   }
 
   Future<String> _takeNonce() async {
-    final List<String>? pool = await _store.readNoncePool();
-    if (pool == null || pool.isEmpty) {
+    final List<String> pool =
+        (await _store.readNoncePool()) ?? const <String>[];
+    final DateTime now = DateTime.now().toUtc();
+    final List<String> usable = pool
+        .where((String nonce) => !nonceExpired(nonce, now))
+        .toList(growable: false);
+    if (usable.length != pool.length) {
+      await _store.writeNoncePool(usable);
+    }
+    if (usable.isEmpty) {
       throw StateError('NONCE_POOL_EMPTY');
     }
-    final String nonce = pool.first;
-    await _store.writeNoncePool(pool.sublist(1));
+    final String nonce = usable.first;
+    await _store.writeNoncePool(usable.sublist(1));
     return nonce;
   }
 
@@ -251,6 +298,11 @@ class AttendanceRepository {
     CancelToken? cancelToken,
   }) async {
     final List<OutboxEntry> pending = await outbox.load();
+    if (pending.isNotEmpty) {
+      // Nonce berumur pendek; isi ulang pool sebelum flush agar entry yang
+      // lama tersimpan tetap bisa ditandatangani ulang.
+      await ensureNoncePool();
+    }
     final List<OutboxEntry> kept = <OutboxEntry>[];
     var sent = 0;
     var needsAction = 0;
@@ -263,10 +315,18 @@ class AttendanceRepository {
       final String path = entry.kind == PunchKind.checkIn
           ? '/attendance/check-in'
           : '/attendance/check-out';
+      Map<String, Object?> payload;
+      try {
+        payload = await _resignEntry(entry);
+      } catch (_) {
+        // Nonce/seed belum tersedia (masih offline): biarkan di antrean.
+        kept.add(entry);
+        continue;
+      }
       try {
         await _dio.post(
           path,
-          data: entry.payload,
+          data: payload,
           cancelToken: cancelToken,
         );
         sent++;
@@ -297,6 +357,45 @@ class AttendanceRepository {
       dropReasons: dropReasons,
       needsAction: needsAction,
     );
+  }
+
+  /// Tanda tangani ulang entry outbox dengan nonce baru. Nonce server hanya
+  /// berlaku <=10 menit, sementara punch offline boleh di-flush hingga
+  /// OFFLINE_MAX_AGE_HOURS; tanpa ini entry lama selalu ditolak.
+  Future<Map<String, Object?>> _resignEntry(OutboxEntry entry) async {
+    final String? seed = await _store.readPrivateSeed();
+    if (seed == null || seed.isEmpty) return entry.payload;
+
+    final String nonce = await _takeNonce();
+    final pair = await DeviceKeys.importFromSeedBase64(seed);
+    final String deviceId = entry.payload['deviceId'] as String;
+    final List<double> embedding = (entry.payload['faceEmbedding'] as List)
+        .map((Object? v) => (v as num).toDouble())
+        .toList(growable: false);
+    final Map<String, Object?> liveness =
+        Map<String, Object?>.from(entry.payload['liveness'] as Map);
+    final String action =
+        entry.kind == PunchKind.checkIn ? 'check-in' : 'check-out';
+
+    final String signature = base64Encode(await DeviceKeys.sign(
+      pair,
+      utf8.encode(await SignatureV1.message(
+        action: action,
+        deviceId: deviceId,
+        requestId: entry.requestId,
+        captureAt: entry.payload['captureAt'] as String,
+        queuedAt: entry.payload['queuedAt'] as String?,
+        nonce: nonce,
+        embedding: embedding,
+        liveness: liveness,
+      )),
+    ));
+
+    return <String, Object?>{
+      ...entry.payload,
+      'challengeNonce': nonce,
+      'signature': signature,
+    };
   }
 
   Future<AttendanceHistoryPage> myHistory({

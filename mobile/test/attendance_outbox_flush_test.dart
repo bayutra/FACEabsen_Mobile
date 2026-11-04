@@ -133,6 +133,30 @@ OutboxEntry _queued({
 Dio _dio() => Dio(BaseOptions(baseUrl: 'http://localhost:3000/api/v1'));
 
 void main() {
+  group('nonceExpired', () {
+    String jwt(Map<String, Object?> payload) {
+      String seg(Map<String, Object?> value) =>
+          base64Url.encode(utf8.encode(jsonEncode(value))).replaceAll('=', '');
+      return '${seg(<String, Object?>{'alg': 'HS256'})}.${seg(payload)}.sig';
+    }
+
+    test('exp lampau dianggap kedaluwarsa; nonce tanpa exp tetap dipakai', () {
+      final DateTime now = DateTime.now().toUtc();
+      final String expired = jwt(<String, Object?>{
+        'exp':
+            now.subtract(const Duration(minutes: 11)).millisecondsSinceEpoch ~/
+                1000,
+      });
+      final String alive = jwt(<String, Object?>{
+        'exp':
+            now.add(const Duration(minutes: 9)).millisecondsSinceEpoch ~/ 1000,
+      });
+      expect(AttendanceRepository.nonceExpired(expired, now), isTrue);
+      expect(AttendanceRepository.nonceExpired(alive, now), isFalse);
+      expect(AttendanceRepository.nonceExpired('n0', now), isFalse);
+    });
+  });
+
   group('isNetworkError', () {
     DioException err(DioExceptionType type, {int? status}) => DioException(
           requestOptions: RequestOptions(path: '/attendance/check-in'),
@@ -221,7 +245,10 @@ void main() {
       expect(idB, prepared.requestId);
       expect(flushed.bodies.single['captureAt'],
           stored.captureAt.toIso8601String());
-      expect(flushed.bodies.single['signature'], storedSignature);
+      // Nonce pendek: entry ditandatangani ulang saat flush.
+      expect(flushed.bodies.single['signature'], isNot(storedSignature));
+      expect(flushed.bodies.single['challengeNonce'],
+          isNot(stored.payload['challengeNonce']));
       expect(flushed.bodies.single['signatureVersion'], 'v1');
       expect(flushed.bodies.single.containsKey('requestTimestamp'), isFalse);
     });

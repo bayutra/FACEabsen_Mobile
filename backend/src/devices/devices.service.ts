@@ -246,7 +246,7 @@ export class DevicesService {
     dto: RegisterDeviceDto,
     userId: string,
   ): Promise<void> {
-    let payload: { sub?: string; purpose?: string };
+    let payload: { sub?: string; purpose?: string; jti?: string };
     try {
       payload = await this.jwt.verifyAsync(dto.nonce, {
         algorithms: [AUTH_POLICY.jwtAlgorithm],
@@ -258,7 +258,8 @@ export class DevicesService {
     if (
       !payload?.sub ||
       payload.purpose !== DEVICE_REGISTER_PURPOSE ||
-      payload.sub !== userId
+      payload.sub !== userId ||
+      typeof payload.jti !== 'string'
     ) {
       throw new UnauthorizedException('INVALID_REGISTRATION_PROOF');
     }
@@ -268,6 +269,23 @@ export class DevicesService {
       dto.nonceSignature,
     );
     if (!ok) throw new UnauthorizedException('INVALID_REGISTRATION_PROOF');
+
+    // Single-use: the unique key makes the proof non-replayable even inside
+    // its 5-minute TTL window.
+    try {
+      await this.prisma.idempotencyKey.create({
+        data: { key: `nonce:${payload.jti}`, kind: 'device-register' },
+      });
+    } catch (err: unknown) {
+      if (
+        typeof err === 'object' &&
+        err !== null &&
+        (err as { code?: string }).code === 'P2002'
+      ) {
+        throw new UnauthorizedException('INVALID_REGISTRATION_PROOF');
+      }
+      throw err;
+    }
   }
 
   async listMine(userId: string) {

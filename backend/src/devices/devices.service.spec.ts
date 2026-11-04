@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { generateKeyPairSync, sign } from 'node:crypto';
+import { generateKeyPairSync, randomUUID, sign } from 'node:crypto';
 import type { PrismaService } from '../prisma/prisma.service.js';
 import { DevicesService, deviceTrust } from './devices.service.js';
 
@@ -17,10 +17,11 @@ const signNonce = (nonce: string) =>
 const jwtFor = (sub = 'u1', purpose = 'device-register') =>
   ({
     signAsync: vi.fn(async () => TEST_NONCE),
-    verifyAsync: vi.fn(async () => ({ sub, purpose })),
+    verifyAsync: vi.fn(async () => ({ sub, purpose, jti: randomUUID() })),
   }) as never;
 
 function makePrisma(over: Record<string, Record<string, unknown>> = {}) {
+  const idemKeys = new Set<string>();
   const prisma = {
     employee: {
       findUnique: vi.fn(async (a: { where: Record<string, unknown> }) =>
@@ -46,6 +47,16 @@ function makePrisma(over: Record<string, Record<string, unknown>> = {}) {
       ...over.device,
     },
     session: { updateMany: vi.fn(async () => ({ count: 0 })), ...over.session },
+    idempotencyKey: {
+      create: vi.fn(async (a: { data: { key: string } }) => {
+        if (idemKeys.has(a.data.key)) {
+          throw Object.assign(new Error('duplicate'), { code: 'P2002' });
+        }
+        idemKeys.add(a.data.key);
+        return { ...a.data };
+      }),
+      ...over.idempotencyKey,
+    },
   } as Record<string, unknown>;
   prisma.$transaction = vi.fn(
     async (fn: (tx: Record<string, unknown>) => unknown) => fn(prisma),
@@ -324,6 +335,30 @@ describe('DevicesService.register', () => {
 
   it('forged nonce (challenge bound to another user) -> 401', async () => {
     const svc = new DevicesService(makePrisma(), auditStub, jwtFor('u-other'));
+    await expect(svc.register(dto(), 'u1')).rejects.toThrow(
+      'INVALID_REGISTRATION_PROOF',
+    );
+  });
+
+  it('replayed registration proof (same jti) -> 401', async () => {
+    const jwt = {
+      signAsync: vi.fn(async () => TEST_NONCE),
+      verifyAsync: vi.fn(async () => ({
+        sub: 'u1',
+        purpose: 'device-register',
+        jti: 'fixed-jti-replay',
+      })),
+    } as never;
+    const create = vi.fn(async (a: { data: Record<string, unknown> }) => ({
+      id: 'd1',
+      ...a.data,
+    }));
+    const svc = new DevicesService(
+      makePrisma({ device: { create } }),
+      auditStub,
+      jwt,
+    );
+    await svc.register(dto(), 'u1');
     await expect(svc.register(dto(), 'u1')).rejects.toThrow(
       'INVALID_REGISTRATION_PROOF',
     );

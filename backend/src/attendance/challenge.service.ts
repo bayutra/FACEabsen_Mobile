@@ -20,8 +20,11 @@ export class ChallengeService {
   }
 
   private ttlSec(): number {
-    const min = Number(this.config.get('ATTENDANCE_CHALLENGE_TTL_MIN', 1440));
-    const safe = Number.isFinite(min) && min >= 60 && min <= 1440 ? min : 1440;
+    // Nonce presensi harus berumur pendek: 10 menit cukup untuk online, dan
+    // antrean offline ditandatangani ulang saat flush (lihat mobile
+    // attendance_repository.flushOutbox).
+    const min = Number(this.config.get('ATTENDANCE_CHALLENGE_TTL_MIN', 10));
+    const safe = Number.isFinite(min) && min >= 1 && min <= 10 ? min : 10;
     return safe * 60;
   }
 

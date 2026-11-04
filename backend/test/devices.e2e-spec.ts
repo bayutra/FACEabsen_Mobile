@@ -77,6 +77,7 @@ function makeFake() {
   ]);
   const devices = new Map<string, any>();
   const audits: any[] = [];
+  const idemKeys = new Set<string>();
   let seq = 100;
 
   const employeeView = (e: any) =>
@@ -133,12 +134,16 @@ function makeFake() {
             ? s.toLowerCase().includes(String(v.contains).toLowerCase())
             : s.includes(v.contains);
         if (!hit) return false;
+      } else if (v && typeof v === 'object' && 'in' in v) {
+        if (!v.in.includes(d[k])) return false;
+      } else if (v && typeof v === 'object' && 'not' in v) {
+        if (d[k] === v.not) return false;
       } else if ((d as any)[k] !== v) return false;
     }
     return true;
   };
 
-  return {
+  const fake: any = {
     users,
     sessions,
     employees,
@@ -263,6 +268,18 @@ function makeFake() {
         Object.assign(d, data);
         return { ...d };
       },
+      updateMany: async ({ where, data }: any) => {
+        let count = 0;
+        for (const d of devices.values()) {
+          if (where.id?.in && !where.id.in.includes(d.id)) continue;
+          if (where.employeeId && d.employeeId !== where.employeeId) continue;
+          if (where.status?.in && !where.status.in.includes(d.status)) continue;
+          if (where.id?.not && d.id === where.id.not) continue;
+          Object.assign(d, data);
+          count++;
+        }
+        return { count };
+      },
     },
     session: {
       create: async ({ data }: any) => {
@@ -287,7 +304,18 @@ function makeFake() {
         return { count };
       },
     },
+    idempotencyKey: {
+      create: async ({ data }: any) => {
+        if (idemKeys.has(data.key)) {
+          throw Object.assign(new Error('duplicate'), { code: 'P2002' });
+        }
+        idemKeys.add(data.key);
+        return { ...data };
+      },
+    },
   };
+  fake.$transaction = async (fn: (tx: unknown) => unknown) => fn(fake);
+  return fake;
 }
 
 let app: INestApplication;
@@ -435,20 +463,34 @@ describe('device binding flow', () => {
       .send(
         regDto('install-002', kp2.pubB64, n2, signNonce(kp2.privateKey, n2)),
       );
+    // Auto-replace: perangkat kedua langsung ACTIVE dan yang lama dicabut.
     expect(second.status).toBe(201);
-    expect(second.body.status).toBe('PENDING');
+    expect(second.body.status).toBe('ACTIVE');
+    expect([...fake.devices.values()].find((d) => d.id === id)?.status).toBe(
+      'REVOKED',
+    );
 
     const n3 = await challengeFor(server, emp);
-    const dup = await request(server)
+    const oldAgain = await request(server)
       .post('/devices/register')
       .set('Authorization', `Bearer ${emp}`)
       .send(
         regDto('install-001', kp1.pubB64, n3, signNonce(kp1.privateKey, n3)),
       );
-    // Same install+keypair coming back (fresh login, reinstall): idempotent
-    // 200 resolving to the existing row — not a 409. Fresh logins must work.
+    // Perangkat lama yang sudah di-replace tidak bisa mengaktifkan diri lagi;
+    // pemulihan lewat alur device-change dengan persetujuan admin.
+    expect(oldAgain.status).toBe(409);
+
+    const n4 = await challengeFor(server, emp);
+    const dup = await request(server)
+      .post('/devices/register')
+      .set('Authorization', `Bearer ${emp}`)
+      .send(
+        regDto('install-002', kp2.pubB64, n4, signNonce(kp2.privateKey, n4)),
+      );
+    // Same install+keypair as the ACTIVE device: idempotent resolve, not 409.
     expect(dup.status).toBe(201);
-    expect(dup.body.id).toBe(id);
+    expect(dup.body.id).toBe(second.body.id);
     expect(dup.body.status).toBe('ACTIVE');
 
     const beat = await request(server)
@@ -458,6 +500,29 @@ describe('device binding flow', () => {
     expect(beat.body.lastSeenAt).toBeTruthy();
 
     expect(fake.audits.map((a) => a.action)).toContain('DEVICE_REGISTERED');
+  });
+
+  it('registration proof is single-use (replay -> 401)', async () => {
+    const server = app.getHttpServer();
+    const emp = await tokenFor('u-emp', ['EMPLOYEE'], 'employee@rs.test');
+    const kp = makeKeypair();
+    const nonce = await challengeFor(server, emp);
+    const proof = regDto(
+      'install-020',
+      kp.pubB64,
+      nonce,
+      signNonce(kp.privateKey, nonce),
+    );
+    const first = await request(server)
+      .post('/devices/register')
+      .set('Authorization', `Bearer ${emp}`)
+      .send(proof);
+    expect(first.status).toBe(201);
+    const replay = await request(server)
+      .post('/devices/register')
+      .set('Authorization', `Bearer ${emp}`)
+      .send(proof);
+    expect(replay.status).toBe(401);
   });
 
   it('owner/admin read matrix; stranger and anon denied', async () => {
