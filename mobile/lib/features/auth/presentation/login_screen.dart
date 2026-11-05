@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/config/server_settings.dart';
 import '../../../core/config/server_settings_dialog.dart';
+import '../../../core/network/error_message.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/hospital_mark.dart';
 import '../../../core/widgets/stitch.dart';
@@ -91,7 +92,7 @@ class _LoginScreenState extends State<LoginScreen> {
       setState(() {
         _error = _messageFor(e);
         _unverifiedEmail =
-            _reason(e) == 'EMAIL_NOT_VERIFIED' ? credential : null;
+            dioReason(e) == 'EMAIL_NOT_VERIFIED' ? credential : null;
         _busy = false;
       });
     } catch (e) {
@@ -174,34 +175,26 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  String? _reason(DioException e) {
-    final Object? data = e.response?.data;
-    return data is Map ? data['reason'] as String? : null;
-  }
-
-  String _messageFor(DioException e) {
-    final int? code = e.response?.statusCode;
-    if (e.type == DioExceptionType.connectionTimeout ||
-        e.type == DioExceptionType.connectionError) {
-      return 'Server tidak terjangkau. Periksa koneksi jaringan rumah sakit.';
-    }
-    if (code == 401) return 'Kredensial atau kata sandi tidak sesuai.';
-    if (code == 403) {
-      final String? reason = _reason(e);
-      if (reason == 'EMAIL_NOT_VERIFIED') {
-        return 'Email belum diverifikasi. Masukkan kode verifikasi terlebih dahulu.';
-      }
-      if (reason == 'PENDING_APPROVAL') {
-        return 'Akun menunggu persetujuan admin. Coba lagi setelah disetujui.';
-      }
-      if (reason == 'DASHBOARD_ONLY_ROLE') {
-        return 'Akun admin/supervisor hanya bisa masuk lewat dashboard web.';
-      }
-      return 'Akun dikunci sementara. Hubungi Kepegawaian.';
-    }
-    if (code == 409) return 'Perangkat ini sudah terdaftar pada akun lain.';
-    return 'Gagal masuk (${code ?? 'tanpa kode'}).';
-  }
+  String _messageFor(DioException e) => dioMessage(e, mapStatus: (code) {
+        if (code == 401) return 'Kredensial atau kata sandi tidak sesuai.';
+        if (code == 403) {
+          final String? reason = dioReason(e);
+          if (reason == 'EMAIL_NOT_VERIFIED') {
+            return 'Email belum diverifikasi. Masukkan kode verifikasi terlebih dahulu.';
+          }
+          if (reason == 'PENDING_APPROVAL') {
+            return 'Akun menunggu persetujuan admin. Coba lagi setelah disetujui.';
+          }
+          if (reason == 'DASHBOARD_ONLY_ROLE') {
+            return 'Akun admin/supervisor hanya bisa masuk lewat dashboard web.';
+          }
+          return 'Akun dikunci sementara. Hubungi Kepegawaian.';
+        }
+        if (code == 409) {
+          return 'Perangkat ini sudah terdaftar pada akun lain.';
+        }
+        return 'Gagal masuk (${code ?? 'tanpa kode'}).';
+      });
 
   Widget _totpCard() {
     return AppCard(

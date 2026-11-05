@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import 'verify_email_screen.dart';
 
+import '../../../core/network/error_message.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/hospital_mark.dart';
 import '../../../core/widgets/stitch.dart';
@@ -143,23 +144,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
     }
   }
 
-  String _messageFor(DioException e) {
-    final int? code = e.response?.statusCode;
-    if (e.type == DioExceptionType.connectionTimeout ||
-        e.type == DioExceptionType.connectionError) {
-      return 'Server tidak terjangkau. Periksa koneksi jaringan rumah sakit.';
-    }
-    if (code == 409) {
-      return 'Email atau nomor karyawan sudah terdaftar. Gunakan email lain atau hubungi Kepegawaian.';
-    }
-    if (code == 400) {
-      return 'Kata sandi terlalu lemah. Gunakan minimal 8 karakter dengan huruf besar, huruf kecil, dan angka.';
-    }
-    if (code == 429) {
-      return 'Terlalu banyak percobaan. Tunggu sebentar lalu coba lagi.';
-    }
-    return 'Pendaftaran gagal (${code ?? 'tanpa kode'}).';
-  }
+  String _messageFor(DioException e) => dioMessage(e, mapStatus: (code) {
+        if (code == 409) {
+          return 'Email atau nomor karyawan sudah terdaftar. Gunakan email lain atau hubungi Kepegawaian.';
+        }
+        if (code == 400) {
+          return 'Kata sandi terlalu lemah. Gunakan minimal 8 karakter dengan huruf besar, huruf kecil, dan angka.';
+        }
+        if (code == 429) {
+          return 'Terlalu banyak percobaan. Tunggu sebentar lalu coba lagi.';
+        }
+        return 'Pendaftaran gagal (${code ?? 'tanpa kode'}).';
+      });
 
   Widget _label(String text) => Padding(
         padding: const EdgeInsets.only(bottom: 6),

@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 
+import '../../../core/network/error_message.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/stitch.dart';
 import '../data/profile_repository.dart';
@@ -82,20 +83,15 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     }
   }
 
-  String _messageFor(DioException e) {
-    final int? code = e.response?.statusCode;
-    if (e.type == DioExceptionType.connectionTimeout ||
-        e.type == DioExceptionType.connectionError) {
-      return 'Server tidak terjangkau. Periksa koneksi jaringan rumah sakit.';
-    }
-    if (code == 409) {
-      return 'Email tersebut sudah dipakai akun lain. Gunakan email lain.';
-    }
-    if (code == 400) {
-      return 'Data belum valid. Periksa nama dan email, lalu coba lagi.';
-    }
-    return 'Gagal menyimpan profil (${code ?? 'tanpa kode'}).';
-  }
+  String _messageFor(DioException e) => dioMessage(e, mapStatus: (code) {
+        if (code == 409) {
+          return 'Email tersebut sudah dipakai akun lain. Gunakan email lain.';
+        }
+        if (code == 400) {
+          return 'Data belum valid. Periksa nama dan email, lalu coba lagi.';
+        }
+        return 'Gagal menyimpan profil (${code ?? 'tanpa kode'}).';
+      });
 
   InputDecoration _decoration(String label, IconData icon, {String? hint}) {
     return InputDecoration(
