@@ -8,11 +8,6 @@ import { useAuth } from '@/lib/auth';
 import { formatDate, formatDateTime, today } from '@/lib/format';
 import { useResource } from '@/lib/useResource';
 
-type Paginated<T> = {
-  data?: T[];
-  pagination?: { page: number; totalPages: number; totalItems: number };
-};
-
 type Report = {
   title?: string;
   generatedAt?: string;
@@ -30,50 +25,32 @@ type QueueEntry = {
   icon: 'checkCircle' | 'pen' | 'calendar' | 'device';
 };
 
-async function safe<T>(promise: Promise<T>, fallback: T): Promise<T> {
-  try {
-    return await promise;
-  } catch {
-    return fallback;
-  }
-}
-
-function countOf(page: Paginated<unknown> | unknown[]): number {
-  if (Array.isArray(page)) return page.length;
-  if (page.pagination?.totalItems !== undefined) return page.pagination.totalItems;
-  return page.data?.length ?? 0;
-}
+type Summary = {
+  report: Report;
+  review: number;
+  corrections: number;
+  leaves: number;
+  pendingDevices: number;
+  recentAudit: Array<Record<string, unknown>>;
+};
 
 export default function OverviewPage() {
   const { user } = useAuth();
   const superAdmin = isSuperAdmin(user?.roles);
 
   const { data, loading, error, reload } = useResource(
-    async () => {
-      const [daily, corrections, leaves, review, devices, audit] = await Promise.all([
-        safe(api<{ report: Report }>('/reports/daily', { query: { date: today() } }), {
-          report: {},
+    () =>
+      api<Summary>('/dashboard/summary', { query: { date: today() } }).then(
+        (s) => ({
+          report: s.report ?? {},
+          corrections: s.corrections,
+          leaves: s.leaves,
+          review: s.review,
+          devices: s.pendingDevices,
+          audit: s.recentAudit ?? [],
         }),
-        safe(api<unknown[]>('/corrections', { query: { status: 'PENDING' } }), []),
-        safe(api<unknown[]>('/leaves', { query: { status: 'PENDING' } }), []),
-        safe(api<Paginated<unknown>>('/attendance/review', { query: { pageSize: 1 } }), {}),
-        superAdmin
-          ? safe(api<Paginated<unknown>>('/devices', { query: { status: 'PENDING', pageSize: 1 } }), {})
-          : Promise.resolve<Paginated<unknown>>({}),
-        superAdmin
-          ? safe(api<Paginated<Record<string, unknown>>>('/audit', { query: { pageSize: 6 } }), {})
-          : Promise.resolve<Paginated<Record<string, unknown>>>({}),
-      ]);
-      return {
-        report: daily.report ?? {},
-        corrections: countOf(corrections),
-        leaves: countOf(leaves),
-        review: countOf(review),
-        devices: countOf(devices),
-        audit: audit.data ?? [],
-      };
-    },
-    [superAdmin],
+      ),
+    [],
   );
 
   const queue: QueueEntry[] = [

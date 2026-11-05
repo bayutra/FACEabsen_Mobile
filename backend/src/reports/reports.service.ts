@@ -603,6 +603,86 @@ export class ReportsService {
       body: await toPDF(report),
     };
   }
+
+  /** Review queue count for the dashboard aggregate (same scope as listReview). */
+  async countReview(userId: string, roles: string[]): Promise<number> {
+    const AND: Array<Record<string, unknown>> = [{ needsReview: true }];
+    if (!satisfiesRole(roles, 'ADMIN')) {
+      const me = await this.prisma.employee.findUnique({
+        where: { userId },
+        select: { id: true },
+      });
+      if (!me) return 0;
+      AND.push({ employee: { supervisorId: me.id } });
+    } else if (!satisfiesRole(roles, 'SUPER_ADMIN')) {
+      const scope = await resolveHospitalScope(this.prisma, userId, roles);
+      if (scope.kind !== 'hospital') return 0;
+      AND.push({ employee: { department: { hospitalId: scope.hospitalId } } });
+    }
+    return this.prisma.attendance.count({ where: { AND } });
+  }
+
+  /** Pending correction count for the dashboard aggregate. */
+  async countCorrections(userId: string, roles: string[]): Promise<number> {
+    const AND: Array<Record<string, unknown>> = [{ status: 'PENDING' }];
+    const reviewer = await this.prisma.employee.findUnique({
+      where: { userId },
+      select: { id: true },
+    });
+    const isAdmin = satisfiesRole(roles, 'ADMIN');
+    if (!isAdmin) {
+      if (!reviewer) return 0;
+      AND.push({ employee: { supervisorId: reviewer.id } });
+    } else if (!satisfiesRole(roles, 'SUPER_ADMIN')) {
+      const scope = await resolveHospitalScope(this.prisma, userId, roles);
+      if (scope.kind !== 'hospital') return 0;
+      AND.push({ employee: { department: { hospitalId: scope.hospitalId } } });
+    }
+    return this.prisma.correctionRequest.count({ where: { AND } });
+  }
+
+  /** Pending leave count for the dashboard aggregate. */
+  async countLeaves(userId: string, roles: string[]): Promise<number> {
+    const AND: Array<Record<string, unknown>> = [{ status: 'PENDING' }];
+    const reviewer = await this.prisma.employee.findUnique({
+      where: { userId },
+      select: { id: true },
+    });
+    const isAdmin = satisfiesRole(roles, 'ADMIN');
+    if (!isAdmin) {
+      if (!reviewer) return 0;
+      AND.push({ employee: { supervisorId: reviewer.id } });
+    } else if (!satisfiesRole(roles, 'SUPER_ADMIN')) {
+      const scope = await resolveHospitalScope(this.prisma, userId, roles);
+      if (scope.kind !== 'hospital') return 0;
+      AND.push({ employee: { department: { hospitalId: scope.hospitalId } } });
+    }
+    return this.prisma.leaveRequest.count({ where: { AND } });
+  }
+
+  /** Pending device count (super-admin only). */
+  async countPendingDevices(userId: string, roles: string[]): Promise<number> {
+    if (!satisfiesRole(roles, 'SUPER_ADMIN')) return 0;
+    return this.prisma.device.count({ where: { status: 'PENDING' } });
+  }
+
+  /** Recent audit entries (super-admin only, newest first). */
+  async listRecentAudit(
+    userId: string,
+    roles: string[],
+    limit = 6,
+  ): Promise<Array<Record<string, unknown>>> {
+    if (!satisfiesRole(roles, 'SUPER_ADMIN')) return [];
+    const rows = await this.prisma.auditLog.findMany({
+      orderBy: { timestamp: 'desc' },
+      take: limit,
+      include: {
+        actor: { select: { id: true, email: true } },
+        device: { select: { id: true, deviceName: true } },
+      },
+    });
+    return rows as Array<Record<string, unknown>>;
+  }
 }
 
 function iso(d: Date | string): string {
