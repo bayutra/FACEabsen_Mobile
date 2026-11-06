@@ -100,7 +100,9 @@ workflows:
     environment:
       flutter: 3.22.2
       vars:
+        # Ini workflow sideload/demo LAN (bukan untuk store): boleh http.
         API_BASE_URL: "http://192.168.120.111:3000/api/v1"
+        ALLOW_INSECURE_HTTP: "true"
     triggering:
       events:
         - push
@@ -137,13 +139,16 @@ workflows:
     environment:
       flutter: 3.22.2
       vars:
+        # RILIS STORE (item #6 audit): wajib https + pin sertifikat.
+        # JANGAN set ALLOW_INSECURE_HTTP=true di sini — build demo/sideload
+        # LAN lewat workflow android-debug / ios-unsigned.
+        # API_CERT_SHA256 diambil dari Environment variables Codemagic
+        # (secure): fingerprint SHA-256 sertifikat TLS server produksi.
         API_BASE_URL: "http://192.168.120.111:3000/api/v1"
-        ALLOW_INSECURE_HTTP: "true"
+        ALLOW_INSECURE_HTTP: "false"
         # Isi variabel berikut di Codemagic (Environment variables, secure):
         # CM_KEYSTORE, CM_KEYSTORE_PASSWORD, CM_KEY_ALIAS, CM_KEY_PASSWORD
         # (base64 dari file keystore). Lihat docs/guides/ANDROID_COMPAT.md.
-        # Untuk rilis store: ganti API_BASE_URL ke https, hapus
-        # ALLOW_INSECURE_HTTP, dan set API_CERT_SHA256 (fingerprint TLS).
     triggering:
       events:
         - push
@@ -155,6 +160,31 @@ workflows:
       cache_paths:
         - $HOME/.pub-cache
     scripts:
+      - name: Guard release policy (https + pin, no insecure flag)
+        script: |
+          # Item #6 audit: rilis store wajib https + API_CERT_SHA256, dan
+          # tidak boleh membawa escape hatch ALLOW_INSECURE_HTTP=true.
+          # Gagal cepat di CI jauh lebih baik daripada rilis yang throw
+          # saat startup di perangkat (assertSecureConfiguration).
+          set -e
+          if [ "$ALLOW_INSECURE_HTTP" != "false" ]; then
+            echo "ALLOW_INSECURE_HTTP harus 'false' untuk rilis store."
+            echo "Build demo/sideload LAN: gunakan workflow android-debug."
+            exit 1
+          fi
+          case "$API_BASE_URL" in
+            https://*) ;;
+            *)
+              echo "Set API_BASE_URL (secure env Codemagic) ke https:// produksi."
+              echo "Nilai sekarang: $API_BASE_URL"
+              exit 1
+              ;;
+          esac
+          if [ -z "$API_CERT_SHA256" ]; then
+            echo "Set API_CERT_SHA256 (secure env Codemagic): fingerprint"
+            echo "SHA-256 sertifikat TLS server produksi."
+            exit 1
+          fi
       - name: Flutter pub get
         script: |
           flutter --version
