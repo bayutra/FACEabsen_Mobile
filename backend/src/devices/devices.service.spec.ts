@@ -146,7 +146,10 @@ describe('DevicesService.register', () => {
     );
     expect(push.notifyEmployee).toHaveBeenCalledWith(
       'e1',
-      expect.objectContaining({ data: expect.objectContaining({ id: 'd2' }) }),
+      expect.objectContaining({
+        title: 'Ganti perangkat',
+        body: 'Perangkat baru telah menggantikan perangkat lama',
+      }),
     );
   });
 

@@ -94,6 +94,15 @@ export class DevicesService {
     } as ConfigService,
     @Optional() private readonly push?: PushService,
   ) {}
+  private get autoReplaceAllowed(): boolean {
+    const value = (
+      this.config.get<string>('DEVICE_AUTO_REPLACE', 'true') ?? 'true'
+    )
+      .trim()
+      .toLowerCase();
+    return ['1', 'true', 'yes'].includes(value);
+  }
+
   private get maxActive(): number {
     const v = Number(this.config.get('MAX_ACTIVE_DEVICES_PER_EMPLOYEE', 2));
     return Number.isFinite(v) && v > 0 ? v : 2;
@@ -150,9 +159,36 @@ export class DevicesService {
       throw new ConflictException('Device already registered');
     }
 
+    if (!this.autoReplaceAllowed) {
+      const existingActive = await this.prisma.device.findFirst({
+        where: {
+          employeeId: employee.id,
+          status: 'ACTIVE',
+          id: { not: clash?.id ?? '' },
+        },
+        select: { id: true },
+      });
+      if (existingActive) {
+        throw new ConflictException({
+          reason: 'DEVICE_AUTO_REPLACE_DISABLED',
+          message: 'Device auto-replace is disabled for this deployment',
+        });
+      }
+    }
+
     try {
       const { device, revokedIds } = await this.prisma.$transaction(
         async (tx) => {
+          const existing = await tx.device.findMany({
+            where: {
+              employeeId: employee.id,
+              status: { in: ['ACTIVE', 'PENDING'] },
+              id: { not: clash?.id ?? '' },
+            },
+            orderBy: { registeredAt: 'desc' },
+            select: { id: true, status: true, registeredAt: true },
+          });
+
           const target = clash
             ? await tx.device.update({
                 where: { id: clash.id },
@@ -174,15 +210,7 @@ export class DevicesService {
                 },
               });
 
-          const others = await tx.device.findMany({
-            where: {
-              employeeId: employee.id,
-              status: { in: ['ACTIVE', 'PENDING'] },
-              id: { not: target.id },
-            },
-            select: { id: true },
-          });
-          const revokedIds = others.map((row) => row.id);
+          const revokedIds = existing.map((row) => row.id);
           if (revokedIds.length > 0) {
             await tx.device.updateMany({
               where: { id: { in: revokedIds } },
@@ -212,6 +240,7 @@ export class DevicesService {
           status: device.status,
           platform: dto.platform,
           replacedDeviceIds: revokedIds,
+          autoReplaced: revokedIds.length > 0,
         },
       });
       for (const id of revokedIds) {
@@ -225,12 +254,21 @@ export class DevicesService {
         });
       }
       this.push?.notifyEmployee(employee.id, {
-        title: 'Perangkat aktif dipindahkan',
-        body: 'Akun Anda kini aktif di perangkat baru. Perangkat lama otomatis dinonaktifkan.',
-        data: { type: 'device', id: device.id, status: 'ACTIVE' },
+        title: 'Ganti perangkat',
+        body:
+          revokedIds.length > 0
+            ? 'Perangkat baru telah menggantikan perangkat lama'
+            : 'Perangkat baru telah terdaftar',
       });
       return device;
     } catch (e) {
+      if (
+        e instanceof ConflictException ||
+        e instanceof NotFoundException ||
+        e instanceof UnauthorizedException
+      ) {
+        throw e;
+      }
       if (
         typeof e === 'object' &&
         e !== null &&

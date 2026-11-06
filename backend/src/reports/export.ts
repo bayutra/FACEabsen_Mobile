@@ -1,7 +1,14 @@
+import { PayloadTooLargeException } from '@nestjs/common';
 import ExcelJS from 'exceljs';
 import PDFDocument from 'pdfkit';
 
 export type ExportFormat = 'json' | 'csv' | 'xlsx' | 'pdf';
+
+/**
+ * Hard cap on data rows in a report export. Prevents unbounded XLSX/PDF/CSV
+ * payloads (memory + CPU) and keeps download sizes predictable.
+ */
+export const MAX_EXPORT_ROWS = 10_000;
 
 export interface TabularReport {
   title: string;
@@ -19,8 +26,21 @@ const cell = (v: string | number | null | undefined): string => {
   return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
 };
 
+/** Throws PayloadTooLargeException (HTTP 413) when a report exceeds the row cap. */
+export function assertReportSize(report: TabularReport): void {
+  if (report.rows.length > MAX_EXPORT_ROWS) {
+    throw new PayloadTooLargeException({
+      reason: 'EXPORT_TOO_LARGE',
+      message: `Ekspor dibatasi ${MAX_EXPORT_ROWS} baris; perkecil rentang tanggal atau filter.`,
+      maxRows: MAX_EXPORT_ROWS,
+      actualRows: report.rows.length,
+    });
+  }
+}
+
 /** CSV (Excel-compatible) with summary preamble. Pure + unit-tested. */
 export function toCSV(report: TabularReport): string {
+  assertReportSize(report);
   const lines = [report.title, `Dibuat,${report.generatedAt}`];
   for (const [k, v] of report.summary) lines.push(`${cell(k)},${cell(v)}`);
   lines.push('', report.headers.map(cell).join(','));
@@ -29,6 +49,7 @@ export function toCSV(report: TabularReport): string {
 }
 
 export async function toXLSX(report: TabularReport): Promise<Buffer> {
+  assertReportSize(report);
   const wb = new ExcelJS.Workbook();
   wb.creator = 'Face ID Attendance';
   const ws = wb.addWorksheet('Laporan', {
@@ -41,7 +62,14 @@ export async function toXLSX(report: TabularReport): Promise<Buffer> {
   const header = ws.addRow(report.headers);
   header.font = { bold: true };
   for (const row of report.rows)
-    ws.addRow(row.map((v) => (v === null || v === undefined ? '' : v)));
+    ws.addRow(
+      row.map((v) => {
+        if (v === null || v === undefined) return '';
+        const s = String(v);
+        // Neutralize formula injection (same rule as CSV export).
+        return /^[=+\-@\t\r]/.test(s) ? `'${s}` : s;
+      }),
+    );
   ws.columns.forEach((col) => {
     col.width = 22;
   });
@@ -49,6 +77,7 @@ export async function toXLSX(report: TabularReport): Promise<Buffer> {
 }
 
 export function toPDF(report: TabularReport): Promise<Buffer> {
+  assertReportSize(report);
   return new Promise((resolve, reject) => {
     const doc = new PDFDocument({ margin: 40, size: 'A4' });
     const chunks: Buffer[] = [];

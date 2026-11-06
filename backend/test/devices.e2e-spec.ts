@@ -214,11 +214,7 @@ function makeFake() {
             ) ?? null
           );
         }
-        return (
-          rows.find((d) =>
-            Object.entries(where).every(([k, v]) => d[k] === v),
-          ) ?? null
-        );
+        return rows.find((d) => matchDevice(d, where)) ?? null;
       },
       findMany: async ({ where, skip = 0, take, include }: any) => {
         let rows = [...devices.values()].filter((d) => matchDevice(d, where));
@@ -409,7 +405,10 @@ beforeAll(async () => {
       { provide: PrismaService, useValue: fake },
       {
         provide: ConfigService,
-        useValue: { get: (_k: string, d: unknown) => d },
+        useValue: {
+          get: (k: string, d: unknown) =>
+            k === 'DEVICE_AUTO_REPLACE' ? (process.env.DEVICE_AUTO_REPLACE ?? d) : d,
+        },
       },
       {
         provide: AuditService,
@@ -435,7 +434,7 @@ afterAll(async () => {
 });
 
 describe('device binding flow', () => {
-  it('challenge -> first device ACTIVE, second PENDING, same-owner retry is idempotent', async () => {
+  it('challenge -> first device ACTIVE, only one ACTIVE at a time, same-owner retry is idempotent', async () => {
     const server = app.getHttpServer();
     const emp = await tokenFor('u-emp', ['EMPLOYEE'], 'employee@rs.test');
 
@@ -500,6 +499,55 @@ describe('device binding flow', () => {
     expect(beat.body.lastSeenAt).toBeTruthy();
 
     expect(fake.audits.map((a) => a.action)).toContain('DEVICE_REGISTERED');
+    expect(fake.audits.map((a) => a.action)).toContain('DEVICE_REVOKED');
+  });
+
+  it('disabled auto-replace leaves first device active and rejects second registration', async () => {
+    const prior = process.env.DEVICE_AUTO_REPLACE;
+    process.env.DEVICE_AUTO_REPLACE = 'false';
+
+    try {
+      const server = app.getHttpServer();
+      const emp = await tokenFor('u-other', ['EMPLOYEE'], 'other@rs.test');
+      const before = fake.devices.size;
+
+      const kp1 = makeKeypair();
+      const n1 = await challengeFor(server, emp);
+      const first = await request(server)
+        .post('/devices/register')
+        .set('Authorization', `Bearer ${emp}`)
+        .send(
+          regDto(
+            'install-disabled-a',
+            kp1.pubB64,
+            n1,
+            signNonce(kp1.privateKey, n1),
+          ),
+        );
+      expect(first.status).toBe(201);
+      expect(first.body.status).toBe('ACTIVE');
+
+      const kp = makeKeypair();
+      const nonce = await challengeFor(server, emp);
+      const res = await request(server)
+        .post('/devices/register')
+        .set('Authorization', `Bearer ${emp}`)
+        .send(
+          regDto(
+            'install-disabled-b',
+            kp.pubB64,
+            nonce,
+            signNonce(kp.privateKey, nonce),
+          ),
+        );
+
+      expect(res.status).toBe(409);
+      expect(res.body.reason).toBe('DEVICE_AUTO_REPLACE_DISABLED');
+      expect(fake.devices.size).toBe(before + 1);
+    } finally {
+      if (prior === undefined) delete process.env.DEVICE_AUTO_REPLACE;
+      else process.env.DEVICE_AUTO_REPLACE = prior;
+    }
   });
 
   it('registration proof is single-use (replay -> 401)', async () => {

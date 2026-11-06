@@ -292,7 +292,18 @@ Beranda → CTA Presensi
   └─ sukses → beranda diperbarui
 ```
 
-**Penggantian perangkat**
+**Penggantian perangkat (auto-replace saat login)**
+
+```text
+Login → daftarkan perangkat baru (proof Ed25519)
+  → server aktifkan perangkat baru
+  → perangkat ACTIVE/PENDING lama REVOKED + sesi lama dicabut
+  → audit DEVICE_REGISTERED & DEVICE_REVOKED
+Bila DEVICE_AUTO_REPLACE=false, perangkat kedua ditolak (409)
+dan device-change manual tetap tersedia.
+```
+
+**Penggantian perangkat manual (cadangan)**
 
 ```text
 Perangkat → Ajukan penggantian
@@ -353,12 +364,14 @@ berikutnya.
 | --------- | --------- | ------------------------------------------------------------------------------------------------- |
 | FR-DEV-01 | P0        | Satu karyawan hanya boleh punya **satu** perangkat ACTIVE (partial unique index).                 |
 | FR-DEV-02 | P0        | Registrasi memakai challenge JWT 5 menit + signature Ed25519 atas nonce.                          |
-| FR-DEV-03 | P0        | Perangkat pertama otomatis ACTIVE; perangkat berikutnya PENDING sampai penggantian disetujui.     |
+| FR-DEV-03 | P0        | Perangkat pertama otomatis ACTIVE; registrasi perangkat berikutnya memicu auto-replace perangkat lama saat login/registrasi baru. |
 | FR-DEV-04 | P0        | Perangkat dicabut tidak dapat dipakai presensi (`DEVICE_NOT_ACTIVE`).                             |
 | FR-DEV-05 | P0        | Setiap presensi wajib menyertakan `deviceId` milik karyawan yang login.                           |
 | FR-DEV-06 | P1        | Heartbeat memperbarui `lastSeenAt` dan versi aplikasi.                                            |
-| FR-DEV-07 | P1        | Pengajuan penggantian memuat alasan; dapat dibatalkan selama PENDING.                             |
-| FR-DEV-08 | P1        | Approval penggantian mencabut device lama, sesi lama, dan mengaktifkan device baru secara atomik. |
+| FR-DEV-07 | P1        | Pengajuan penggantian manual tetap tersedia; auto-replace dapat dimatikan (`DEVICE_AUTO_REPLACE=false`) sehingga registrasi perangkat baru ditolak. |
+| FR-DEV-08 | P1        | Approval penggantian manual dan auto-replace mencabut device lama, sesi lama, dan mengaktifkan device baru secara atomik. |
+| FR-DEV-09 | P0        | Registration proof baru wajib diverifikasi untuk setiap pergantian perangkat; replay ditolak. |
+| FR-DEV-10 | P1        | Auto-replace mencatat `DEVICE_REGISTERED` dan `DEVICE_REVOKED` di audit log, dan revoked langsung tidak dapat presensi. |
 
 
 **Acceptance criteria**
@@ -537,7 +550,7 @@ berikutnya.
 | --------- | --------- | --------------------------------------------------------------------- |
 | FR-ADM-01 | P1        | CRUD karyawan, departemen, shift, roster, user, role.                 |
 | FR-ADM-02 | P1        | Approve/reject koreksi, izin, dan penggantian perangkat.              |
-| FR-ADM-03 | P1        | Laporan harian, bulanan, departemen, keterlambatan, cuti (Excel/PDF). |
+| FR-ADM-03 | P1        | Laporan harian, bulanan, departemen, keterlambatan, cuti (Excel/PDF). Ekspor dibatasi 10.000 baris (HTTP 413 `EXPORT_TOO_LARGE`). |
 | FR-ADM-04 | P1        | Audit log read-only dan ekspor.                                       |
 | FR-ADM-05 | P1        | Revoke/activate device dan queue `needsReview`.                       |
 | FR-ADM-06 | P1        | UI dashboard web untuk supervisor/admin; mode admin mobile dihapus.    |
