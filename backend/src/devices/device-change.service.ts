@@ -1,12 +1,8 @@
-import {
-  ConflictException,
-  Injectable,
-  NotFoundException,
-  Optional,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException, Optional, UnauthorizedException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import * as argon2 from 'argon2';
 import { AuditService } from '../audit/audit.service.js';
+import { maxActiveDevicesPerEmployee } from '../common/runtime-config.js';
 import { satisfiesRole } from '../auth/rbac.js';
 import { resolveHospitalScope } from '../auth/tenant-scope.js';
 import { PrismaService } from '../prisma/prisma.service.js';
@@ -22,6 +18,7 @@ export class DeviceChangeService {
     private readonly prisma: PrismaService,
     private readonly audit: AuditService,
     @Optional() private readonly push?: PushService,
+    @Optional() private readonly config?: ConfigService,
   ) {}
 
   async request(
@@ -185,6 +182,11 @@ export class DeviceChangeService {
     }
 
     const updated = await this.prisma.$transaction(async (tx) => {
+      // Serialize against register()/activate() for the same employee, then
+      // re-check the cap inside the transaction: an approve without a consumed
+      // old device (replacement of a lost one) raises the ACTIVE count.
+      await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${req.employeeId}))`;
+
       if (oldDevice) {
         await tx.device.update({
           where: { id: oldDevice.id },
@@ -200,6 +202,19 @@ export class DeviceChangeService {
           data: { revokedAt: new Date() },
         });
       }
+
+      // `next` itself is excluded: promoting an already-ACTIVE device again is
+      // a no-op, not a new activation.
+      const activeCount = await tx.device.count({
+        where: { employeeId: req.employeeId, status: 'ACTIVE', NOT: { id: next.id } },
+      });
+      if (activeCount >= maxActiveDevicesPerEmployee(this.config)) {
+        throw new ConflictException({
+          reason: 'DEVICE_LIMIT_REACHED',
+          message: 'Cabut salah satu device aktif terlebih dahulu',
+        });
+      }
+
       await tx.device.update({
         where: { id: next.id },
         data: { status: 'ACTIVE' },

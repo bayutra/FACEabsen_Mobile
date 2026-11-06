@@ -12,11 +12,13 @@ const auditStub = { log: vi.fn(async () => undefined) } as never;
 
 function makePrisma(over: Record<string, Record<string, unknown>> = {}) {
   const tx = {
+    $executeRaw: vi.fn(async () => 1),
     device: {
       update: vi.fn(async (a: { where: { id: string }; data: object }) => ({
         id: a.where.id,
         ...a.data,
       })),
+      count: vi.fn(async () => 0),
     },
     session: { updateMany: vi.fn(async () => ({ count: 1 })) },
     deviceChangeRequest: {
@@ -196,6 +198,30 @@ describe('DeviceChangeService.approve/reject/cancel', () => {
     const actions = auditStub.log.mock.calls.map((c) => c[0].action);
     expect(actions).toContain('DEVICE_REPLACED');
     expect(actions).toContain('DEVICE_REVOKED');
+  });
+
+  it('approve without a consumed old device respects DEVICE_LIMIT_REACHED', async () => {
+    // Lost-device replacement (oldDeviceId null) raises the ACTIVE count, so
+    // the cap must be checked inside the transaction.
+    const prisma = makePrisma({
+      deviceChange: {
+        findUnique: vi.fn(async () => ({ ...pending, oldDeviceId: null })),
+      },
+      device: {
+        findUnique: vi.fn(async () => newPending),
+      },
+    });
+    const tx = (prisma as unknown as { __tx: { device: { count: ReturnType<typeof vi.fn> } } })
+      .__tx;
+    tx.device.count = vi.fn(async () => 2); // already at the default cap
+    const svc = new DeviceChangeService(prisma, auditStub);
+    await expect(
+      svc.approve('r1', 'admin', ['SUPER_ADMIN']),
+    ).rejects.toThrow('Cabut salah satu device aktif terlebih dahulu');
+    const calls = tx.device.count.mock.calls as Array<
+      [{ where: { employeeId: string; status: string; NOT: { id: string } } }]
+    >;
+    expect(calls[0]?.[0]?.where?.NOT?.id).toBe('d2');
   });
 
   it('approve guards: reviewed / stale devices', async () => {

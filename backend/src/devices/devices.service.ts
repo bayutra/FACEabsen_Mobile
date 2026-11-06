@@ -9,6 +9,7 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { randomUUID } from 'node:crypto';
 import { verifyDeviceSignature } from '../common/crypto.js';
+import { maxActiveDevicesPerEmployee } from '../common/runtime-config.js';
 import { AuditService } from '../audit/audit.service.js';
 import { AUTH_POLICY } from '../auth/constants.js';
 import { satisfiesRole } from '../auth/rbac.js';
@@ -104,8 +105,7 @@ export class DevicesService {
   }
 
   private get maxActive(): number {
-    const v = Number(this.config.get('MAX_ACTIVE_DEVICES_PER_EMPLOYEE', 2));
-    return Number.isFinite(v) && v > 0 ? v : 2;
+    return maxActiveDevicesPerEmployee(this.config);
   }
 
   async issueRegisterChallenge(
