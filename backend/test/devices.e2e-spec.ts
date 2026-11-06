@@ -96,6 +96,7 @@ function makeFake() {
   const matchDevice = (d: any, where: any): boolean => {
     if (!where || Object.keys(where).length === 0) return true;
     if (where.AND) return where.AND.every((c: any) => matchDevice(d, c));
+    if (where.NOT) return matchDevice(d, where.NOT);
     if (where.OR) {
       return where.OR.some((c: any) =>
         Object.entries(c).every(([k, v]: [string, any]) => {
@@ -311,6 +312,7 @@ function makeFake() {
     },
   };
   fake.$transaction = async (fn: (tx: unknown) => unknown) => fn(fake);
+  fake.$executeRaw = async () => 1;
   return fake;
 }
 

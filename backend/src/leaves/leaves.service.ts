@@ -8,7 +8,10 @@ import {
 } from '@nestjs/common';
 import { AuditService } from '../audit/audit.service.js';
 import { satisfiesRole } from '../auth/rbac.js';
-import { resolveHospitalScope } from '../auth/tenant-scope.js';
+import {
+  resolveEmployeeTenantWhere,
+  resolveHospitalScope,
+} from '../auth/tenant-scope.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { PushService } from '../push/push.service.js';
 import type { CreateLeaveDto, ListLeavesQuery } from './dto.js';
@@ -95,25 +98,17 @@ export class LeavesService {
   }
 
   async listQueue(userId: string, roles: string[], query: ListLeavesQuery) {
-    const reviewer = await this.prisma.employee.findUnique({
-      where: { userId },
-    });
-    const isAdmin = satisfiesRole(roles, 'ADMIN');
-    const AND: Array<Record<string, unknown>> = [];
-    if (!isAdmin) {
-      if (!reviewer) return [];
-      AND.push({ employee: { supervisorId: reviewer.id } });
-    } else if (!satisfiesRole(roles, 'SUPER_ADMIN')) {
-      const scope = await resolveHospitalScope(this.prisma, userId, roles);
-      if (scope.kind !== 'hospital') return [];
-      AND.push({ employee: { department: { hospitalId: scope.hospitalId } } });
-    }
-    if (query.status) AND.push({ status: query.status });
-    if (query.employeeId) AND.push({ employeeId: query.employeeId });
-    if (query.from) AND.push({ endDate: { gte: new Date(query.from) } });
-    if (query.to) AND.push({ startDate: { lte: new Date(query.to) } });
+    const base: Record<string, unknown> = {};
+    if (query.status) base.status = query.status;
+    if (query.employeeId) base.employeeId = query.employeeId;
+    if (query.from) base.endDate = { gte: new Date(query.from) };
+    if (query.to) base.startDate = { lte: new Date(query.to) };
+
+    const scoped = await resolveEmployeeTenantWhere(this.prisma, userId, roles, base);
+    if (!scoped) return [];
+
     return this.prisma.leaveRequest.findMany({
-      where: AND.length > 0 ? { AND } : {},
+      where: scoped,
       orderBy: [{ startDate: 'desc' }],
 
       take: 200,

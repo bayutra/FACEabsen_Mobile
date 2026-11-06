@@ -362,7 +362,7 @@ berikutnya.
 
 | ID        | Prioritas | Requirement                                                                                       |
 | --------- | --------- | ------------------------------------------------------------------------------------------------- |
-| FR-DEV-01 | P0        | Satu karyawan hanya boleh punya **satu** perangkat ACTIVE (partial unique index).                 |
+| FR-DEV-01 | P0        | Alur registrasi sendiri hanya menyisakan **satu** perangkat ACTIVE per karyawan (auto-replace mencabut sisanya). Ink-varian dijamin transaksional + advisory lock per karyawan (bukan partial unique index — index lama dihapus 2026-10-21). Perangkat tambahan di atas satu hanya lewat aktivasi admin (maks `MAX_ACTIVE_DEVICES_PER_EMPLOYEE`, default 2, ber-audit). |
 | FR-DEV-02 | P0        | Registrasi memakai challenge JWT 5 menit + signature Ed25519 atas nonce.                          |
 | FR-DEV-03 | P0        | Perangkat pertama otomatis ACTIVE; registrasi perangkat berikutnya memicu auto-replace perangkat lama saat login/registrasi baru. |
 | FR-DEV-04 | P0        | Perangkat dicabut tidak dapat dipakai presensi (`DEVICE_NOT_ACTIVE`).                             |

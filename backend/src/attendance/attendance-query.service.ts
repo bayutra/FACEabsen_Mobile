@@ -1,7 +1,10 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { AuditService } from '../audit/audit.service.js';
 import { satisfiesRole } from '../auth/rbac.js';
-import { resolveHospitalScope } from '../auth/tenant-scope.js';
+import {
+  resolveEmployeeTenantWhere,
+  resolveHospitalScope,
+} from '../auth/tenant-scope.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import type {
   AdminHistoryQuery,
@@ -70,22 +73,14 @@ export class AttendanceQueryService {
   async listReview(query: ReviewQueueQuery, userId: string, roles: string[]) {
     const page = query.page ?? 1;
     const pageSize = query.pageSize ?? 20;
-    const AND: Array<Record<string, unknown>> = [{ needsReview: true }];
 
-    if (!satisfiesRole(roles, 'ADMIN')) {
-      const me = await this.prisma.employee.findUnique({
-        where: { userId },
-        select: { id: true },
-      });
-      if (!me) return emptyPage(page, pageSize);
-      AND.push({ employee: { supervisorId: me.id } });
-    } else if (!satisfiesRole(roles, 'SUPER_ADMIN')) {
-      const scope = await resolveHospitalScope(this.prisma, userId, roles);
-      if (scope.kind !== 'hospital') return emptyPage(page, pageSize);
-      AND.push({ employee: { department: { hospitalId: scope.hospitalId } } });
-    }
-
-    const where = { AND };
+    const where = await resolveEmployeeTenantWhere(
+      this.prisma,
+      userId,
+      roles,
+      { needsReview: true },
+    );
+    if (!where) return emptyPage(page, pageSize);
     const [total, rows] = await Promise.all([
       this.prisma.attendance.count({ where }),
       this.prisma.attendance.findMany({

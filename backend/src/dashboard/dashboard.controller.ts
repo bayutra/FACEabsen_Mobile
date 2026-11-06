@@ -1,6 +1,6 @@
 import { Controller, Get, Query, UseGuards } from '@nestjs/common';
 import { IsString, Matches } from 'class-validator';
-import { CurrentUser, type AuthContext } from '../auth/decorators.js';
+import { CurrentUser, RequirePermissions, Roles, type AuthContext } from '../auth/decorators.js';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
 import { PermissionsGuard } from '../auth/guards/permissions.guard.js';
 import { RolesGuard } from '../auth/guards/roles.guard.js';
@@ -18,6 +18,8 @@ export class DashboardSummaryQuery {
 export class DashboardController {
   constructor(private readonly summary: DashboardSummaryService) {}
 
+  @Roles('SUPERVISOR')
+  @RequirePermissions('attendance:read:team')
   @Get('summary')
   getSummary(
     @Query() query: DashboardSummaryQuery,

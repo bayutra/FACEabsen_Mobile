@@ -278,6 +278,7 @@ function makeFake(hash: string) {
       },
     },
     $transaction: async (fn: (tx: unknown) => unknown) => fn(fake),
+    $executeRaw: async () => 1,
   };
 
   function viewReq(r: any) {

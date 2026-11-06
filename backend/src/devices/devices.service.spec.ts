@@ -58,6 +58,7 @@ function makePrisma(over: Record<string, Record<string, unknown>> = {}) {
       ...over.idempotencyKey,
     },
   } as Record<string, unknown>;
+  (prisma as Record<string, unknown>).$executeRaw = vi.fn(async () => 1);
   prisma.$transaction = vi.fn(
     async (fn: (tx: Record<string, unknown>) => unknown) => fn(prisma),
   );
@@ -568,6 +569,11 @@ describe('DevicesService.activate (STEP 18 — aktivasi langsung)', () => {
       },
       ...over,
     } as unknown as PrismaService;
+    (prisma as unknown as Record<string, unknown>).$transaction = vi.fn(
+      async (fn: (tx: unknown) => unknown) => fn(prisma),
+    );
+    (prisma as unknown as Record<string, unknown>).$executeRaw =
+      vi.fn(async () => 1);
     return prisma;
   }
 

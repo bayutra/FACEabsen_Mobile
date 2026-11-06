@@ -36,12 +36,14 @@ function makeFake() {
     ['u-sup', { id: 'u-sup', email: 'sup@rs.test', passwordHash: 'x', isActive: true }],
     ['u-sa', { id: 'u-sa', email: 'sa@rs.test', passwordHash: 'x', isActive: true }],
     ['u-adm', { id: 'u-adm', email: 'adm@rs.test', passwordHash: 'x', isActive: true }],
+    ['u-emp', { id: 'u-emp', email: 'emp@rs.test', passwordHash: 'x', isActive: true }],
   ]);
   const sessions = new Map<string, any>();
   const userRoles: Array<{ userId: string; role: string }> = [
     { userId: 'u-sup', role: 'SUPERVISOR' },
     { userId: 'u-sa', role: 'SUPER_ADMIN' },
     { userId: 'u-adm', role: 'ADMIN' },
+    { userId: 'u-emp', role: 'EMPLOYEE' },
   ];
   const dept = { id: 'd1', name: 'IGD', hospitalId: 'h1' };
   const employees = new Map<string, any>([
@@ -86,6 +88,17 @@ function makeFake() {
         name: 'Admin',
         employeeNo: 'EMP-003',
         supervisorId: null,
+        department: dept,
+      },
+    ],
+    [
+      'e-emp',
+      {
+        id: 'e-emp',
+        userId: 'u-emp',
+        name: 'Karyawan',
+        employeeNo: 'EMP-004',
+        supervisorId: 'e-sup',
         department: dept,
       },
     ],
@@ -380,6 +393,15 @@ describe('dashboard summary aggregate (single request)', () => {
     expect(
       (await request(server).get('/dashboard/summary?date=2026-10-05')).status,
     ).toBe(401);
+
+    // EMPLOYEE tokens are authenticated but must not reach the dashboard.
+    const emp = await tokenFor('u-emp', ['EMPLOYEE']);
+    expect(
+      (await request(server)
+        .get('/dashboard/summary?date=2026-10-05')
+        .set('Authorization', `Bearer ${emp}`)).status,
+    ).toBe(403);
+
     expect(
       (await request(server)
         .get('/dashboard/summary?date=kemarin')

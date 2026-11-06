@@ -284,8 +284,11 @@ model Device {
   oldChanges      DeviceChangeRequest[] @relation("OldDevice")
   newChanges      DeviceChangeRequest[] @relation("NewDevice")
   // Catatan: index parsial "devices_one_active_per_employee" sudah DIHAPUS
-  // (migrasi 20261021000000_multi_device). Satu karyawan boleh punya beberapa
-  // perangkat ACTIVE sekaligus.
+  // (migrasi 20261021000000_multi_device). Invarian "registrasi sendiri
+  // menyisakan satu device ACTIVE" tidak ditegakkan DB, melainkan oleh
+  // DevicesService dalam transaksi + pg_advisory_xact_lock(per employee);
+  // aktivasi admin boleh menaikkan jumlah ACTIVE hingga
+  // MAX_ACTIVE_DEVICES_PER_EMPLOYEE (default 2).
 
   @@index([employeeId])
   @@index([status])

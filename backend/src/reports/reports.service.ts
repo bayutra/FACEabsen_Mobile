@@ -4,7 +4,10 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { satisfiesRole } from '../auth/rbac.js';
-import { resolveHospitalScope } from '../auth/tenant-scope.js';
+import {
+  resolveEmployeeTenantWhere,
+  resolveHospitalScope,
+} from '../auth/tenant-scope.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import {
   classifyDay,
@@ -606,58 +609,29 @@ export class ReportsService {
 
   /** Review queue count for the dashboard aggregate (same scope as listReview). */
   async countReview(userId: string, roles: string[]): Promise<number> {
-    const AND: Array<Record<string, unknown>> = [{ needsReview: true }];
-    if (!satisfiesRole(roles, 'ADMIN')) {
-      const me = await this.prisma.employee.findUnique({
-        where: { userId },
-        select: { id: true },
-      });
-      if (!me) return 0;
-      AND.push({ employee: { supervisorId: me.id } });
-    } else if (!satisfiesRole(roles, 'SUPER_ADMIN')) {
-      const scope = await resolveHospitalScope(this.prisma, userId, roles);
-      if (scope.kind !== 'hospital') return 0;
-      AND.push({ employee: { department: { hospitalId: scope.hospitalId } } });
-    }
-    return this.prisma.attendance.count({ where: { AND } });
+    const where = await resolveEmployeeTenantWhere(this.prisma, userId, roles, {
+      needsReview: true,
+    });
+    if (!where) return 0;
+    return this.prisma.attendance.count({ where });
   }
 
   /** Pending correction count for the dashboard aggregate. */
   async countCorrections(userId: string, roles: string[]): Promise<number> {
-    const AND: Array<Record<string, unknown>> = [{ status: 'PENDING' }];
-    const reviewer = await this.prisma.employee.findUnique({
-      where: { userId },
-      select: { id: true },
+    const where = await resolveEmployeeTenantWhere(this.prisma, userId, roles, {
+      status: 'PENDING',
     });
-    const isAdmin = satisfiesRole(roles, 'ADMIN');
-    if (!isAdmin) {
-      if (!reviewer) return 0;
-      AND.push({ employee: { supervisorId: reviewer.id } });
-    } else if (!satisfiesRole(roles, 'SUPER_ADMIN')) {
-      const scope = await resolveHospitalScope(this.prisma, userId, roles);
-      if (scope.kind !== 'hospital') return 0;
-      AND.push({ employee: { department: { hospitalId: scope.hospitalId } } });
-    }
-    return this.prisma.correctionRequest.count({ where: { AND } });
+    if (!where) return 0;
+    return this.prisma.correctionRequest.count({ where });
   }
 
   /** Pending leave count for the dashboard aggregate. */
   async countLeaves(userId: string, roles: string[]): Promise<number> {
-    const AND: Array<Record<string, unknown>> = [{ status: 'PENDING' }];
-    const reviewer = await this.prisma.employee.findUnique({
-      where: { userId },
-      select: { id: true },
+    const where = await resolveEmployeeTenantWhere(this.prisma, userId, roles, {
+      status: 'PENDING',
     });
-    const isAdmin = satisfiesRole(roles, 'ADMIN');
-    if (!isAdmin) {
-      if (!reviewer) return 0;
-      AND.push({ employee: { supervisorId: reviewer.id } });
-    } else if (!satisfiesRole(roles, 'SUPER_ADMIN')) {
-      const scope = await resolveHospitalScope(this.prisma, userId, roles);
-      if (scope.kind !== 'hospital') return 0;
-      AND.push({ employee: { department: { hospitalId: scope.hospitalId } } });
-    }
-    return this.prisma.leaveRequest.count({ where: { AND } });
+    if (!where) return 0;
+    return this.prisma.leaveRequest.count({ where });
   }
 
   /** Pending device count (super-admin only). */

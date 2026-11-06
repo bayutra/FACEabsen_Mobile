@@ -179,6 +179,11 @@ export class DevicesService {
     try {
       const { device, revokedIds } = await this.prisma.$transaction(
         async (tx) => {
+          // Serialize concurrent registrations for the same employee so the
+          // "revoke every other ACTIVE/PENDING device" pass always sees the
+          // other transaction's committed device (LAST_WRITER_WINS, §FR-DEV-01).
+          await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${employee.id}))`;
+
           const existing = await tx.device.findMany({
             where: {
               employeeId: employee.id,
@@ -539,20 +544,26 @@ export class DevicesService {
       throw new ConflictException('Only PENDING devices can be activated');
     }
 
-    const activeCount =
-      (await this.prisma.device.count?.({
-        where: { employeeId: device.employeeId, status: 'ACTIVE', NOT: { id } },
-      })) ?? 0;
-    if (activeCount >= this.maxActive) {
-      throw new ConflictException({
-        reason: 'DEVICE_LIMIT_REACHED',
-        message: 'Cabut salah satu device aktif terlebih dahulu',
-      });
-    }
+    // Serialize against concurrent registrations/activations for the same
+    // employee, then re-count inside the transaction (read-then-update races
+    // could otherwise exceed MAX_ACTIVE_DEVICES_PER_EMPLOYEE).
+    const updated = await this.prisma.$transaction(async (tx) => {
+      await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${device.employeeId}))`;
 
-    const updated = await this.prisma.device.update({
-      where: { id },
-      data: { status: 'ACTIVE' },
+      const activeCount = await tx.device.count({
+        where: { employeeId: device.employeeId, status: 'ACTIVE', NOT: { id } },
+      });
+      if (activeCount >= this.maxActive) {
+        throw new ConflictException({
+          reason: 'DEVICE_LIMIT_REACHED',
+          message: 'Cabut salah satu device aktif terlebih dahulu',
+        });
+      }
+
+      return tx.device.update({
+        where: { id },
+        data: { status: 'ACTIVE' },
+      });
     });
 
     await this.audit.log({
