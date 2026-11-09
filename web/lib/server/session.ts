@@ -128,11 +128,39 @@ export function refreshSession(): Promise<TokenPair | null> {
 export function isSameOrigin(req: Request): boolean {
   const origin = req.headers.get('origin');
   if (!origin) return true;
+
+  let originHost: string;
   try {
-    return new URL(origin).host === new URL(req.url).host;
+    originHost = new URL(origin).host;
   } catch {
     return false;
   }
+
+  // `req.url` tidak selalu memakai host publik: di belakang ngrok/reverse
+  // proxy, atau saat dashboard dibuka lewat alias host (127.0.0.1 vs
+  // localhost vs IP LAN), host di `req.url` bisa berbeda dari Origin.
+  // Membandingkan Origin dengan header Host adalah bentuk standar
+  // pemeriksaan same-origin — Host diisi browser dan tidak bisa ditentukan
+  // penyerang CSRF. X-Forwarded-Host dipakai bila proxy meneruskannya.
+  const headerHosts = [req.headers.get('x-forwarded-host'), req.headers.get('host')]
+    .filter((value): value is string => Boolean(value))
+    .flatMap((value) => value.split(',').map((part) => part.trim()));
+
+  let urlHost: string | null = null;
+  try {
+    urlHost = new URL(req.url).host;
+  } catch {
+    urlHost = null;
+  }
+
+  const candidates = urlHost ? [urlHost, ...headerHosts] : headerHosts;
+  if (candidates.includes(originHost)) return true;
+
+  // Bantuan diagnosis: tampilkan kedua host saat penolakan.
+  console.warn(
+    `[same-origin] ditolak: origin=${originHost} url=${req.url} host=${headerHosts.join('|') || '-'}`,
+  );
+  return false;
 }
 
 export function jsonError(

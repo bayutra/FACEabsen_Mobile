@@ -31,6 +31,25 @@ Backend harus berjalan (`cd backend && npm run start:dev`). Akun demo seed:
 
 Kata sandi seed: `Password123!`.
 
+## "Origin tidak diizinkan." saat login web
+
+Semua route handler dashboard (`/api/session/*`, `/api/proxy/*`) menolak request
+yang Origin-nya berbeda dari host dashboard (proteksi CSRF). Pemeriksaannya ada
+di `web/lib/server/session.ts` → `isSameOrigin()`.
+
+Penyebab umum:
+
+- Dashboard dibuka lewat alias host berbeda dari yang dilihat server, misalnya
+  `127.0.0.1:3001` vs `localhost:3001`, IP LAN, atau URL ngrok/reverse proxy.
+- Proxy tidak meneruskan header `Host`/`X-Forwarded-Host` asli.
+
+Sejak pemeriksaan diperbarui, `isSameOrigin()` membandingkan Origin dengan
+`req.url`, `X-Forwarded-Host`, dan `Host` sekaligus, lalu mencetak
+`[same-origin] ditolak: origin=... url=... host=...` di log server bila masih
+menolak — pakai baris itu untuk melihat host mana yang dilihat server.
+Pastikan juga proxy menyetel `proxy_set_header Host $host;` (sudah ada di
+`nginx/nginx.conf`).
+
 ## Login ditolak di mobile
 
 `LoginDto.client` menerima `MOBILE` atau `WEB`. Bila `MOBILE` dan akun memiliki
