@@ -45,7 +45,6 @@ const NAV: NavSection[] = [
     title: 'Operasional',
     items: [
       { href: '/devices', label: 'Perangkat', icon: 'device', visible: superAdmin },
-      { href: '/device-change', label: 'Penggantian Perangkat', icon: 'swap', visible: superAdmin },
       { href: '/reports', label: 'Laporan', icon: 'fileText', visible: supervisor },
     ],
   },

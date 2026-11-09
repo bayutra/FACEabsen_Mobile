@@ -57,6 +57,7 @@ export default function CorrectionsPage() {
       body: note ? { reviewNote: note } : {},
     });
     reload();
+    stats.reload();
   };
 
   const columns: Column<Correction>[] = [
@@ -201,6 +202,15 @@ export default function CorrectionsPage() {
                 {typeLabel(selected.type)} · {formatDateTime(selected.attendance?.workDate)}
               </div>
               <p style={{ marginBottom: 0 }}>{selected.reason}</p>
+              <div className="muted small" style={{ marginTop: 6 }}>
+                Jam lama: {formatDateTime(selected.attendance?.checkInAt)}
+                {selected.attendance?.checkOutAt ? ` → ${formatDateTime(selected.attendance.checkOutAt)}` : ''}
+              </div>
+              <div className="muted small" style={{ marginTop: 2 }}>
+                Jam diajukan:{' '}
+                {selected.requestedCheckIn ? `Masuk ${formatDateTime(selected.requestedCheckIn)}` : ''}
+                {selected.requestedCheckOut ? `Pulang ${formatDateTime(selected.requestedCheckOut)}` : ''}
+              </div>
             </div>
           ) : null
         }

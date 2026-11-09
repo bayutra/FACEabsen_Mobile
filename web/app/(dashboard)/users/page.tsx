@@ -22,10 +22,17 @@ import { useResource } from '@/lib/useResource';
 
 const ROLES = ['EMPLOYEE', 'SUPERVISOR', 'ADMIN', 'SUPER_ADMIN'];
 
+function loginSurfaceLabel(value: string): string {
+  if (value === 'mobile') return 'Mobile saja';
+  if (value === 'web') return 'Web saja';
+  return 'Mobile & Web';
+}
+
 type AdminUser = {
   id: string;
   email: string;
   isActive: boolean;
+  loginSurface?: string | null;
   roles: string[];
   lockedUntil?: string | null;
   failedLoginAttempts?: number | null;
@@ -127,6 +134,13 @@ export default function UsersPage() {
       render: (row) => row.employee?.department?.name ?? '—',
     },
     {
+      key: 'loginSurface',
+      header: 'Login bisa dari',
+      render: (row) => (
+        <span className="badge">{loginSurfaceLabel(row.loginSurface ?? 'both')}</span>
+      ),
+    },
+    {
       key: 'status',
       header: 'Status',
       render: (row) => (
@@ -158,7 +172,7 @@ export default function UsersPage() {
             </button>
           ) : null}
           <button type="button" className="btn ghost small" onClick={() => setEditingRoles(row)}>
-            Peran
+            Peran & login
           </button>
           <button
             type="button"
@@ -320,6 +334,7 @@ function CreateUserModal({
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [roles, setRoles] = useState<string[]>(['EMPLOYEE']);
+  const [loginSurface, setLoginSurface] = useState('both');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -328,6 +343,7 @@ function CreateUserModal({
     setEmail('');
     setPassword('');
     setRoles(['EMPLOYEE']);
+    setLoginSurface('both');
     setError(null);
   }, [open]);
 
@@ -336,7 +352,10 @@ function CreateUserModal({
     setBusy(true);
     setError(null);
     try {
-      await api('/users', { method: 'POST', body: { email, password, roles } });
+      await api('/users', {
+        method: 'POST',
+        body: { email, password, roles, loginSurface },
+      });
       onSaved();
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
@@ -400,6 +419,13 @@ function CreateUserModal({
             ))}
           </div>
         </Field>
+        <Field label="Login bisa dari">
+          <Select value={loginSurface} onChange={(event) => setLoginSurface(event.target.value)}>
+            <option value="both">Mobile & Web</option>
+            <option value="mobile">Mobile saja (mis. Kepala Ruangan)</option>
+            <option value="web">Web saja</option>
+          </Select>
+        </Field>
       </form>
     </Modal>
   );
@@ -415,11 +441,15 @@ function RolesModal({
   onSaved: () => void;
 }) {
   const [roles, setRoles] = useState<string[]>([]);
+  const [loginSurface, setLoginSurface] = useState('both');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (user) setRoles(user.roles);
+    if (user) {
+      setRoles(user.roles);
+      setLoginSurface(user.loginSurface ?? 'both');
+    }
     setError(null);
   }, [user]);
 
@@ -429,7 +459,7 @@ function RolesModal({
     setBusy(true);
     setError(null);
     try {
-      await api(`/users/${user.id}`, { method: 'PATCH', body: { roles } });
+      await api(`/users/${user.id}`, { method: 'PATCH', body: { roles, loginSurface } });
       onSaved();
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
@@ -478,6 +508,13 @@ function RolesModal({
           Peran dashboard: Supervisor, Admin, Super Admin. Akun tanpa peran itu
           tetap bisa memakai aplikasi mobile.
         </p>
+        <Field label="Login bisa dari">
+          <Select value={loginSurface} onChange={(event) => setLoginSurface(event.target.value)}>
+            <option value="both">Mobile & Web</option>
+            <option value="mobile">Mobile saja (mis. Kepala Ruangan)</option>
+            <option value="web">Web saja</option>
+          </Select>
+        </Field>
       </form>
     </Modal>
   );

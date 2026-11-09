@@ -212,7 +212,12 @@ function DepartmentForm({
     >
       <form id="department-form" onSubmit={submit} className="stack">
         {error ? <div className="alert error">{error}</div> : null}
-        {!department ? (
+        {!department && hospitals.length <= 1 ? (
+          <Field label="Rumah sakit">
+            <div className="muted">{hospitals[0]?.name ?? '—'}</div>
+          </Field>
+        ) : null}
+        {!department && hospitals.length > 1 ? (
           <Field label="Rumah sakit">
             <Select
               value={hospitalId}
