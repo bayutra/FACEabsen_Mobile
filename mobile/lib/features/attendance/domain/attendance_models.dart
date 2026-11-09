@@ -156,6 +156,43 @@ class AttendanceHistoryPage {
   }
 }
 
+/// Satu presensi yang menunggu tinjauan (Kepala Ruangan / Supervisor).
+class ReviewItem {
+  ReviewItem({
+    required this.id,
+    required this.workDate,
+    this.employeeName,
+    this.employeeNo,
+    this.checkInAt,
+    this.checkOutAt,
+    this.riskScore,
+    this.riskCategory,
+  });
+
+  final String id;
+  final String workDate;
+  final String? employeeName;
+  final String? employeeNo;
+  final String? checkInAt;
+  final String? checkOutAt;
+  final int? riskScore;
+  final String? riskCategory;
+
+  factory ReviewItem.fromJson(Map<String, dynamic> json) {
+    final Map? emp = json['employee'] as Map?;
+    return ReviewItem(
+      id: json['id'] as String,
+      workDate: (json['workDate'] as String?)?.substring(0, 10) ?? '',
+      employeeName: emp?['name'] as String?,
+      employeeNo: emp?['employeeNo'] as String?,
+      checkInAt: json['checkInAt'] as String?,
+      checkOutAt: json['checkOutAt'] as String?,
+      riskScore: (json['riskScore'] as num?)?.toInt(),
+      riskCategory: json['riskCategory'] as String?,
+    );
+  }
+}
+
 String toHistoryQueryString(
     {int page = 1, String? checkInStatus, String? from, String? to}) {
   final params = <String, String>{};

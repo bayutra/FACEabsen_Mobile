@@ -70,6 +70,7 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
   int _pendingDeviceCount = 0;
   String _displayName = 'Karyawan';
   String _employeeNo = '—';
+  List<String> _roles = const <String>[];
 
   void _go(int i) => setState(() => _index = i);
 
@@ -250,6 +251,18 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
     unawaited(widget.push.registerToken());
     _syncConsent();
     _loadDeviceCount();
+    _loadRoles();
+  }
+
+  Future<void> _loadRoles() async {
+    try {
+      final Map<String, dynamic>? me = await widget.auth.me();
+      if (!mounted) return;
+      final Object? raw = me?['roles'];
+      setState(() {
+        _roles = raw is List ? raw.map((e) => e.toString()).toList() : const [];
+      });
+    } catch (_) {}
   }
 
   @override
@@ -341,6 +354,9 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
         onOpenProfile: () => _go(3),
         onOpenHistory: () => _go(1),
         onOpenHandovers: () => _push(HandoverListScreen(dio: widget.dio)),
+        dio: widget.dio,
+        corrections: widget.corrections,
+        roles: _roles,
       ),
       HistoryScreen(
         attendance: widget.attendance,

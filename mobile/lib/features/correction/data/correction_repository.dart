@@ -39,6 +39,40 @@ class CorrectionRepository {
         .toList();
   }
 
+  /// Antrian peninjauan untuk Kepala Ruangan / Supervisor
+  /// (`correction:approve:team`, scope supervisorId di backend).
+  Future<List<CorrectionItem>> listQueue({String status = 'PENDING'}) async {
+    final Response res = await _dio.get(
+      '/corrections',
+      queryParameters: <String, dynamic>{'status': status},
+    );
+    final Object? data = res.data;
+    if (data is! List) return const <CorrectionItem>[];
+    return data
+        .whereType<Map<dynamic, dynamic>>()
+        .map((Map<dynamic, dynamic> e) =>
+            CorrectionItem.fromJson(Map<String, dynamic>.from(e)))
+        .toList();
+  }
+
+  Future<void> approve(String id, {String? note}) async {
+    await _dio.post(
+      '/corrections/$id/approve',
+      data: <String, dynamic>{
+        if (note != null && note.trim().isNotEmpty) 'reviewNote': note.trim(),
+      },
+    );
+  }
+
+  Future<void> reject(String id, {String? note}) async {
+    await _dio.post(
+      '/corrections/$id/reject',
+      data: <String, dynamic>{
+        if (note != null && note.trim().isNotEmpty) 'reviewNote': note.trim(),
+      },
+    );
+  }
+
   Future<void> cancel(String id) async {
     await _dio.post('/corrections/$id/cancel');
   }

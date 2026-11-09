@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/stitch.dart';
 import '../../attendance/domain/attendance_models.dart';
+import '../../handovers/domain/handover_models.dart';
 import '../../schedule/data/schedule_repository.dart';
 
 String greeting() {
@@ -599,7 +600,21 @@ Widget gridItem({
       ),
     );
 
-Widget handoverAnnouncement(BuildContext context) {
+Widget handoverAnnouncement(
+  BuildContext context, {
+  required List<Handover> items,
+  VoidCallback? onOpen,
+}) {
+  if (items.isEmpty) {
+    return const AppCard(
+      padding: EdgeInsets.all(16),
+      child: Text(
+        'Belum ada operan aktif.',
+        style: TextStyle(color: AppColors.inkSecondary),
+      ),
+    );
+  }
+  final Handover h = items.first;
   return AppCard(
     padding: const EdgeInsets.all(16),
     child: Column(
@@ -624,13 +639,13 @@ Widget handoverAnnouncement(BuildContext context) {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  'Operan Jaga Bangsal Melati',
+                  'Operan Jaga ${h.departmentName ?? ''}'.trim(),
                   style: AppText.bodyMdMedium.copyWith(color: AppColors.ink),
                 ),
               ],
             ),
             Text(
-              '14:45 WIB',
+              h.createdAt == null ? '' : hhmm(h.createdAt!.toIso8601String()),
               style: AppText.labelSm.copyWith(color: AppColors.inkSecondary),
             ),
           ],
@@ -644,7 +659,7 @@ Widget handoverAnnouncement(BuildContext context) {
             border: Border.all(color: AppColors.surfaceVariant),
           ),
           child: Text(
-            'Pukul 14:45 WIB mohon berkumpul di Nurse Station 3 untuk serah terima laporan SBAR pasien bed 304 (Post-Op Apendiktomi) dan ronde dokter spesialis anak.',
+            h.title,
             style: AppText.bodyMd
                 .copyWith(color: AppColors.inkSecondary, fontSize: 13),
           ),
@@ -658,22 +673,16 @@ Widget handoverAnnouncement(BuildContext context) {
                 const Icon(Icons.group, size: 16, color: AppColors.primary),
                 const SizedBox(width: 4),
                 Text(
-                  'Penanggung Jawab: Ns. Hendra, S.Kep',
+                  'Penanggung Jawab: ${h.fromName ?? '-'}',
                   style:
                       AppText.labelSm.copyWith(color: AppColors.inkSecondary),
                 ),
               ],
             ),
             TextButton(
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Membuka catatan operan shift bangsal...'),
-                  ),
-                );
-              },
+              onPressed: onOpen,
               child: Text(
-                'Lihat Rekam Medis',
+                'Buka Operan Jaga',
                 style: AppText.labelMd.copyWith(color: AppColors.primary),
               ),
             ),

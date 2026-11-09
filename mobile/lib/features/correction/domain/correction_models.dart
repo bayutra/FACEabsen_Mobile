@@ -29,6 +29,9 @@ class CorrectionItem {
     this.requestedCheckOut,
     this.workDate,
     this.reviewNote,
+    this.employeeName,
+    this.employeeNo,
+    this.requestedAt,
   });
 
   final String id;
@@ -39,9 +42,13 @@ class CorrectionItem {
   final String? requestedCheckOut;
   final String? workDate;
   final String? reviewNote;
+  final String? employeeName;
+  final String? employeeNo;
+  final String? requestedAt;
 
   factory CorrectionItem.fromJson(Map<String, dynamic> json) {
     final Map? att = json['attendance'] as Map?;
+    final Map? emp = json['employee'] as Map?;
     String? workDate;
     final Object? wd = att?['workDate'];
     if (wd is String && wd.length >= 10) workDate = wd.substring(0, 10);
@@ -54,6 +61,9 @@ class CorrectionItem {
       requestedCheckOut: json['requestedCheckOut'] as String?,
       workDate: workDate,
       reviewNote: json['reviewNote'] as String?,
+      employeeName: emp?['name'] as String?,
+      employeeNo: emp?['employeeNo'] as String?,
+      requestedAt: json['requestedAt'] as String?,
     );
   }
 }

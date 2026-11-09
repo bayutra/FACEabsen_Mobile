@@ -414,6 +414,34 @@ class AttendanceRepository {
     return AttendanceHistoryPage.fromJson(
         Map<String, dynamic>.from(res.data as Map));
   }
+
+  /// Antrean tinjauan presensi untuk Kepala Ruangan / Supervisor
+  /// (`attendance:approve:team`, scope supervisorId di backend).
+  /// Backend mengembalikan list atau `{ data: [...] }`.
+  Future<List<ReviewItem>> listReviewQueue() async {
+    final Response res = await _dio.get(
+      '/attendance/review',
+      queryParameters: const <String, dynamic>{'pageSize': 50},
+    );
+    final Object? data = res.data;
+    final List<dynamic> list = data is List
+        ? data
+        : data is Map
+            ? (data['data'] as List<dynamic>? ?? const <dynamic>[])
+            : const <dynamic>[];
+    return list
+        .whereType<Map<dynamic, dynamic>>()
+        .map((Map<dynamic, dynamic> e) =>
+            ReviewItem.fromJson(Map<String, dynamic>.from(e)))
+        .toList();
+  }
+
+  Future<void> review(String id, {required String decision}) async {
+    await _dio.post(
+      '/attendance/$id/review',
+      data: <String, dynamic>{'decision': decision},
+    );
+  }
 }
 
 class AttendanceRejected implements Exception {
