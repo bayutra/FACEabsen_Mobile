@@ -30,7 +30,8 @@ workflows:
       cocoapods: default
       vars:
         # Alamat default yang dibakar saat build. Bisa diganti dari dalam
-        # aplikasi (Login -> "Server: ..."), jadi nilai ini hanya titik awal.
+        # aplikasi (Login -> "Server: ...") tanpa build ulang, jadi nilai ini
+        # hanya titik awal.
         # CATATAN KEAMANAN: rilis asli wajib https + API_CERT_SHA256
         # (fingerprint sertifikat). Flag ALLOW_INSECURE_HTTP di bawah hanya
         # untuk build demo/sideload di LAN; cabut sebelum rilis store.
@@ -57,26 +58,32 @@ workflows:
         script: |
           flutter analyze
           flutter test
-      - name: Disable code signing in Xcode project
-        script: |
-          sed -i '' 's/CODE_SIGN_STYLE = Automatic;/CODE_SIGN_STYLE = Manual;/g' ios/Runner.xcodeproj/project.pbxproj
-          sed -i '' 's/"CODE_SIGN_IDENTITY[sdk=iphoneos\*]" = "iPhone Developer";/"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";/g' ios/Runner.xcodeproj/project.pbxproj
       - name: Build iOS (unsigned, arm64 device)
         script: |
+          # `--config-only` hanya MENYIAPKAN konfigurasi build (termasuk
+          # Generated.xcconfig + DART_DEFINES) tanpa menjalankan xcodebuild.
+          # Build sebenarnya dilakukan xcodebuild di bawah dengan signing
+          # dimatikan — jalur inilah yang bisa melewati syarat Development Team.
+          set -euo pipefail
           flutter build ios --release --no-codesign --config-only \
             --dart-define=API_BASE_URL=$API_BASE_URL \
             --dart-define=ALLOW_INSECURE_HTTP=$ALLOW_INSECURE_HTTP \
             --dart-define=API_CERT_SHA256=$API_CERT_SHA256
-          cd ios
+          pushd ios
           xcodebuild -workspace Runner.xcworkspace -scheme Runner -configuration Release \
             -sdk iphoneos -destination 'generic/platform=iOS' \
             CONFIGURATION_BUILD_DIR="$(pwd)/../build/ios/iphoneos" \
             CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO build
-          cd ..
+          popd
       - name: Package IPA
         script: |
           # `ditto` menjaga symlink di dalam framework — wajib agar IPA valid.
+          set -euo pipefail
           cd build/ios/iphoneos
+          # Tolak memaket app yang tidak lengkap. Tanpa binary utama, IPA akan
+          # ditolak Sideloadly ("bundle_main_missing: Payload/Runner.app/Runner").
+          test -f Runner.app/Runner
+          test -f Runner.app/Frameworks/Flutter.framework/Flutter
           rm -rf Payload
           mkdir Payload
           cp -R Runner.app Payload/
