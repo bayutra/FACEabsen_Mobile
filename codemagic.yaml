@@ -70,11 +70,20 @@ workflows:
         script: |
           # Signing sudah dimatikan di project (pbxproj/xcconfig/Podfile),
           # jadi --no-codesign di sini tidak memicu syarat Development Team.
-          set -euo pipefail
+          # Tanpa `set -e`: kita butuh menangkap status flutter lewat PIPESTATUS
+          # agar bisa mencetak ringkasan error xcodebuild di akhir log.
+          set -o pipefail
           flutter build ios --release --no-codesign \
             --dart-define=API_BASE_URL="${API_BASE_URL:-}" \
             --dart-define=ALLOW_INSECURE_HTTP="${ALLOW_INSECURE_HTTP:-false}" \
-            --dart-define=API_CERT_SHA256="${API_CERT_SHA256:-}"
+            --dart-define=API_CERT_SHA256="${API_CERT_SHA256:-}" 2>&1 | tee ios-build.log
+          status=${PIPESTATUS[0]}
+          if [ "$status" -ne 0 ]; then
+            echo "========== RINGKASAN ERROR XCODEBUILD =========="
+            grep -n -E "error:|fatal error:|Command PhaseScriptExecution failed|The following build commands failed" ios-build.log | tail -n 80 || true
+            echo "========== AKHIR RINGKASAN =========="
+            exit "$status"
+          fi
       - name: Package IPA
         script: |
           # `ditto` menjaga symlink di dalam framework — wajib agar IPA valid.
