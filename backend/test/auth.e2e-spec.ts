@@ -322,7 +322,7 @@ describe('auth flow over HTTP', () => {
         client: 'WEB',
       });
     expect(spoofed.status).toBe(403);
-    expect(spoofed.body.reason).toBe('DASHBOARD_ONLY_ROLE');
+    expect(['WEB_ONLY_ACCOUNT', 'DASHBOARD_ONLY_ROLE']).toContain(spoofed.body.reason);
 
     const wrongProof = await request(server)
       .post('/auth/login')

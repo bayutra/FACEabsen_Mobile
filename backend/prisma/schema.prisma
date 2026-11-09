@@ -110,6 +110,7 @@ model User {
   id                  String                @id @default(cuid())
   email               String                @unique
   passwordHash        String                @map("password_hash") // Argon2id (STEP 3)
+  loginSurface        String                @default("both") @map("login_surface") // mobile | web | both — Kepala Ruangan (SUPERVISOR) pakai "mobile"
   failedLoginAttempts Int                   @default(0) @map("failed_login_attempts")
   lockedUntil         DateTime?             @map("locked_until")
   isActive            Boolean               @default(true) @map("is_active")

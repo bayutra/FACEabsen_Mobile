@@ -145,12 +145,46 @@ export class AuthService {
     }
 
     const roles = (user.userRoles as RoleRow[]).map((ur) => ur.role.name);
-    // Peran pengelola hanya boleh masuk lewat dashboard web. Platform berasal
-    // dari bukti server-to-server (header rahasia), bukan field `client` yang
-    // bisa dikirim bebas oleh aplikasi mobile.
+    const loginSurface =
+      (user as { loginSurface?: string }).loginSurface ?? 'both';
+    if (loginSurface === 'mobile' && platform === 'WEB') {
+      await this.audit.log({
+        actorId: user.id,
+        action: 'LOGIN_FAILED',
+        ipAddress: meta.ip,
+        result: 'DENIED',
+        metadata: { reason: 'MOBILE_ONLY_ACCOUNT', roles, platform },
+      });
+      throw new ForbiddenException({
+        reason: 'MOBILE_ONLY_ACCOUNT',
+        message: 'Akun ini hanya dapat masuk melalui aplikasi mobile',
+      });
+    }
+    if (loginSurface === 'web' && platform !== 'WEB') {
+      await this.audit.log({
+        actorId: user.id,
+        action: 'LOGIN_FAILED',
+        ipAddress: meta.ip,
+        result: 'DENIED',
+        metadata: { reason: 'WEB_ONLY_ACCOUNT', roles, platform },
+      });
+      throw new ForbiddenException({
+        reason: 'WEB_ONLY_ACCOUNT',
+        message: 'Akun ini hanya dapat masuk melalui dashboard web',
+      });
+    }
+    // Peran pengelola hanya boleh masuk lewat dashboard web. Satu-satunya
+    // pengecualian: SUPERVISOR (Kepala Ruangan) dengan loginSurface
+    // mobile/both yang diatur superadmin. ADMIN/SUPER_ADMIN tetap
+    // dashboard-only apa pun flagnya. Platform berasal dari bukti
+    // server-to-server (header rahasia), bukan field `client` bebas kirim.
+    const isHeadOfWardMobile =
+      roles.includes('SUPERVISOR') &&
+      (loginSurface === 'mobile' || loginSurface === 'both');
     if (
       platform !== 'WEB' &&
-      roles.some((role) => DASHBOARD_ONLY_ROLES.has(role))
+      roles.some((role) => DASHBOARD_ONLY_ROLES.has(role)) &&
+      !isHeadOfWardMobile
     ) {
       await this.audit.log({
         actorId: user.id,
@@ -394,6 +428,7 @@ export class AuthService {
       id: user.id,
       email: user.email,
       isActive: user.isActive,
+      loginSurface: (user as { loginSurface?: string }).loginSurface ?? 'both',
       totpEnabled: user.totpEnabled ?? false,
       roles,
       permissions,

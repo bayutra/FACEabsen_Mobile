@@ -109,6 +109,11 @@ for (const d of demos) {
       userId: user.id, employeeNo: d.no, name: d.name, email: d.email, departmentId: dept.id,
     },
   });
+  // Supervisor demo tetap dashboard-only (web); Kepala Ruangan mobile
+  // di-set superadmin per akun (loginSurface = 'mobile').
+  if (d.role === 'SUPERVISOR') {
+    await prisma.user.update({ where: { id: user.id }, data: { loginSurface: 'web' } });
+  }
 }
 // supervisor relation: EMP-002 supervises EMP-001
 const sup = await prisma.employee.findUniqueOrThrow({ where: { employeeNo: 'EMP-002' } });

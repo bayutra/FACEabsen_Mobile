@@ -66,6 +66,10 @@ export class CreateUserDto {
   @IsArray()
   @IsIn(ROLE_NAMES, { each: true })
   roles?: string[];
+
+  @IsOptional()
+  @IsIn(['mobile', 'web', 'both'])
+  loginSurface?: 'mobile' | 'web' | 'both';
 }
 
 export class UpdateUserDto {
@@ -82,6 +86,10 @@ export class UpdateUserDto {
   @IsOptional()
   @IsBoolean()
   isActive?: boolean;
+
+  @IsOptional()
+  @IsIn(['mobile', 'web', 'both'])
+  loginSurface?: 'mobile' | 'web' | 'both';
 }
 
 export class ResetPasswordDto {

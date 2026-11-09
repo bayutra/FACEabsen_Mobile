@@ -75,6 +75,7 @@ export class UsersService {
           id: true,
           email: true,
           isActive: true,
+          loginSurface: true,
           failedLoginAttempts: true,
           lockedUntil: true,
           createdAt: true,
@@ -127,8 +128,9 @@ export class UsersService {
           data: {
             email: dto.email,
             passwordHash: await argon2.hash(dto.password),
+            ...(dto.loginSurface ? { loginSurface: dto.loginSurface } : {}),
           },
-          select: { id: true, email: true, isActive: true },
+          select: { id: true, email: true, isActive: true, loginSurface: true },
         });
         await this.assignRoles(tx, user.id, roles);
         await this.audit.log(
@@ -207,6 +209,12 @@ export class UsersService {
           data: { email: dto.email },
         });
       }
+      if (dto.loginSurface !== undefined) {
+        await tx.user.update({
+          where: { id },
+          data: { loginSurface: dto.loginSurface },
+        });
+      }
       if (dto.isActive === false) {
         await tx.session.updateMany({
           where: { userId: id, revokedAt: null },
@@ -224,6 +232,7 @@ export class UsersService {
             email: target.email,
             ...(dto.roles ? { roles: dto.roles } : {}),
             ...(dto.isActive !== undefined ? { isActive: dto.isActive } : {}),
+            ...(dto.loginSurface !== undefined ? { loginSurface: dto.loginSurface } : {}),
           },
         },
         tx,
@@ -235,6 +244,7 @@ export class UsersService {
       id,
       email: dto.email ?? target.email,
       isActive: dto.isActive ?? target.isActive,
+      loginSurface: dto.loginSurface ?? (target as { loginSurface?: string }).loginSurface ?? 'both',
       roles,
     };
   }

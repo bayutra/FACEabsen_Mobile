@@ -83,7 +83,13 @@ describe('AuthService.login', () => {
   it('rejects dashboard-only roles from MOBILE but allows WEB', async () => {
     const roles = [{ role: { name: 'SUPERVISOR' } }];
     const mobile = new AuthService(
-      makePrisma({ user: { findUnique: vi.fn(async () => userRow({ userRoles: roles })) } }),
+      makePrisma({
+        user: {
+          findUnique: vi.fn(async () =>
+            userRow({ userRoles: roles, loginSurface: 'web' }),
+          ),
+        },
+      }),
       jwt,
       configStub,
       auditStub,
@@ -100,7 +106,11 @@ describe('AuthService.login', () => {
 
     const web = new AuthService(
       makePrisma({
-        user: { findUnique: vi.fn(async () => userRow({ userRoles: roles })) },
+        user: {
+          findUnique: vi.fn(async () =>
+            userRow({ userRoles: roles, loginSurface: 'web' }),
+          ),
+        },
         session: {
           create: vi.fn(async (a: { data: Record<string, unknown> }) => ({
             id: 's1',
@@ -120,6 +130,107 @@ describe('AuthService.login', () => {
       'WEB',
     );
     expect(out.accessToken).toBeTruthy();
+  });
+
+  it('menolak akun mobile-only saat login web (MOBILE_ONLY_ACCOUNT)', async () => {
+    const roles = [{ role: { name: 'SUPERVISOR' } }];
+    const svc = new AuthService(
+      makePrisma({
+        user: {
+          findUnique: vi.fn(async () =>
+            userRow({ userRoles: roles, loginSurface: 'mobile' }),
+          ),
+        },
+      }),
+      jwt,
+      configStub,
+      auditStub,
+      emailVerificationStub,
+    );
+    await expect(
+      svc.login({ email: 'e', password: PASSWORD }, {}, 'WEB'),
+    ).rejects.toMatchObject({
+      response: expect.objectContaining({ reason: 'MOBILE_ONLY_ACCOUNT' }),
+    });
+  });
+
+  it('menolak akun web-only saat login mobile (WEB_ONLY_ACCOUNT)', async () => {
+    const svc = new AuthService(
+      makePrisma({
+        user: {
+          findUnique: vi.fn(async () => userRow({ loginSurface: 'web' })),
+        },
+      }),
+      jwt,
+      configStub,
+      auditStub,
+      emailVerificationStub,
+    );
+    await expect(
+      svc.login({ email: 'e', password: PASSWORD }, {}, 'MOBILE'),
+    ).rejects.toMatchObject({
+      response: expect.objectContaining({ reason: 'WEB_ONLY_ACCOUNT' }),
+    });
+  });
+
+  it('Supervisor loginSurface=mobile diterima di mobile (Kepala Ruangan)', async () => {
+    const roles = [{ role: { name: 'SUPERVISOR' } }];
+    const svc = new AuthService(
+      makePrisma({
+        user: {
+          findUnique: vi.fn(async () =>
+            userRow({ userRoles: roles, loginSurface: 'mobile' }),
+          ),
+          update: vi.fn(async () => ({})),
+        },
+        session: {
+          create: vi.fn(async (a: { data: Record<string, unknown> }) => ({
+            id: 's1',
+            deviceId: null,
+            ...a.data,
+          })),
+        },
+      }),
+      jwt,
+      configStub,
+      auditStub,
+      emailVerificationStub,
+    );
+    const out = await svc.login({ email: 'e', password: PASSWORD }, {}, 'MOBILE');
+    expect(out.accessToken).toBeTruthy();
+    expect(out.user.roles).toEqual(['SUPERVISOR']);
+  });
+
+  it('Supervisor loginSurface=both diterima di web dan mobile', async () => {
+    const roles = [{ role: { name: 'SUPERVISOR' } }];
+    const mk = () =>
+      new AuthService(
+        makePrisma({
+          user: {
+            findUnique: vi.fn(async () =>
+              userRow({ userRoles: roles, loginSurface: 'both' }),
+            ),
+            update: vi.fn(async () => ({})),
+          },
+          session: {
+            create: vi.fn(async (a: { data: Record<string, unknown> }) => ({
+              id: 's1',
+              deviceId: null,
+              ...a.data,
+            })),
+          },
+        }),
+        jwt,
+        configStub,
+        auditStub,
+        emailVerificationStub,
+      );
+    await expect(
+      mk().login({ email: 'e', password: PASSWORD }, {}, 'WEB'),
+    ).resolves.toMatchObject({ accessToken: expect.any(String) });
+    await expect(
+      mk().login({ email: 'e', password: PASSWORD }, {}, 'MOBILE'),
+    ).resolves.toMatchObject({ accessToken: expect.any(String) });
   });
 
   it('wrong password increments attempts and audits LOGIN_FAILED', async () => {
