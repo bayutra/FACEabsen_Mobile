@@ -1,9 +1,9 @@
 # Face Absen — RSU Darmayu Madiun
 
 Sistem presensi karyawan berbasis pengenalan wajah dan liveness on-device.
-Karyawan memakai aplikasi Flutter (Android + iOS); supervisor, admin, dan
-super admin memakai dashboard web Next.js. Backend NestJS melayani API untuk
-keduanya.
+Karyawan dan Kepala Ruangan memakai aplikasi Flutter (Android + iOS);
+supervisor, admin, dan super admin memakai dashboard web Next.js.
+Backend NestJS melayani API untuk keduanya.
 
 > Orang yang absen harus karyawan yang benar, memakai perangkat yang terikat,
 > pada shift yang benar, dan request tidak dapat diputar ulang.
@@ -37,8 +37,10 @@ keduanya.
   mengirim vektor itu; server menyimpannya terenkripsi AES-256-GCM.
 - **GPS/geofence tidak dipakai.** Kepercayaan dibangun dari kecocokan wajah,
   liveness, binding perangkat, signature Ed25519, dan device integrity.
-- **Mode admin tidak ada di mobile.** Approval dan administrasi hanya lewat
-  dashboard web (`web/`); login mobile dengan peran pengelola ditolak.
+- **Mode admin utama hanya di web.** Approval dan administrasi harian lewat
+  dashboard web (`web/`). Pengecualian: **Kepala Ruangan** (= peran
+  `SUPERVISOR` yang `loginSurface`-nya diatur superadmin ke `mobile`/`both`)
+  boleh login dan menyetujui koreksi/review unitnya dari aplikasi mobile.
 
 ---
 
@@ -111,7 +113,23 @@ Login memakai akun supervisor/admin (`supervisor@rs.test`, `admin@rs.test`,
 `superadmin@rs.test` pada data seed). Detail: [`web/README.md`](web/README.md)
 dan [`docs/guides/WEB_DASHBOARD.md`](docs/guides/WEB_DASHBOARD.md).
 
-### 4. Produksi
+### 4. Kepala Ruangan (mobile)
+
+Kepala Ruangan adalah peran `SUPERVISOR` yang `loginSurface`-nya diatur
+superadmin (halaman **Pengguna & Peran** → **Peran & login** → *Login bisa
+dari*):
+
+- `mobile` → hanya aplikasi mobile (di web ditolak `MOBILE_ONLY_ACCOUNT`),
+- `web` → hanya dashboard (di mobile ditolak `WEB_ONLY_ACCOUNT`),
+- `both` → keduanya.
+
+Di aplikasi mobile, Kepala Ruangan tampil sebagai "Kepala Ruangan", dan
+berandanya menampilkan **Permintaan Persetujuan** (koreksi presensi +
+review absensi anggota unitnya) dengan tombol Setujui/Tolak. `ADMIN` /
+`SUPER_ADMIN` tetap dashboard-only. Detail desain:
+[`docs/superpowers/specs/2026-11-09-kepala-ruangan-dan-perbaikan-ux-design.md`](docs/superpowers/specs/2026-11-09-kepala-ruangan-dan-perbaikan-ux-design.md).
+
+### 5. Produksi
 
 ```bash
 cp .env.production.example .env.production

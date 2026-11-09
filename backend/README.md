@@ -79,6 +79,29 @@ Variabel wajib ada di `.env.example`; ringkasannya:
 | Integrity | `INTEGRITY_STRICT`, `ANDROID_PACKAGE_NAME`, `IOS_BUNDLE_ID` |
 | Opsional | `REDIS_URL`, `CORS_ORIGIN`, `DOCS_ENABLED` |
 
+## Login surface (Kepala Ruangan)
+
+Setiap akun punya `User.loginSurface` (`mobile` | `web` | `both`, default
+`both`), yang di-CRUD superadmin lewat `POST/PATCH /users` (field
+`loginSurface`) dan halaman web Pengguna & Peran:
+
+- `mobile` → ditolak login web (`403`, `reason: MOBILE_ONLY_ACCOUNT`),
+- `web` → ditolak login mobile (`403`, `reason: WEB_ONLY_ACCOUNT`),
+- `both` → bisa keduanya.
+
+Aturan dashboard-only tetap: `SUPERVISOR`/`ADMIN`/`SUPER_ADMIN` hanya boleh
+masuk lewat dashboard web, **kecuali** akun yang hanya `SUPERVISOR`
+(Kepala Ruangan, flag `mobile`/`both`) — dia boleh login mobile. Akun
+`ADMIN`/`SUPER_ADMIN` (termasuk dual-role) tetap dashboard-only apa pun
+flagnya. Superadmin tidak boleh memilih `mobile` untuk akun
+Admin/Super Admin (ditolak validator di form web; tombolnya tidak
+ditampilkan untuk kombinasi itu).
+
+Scope persetujuan Kepala Ruangan tetap seperti Supervisor:
+hanya pengajuan dari anggota yang `supervisorId`-nya adalah Kepala Ruangan,
+dan self-approval tetap dilarang (`SELF_APPROVAL_FORBIDDEN`). Lihat
+[`docs/superpowers/specs/2026-11-09-kepala-ruangan-dan-perbaikan-ux-design.md`](../docs/superpowers/specs/2026-11-09-kepala-ruangan-dan-perbaikan-ux-design.md).
+
 ## Manajemen server (troubleshooting)
 
 Jalankan perintah dari folder `backend/`.
