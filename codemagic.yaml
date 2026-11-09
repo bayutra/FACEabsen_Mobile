@@ -42,9 +42,9 @@ workflows:
         # untuk build demo/sideload di LAN; cabut sebelum rilis store.
         API_BASE_URL: "http://192.168.120.111:3000/api/v1"
         ALLOW_INSECURE_HTTP: "true"
-        # Harus dideklarasikan (boleh kosong) karena script build memakai
-        # `set -u`; untuk build demo LAN pin sertifikat memang tidak dipakai.
-        API_CERT_SHA256: ""
+        # API_CERT_SHA256 sengaja TIDAK dideklarasikan: Codemagic menolak nilai
+        # kosong pada `vars`. Script build memakai ${API_CERT_SHA256:-} sehingga
+        # tetap aman dengan `set -u`; untuk rilis https isi lewat secure env.
     triggering:
       events:
         - push
