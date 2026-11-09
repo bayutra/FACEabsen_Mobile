@@ -16,7 +16,11 @@ String? combineWorkDateTime(String workDate, String hhmm) {
   final String t = hhmm.trim();
   if (t.isEmpty) return null;
   if (!RegExp(r'^([01]\d|2[0-3]):[0-5]\d$').hasMatch(t)) return null;
-  return '${workDate}T$t:00.000Z';
+  // Jam input adalah waktu lokal rumah sakit (WIB/Asia/Jakarta), bukan UTC.
+  // Tambah offset +07:00 agar backend (yang mengevaluasi dalam
+  // Asia/Jakarta) menyimpan jam dinding yang benar. Dulu dipakai `Z` yang
+  // menganggap input sebagai UTC sehingga tampil +7 jam lebih siang.
+  return '${workDate}T$t:00+07:00';
 }
 
 class CorrectionItem {
