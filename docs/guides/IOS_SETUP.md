@@ -103,6 +103,47 @@ Setelah terpasang: **Settings → General → VPN & Device Management** → perc
 sertifikat developer, lalu **Settings → Privacy & Security → Developer Mode** →
 aktifkan dan restart iPhone.
 
+## Build unsigned IPA di Codemagic (troubleshooting)
+
+Workflow `ios-unsigned` di `codemagic.yaml` sengaja **tidak** memakai
+`flutter build ios` untuk build sebenarnya, karena Flutter menyembunyikan
+output `xcodebuild` dan menggantinya dengan diagnosis yang menyesatkan:
+
+```
+Building a deployable iOS app requires a selected Development Team ...
+```
+
+Pesan itu dicetak oleh `flutter_tools/lib/src/ios/mac.dart`
+(`_missingDevelopmentTeam`) untuk **setiap** kegagalan build device selama
+project tidak punya `DEVELOPMENT_TEAM`/`PROVISIONING_PROFILE` — bukan berarti
+penyebabnya signing. Alur yang dipakai:
+
+1. `flutter build ios --release --no-codesign --config-only` → hanya menyiapkan
+   `Flutter/Generated.xcconfig` (termasuk `DART_DEFINES`) + `pod install`.
+2. `xcodebuild -workspace Runner.xcworkspace -scheme Runner -configuration
+   Release -sdk iphoneos -destination 'generic/platform=iOS'
+   -derivedDataPath build/ios/derived -quiet ... build` → build sebenarnya,
+   dengan error asli terlihat di log.
+3. Paketkan `Runner.app` dari `build/ios/derived/Build/Products/Release-iphoneos`
+   memakai `ditto` (menjaga symlink framework), setelah memverifikasi
+   `Runner.app/Runner` dan `Frameworks/Flutter.framework/Flutter` ada.
+
+Jebakan yang sudah pernah menggagalkan build:
+
+| Gejala | Penyebab & perbaikan |
+|---|---|
+| Pesan "Development Team" padahal signing sudah mati | Diagnosis generik Flutter; lihat error `xcodebuild` asli. |
+| `include of non-modular header inside framework module 'firebase_messaging...'` | Xcode 16 menjadikannya error. Set `CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = YES` (Podfile `post_install` + `Flutter/*.xcconfig`). |
+| `unsupported preprocessor directive 'Firebase/MLKit'` | Di `.xcconfig` komentar wajib `//`, bukan `#` (`#` hanya untuk `#include`). |
+| `Resource ".../FirebaseCoreInternal_Privacy.bundle" not found` | Jangan override `CONFIGURATION_BUILD_DIR`; script copy-resources pod ikut setting itu. Pakai `-derivedDataPath`. |
+| IPA <2 MB / Sideloadly `bundle_main_missing: Payload/Runner.app/Runner` | `Runner.app` yang dipak tidak lengkap. Langkah *Package IPA* sekarang menolak memaket tanpa binary utama. |
+
+Signing dimatikan di level project (`CODE_SIGNING_ALLOWED = NO`,
+`CODE_SIGN_STYLE = Manual`, identity kosong di `project.pbxproj`,
+`Flutter/Debug.xcconfig`, `Flutter/Release.xcconfig`, dan `Podfile`), jadi
+`xcodebuild` tidak menuntut Development Team. Jika suatu saat ingin build
+dengan sertifikat asli, aktifkan kembali signing di Xcode.
+
 ## Sebelum rilis (wajib)
 
 - [ ] **Hapus blok `NSAppTransportSecurity`** dari `Info.plist` — produksi
@@ -123,5 +164,6 @@ aktifkan dan restart iPhone.
 | Konfigurasi iOS (Podfile, Info.plist, target, bundle ID) | ✅ siap |
 | Liveness iOS (landmark fallback) | ✅ kode + tes, ⚠️ ambah perlu kalibrasi device |
 | Build di simulator | ⏳ butuh Mac |
+| Build unsigned IPA via Codemagic (`ios-unsigned`) | ✅ menghasilkan IPA lengkap untuk Sideloadly |
 | App Attest (integrity) | ⏳ stub, blocker go-live iOS |
 | Android | ✅ terpasang & teruji di HP (API 21–34) |
