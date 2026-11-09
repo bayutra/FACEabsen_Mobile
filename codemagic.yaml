@@ -16,6 +16,11 @@
 #
 # Catatan: `flutter build ios` HANYA bisa jalan di macOS. Workflow inilah
 # pengganti Mac lokal — jangan dijalankan di Windows.
+#
+# Signing dimatikan di level project iOS (lihat mobile/ios/Runner.xcodeproj
+# dan Podfile: CODE_SIGNING_ALLOWED=NO), jadi build tidak memerlukan
+# Development Team. Jika suatu saat mau build dengan sertifikat asli,
+# aktifkan kembali signing di Xcode.
 
 workflows:
   ios-unsigned:
@@ -60,21 +65,13 @@ workflows:
           flutter test
       - name: Build iOS (unsigned, arm64 device)
         script: |
-          # `--config-only` hanya MENYIAPKAN konfigurasi build (termasuk
-          # Generated.xcconfig + DART_DEFINES) tanpa menjalankan xcodebuild.
-          # Build sebenarnya dilakukan xcodebuild di bawah dengan signing
-          # dimatikan — jalur inilah yang bisa melewati syarat Development Team.
+          # Signing sudah dimatikan di project (pbxproj/xcconfig/Podfile),
+          # jadi --no-codesign di sini tidak memicu syarat Development Team.
           set -euo pipefail
-          flutter build ios --release --no-codesign --config-only \
+          flutter build ios --release --no-codesign \
             --dart-define=API_BASE_URL=$API_BASE_URL \
             --dart-define=ALLOW_INSECURE_HTTP=$ALLOW_INSECURE_HTTP \
             --dart-define=API_CERT_SHA256=$API_CERT_SHA256
-          pushd ios
-          xcodebuild -workspace Runner.xcworkspace -scheme Runner -configuration Release \
-            -sdk iphoneos -destination 'generic/platform=iOS' \
-            CONFIGURATION_BUILD_DIR="$(pwd)/../build/ios/iphoneos" \
-            CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO build
-          popd
       - name: Package IPA
         script: |
           # `ditto` menjaga symlink di dalam framework — wajib agar IPA valid.
