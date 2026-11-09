@@ -81,12 +81,17 @@ workflows:
           # xcodebuild dipanggil langsung: `flutter build ios` menyembunyikan
           # output xcodebuild dan menggantinya dengan diagnosis "Development
           # Team" yang menyesatkan ketika DEVELOPMENT_TEAM tidak diisi.
+          #
+          # JANGAN override CONFIGURATION_BUILD_DIR: script copy-resources pod
+          # menghitung lokasi bundle dari setting itu, dan override membuat
+          # FirebaseCoreInternal_Privacy.bundle tidak ditemukan. Pakai
+          # -derivedDataPath supaya produk tetap di lokasi yang pasti.
           set -o pipefail
           cd ios
           xcodebuild -workspace Runner.xcworkspace -scheme Runner -configuration Release \
             -sdk iphoneos -destination 'generic/platform=iOS' \
+            -derivedDataPath "$(pwd)/../build/ios/derived" \
             -quiet \
-            CONFIGURATION_BUILD_DIR="$(pwd)/../build/ios/iphoneos" \
             CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO \
             build 2>&1 | tee ../xcodebuild.log
           status=${PIPESTATUS[0]}
@@ -100,24 +105,24 @@ workflows:
         script: |
           # `ditto` menjaga symlink di dalam framework — wajib agar IPA valid.
           set -euo pipefail
-          cd build/ios/iphoneos
+          APP_DIR=build/ios/derived/Build/Products/Release-iphoneos
           # Tolak memaket app yang tidak lengkap. Tanpa binary utama, IPA akan
           # ditolak Sideloadly ("bundle_main_missing: Payload/Runner.app/Runner").
-          test -f Runner.app/Runner
-          test -f Runner.app/Frameworks/Flutter.framework/Flutter
-          rm -rf Payload
-          mkdir Payload
-          cp -R Runner.app Payload/
-          ditto -c -k --sequesterRsrc --keepParent Payload FaceAbsen-unsigned.ipa
-          ls -lh FaceAbsen-unsigned.ipa
+          test -f "$APP_DIR/Runner.app/Runner"
+          test -f "$APP_DIR/Runner.app/Frameworks/Flutter.framework/Flutter"
+          rm -rf build/ios/ipa-work
+          mkdir -p build/ios/ipa-work/Payload build/ios/iphoneos
+          cp -R "$APP_DIR/Runner.app" build/ios/ipa-work/Payload/
+          ( cd build/ios/ipa-work && ditto -c -k --sequesterRsrc --keepParent Payload ../iphoneos/FaceAbsen-unsigned.ipa )
+          ls -lh build/ios/iphoneos/FaceAbsen-unsigned.ipa
     artifacts:
       # Path artifact dievaluasi relatif terhadap working_directory (mobile/).
       # Dua varian dicantumkan agar tetap cocok bila Codemagic berubah dan
       # mengevaluasinya relatif terhadap root repo; yang tidak ada diabaikan.
       - build/ios/iphoneos/FaceAbsen-unsigned.ipa
-      - build/ios/iphoneos/Runner.app
+      - build/ios/derived/Build/Products/Release-iphoneos/Runner.app
       - mobile/build/ios/iphoneos/FaceAbsen-unsigned.ipa
-      - mobile/build/ios/iphoneos/Runner.app
+      - mobile/build/ios/derived/Build/Products/Release-iphoneos/Runner.app
 
   android-debug:
     name: Android debug APK (for sideloading)
