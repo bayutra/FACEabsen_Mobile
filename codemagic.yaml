@@ -150,6 +150,18 @@ workflows:
         script: |
           flutter --version
           flutter pub get
+      - name: Write google-services.json from secure env
+        script: |
+          # File ini tidak di-commit (lihat mobile/.gitignore). Isi
+          # GOOGLE_SERVICES_JSON sebagai secure env var di Codemagic: base64
+          # dari mobile/android/app/google-services.json.
+          set -e
+          if [ -z "${GOOGLE_SERVICES_JSON:-}" ]; then
+            echo "Set GOOGLE_SERVICES_JSON (secure env Codemagic): base64 dari mobile/android/app/google-services.json."
+            exit 1
+          fi
+          echo "$GOOGLE_SERVICES_JSON" | base64 --decode > android/app/google-services.json
+          test -s android/app/google-services.json
       - name: Analyze & unit test
         script: |
           flutter analyze
@@ -221,6 +233,18 @@ workflows:
         script: |
           flutter --version
           flutter pub get
+      - name: Write google-services.json from secure env
+        script: |
+          # File ini tidak di-commit (lihat mobile/.gitignore). Isi
+          # GOOGLE_SERVICES_JSON sebagai secure env var di Codemagic: base64
+          # dari mobile/android/app/google-services.json.
+          set -e
+          if [ -z "${GOOGLE_SERVICES_JSON:-}" ]; then
+            echo "Set GOOGLE_SERVICES_JSON (secure env Codemagic): base64 dari mobile/android/app/google-services.json."
+            exit 1
+          fi
+          echo "$GOOGLE_SERVICES_JSON" | base64 --decode > android/app/google-services.json
+          test -s android/app/google-services.json
       - name: Decode keystore & write key.properties
         script: |
           echo "$CM_KEYSTORE" | base64 --decode > $CM_BUILD_DIR/keystore.jks

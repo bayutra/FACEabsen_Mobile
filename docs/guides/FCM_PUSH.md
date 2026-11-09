@@ -11,8 +11,19 @@ HTTP v1 (bukan legacy server key); mobile memakai `firebase_core` +
    `com.hospital.faceid.face_absen_mobile` (harus sama dengan `applicationId`
    di `mobile/android/app/build.gradle`).
 2. Unduh `google-services.json`, simpan di `mobile/android/app/google-services.json`.
-   File yang ada di repo hanyalah placeholder — build tetap jalan, tetapi
-   aplikasi tidak bisa menerima push sampai file asli dipasang.
+   File ini **tidak di-commit** (lihat `mobile/.gitignore`) karena memuat
+   API key/project ID. Build lokal tetap jalan selama file ada di mesin Anda;
+   untuk Codemagic, isi secure env var `GOOGLE_SERVICES_JSON` dengan base64
+   dari file tersebut — workflow Android menuliskannya otomatis:
+
+   ```bash
+   base64 -w0 mobile/android/app/google-services.json   # Linux/macOS
+   ```
+   ```powershell
+   [Convert]::ToBase64String([IO.File]::ReadAllBytes("mobile/android/app/google-services.json"))
+   ```
+
+   Tanpa file asli, aplikasi tetap bisa build tetapi tidak menerima push.
 3. Firebase Console → Project settings → **Service accounts** →
    *Generate new private key*. Simpan JSON-nya di mesin backend, **jangan**
    commit (sudah di-ignore: `secrets/`, `*service-account*.json`).

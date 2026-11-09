@@ -48,3 +48,7 @@ android/key.properties
 *.jks
 *.keystore
 .env
+
+# Firebase config berisi API key/project ID. Tidak di-commit; CI menulisnya
+# dari secure env GOOGLE_SERVICES_JSON (lihat codemagic.yaml).
+android/app/google-services.json
