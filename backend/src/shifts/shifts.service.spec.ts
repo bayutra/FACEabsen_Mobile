@@ -24,6 +24,12 @@ function makePrisma(over: Record<string, Record<string, unknown>> = {}) {
     },
     employee: {
       findUnique: vi.fn(async () => ({ id: 'e1' })),
+      findMany: vi.fn(async () =>
+        [
+          { id: 'e1', department: { hospitalId: 'h1' } },
+          { id: 'e2', department: { hospitalId: 'h1' } },
+        ].map((e) => ({ id: e.id, department: e.department })),
+      ),
       ...over.employee,
     },
     employeeSchedule: {
@@ -31,6 +37,7 @@ function makePrisma(over: Record<string, Record<string, unknown>> = {}) {
       findMany: vi.fn(async () => []),
       count: vi.fn(async () => 0),
       create: vi.fn(),
+      createMany: vi.fn(async (a: { data: unknown[] }) => ({ count: a.data.length })),
       delete: vi.fn(async () => ({})),
       ...over.employeeSchedule,
     },
@@ -451,5 +458,119 @@ describe('ShiftsService facility scoping (ADMIN)', () => {
     await expect(svc.getSchedule('sch', 'u-adm', ADMIN)).rejects.toThrow(
       'Schedule not found',
     );
+  });
+});
+
+describe('ShiftsService.assignBulk', () => {
+  it('creates one schedule per employee per date and audits the batch', async () => {
+    const createMany = vi.fn(async (a: { data: unknown[] }) => ({
+      count: a.data.length,
+    }));
+    const prisma = makePrisma({
+      shift: { findUnique: vi.fn(async () => ({ id: 'sh1', hospitalId: 'h1' })) },
+      employeeSchedule: { findMany: vi.fn(async () => []), createMany },
+    });
+    const svc = new ShiftsService(prisma, auditStub);
+    const out = (await svc.assignBulk(
+      {
+        employeeIds: ['e1', 'e2'],
+        shiftId: 'sh1',
+        workDates: ['2026-11-16', '2026-11-17'],
+      },
+      'super-admin-actor',
+    )) as { createdCount: number; skippedCount: number; skipped: unknown[] };
+    expect(out.createdCount).toBe(4);
+    expect(out.skippedCount).toBe(0);
+    expect(createMany).toHaveBeenCalledWith({
+      data: expect.arrayContaining([
+        { employeeId: 'e1', shiftId: 'sh1', workDate: new Date('2026-11-16') },
+        { employeeId: 'e2', shiftId: 'sh1', workDate: new Date('2026-11-17') },
+      ]),
+      skipDuplicates: true,
+    });
+    expect(auditStub.log).toHaveBeenCalledWith(
+      expect.objectContaining({
+        actorId: 'super-admin-actor',
+        action: 'SCHEDULE_BULK_ASSIGNED',
+        targetType: 'schedules',
+        metadata: expect.objectContaining({
+          employeeIds: ['e1', 'e2'],
+          workDates: ['2026-11-16', '2026-11-17'],
+          createdCount: 4,
+          skippedCount: 0,
+        }),
+      }),
+      expect.anything(),
+    );
+  });
+
+  it('skips only conflicting employee-date combinations', async () => {
+    const createMany = vi.fn(async (a: { data: unknown[] }) => ({
+      count: a.data.length,
+    }));
+    const prisma = makePrisma({
+      shift: { findUnique: vi.fn(async () => ({ id: 'sh1', hospitalId: 'h1' })) },
+      employeeSchedule: {
+        findMany: vi.fn(async () => [
+          {
+            employeeId: 'e1',
+            workDate: new Date('2026-11-16T00:00:00.000Z'),
+            shiftId: 'sh-other',
+          },
+        ]),
+        createMany,
+      },
+    });
+    const svc = new ShiftsService(prisma, auditStub);
+    const out = (await svc.assignBulk(
+      {
+        employeeIds: ['e1', 'e2'],
+        shiftId: 'sh1',
+        workDates: ['2026-11-16', '2026-11-17'],
+      },
+      'super-admin-actor',
+    )) as { createdCount: number; skippedCount: number; skipped: Array<{ employeeId: string; workDate: string; reason: string; existingShiftId: string }> };
+    expect(out.createdCount).toBe(3);
+    expect(out.skippedCount).toBe(1);
+    expect(out.skipped).toEqual([
+      {
+        employeeId: 'e1',
+        workDate: '2026-11-16',
+        reason: 'ALREADY_SCHEDULED',
+        existingShiftId: 'sh-other',
+      },
+    ]);
+    expect(createMany.mock.calls[0][0].data).toHaveLength(3);
+  });
+
+  it('404s when an employee or the shift does not exist', async () => {
+    const svc = new ShiftsService(
+      makePrisma({
+        shift: { findUnique: vi.fn(async () => ({ id: 'sh1', hospitalId: 'h1' })) },
+        employee: {
+          findMany: vi.fn(async () => [{ id: 'e1', department: { hospitalId: 'h1' } }]),
+        },
+      }),
+      auditStub,
+    );
+    await expect(
+      svc.assignBulk(
+        { employeeIds: ['e1', 'missing'], shiftId: 'sh1', workDates: ['2026-11-16'] },
+        'super-admin-actor',
+      ),
+    ).rejects.toThrow('Employee not found');
+
+    const prisma2 = makePrisma({
+      employee: {
+        findMany: vi.fn(async () => [{ id: 'e1', department: { hospitalId: 'h1' } }]),
+      },
+      shift: { findUnique: vi.fn(async () => null) },
+    });
+    await expect(
+      new ShiftsService(prisma2, auditStub).assignBulk(
+        { employeeIds: ['e1'], shiftId: 'missing', workDates: ['2026-11-16'] },
+        'super-admin-actor',
+      ),
+    ).rejects.toThrow('Shift not found');
   });
 });

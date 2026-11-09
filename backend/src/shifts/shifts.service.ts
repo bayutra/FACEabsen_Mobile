@@ -11,6 +11,7 @@ import { resolveHospitalScope } from '../auth/tenant-scope.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { isOvernightRange, parseHHmm } from './shift-time.js';
 import type {
+  CreateScheduleBulkDto,
   CreateScheduleDto,
   CreateShiftDto,
   ListSchedulesQuery,
@@ -276,8 +277,7 @@ export class ShiftsService {
     dto: CreateScheduleDto,
     actorId: string,
     meta: { ip?: string } = {},
-  ) {
-    const employee = await this.prisma.employee.findUnique({
+  ) {    const employee = await this.prisma.employee.findUnique({
       where: { id: dto.employeeId },
       include: { department: { select: { hospitalId: true } } },
     });
@@ -338,6 +338,115 @@ export class ShiftsService {
     } catch (e) {
       throw this.mapUnique(e, 'Schedule');
     }
+  }
+
+  async assignBulk(
+    dto: CreateScheduleBulkDto,
+    actorId: string,
+    meta: { ip?: string } = {},
+  ) {
+    const employees = await this.prisma.employee.findMany({
+      where: { id: { in: dto.employeeIds } },
+      select: { id: true, department: { select: { hospitalId: true } } },
+    });
+    if (employees.length !== dto.employeeIds.length) {
+      throw new NotFoundException('Employee not found');
+    }
+
+    const shift = await this.prisma.shift.findUnique({
+      where: { id: dto.shiftId },
+    });
+    if (!shift) throw new NotFoundException('Shift not found');
+
+    for (const employee of employees) {
+      await this.assertSameFacility(
+        actorId,
+        (employee as { department?: { hospitalId?: string | null } })
+          .department?.hospitalId,
+        'Employee not found',
+      );
+    }
+    await this.assertSameFacility(actorId, shift.hospitalId, 'Shift not found');
+
+    const dates = dto.workDates.map((workDate) => ({
+      workDate,
+      date: new Date(workDate),
+    }));
+    const existing = await this.prisma.employeeSchedule.findMany({
+      where: {
+        employeeId: { in: dto.employeeIds },
+        workDate: { in: dates.map((d) => d.date) },
+      },
+      select: { employeeId: true, workDate: true, shiftId: true },
+    });
+    const existingByKey = new Map<string, { shiftId: string }>();
+    for (const row of existing as Array<{
+      employeeId: string;
+      workDate: Date;
+      shiftId: string;
+    }>) {
+      existingByKey.set(
+        `${row.employeeId}|${row.workDate.toISOString().slice(0, 10)}`,
+        { shiftId: row.shiftId },
+      );
+    }
+
+    const skipped: Array<{
+      employeeId: string;
+      workDate: string;
+      reason: 'ALREADY_SCHEDULED';
+      existingShiftId: string;
+    }> = [];
+    const data: Array<{ employeeId: string; shiftId: string; workDate: Date }> = [];
+    for (const employee of employees as Array<{ id: string }>) {
+      for (const { workDate, date } of dates) {
+        const occupied = existingByKey.get(`${employee.id}|${workDate}`);
+        if (occupied) {
+          skipped.push({
+            employeeId: employee.id,
+            workDate,
+            reason: 'ALREADY_SCHEDULED',
+            existingShiftId: occupied.shiftId,
+          });
+        } else {
+          data.push({ employeeId: employee.id, shiftId: dto.shiftId, workDate: date });
+        }
+      }
+    }
+
+    const createdCount = await this.prisma.$transaction(async (tx) => {
+      if (data.length > 0) {
+        await tx.employeeSchedule.createMany({
+          data,
+          skipDuplicates: true,
+        });
+      }
+      await this.audit.log(
+        {
+          actorId,
+          action: 'SCHEDULE_BULK_ASSIGNED',
+          targetType: 'schedules',
+          targetId: dto.shiftId,
+          ipAddress: meta.ip,
+          metadata: {
+            employeeIds: dto.employeeIds,
+            workDates: dto.workDates,
+            createdCount: data.length,
+            skippedCount: skipped.length,
+          },
+        },
+        tx,
+      );
+      return data.length;
+    });
+
+    return {
+      createdCount,
+      skippedCount: skipped.length,
+      employeeIds: dto.employeeIds,
+      workDates: dto.workDates,
+      skipped,
+    };
   }
 
   async listSchedules(

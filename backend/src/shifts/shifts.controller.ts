@@ -23,6 +23,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
 import { PermissionsGuard } from '../auth/guards/permissions.guard.js';
 import { RolesGuard } from '../auth/guards/roles.guard.js';
 import {
+  CreateScheduleBulkDto,
   CreateScheduleDto,
   CreateShiftDto,
   ListSchedulesQuery,
@@ -97,6 +98,17 @@ export class ShiftsController {
     @Req() req: Request,
   ) {
     return this.shifts.assignSchedule(dto, actor.userId, { ip: req.ip });
+  }
+
+  @Roles('ADMIN')
+  @RequirePermissions('schedule:manage')
+  @Post('schedules/bulk')
+  assignBulk(
+    @Body() dto: CreateScheduleBulkDto,
+    @CurrentUser() actor: AuthContext,
+    @Req() req: Request,
+  ) {
+    return this.shifts.assignBulk(dto, actor.userId, { ip: req.ip });
   }
 
   @Roles('ADMIN')

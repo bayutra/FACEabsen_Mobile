@@ -1,5 +1,9 @@
 import { Type } from 'class-transformer';
 import {
+  ArrayMaxSize,
+  ArrayMinSize,
+  ArrayUnique,
+  IsArray,
   IsBoolean,
   IsInt,
   IsOptional,
@@ -104,6 +108,26 @@ export class CreateScheduleDto {
 
   @Matches(DATE)
   workDate!: string;
+}
+
+export class CreateScheduleBulkDto {
+  @IsArray()
+  @ArrayMinSize(1)
+  @ArrayMaxSize(100)
+  @ArrayUnique()
+  @IsString({ each: true })
+  employeeIds!: string[];
+
+  @IsString()
+  shiftId!: string;
+
+  @IsArray()
+  @ArrayMinSize(1)
+  @ArrayMaxSize(31)
+  @ArrayUnique()
+  @IsString({ each: true })
+  @Matches(DATE, { each: true })
+  workDates!: string[];
 }
 
 export class ListSchedulesQuery {

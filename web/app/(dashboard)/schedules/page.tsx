@@ -91,6 +91,17 @@ function weekDays(from: string) {
   });
 }
 
+type BulkAssignResult = {
+  createdCount: number;
+  skippedCount: number;
+  skipped: Array<{
+    employeeId: string;
+    workDate: string;
+    reason: string;
+    existingShiftId: string;
+  }>;
+};
+
 function shiftTone(name: string) {
   const value = name.toLowerCase();
   if (value.includes('malam') || value.includes('night')) return 'night';
@@ -106,7 +117,9 @@ export default function SchedulesPage() {
   const [from, setFrom] = useState(initial.from);
   const [to, setTo] = useState(initial.to);
   const [open, setOpen] = useState(false);
+  const [bulkOpen, setBulkOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
   const [employeeFilter, setEmployeeFilter] = useState('');
   const [shiftFilter, setShiftFilter] = useState('');
 
@@ -185,14 +198,25 @@ export default function SchedulesPage() {
         description="Penugasan shift per karyawan per tanggal. Rentang default adalah minggu berjalan."
         actions={
           admin ? (
-            <button type="button" className="btn" onClick={() => setOpen(true)}>
-              <Icon name="calendar" size={15} />
-              Tambah jadwal
-            </button>
+            <>
+              <button type="button" className="btn" onClick={() => { setNotice(null); setBulkOpen(true); }}>
+                <Icon name="users" size={15} />
+                Jadwal massal
+              </button>
+              <button type="button" className="btn" onClick={() => setOpen(true)}>
+                <Icon name="calendar" size={15} />
+                Tambah jadwal
+              </button>
+            </>
           ) : null
         }
       />
       <ErrorBanner message={error ?? list.error} />
+      {notice ? (
+        <div className="alert success" style={{ marginBottom: 16 }}>
+          {notice}
+        </div>
+      ) : null}
 
       <div className="card" style={{ marginBottom: 16 }}>
         <div className="week-nav">
@@ -357,6 +381,17 @@ export default function SchedulesPage() {
           list.reload();
         }}
       />
+
+      <BulkAssignForm
+        open={bulkOpen}
+        employees={employees.data ?? []}
+        shifts={shifts.data ?? []}
+        onClose={() => setBulkOpen(false)}
+        onSaved={(result) => {
+          setNotice(`${result.createdCount} jadwal dibuat, ${result.skippedCount} dilewati karena sudah terjadwal.`);
+          list.reload();
+        }}
+      />
     </>
   );
 }
@@ -458,3 +493,194 @@ function ScheduleForm({
     </Modal>
   );
 }
+
+const WEEK_DAYS = [
+  { value: 0, label: 'Sen' },
+  { value: 1, label: 'Sel' },
+  { value: 2, label: 'Rab' },
+  { value: 3, label: 'Kam' },
+  { value: 4, label: 'Jum' },
+  { value: 5, label: 'Sab' },
+  { value: 6, label: 'Min' },
+];
+
+function BulkAssignForm({
+  open,
+  employees,
+  shifts,
+  onClose,
+  onSaved,
+}: {
+  open: boolean;
+  employees: EmployeeOption[];
+  shifts: ShiftOption[];
+  onClose: () => void;
+  onSaved: (result: BulkAssignResult) => void;
+}) {
+  const [employeeIds, setEmployeeIds] = useState<string[]>([]);
+  const [shiftId, setShiftId] = useState('');
+  const [fromDate, setFromDate] = useState(today());
+  const [toDate, setToDate] = useState(today());
+  const [days, setDays] = useState<number[]>([0, 1, 2, 3, 4]);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [result, setResult] = useState<BulkAssignResult | null>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    setEmployeeIds([]);
+    setShiftId(shifts[0]?.id ?? '');
+    setFromDate(today());
+    setToDate(today());
+    setDays([0, 1, 2, 3, 4]);
+    setError(null);
+    setResult(null);
+  }, [open, shifts]);
+
+  const workDates = buildBulkDates(fromDate, toDate, days);
+  const total = employeeIds.length * workDates.length;
+
+  const submit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (employeeIds.length === 0) {
+      setError('Pilih minimal satu karyawan.');
+      return;
+    }
+    if (workDates.length === 0) {
+      setError('Pilih rentang tanggal dan pola hari yang valid.');
+      return;
+    }
+    setBusy(true);
+    setError(null);
+    try {
+      const response = await api<BulkAssignResult>('/schedules/bulk', {
+        method: 'POST',
+        body: { employeeIds, shiftId, workDates },
+      });
+      setResult(response);
+      onSaved(response);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const toggleEmployee = (id: string, checked: boolean) => {
+    setEmployeeIds((current) => checked
+      ? [...current, id]
+      : current.filter((item) => item !== id));
+  };
+
+  const toggleDay = (day: number, checked: boolean) => {
+    setDays((current) => checked
+      ? [...current, day].sort()
+      : current.filter((item) => item !== day));
+  };
+
+  return (
+    <Modal
+      open={open}
+      title="Jadwal massal"
+      onClose={onClose}
+      footer={
+        <>
+          <button type="button" className="btn ghost" onClick={onClose} disabled={busy}>
+            Batal
+          </button>
+          <button type="submit" form="bulk-schedule-form" className="btn" disabled={busy || total === 0}>
+            {busy ? 'Menyimpan…' : `Simpan ${total} jadwal`}
+          </button>
+        </>
+      }
+    >
+      <form id="bulk-schedule-form" onSubmit={submit} className="stack">
+        {error ? <div className="alert error">{error}</div> : null}
+        <Field label={`Karyawan (${employeeIds.length} dipilih)`} hint="Gunakan checkbox untuk memilih banyak karyawan.">
+          <div style={{ maxHeight: 180, overflowY: 'auto', display: 'grid', gap: 8 }}>
+            {employees.map((employee) => (
+              <label key={employee.id} className="row" style={{ gap: 8 }}>
+                <input
+                  type="checkbox"
+                  checked={employeeIds.includes(employee.id)}
+                  onChange={(event) => toggleEmployee(employee.id, event.target.checked)}
+                />
+                <span>{employee.name} ({employee.employeeNo}){employee.department?.name ? ` · ${employee.department.name}` : ''}</span>
+              </label>
+            ))}
+          </div>
+        </Field>
+        <Field label="Shift">
+          <Select value={shiftId} onChange={(event) => setShiftId(event.target.value)} required>
+            {shifts.map((shift) => (
+              <option key={shift.id} value={shift.id}>
+                {shift.name} · {shift.startTime}–{shift.endTime}
+              </option>
+            ))}
+          </Select>
+        </Field>
+        <div className="row" style={{ gap: 12 }}>
+          <Field label="Dari tanggal">
+            <TextInput type="date" value={fromDate} onChange={(event) => setFromDate(event.target.value)} required />
+          </Field>
+          <Field label="Sampai tanggal">
+            <TextInput type="date" value={toDate} onChange={(event) => setToDate(event.target.value)} required />
+          </Field>
+        </div>
+        <Field label="Pola hari" hint={`${workDates.length} tanggal dalam rentang yang dipilih.`}>
+          <div className="row" style={{ gap: 12 }}>
+            {WEEK_DAYS.map((day) => (
+              <label key={day.value} className="row" style={{ gap: 6 }}>
+                <input type="checkbox" checked={days.includes(day.value)} onChange={(event) => toggleDay(day.value, event.target.checked)} />
+                {day.label}
+              </label>
+            ))}
+          </div>
+          <div className="row" style={{ gap: 8, marginTop: 8 }}>
+            <button type="button" className="btn ghost small" onClick={() => setDays([0, 1, 2, 3, 4])}>
+              Senin–Jumat
+            </button>
+            <button type="button" className="btn ghost small" onClick={() => setDays([0, 1, 2, 3, 4, 5, 6])}>
+              Semua hari
+            </button>
+          </div>
+        </Field>
+        <p className="muted small" style={{ margin: 0 }}>
+          {employeeIds.length} karyawan × {workDates.length} tanggal = {total} jadwal.
+          Karyawan/tanggal yang sudah terjadwal akan dilewati, bukan menggagalkan semuanya.
+        </p>
+        {result ? (
+          <div className="alert success">
+            <strong>{result.createdCount} jadwal dibuat, {result.skippedCount} dilewati.</strong>
+            {result.skipped.length ? (
+              <div style={{ marginTop: 6, display: 'grid', gap: 4 }}>
+                {result.skipped.map((item) => (
+                  <span key={`${item.employeeId}-${item.workDate}`}>
+                    {employees.find((employee) => employee.id === item.employeeId)?.name ?? item.employeeId} · {item.workDate} ({item.reason})
+                  </span>
+                ))}
+              </div>
+            ) : null}
+          </div>
+        ) : null}
+      </form>
+    </Modal>
+  );
+}
+
+function buildBulkDates(fromDate: string, toDate: string, days: number[]): string[] {
+  if (!fromDate || !toDate || days.length === 0) return [];
+  const start = new Date(fromDate + 'T00:00:00');
+  const end = new Date(toDate + 'T00:00:00');
+  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime()) || end < start) return [];
+  const result: string[] = [];
+  const cursor = new Date(start);
+  while (cursor <= end) {
+    const mondayZero = (cursor.getDay() + 6) % 7;
+    if (days.includes(mondayZero)) result.push(isoDate(cursor));
+    if (result.length > 31) break;
+    cursor.setDate(cursor.getDate() + 1);
+  }
+  return result;
+}
+
