@@ -5,3 +5,7 @@ CODE_SIGNING_ALLOWED = NO
 CODE_SIGNING_REQUIRED = NO
 CODE_SIGN_IDENTITY =
 EXPANDED_CODE_SIGN_IDENTITY =
+# Firebase/MLKit pods meng-include header non-modular di dalam framework
+# module; izinkan agar Xcode 16 tidak gagal dengan
+# -Wnon-modular-include-in-framework-module.
+CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = YES

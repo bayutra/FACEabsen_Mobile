@@ -54,6 +54,11 @@ post_install do |installer|
       config.build_settings['EXPANDED_CODE_SIGN_IDENTITY'] = ""
       config.build_settings['CODE_SIGNING_REQUIRED'] = "NO"
       config.build_settings['CODE_SIGNING_ALLOWED'] = "NO"
+      # firebase_messaging (dan beberapa plugin Firebase lain) meng-include
+      # header Firebase non-modular di dalam framework module-nya. Xcode 16
+      # menjadikannya error `-Wnon-modular-include-in-framework-module`
+      # kecuali diizinkan secara eksplisit.
+      config.build_settings['CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES'] = 'YES'
     end
   end
 end
