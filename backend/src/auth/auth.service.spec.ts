@@ -173,6 +173,28 @@ describe('AuthService.login', () => {
     });
   });
 
+  it('ADMIN+SUPERVISOR tetap dashboard-only walau loginSurface=mobile', async () => {
+    const roles = [{ role: { name: 'ADMIN' } }, { role: { name: 'SUPERVISOR' } }];
+    const svc = new AuthService(
+      makePrisma({
+        user: {
+          findUnique: vi.fn(async () =>
+            userRow({ userRoles: roles, loginSurface: 'mobile' }),
+          ),
+        },
+      }),
+      jwt,
+      configStub,
+      auditStub,
+      emailVerificationStub,
+    );
+    await expect(
+      svc.login({ email: 'e', password: PASSWORD }, {}, 'MOBILE'),
+    ).rejects.toMatchObject({
+      response: expect.objectContaining({ reason: 'DASHBOARD_ONLY_ROLE' }),
+    });
+  });
+
   it('Supervisor loginSurface=mobile diterima di mobile (Kepala Ruangan)', async () => {
     const roles = [{ role: { name: 'SUPERVISOR' } }];
     const svc = new AuthService(

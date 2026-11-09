@@ -174,12 +174,13 @@ export class AuthService {
       });
     }
     // Peran pengelola hanya boleh masuk lewat dashboard web. Satu-satunya
-    // pengecualian: SUPERVISOR (Kepala Ruangan) dengan loginSurface
-    // mobile/both yang diatur superadmin. ADMIN/SUPER_ADMIN tetap
-    // dashboard-only apa pun flagnya. Platform berasal dari bukti
-    // server-to-server (header rahasia), bukan field `client` bebas kirim.
+    // pengecualian: akun yang HANYA SUPERVISOR (Kepala Ruangan) dengan
+    // loginSurface mobile/both yang diatur superadmin. Akun ADMIN /
+    // SUPER_ADMIN (termasuk dual-role) tetap dashboard-only apa pun flagnya.
     const isHeadOfWardMobile =
       roles.includes('SUPERVISOR') &&
+      !roles.includes('ADMIN') &&
+      !roles.includes('SUPER_ADMIN') &&
       (loginSurface === 'mobile' || loginSurface === 'both');
     if (
       platform !== 'WEB' &&

@@ -325,6 +325,7 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
     final Widget profile = ProfileScreen(
       profiles: widget.profiles,
       devices: widget.devices,
+      roles: _roles,
       onRegisterFace: () => _push(FaceRegistrationScreen(faces: widget.faces)),
       onLogout: _logout,
       onChangePassword: _showChangePassword,

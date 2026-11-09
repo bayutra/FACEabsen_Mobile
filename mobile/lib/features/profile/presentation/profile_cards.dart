@@ -61,7 +61,7 @@ Widget pill({
   );
 }
 
-Widget identityCard(ProfileSnapshot d) => Container(
+Widget identityCard(ProfileSnapshot d, {String? roleLabel}) => Container(
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -170,7 +170,9 @@ Widget identityCard(ProfileSnapshot d) => Container(
                                   bg: AppColors.surfaceLow,
                                   border: AppColors.border,
                                   text: AppColors.primary,
-                                  label: r,
+                                  label: (r == 'SUPERVISOR' && roleLabel != null)
+                                      ? roleLabel
+                                      : r,
                                 ),
                             ],
                           ),

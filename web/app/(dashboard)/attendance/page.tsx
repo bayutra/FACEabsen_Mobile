@@ -193,6 +193,10 @@ export default function AttendanceReviewPage() {
               <div className="muted small">
                 {formatDate(selected.workDate)} · {selected.shift?.name ?? 'Shift'}
               </div>
+              <div className="muted small" style={{ marginTop: 6 }}>
+                Jam absen: {formatDateTime(selected.checkInAt)}
+                {selected.checkOutAt ? ` → ${formatDateTime(selected.checkOutAt)}` : ''}
+              </div>
               <div className="row" style={{ marginTop: 6 }}>
                 <StatusBadge status={selected.riskCategory ?? 'LOW'} />
                 <span className="muted small">{typeLabel(selected.riskCategory)}</span>

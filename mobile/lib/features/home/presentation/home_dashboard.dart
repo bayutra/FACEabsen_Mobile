@@ -78,6 +78,15 @@ class _HomeDashboardState extends State<HomeDashboard> {
     _load();
   }
 
+  @override
+  void didUpdateWidget(HomeDashboard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final bool wasSupervisor = oldWidget.roles.contains('SUPERVISOR');
+    final bool isSupervisor = widget.roles.contains('SUPERVISOR');
+    _isSupervisor = isSupervisor;
+    if (wasSupervisor != isSupervisor) _load();
+  }
+
   DateTime get _now => DateTime.now();
 
   String _roleLabel() {

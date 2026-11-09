@@ -456,6 +456,16 @@ function RolesModal({
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!user) return;
+    if (
+      (roles.includes('ADMIN') || roles.includes('SUPER_ADMIN')) &&
+      loginSurface === 'mobile'
+    ) {
+      setError(
+        'Akun Admin/Super Admin tidak dapat memakai "Mobile saja" karena tetap dashboard-only. Pilih "Mobile & Web" atau "Web saja".',
+      );
+      setBusy(false);
+      return;
+    }
     setBusy(true);
     setError(null);
     try {

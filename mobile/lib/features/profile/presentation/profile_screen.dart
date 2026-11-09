@@ -16,6 +16,7 @@ class ProfileScreen extends StatefulWidget {
     required this.onRegisterFace,
     required this.onLogout,
     required this.onChangePassword,
+    this.roles = const <String>[],
   });
 
   final ProfileRepository profiles;
@@ -23,6 +24,7 @@ class ProfileScreen extends StatefulWidget {
   final VoidCallback onRegisterFace;
   final VoidCallback onLogout;
   final VoidCallback onChangePassword;
+  final List<String> roles;
 
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
@@ -279,7 +281,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             else if (_error != null)
               _errorBox()
             else ...[
-              identityCard(_data!),
+              identityCard(_data!, roleLabel: _roleLabel()),
               const SizedBox(height: 14),
               securityCard(_data!, onRegisterFace: widget.onRegisterFace),
               const SizedBox(height: 14),
@@ -354,6 +356,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ],
         ),
       );
+
+  String _roleLabel() {
+    if (widget.roles.contains('SUPERVISOR')) return 'Kepala Ruangan';
+    if (widget.roles.contains('ADMIN')) return 'Admin';
+    if (widget.roles.contains('SUPER_ADMIN')) return 'Super Admin';
+    return 'Karyawan';
+  }
 
   Future<void> _openEditProfile() async {
     final ProfileSnapshot? data = _data;
