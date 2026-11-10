@@ -32,11 +32,12 @@ export async function resolveHospitalScope(
  *
  * - SUPER_ADMIN            -> the base filter unchanged
  * - ADMIN (non-super)      -> base AND employee.department.hospitalId = <hospital>
- * - everyone else (incl. SUPERVISOR) -> base AND employee.supervisorId = <me>
+ * - everyone else (incl. SUPERVISOR/team reviewer) -> base AND employee.departmentId = <reviewer.departmentId> (same unit/department)
  *
  * Returns `{ AND: [base, ...tenant] }` (or `null` when the caller has no
- * visible employees), so callers can spread it directly into a Prisma where.
- * Callers may append extra predicates to `where.AND`.
+ * visible employees, or the non-admin reviewer has no employee/departmentId),
+ * so callers can spread it directly into a Prisma where. Callers may append
+ * extra predicates to `where.AND`.
  */
 export async function resolveEmployeeTenantWhere(
   prisma: ScopePrisma,
@@ -51,10 +52,10 @@ export async function resolveEmployeeTenantWhere(
   if (!satisfiesRole(roles, 'ADMIN')) {
     const me = await prisma.employee.findUnique({
       where: { userId },
-      select: { id: true },
+      select: { id: true, departmentId: true, department: { select: { hospitalId: true } } },
     });
-    if (!me) return null;
-    and.push({ employee: { supervisorId: me.id } });
+    if (!me || !me.departmentId) return null;
+    and.push({ employee: { departmentId: me.departmentId } });
     return { AND: and };
   }
 
