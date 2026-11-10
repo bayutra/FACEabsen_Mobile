@@ -306,9 +306,15 @@ class AttendanceRepository {
     final List<OutboxEntry> kept = <OutboxEntry>[];
     var sent = 0;
     var needsAction = 0;
+    var dropped = 0;
     final List<String?> dropReasons = <String?>[];
     for (final OutboxEntry entry in pending) {
       if (entry.needsAction) {
+        // Entry gagal permanen tidak dikirim ulang; tetap disimpan agar
+        // terlihat, tetapi repository dapat mengeviksinya jika kapasitas
+        // dibutuhkan untuk antrean aktif.
+        needsAction++;
+        dropReasons.add(entry.lastError);
         kept.add(entry);
         continue;
       }
@@ -335,24 +341,27 @@ class AttendanceRepository {
           entry.needsAction = true;
           entry.lastError =
               AttendanceRejected.fromResponse(e.response?.data).reason;
-          kept.add(entry);
           needsAction++;
           dropReasons.add(entry.lastError);
+          kept.add(entry);
         } else {
           entry.attempts += 1;
           if (entry.attempts >= 5) {
             entry.needsAction = true;
             entry.lastError = 'MAX_ATTEMPTS';
             needsAction++;
+            dropReasons.add(entry.lastError);
           }
           kept.add(entry);
         }
       }
     }
     await outbox.replaceAll(kept);
+    final List<OutboxEntry> stored = await outbox.load();
+    dropped = pending.length - sent - stored.length;
     return FlushResult(
       sent: sent,
-      dropped: 0,
+      dropped: dropped,
       pending: kept.length,
       dropReasons: dropReasons,
       needsAction: needsAction,

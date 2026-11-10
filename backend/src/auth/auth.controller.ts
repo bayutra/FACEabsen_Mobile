@@ -60,13 +60,6 @@ export class AuthController {
   }
 
   @Public()
-  @Throttle({
-    default: {
-      limit: AUTH_POLICY.loginThrottle.limit,
-      ttl: AUTH_POLICY.loginThrottle.ttl,
-    },
-  })
-  @Public()
   @Throttle({ default: { limit: 5, ttl: 3600_000 } })
   @HttpCode(HttpStatus.ACCEPTED)
   @Post('register')

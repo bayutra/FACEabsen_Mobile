@@ -540,8 +540,19 @@ export class AuthService {
     if (deviceId) {
       const device = await this.prisma.device.findUnique({
         where: { id: deviceId },
+        select: {
+          id: true,
+          status: true,
+          employee: { select: { userId: true } },
+        },
       });
-      if (device) boundDeviceId = device.id;
+      if (
+        device &&
+        device.employee.userId === userId &&
+        (device.status === 'ACTIVE' || device.status === 'PENDING')
+      ) {
+        boundDeviceId = device.id;
+      }
     }
     const refreshToken = newRefreshToken();
     const session = await this.prisma.session.create({

@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { createHmac, timingSafeEqual } from 'node:crypto';
 
 export interface IntegrityVerdict {
   ok: boolean;
@@ -9,9 +10,9 @@ export interface IntegrityVerdict {
     | 'EXPIRED'
     | 'WRONG_PACKAGE'
     | 'DEVICE_NOT_TRUSTED'
-    | 'APP_NOT_RECOGNIZED';
-
-  signatureVerified: false;
+    | 'APP_NOT_RECOGNIZED'
+    | 'UNVERIFIED_SIGNATURE';
+  signatureVerified: boolean;
 }
 
 @Injectable()
@@ -20,6 +21,8 @@ export class IntegrityService {
   private readonly strict: boolean;
   private readonly androidPackage: string;
   private readonly iosBundle: string;
+  private readonly verifySecret: string;
+  private readonly allowUnverifiedClaims: boolean;
 
   constructor(config: ConfigService) {
     const isProduction =
@@ -40,6 +43,20 @@ export class IntegrityService {
 
     this.androidPackage = String(config.get('ANDROID_PACKAGE_NAME', ''));
     this.iosBundle = String(config.get('IOS_BUNDLE_ID', ''));
+    this.verifySecret = String(config.get('INTEGRITY_TOKEN_SECRET', ''));
+
+    const allowUnsigned = String(
+      config.get('INTEGRITY_ALLOW_UNVERIFIED_CLAIMS', ''),
+    )
+      .trim()
+      .toLowerCase();
+    this.allowUnverifiedClaims =
+      !isProduction && ['1', 'true', 'yes'].includes(allowUnsigned);
+    if (isProduction && allowUnsigned) {
+      this.logger.warn(
+        'INTEGRITY_ALLOW_UNVERIFIED_CLAIMS is ignored in production',
+      );
+    }
   }
 
   get strictMode(): boolean {
@@ -50,10 +67,37 @@ export class IntegrityService {
     if (!token)
       return { ok: false, reason: 'MISSING_TOKEN', signatureVerified: false };
     let payload: Record<string, unknown>;
+    let signatureVerified = false;
     try {
       const parts = token.split('.');
       if (parts.length !== 3)
         return { ok: false, reason: 'MALFORMED', signatureVerified: false };
+
+      if (this.verifySecret) {
+        const expected = createHmac('sha256', this.verifySecret)
+          .update(`${parts[0]}.${parts[1]}`)
+          .digest('base64url');
+        const sig = parts[2] ?? '';
+        const a = Buffer.from(expected);
+        const b = Buffer.from(sig);
+        if (a.length !== b.length || !timingSafeEqual(a, b)) {
+          return {
+            ok: false,
+            reason: 'UNVERIFIED_SIGNATURE',
+            signatureVerified: false,
+          };
+        }
+        signatureVerified = true;
+      } else if (!this.allowUnverifiedClaims) {
+        // Fail-closed: never trust decoded claims without cryptographic
+        // verification (prevents forged integrity tokens).
+        return {
+          ok: false,
+          reason: 'UNVERIFIED_SIGNATURE',
+          signatureVerified: false,
+        };
+      }
+
       payload = JSON.parse(
         Buffer.from(parts[1], 'base64url').toString('utf8'),
       ) as Record<string, unknown>;
@@ -65,7 +109,7 @@ export class IntegrityService {
     ): IntegrityVerdict => ({
       ok: false,
       reason,
-      signatureVerified: false,
+      signatureVerified,
     });
     const nowSec = Math.floor(Date.now() / 1000);
 
@@ -89,6 +133,8 @@ export class IntegrityService {
       const deviceVerdicts = readStrings(
         (payload as { deviceIntegrity?: unknown }).deviceIntegrity,
       );
+      if (deviceVerdicts.length === 0)
+        return fail('DEVICE_NOT_TRUSTED');
       if (!deviceVerdicts.includes('MEETS_DEVICE_INTEGRITY')) {
         return fail('DEVICE_NOT_TRUSTED');
       }
@@ -101,20 +147,19 @@ export class IntegrityService {
       const deviceVerdicts = readStrings(
         (payload as { deviceIntegrity?: unknown }).deviceIntegrity,
       );
-      if (
-        deviceVerdicts.length > 0 &&
-        !deviceVerdicts.includes('MEETS_DEVICE_INTEGRITY')
-      ) {
+      if (deviceVerdicts.length === 0)
+        return fail('DEVICE_NOT_TRUSTED');
+      if (!deviceVerdicts.includes('MEETS_DEVICE_INTEGRITY')) {
         return fail('DEVICE_NOT_TRUSTED');
       }
       const appVerdicts = readStrings(
         (payload as { appIntegrity?: unknown }).appIntegrity,
       );
-      if (appVerdicts.length > 0 && !appVerdicts.includes('PLAY_RECOGNIZED')) {
+      if (appVerdicts.length === 0 || !appVerdicts.includes('PLAY_RECOGNIZED')) {
         return fail('APP_NOT_RECOGNIZED');
       }
     }
-    return { ok: true, signatureVerified: false };
+    return { ok: true, signatureVerified };
   }
 
   resolveSignal(opts: {

@@ -122,20 +122,41 @@ class OutboxRepository {
     }
   }
 
+  List<OutboxEntry> _fitToCapacity(List<OutboxEntry> entries) {
+    if (entries.length <= maxEntries) return List<OutboxEntry>.from(entries);
+    final List<OutboxEntry> fitted = List<OutboxEntry>.from(entries);
+    // Lepaskan entry yang sudah butuh tindakan (gagal permanen) paling lama
+    // terlebih dahulu agar antrean aktif tidak terblokir.
+    while (fitted.length > maxEntries) {
+      final int idx = fitted.indexWhere((e) => e.needsAction);
+      if (idx == -1) break;
+      fitted.removeAt(idx);
+    }
+    // Jika masih penuh, pertahankan yang terbaru.
+    if (fitted.length > maxEntries) {
+      fitted.removeRange(0, fitted.length - maxEntries);
+    }
+    return fitted;
+  }
+
   Future<void> save(OutboxEntry entry) async {
     final List<OutboxEntry> current = await load();
-    if (current.length >= maxEntries) {
-      throw OutboxFullException();
-    }
     current.add(entry);
+    final List<OutboxEntry> fitted = _fitToCapacity(current);
+    if (fitted.length >= maxEntries && !fitted.any((e) => e.needsAction)) {
+      // Penuh dengan entry aktif; jangan buang data baru secara diam-diam.
+      if (fitted.length > maxEntries || (fitted.length == maxEntries && !identical(fitted.last, entry) && !fitted.contains(entry))) {
+        throw OutboxFullException();
+      }
+    }
     await store
-        .writeOutbox(jsonEncode(current.map((e) => e.toJson()).toList()));
+        .writeOutbox(jsonEncode(fitted.map((e) => e.toJson()).toList()));
   }
 
   Future<void> replaceAll(List<OutboxEntry> entries) async {
-    if (entries.length > maxEntries) throw OutboxFullException();
+    final List<OutboxEntry> fitted = _fitToCapacity(entries);
     await store
-        .writeOutbox(jsonEncode(entries.map((e) => e.toJson()).toList()));
+        .writeOutbox(jsonEncode(fitted.map((e) => e.toJson()).toList()));
   }
 
   Future<int> count() async => (await load()).length;

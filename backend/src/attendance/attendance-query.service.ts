@@ -287,6 +287,7 @@ export class AttendanceQueryService {
           select: {
             id: true,
             userId: true,
+            supervisorId: true,
             name: true,
             employeeNo: true,
             department: { select: { id: true, name: true, hospitalId: true } },
@@ -307,6 +308,15 @@ export class AttendanceQueryService {
       ) {
         return row;
       }
+      throw new NotFoundException('Attendance not found');
+    }
+
+    if (satisfiesRole(roles, 'SUPERVISOR')) {
+      const me = await this.prisma.employee.findUnique({
+        where: { userId },
+        select: { id: true },
+      });
+      if (me && row.employee.supervisorId === me.id) return row;
     }
     throw new NotFoundException('Attendance not found');
   }
