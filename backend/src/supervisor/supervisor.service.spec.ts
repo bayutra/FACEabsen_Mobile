@@ -56,7 +56,7 @@ function makePrisma() {
         id: 'e-sup',
         userId: 'u-sup',
         name: 'Atasan',
-        supervisorId: null,
+        departmentId: 'd1',
         department: { id: 'd1', hospitalId: 'h1' },
       },
     ],
@@ -66,7 +66,7 @@ function makePrisma() {
         id: 'e-a',
         userId: 'u-a',
         name: 'A',
-        supervisorId: 'e-sup',
+        departmentId: 'd1',
         department: { id: 'd1', hospitalId: 'h1' },
       },
     ],
@@ -76,7 +76,7 @@ function makePrisma() {
         id: 'e-b',
         userId: 'u-b',
         name: 'B',
-        supervisorId: 'e-other',
+        departmentId: 'd2',
         department: { id: 'd2', hospitalId: 'h2' },
       },
     ],
@@ -86,7 +86,7 @@ function makePrisma() {
         id: 'e-adm',
         userId: 'u-adm',
         name: 'Admin',
-        supervisorId: null,
+        departmentId: 'd1',
         department: { id: 'd1', hospitalId: 'h1' },
       },
     ],
@@ -103,18 +103,22 @@ function makePrisma() {
         let rows = [...employees.values()];
         if (a.where && typeof a.where === 'object') {
           const w = a.where as Record<string, unknown>;
-          if (w.supervisorId)
-            rows = rows.filter((e) => e.supervisorId === w.supervisorId);
           if (w.status) rows = rows.filter(() => true);
+          if (w.departmentId)
+            rows = rows.filter((e) => e.departmentId === w.departmentId);
           const dept = w.department as { hospitalId?: string } | undefined;
           if (dept?.hospitalId)
             rows = rows.filter(
               (e) => e.department?.hospitalId === dept.hospitalId,
             );
+          if (w.id && typeof w.id === 'object') {
+            const idf = w.id as { not?: string };
+            if (idf.not) rows = rows.filter((e) => e.id !== idf.not);
+          }
         }
         return rows
           .filter((e) => e.id !== 'e-sup')
-          .map(({ userId: _u, supervisorId: _s, ...rest }) => rest);
+          .map(({ userId: _u, departmentId: _d, ...rest }) => rest);
       }),
     },
     employeeSchedule: {
@@ -163,7 +167,7 @@ describe('SupervisorService.summary', () => {
       '2026-10-03': 'OFF',
     });
     expect(out.totals).toMatchObject({
-      members: 1,
+      members: 2,
       late: 1,
       onLeave: 1,
       absent: 0,
@@ -171,19 +175,19 @@ describe('SupervisorService.summary', () => {
     });
   });
 
-  it('admin sees all; member detail enforces team scope', async () => {
+  it('admin sees all; member detail enforces unit scope', async () => {
     const svc = new SupervisorService(makePrisma());
     const team = (await svc.teamOf('u-sup', ['SUPERVISOR'])) as Array<{
       id: string;
     }>;
-    expect(team.map((m) => m.id)).toEqual(['e-a']);
+    expect(team.map((m) => m.id).sort()).toEqual(['e-a', 'e-adm']);
     const all = (await svc.teamOf('u-adm', ['SUPER_ADMIN'])) as Array<{
       id: string;
     }>;
     expect(all.map((m) => m.id).sort()).toEqual(['e-a', 'e-adm', 'e-b']);
     await expect(
       svc.memberDetail('e-b', 'u-sup', ['SUPERVISOR']),
-    ).rejects.toThrow('Not in your team');
+    ).rejects.toThrow('Not in your unit');
   });
 
   it('ADMIN teamOf is confined to the caller facility (Tahap 2)', async () => {

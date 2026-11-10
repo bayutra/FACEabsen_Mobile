@@ -88,11 +88,19 @@ export class SupervisorService {
         },
       });
     }
-    const me = await this.prisma.employee.findUnique({ where: { userId } });
-    if (!me)
-      throw new NotFoundException('No employee profile for this account');
+    const me = await this.prisma.employee.findUnique({
+      where: { userId },
+      select: { id: true, departmentId: true },
+    });
+    if (!me || !me.departmentId) {
+      throw new ForbiddenException('Not in your unit');
+    }
     return this.prisma.employee.findMany({
-      where: { supervisorId: me.id, status: 'ACTIVE' },
+      where: {
+        status: 'ACTIVE',
+        departmentId: me.departmentId,
+        id: { not: me.id },
+      },
       orderBy: { name: 'asc' },
       select: {
         id: true,
@@ -240,12 +248,20 @@ export class SupervisorService {
       }
       return;
     }
-    const me = await this.prisma.employee.findUnique({ where: { userId } });
+    const me = await this.prisma.employee.findUnique({
+      where: { userId },
+      select: { id: true, departmentId: true },
+    });
     const target = await this.prisma.employee.findUnique({
       where: { id: memberId },
+      select: { id: true, departmentId: true },
     });
-    if (!me || !target || target.supervisorId !== me.id) {
-      throw new ForbiddenException('Not in your team');
+    if (
+      !me?.departmentId ||
+      !target?.departmentId ||
+      target.departmentId !== me.departmentId
+    ) {
+      throw new ForbiddenException('Not in your unit');
     }
   }
 }
