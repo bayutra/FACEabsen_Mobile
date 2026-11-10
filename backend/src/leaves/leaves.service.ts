@@ -12,6 +12,7 @@ import {
   resolveEmployeeTenantWhere,
   resolveHospitalScope,
 } from '../auth/tenant-scope.js';
+import { assertCalendarDateKey, assertCalendarDateTime } from '../common/time.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { PushService } from '../push/push.service.js';
 import type { CreateLeaveDto, ListLeavesQuery } from './dto.js';
@@ -39,8 +40,10 @@ export class LeavesService {
     if (!employee)
       throw new NotFoundException('No employee profile for this account');
 
-    const start = new Date(dto.startDate);
-    const end = new Date(dto.endDate);
+    assertCalendarDateKey(dto.startDate);
+    assertCalendarDateKey(dto.endDate);
+    const start = new Date(`${dto.startDate}T00:00:00.000Z`);
+    const end = new Date(`${dto.endDate}T00:00:00.000Z`);
     if (end < start) {
       throw new UnprocessableEntityException({
         reason: 'INVERTED_RANGE',
@@ -101,8 +104,14 @@ export class LeavesService {
     const base: Record<string, unknown> = {};
     if (query.status) base.status = query.status;
     if (query.employeeId) base.employeeId = query.employeeId;
-    if (query.from) base.endDate = { gte: new Date(query.from) };
-    if (query.to) base.startDate = { lte: new Date(query.to) };
+    if (query.from) {
+      assertCalendarDateTime(query.from);
+      base.endDate = { gte: new Date(query.from) };
+    }
+    if (query.to) {
+      assertCalendarDateTime(query.to);
+      base.startDate = { lte: new Date(query.to) };
+    }
 
     const scoped = await resolveEmployeeTenantWhere(this.prisma, userId, roles, base);
     if (!scoped) return [];

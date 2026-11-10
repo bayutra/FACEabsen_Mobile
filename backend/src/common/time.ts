@@ -1,3 +1,4 @@
+import { BadRequestException } from '@nestjs/common';
 import { workDateKeyIn } from '../shifts/shift-time.js';
 
 export function utcWorkDate(now = new Date()): { date: Date; key: string } {
@@ -10,6 +11,42 @@ export function assertTimeZone(timeZone: string): void {
     new Intl.DateTimeFormat('en-CA', { timeZone }).format(new Date());
   } catch {
     throw new Error(`Invalid HOSPITAL_TZ: ${timeZone}`);
+  }
+}
+
+/** True when `value` is a real `YYYY-MM-DD` calendar date (no JS rollover). */
+export function isValidCalendarDateKey(value: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const date = new Date(`${value}T00:00:00.000Z`);
+  return (
+    !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === value
+  );
+}
+
+/** Throws 400 when `value` is not a real calendar date key. */
+export function assertCalendarDateKey(value: string): void {
+  if (!isValidCalendarDateKey(value)) {
+    throw new BadRequestException(`Invalid work date: ${value}`);
+  }
+}
+
+/**
+ * True when `value` parses to a real instant and, if it starts with a
+ * `YYYY-MM-DD` calendar date, that date exists (rejects rollover like
+ * 2026-02-31T08:00:00Z).
+ */
+export function isValidCalendarDateTime(value: string): boolean {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return false;
+  const match = /^(\d{4}-\d{2}-\d{2})/.exec(value);
+  if (match) return isValidCalendarDateKey(match[1]);
+  return true;
+}
+
+/** Throws 400 when `value` is not a real ISO datetime. */
+export function assertCalendarDateTime(value: string): void {
+  if (!isValidCalendarDateTime(value)) {
+    throw new BadRequestException(`Invalid datetime: ${value}`);
   }
 }
 

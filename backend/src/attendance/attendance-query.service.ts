@@ -5,6 +5,7 @@ import {
   resolveEmployeeTenantWhere,
   resolveHospitalScope,
 } from '../auth/tenant-scope.js';
+import { assertCalendarDateKey } from '../common/time.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import type {
   AdminHistoryQuery,
@@ -26,8 +27,14 @@ export class AttendanceQueryService {
     const page = query.page ?? 1;
     const pageSize = query.pageSize ?? 20;
     const AND: Array<Record<string, unknown>> = [{ employeeId: employee.id }];
-    if (query.from) AND.push({ workDate: { gte: new Date(query.from) } });
-    if (query.to) AND.push({ workDate: { lte: new Date(query.to) } });
+    if (query.from) {
+      assertCalendarDateKey(query.from);
+      AND.push({ workDate: { gte: new Date(query.from) } });
+    }
+    if (query.to) {
+      assertCalendarDateKey(query.to);
+      AND.push({ workDate: { lte: new Date(query.to) } });
+    }
     if (query.checkInStatus) AND.push({ checkInStatus: query.checkInStatus });
     const where = { AND };
     const [total, rows] = await Promise.all([
@@ -219,8 +226,14 @@ export class AttendanceQueryService {
     if (query.employeeId) AND.push({ employeeId: query.employeeId });
     if (query.departmentId)
       AND.push({ employee: { departmentId: query.departmentId } });
-    if (query.from) AND.push({ workDate: { gte: new Date(query.from) } });
-    if (query.to) AND.push({ workDate: { lte: new Date(query.to) } });
+    if (query.from) {
+      assertCalendarDateKey(query.from);
+      AND.push({ workDate: { gte: new Date(query.from) } });
+    }
+    if (query.to) {
+      assertCalendarDateKey(query.to);
+      AND.push({ workDate: { lte: new Date(query.to) } });
+    }
     if (query.checkInStatus) AND.push({ checkInStatus: query.checkInStatus });
     if (query.riskCategory) AND.push({ riskCategory: query.riskCategory });
     if (query.needsReview !== undefined)

@@ -13,6 +13,7 @@ import {
   resolveEmployeeTenantWhere,
   resolveHospitalScope,
 } from '../auth/tenant-scope.js';
+import { assertCalendarDateTime, assertTimeZone } from '../common/time.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { PushService } from '../push/push.service.js';
 import {
@@ -20,7 +21,6 @@ import {
   evaluateCheckOut,
   workDateKeyIn,
 } from '../shifts/shift-time.js';
-import { assertTimeZone } from '../common/time.js';
 import type { CreateCorrectionDto, ListCorrectionsQuery } from './dto.js';
 
 @Injectable()
@@ -61,6 +61,8 @@ export class CorrectionsService {
         message: 'Isi jam masuk/ pulang yang dikoreksi',
       });
     }
+    if (dto.requestedCheckIn) assertCalendarDateTime(dto.requestedCheckIn);
+    if (dto.requestedCheckOut) assertCalendarDateTime(dto.requestedCheckOut);
 
     const dupe = await this.prisma.correctionRequest.findFirst({
       where: { attendanceId: dto.attendanceId, status: 'PENDING' },

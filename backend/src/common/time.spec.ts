@@ -1,7 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
+  assertCalendarDateKey,
+  assertCalendarDateTime,
   assertTimeZone,
   hospitalWorkDate,
+  isValidCalendarDateKey,
+  isValidCalendarDateTime,
   timeOfDayInTimeZone,
   utcWorkDate,
   validatePunchTime,
@@ -129,5 +133,28 @@ describe('validatePunchTime', () => {
         maxOfflineAgeHours: 24,
       }),
     ).toEqual({ ok: false, reason: 'QUEUED_TIME_INVALID' });
+  });
+});
+
+describe('calendar date validation', () => {
+  it('accepts real YYYY-MM-DD keys and rejects rolled/invalid ones', () => {
+    expect(isValidCalendarDateKey('2026-11-10')).toBe(true);
+    expect(isValidCalendarDateKey('2026-02-31')).toBe(false);
+    expect(isValidCalendarDateKey('2026-04-31')).toBe(false);
+    expect(isValidCalendarDateKey('2026-13-01')).toBe(false);
+    expect(isValidCalendarDateKey('2026-2-1')).toBe(false);
+    expect(() => assertCalendarDateKey('2026-02-31')).toThrow('Invalid work date');
+    expect(() => assertCalendarDateKey('2026-11-10')).not.toThrow();
+  });
+
+  it('rejects datetimes whose calendar date rolls over', () => {
+    expect(isValidCalendarDateTime('2026-11-10T08:03:00+07:00')).toBe(true);
+    expect(isValidCalendarDateTime('2026-11-10')).toBe(true);
+    expect(isValidCalendarDateTime('2026-02-31T08:03:00+07:00')).toBe(false);
+    expect(isValidCalendarDateTime('2026-02-31T08:00:00Z')).toBe(false);
+    expect(isValidCalendarDateTime('not-a-date')).toBe(false);
+    expect(() => assertCalendarDateTime('2026-02-31T08:00:00Z')).toThrow(
+      'Invalid datetime',
+    );
   });
 });

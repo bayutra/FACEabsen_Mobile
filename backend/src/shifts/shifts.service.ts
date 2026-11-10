@@ -8,6 +8,7 @@ import {
 import { AuditService } from '../audit/audit.service.js';
 import { satisfiesRole } from '../auth/rbac.js';
 import { resolveHospitalScope } from '../auth/tenant-scope.js';
+import { assertCalendarDateKey } from '../common/time.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { isOvernightRange, parseHHmm } from './shift-time.js';
 import type {
@@ -235,8 +236,14 @@ export class ShiftsService {
       { employeeId: employee.id },
     ];
     if (query.shiftId) AND.push({ shiftId: query.shiftId });
-    if (query.from) AND.push({ workDate: { gte: new Date(query.from) } });
-    if (query.to) AND.push({ workDate: { lte: new Date(query.to) } });
+    if (query.from) {
+      assertCalendarDateKey(query.from);
+      AND.push({ workDate: { gte: new Date(query.from) } });
+    }
+    if (query.to) {
+      assertCalendarDateKey(query.to);
+      AND.push({ workDate: { lte: new Date(query.to) } });
+    }
     const where: Prisma.EmployeeScheduleWhereInput = { AND };
 
     const [total, rows] = await Promise.all([
@@ -299,7 +306,7 @@ export class ShiftsService {
       'Shift and employee must belong to the same hospital',
     );
 
-    this.assertValidWorkDate(dto.workDate);
+    assertCalendarDateKey(dto.workDate);
 
     const clash = await this.prisma.employeeSchedule.findUnique({
       where: {
@@ -365,9 +372,10 @@ export class ShiftsService {
     });
     if (!shift) throw new NotFoundException('Shift not found');
 
+    const actorCtx = await this.resolveFacilityContext(actorId);
     for (const employee of employees) {
-      await this.assertSameFacility(
-        actorId,
+      this.assertFacility(
+        actorCtx,
         (employee as { department?: { hospitalId?: string | null } })
           .department?.hospitalId,
         'Employee not found',
@@ -379,10 +387,10 @@ export class ShiftsService {
         'Shift and employee must belong to the same hospital',
       );
     }
-    await this.assertSameFacility(actorId, shift.hospitalId, 'Shift not found');
+    this.assertFacility(actorCtx, shift.hospitalId, 'Shift not found');
 
     const dates = dto.workDates.map((workDate) => {
-      this.assertValidWorkDate(workDate);
+      assertCalendarDateKey(workDate);
       return {
         workDate,
         date: new Date(workDate),
@@ -488,8 +496,14 @@ export class ShiftsService {
     }
     if (query.employeeId) AND.push({ employeeId: query.employeeId });
     if (query.shiftId) AND.push({ shiftId: query.shiftId });
-    if (query.from) AND.push({ workDate: { gte: new Date(query.from) } });
-    if (query.to) AND.push({ workDate: { lte: new Date(query.to) } });
+    if (query.from) {
+      assertCalendarDateKey(query.from);
+      AND.push({ workDate: { gte: new Date(query.from) } });
+    }
+    if (query.to) {
+      assertCalendarDateKey(query.to);
+      AND.push({ workDate: { lte: new Date(query.to) } });
+    }
     const where = AND.length > 0 ? { AND } : {};
 
     const [total, rows] = await Promise.all([
@@ -643,13 +657,35 @@ export class ShiftsService {
     }
   }
 
-  private assertValidWorkDate(workDate: string): void {
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(workDate)) {
-      throw new BadRequestException(`Invalid work date: ${workDate}`);
-    }
-    const date = new Date(`${workDate}T00:00:00.000Z`);
-    if (Number.isNaN(date.getTime()) || date.toISOString().slice(0, 10) !== workDate) {
-      throw new BadRequestException(`Invalid work date: ${workDate}`);
+  private async resolveFacilityContext(
+    actorId: string,
+  ): Promise<
+    | { kind: 'super' }
+    | { kind: 'hospital'; hospitalId: string }
+    | { kind: 'none' }
+  > {
+    const roles = await this.getRoles(actorId);
+    if (satisfiesRole(roles, 'SUPER_ADMIN')) return { kind: 'super' };
+    const scope = await resolveHospitalScope(this.prisma, actorId, roles);
+    if (scope.kind !== 'hospital') return { kind: 'none' };
+    return { kind: 'hospital', hospitalId: scope.hospitalId };
+  }
+
+  private assertFacility(
+    ctx:
+      | { kind: 'super' }
+      | { kind: 'hospital'; hospitalId: string }
+      | { kind: 'none' },
+    targetHospitalId: string | null | undefined,
+    message: string,
+  ) {
+    if (ctx.kind === 'super') return;
+    if (
+      ctx.kind !== 'hospital' ||
+      !targetHospitalId ||
+      targetHospitalId !== ctx.hospitalId
+    ) {
+      throw new NotFoundException(message);
     }
   }
 
