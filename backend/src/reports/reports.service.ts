@@ -41,10 +41,14 @@ export class ReportsService {
       });
       return emps.map((e) => e.id);
     }
-    const me = await this.prisma.employee.findUnique({ where: { userId } });
-    if (!me) return [];
+    const me = await this.prisma.employee.findUnique({
+      where: { userId },
+      select: { id: true, departmentId: true },
+    });
+    if (!me || !me.departmentId) return [];
     const team = await this.prisma.employee.findMany({
-      where: { supervisorId: me.id },
+      where: { departmentId: me.departmentId },
+      select: { id: true },
     });
     return team.map((m) => m.id);
   }
@@ -461,18 +465,30 @@ export class ReportsService {
       include: { department: true },
     });
     if (!target) throw new NotFoundException('Employee not found');
-    const me = await this.prisma.employee.findUnique({ where: { userId } });
+    const me = await this.prisma.employee.findUnique({
+      where: { userId },
+      select: { id: true, departmentId: true },
+    });
     const scope = await resolveHospitalScope(this.prisma, userId, roles);
     const sameHospital =
       scope.kind === 'hospital' &&
       target.department?.hospitalId === scope.hospitalId;
     const isOwner = me?.id === id;
-    const isSupervisor = target.supervisorId === me?.id;
+    const isSupervisor = !!(
+      me?.departmentId &&
+      target.departmentId &&
+      me.departmentId === target.departmentId
+    );
     const sameHospitalAdmin = satisfiesRole(roles, 'ADMIN') && sameHospital;
-    if (
-      !satisfiesRole(roles, 'SUPER_ADMIN') &&
-      (!sameHospital || !(isOwner || isSupervisor || sameHospitalAdmin))
-    ) {
+    if (satisfiesRole(roles, 'SUPER_ADMIN')) {
+      // global access
+    } else if (isOwner) {
+      // self access
+    } else if (sameHospitalAdmin) {
+      // hospital admin access
+    } else if (isSupervisor) {
+      // same-unit supervisor access (fail-safe if reviewer lacks departmentId)
+    } else {
       throw new NotFoundException('Employee not found');
     }
 

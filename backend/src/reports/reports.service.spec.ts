@@ -9,8 +9,10 @@ function makePrisma() {
       {
         id: 'e-sup',
         userId: 'u-sup',
+        employeeNo: 'EMP-SUP',
         name: 'Atasan',
         supervisorId: null,
+        departmentId: 'd1',
         department: { id: 'd1', name: 'IGD', hospitalId: 'h1' },
       },
     ],
@@ -22,6 +24,7 @@ function makePrisma() {
         employeeNo: 'EMP-001',
         name: 'A',
         supervisorId: 'e-sup',
+        departmentId: 'd1',
         department: { id: 'd1', name: 'IGD', hospitalId: 'h1' },
       },
     ],
@@ -33,6 +36,7 @@ function makePrisma() {
         employeeNo: 'EMP-009',
         name: 'X',
         supervisorId: 'e-other',
+        departmentId: 'd2',
         department: { id: 'd2', name: 'Lab', hospitalId: 'h2' },
       },
     ],
@@ -44,6 +48,7 @@ function makePrisma() {
         employeeNo: 'EMP-003',
         name: 'Admin',
         supervisorId: null,
+        departmentId: 'd1',
         department: { id: 'd1', name: 'IGD', hospitalId: 'h1' },
       },
     ],
@@ -82,6 +87,8 @@ function makePrisma() {
         const w = a.where as Record<string, unknown> | undefined;
         if (w?.supervisorId)
           list = list.filter((e) => e.supervisorId === w.supervisorId);
+        if (w?.departmentId)
+          list = list.filter((e) => e.departmentId === w.departmentId);
         if (
           w?.id &&
           typeof w.id === 'object' &&
@@ -169,7 +176,7 @@ describe('ReportsService scope + daily', () => {
     expect(utc.report.rows[0][4]).toBe('07:20');
   });
 
-  it('supervisor sees team only; admin sees all; daily totals correct', async () => {
+  it('supervisor sees same unit only; admin sees facility; daily totals correct', async () => {
     const svc = new ReportsService(makePrisma());
 
     const team = (await svc.daily(
@@ -241,7 +248,7 @@ describe('ReportsService scope + daily', () => {
     }
   });
 
-  it('employee report enforces self/team/admin scope', async () => {
+  it('employee report enforces self/unit/admin scope', async () => {
     const svc = new ReportsService(makePrisma());
     await expect(
       svc.employee(
@@ -273,6 +280,16 @@ describe('ReportsService scope + daily', () => {
         'json',
       ),
     ).resolves.toBeDefined();
+    await expect(
+      svc.employee(
+        'e-x',
+        '2026-10-01',
+        '2026-10-31',
+        'u-sup',
+        ['SUPERVISOR'],
+        'json',
+      ),
+    ).rejects.toThrow('Employee not found');
   });
 
   it('monthly + late + leaves aggregate', async () => {
@@ -314,5 +331,21 @@ describe('ReportsService scope + daily', () => {
     expect(ids).not.toContain('e-x');
 
     await expect(svc.scopeOf('u-adm', ['SUPER_ADMIN'])).resolves.toBeNull();
+  });
+
+  it('SUPERVISOR scope is unit-based and fail-safe without departmentId', async () => {
+    const svc = new ReportsService(makePrisma());
+    const ids = await svc.scopeOf('u-sup', ['SUPERVISOR']);
+    expect(ids).toEqual(expect.arrayContaining(['e-sup', 'e-a', 'e-adm']));
+    expect(ids).not.toContain('e-x');
+
+    const noDept = makePrisma() as any;
+    noDept.employee.findUnique = vi.fn(async () => ({
+      id: 'e-sup',
+      userId: 'u-sup',
+      departmentId: null,
+    }));
+    const svc2 = new ReportsService(noDept);
+    await expect(svc2.scopeOf('u-sup', ['SUPERVISOR'])).resolves.toEqual([]);
   });
 });
