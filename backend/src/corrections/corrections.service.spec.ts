@@ -16,10 +16,33 @@ const SHIFT = {
 };
 
 function makePrisma(over: Record<string, Record<string, unknown>> = {}) {
-  const byId: Record<string, { id: string; supervisorId: string | null }> = {
-    'e-emp': { id: 'e-emp', supervisorId: 'e-sup' },
-    'e-sup': { id: 'e-sup', supervisorId: null },
-    'e-other': { id: 'e-other', supervisorId: null },
+  const byId: Record<
+    string,
+    {
+      id: string;
+      supervisorId: string | null;
+      departmentId: string | null;
+      department: { hospitalId: string } | null;
+    }
+  > = {
+    'e-emp': {
+      id: 'e-emp',
+      supervisorId: null,
+      departmentId: 'd1',
+      department: { hospitalId: 'h1' },
+    },
+    'e-sup': {
+      id: 'e-sup',
+      supervisorId: null,
+      departmentId: 'd1',
+      department: { hospitalId: 'h1' },
+    },
+    'e-other': {
+      id: 'e-other',
+      supervisorId: null,
+      departmentId: 'd2',
+      department: { hospitalId: 'h1' },
+    },
   };
   const byUser: Record<string, string> = {
     'u-emp': 'e-emp',
@@ -180,7 +203,9 @@ describe('CorrectionsService review scope', () => {
     await expect(
       svcOf(other).approve('c1', 'u-other', ['SUPERVISOR']),
     ).rejects.toThrow('Not authorized');
-    await expect(svc.approve('c1', 'u-emp', ['EMPLOYEE'])).rejects.toThrow();
+    await expect(svc.approve('c1', 'u-emp', ['EMPLOYEE'])).rejects.toThrow(
+      'pengajuan sendiri',
+    );
   });
 
   it('off-day correction instants are rejected (Tahap 3 L5)', async () => {
@@ -249,5 +274,7 @@ describe('CorrectionsService extras (STEP 23 coverage)', () => {
     await svc.listQueue('u-sup', ['SUPERVISOR'], { status: 'PENDING' });
     const q = findMany.mock.calls[1][0].where;
     expect(JSON.stringify(q)).toContain('PENDING');
+    expect(JSON.stringify(q)).toContain('"departmentId":"d1"');
+    expect(JSON.stringify(q)).not.toContain('supervisorId');
   });
 });

@@ -345,11 +345,26 @@ export class CorrectionsService {
     }
     const reviewerEmployee = await this.prisma.employee.findUnique({
       where: { userId: reviewerId },
+      select: {
+        id: true,
+        departmentId: true,
+        department: { select: { hospitalId: true } },
+      },
     });
     const target = await this.prisma.employee.findUnique({
       where: { id: employeeId },
+      select: {
+        id: true,
+        departmentId: true,
+        department: { select: { hospitalId: true } },
+      },
     });
-    if (!reviewerEmployee || !target || target.supervisorId !== reviewerEmployee.id) {
+    if (
+      !reviewerEmployee?.departmentId ||
+      !target?.departmentId ||
+      target.departmentId !== reviewerEmployee.departmentId ||
+      target.department?.hospitalId !== reviewerEmployee.department?.hospitalId
+    ) {
       throw new ForbiddenException('Not authorized to review this request');
     }
   }
