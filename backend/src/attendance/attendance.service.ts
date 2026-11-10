@@ -126,7 +126,7 @@ export class AttendanceService {
         action: 'check-in',
       });
 
-      this.applyIntegrity(dto, device.platform, userId, meta, risk);
+      await this.applyIntegrity(dto, device.platform, userId, meta, risk, dto.challengeNonce);
       await this.rejectIfBadIntegrity(userId, meta, risk);
 
       const capture = new Date(dto.captureAt);
@@ -334,7 +334,7 @@ export class AttendanceService {
         action: 'check-out',
       });
 
-      this.applyIntegrity(dto, device.platform, userId, meta, risk);
+      await this.applyIntegrity(dto, device.platform, userId, meta, risk, dto.challengeNonce);
       await this.rejectIfBadIntegrity(userId, meta, risk);
 
       await this.closeStaleOpen(employee.id, now);
@@ -560,22 +560,24 @@ export class AttendanceService {
     }
   }
 
-  private applyIntegrity(
+  private async applyIntegrity(
     dto: { deviceCompromised: boolean; integrityToken?: string },
     platform: string,
     _userId: string,
     _meta: { ip?: string },
     risk: RiskInput,
+    nonce?: string,
   ) {
     if (!this.integrity) {
       risk.integrityOk = false;
       (risk as unknown as Record<string, unknown>).__integrityReason = 'UNVERIFIED';
       return;
     }
-    const resolved = this.integrity.resolveSignal({
+    const resolved = await this.integrity.resolveSignalAsync({
       integrityToken: dto.integrityToken,
       deviceCompromised: dto.deviceCompromised,
       platform,
+      nonce,
     });
     risk.integrityOk = resolved.ok;
     if (!resolved.ok && !resolved.verdict) {
