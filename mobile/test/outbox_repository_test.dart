@@ -93,19 +93,20 @@ void main() {
   });
 
   group('full outbox', () {
-    test('entry ke-51 melempar OutboxFullException', () async {
+    test('when full of active entries, oldest is dropped to accept new entry',
+        () async {
       final FakeStore store = FakeStore();
       final OutboxRepository box = OutboxRepository(store: store);
 
       for (var i = 0; i < OutboxRepository.maxEntries; i++) {
         await box.save(_entry(deviceId: 'd$i'));
       }
-      expect(
-        () => box.save(_entry(deviceId: 'd50')),
-        throwsA(isA<OutboxFullException>()),
-      );
+      await box.save(_entry(deviceId: 'd50'));
+
       expect(await box.count(), OutboxRepository.maxEntries);
-      expect((await box.load()).first.payload['deviceId'], 'd0');
+      final List<OutboxEntry> loaded = await box.load();
+      expect(loaded.first.payload['deviceId'], 'd1');
+      expect(loaded.last.payload['deviceId'], 'd50');
     });
   });
 
