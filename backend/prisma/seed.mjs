@@ -8,6 +8,8 @@ const now = new Date();
 if (process.env.NODE_ENV === 'production') {
   throw new Error('seed.mjs hanya untuk development; gunakan seed.prod.mjs di produksi');
 }
+
+const ROLE_PERMISSIONS = {
   EMPLOYEE: [
     'attendance:create:self',
     'attendance:read:self',
@@ -56,7 +58,8 @@ const prisma = new PrismaClient();
 
 const hospital = await prisma.hospital.upsert({
   where: { code: 'RS-A' },
-  update: {},
+  // Self-heal databases seeded before the rebrand (old name: "RS Contoh").
+  update: { name: 'RSU Darmayu Madiun' },
   create: {
     code: 'RS-A', name: 'RSU Darmayu Madiun',
   },
