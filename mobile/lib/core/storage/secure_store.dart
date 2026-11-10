@@ -160,4 +160,110 @@ class SecureStore {
     await _storage.delete(key: '${_seedKey}_$_deviceScopeKey');
     await _storage.delete(key: '${_deviceIdKey}_$_deviceScopeKey');
   }
+
+  /// Migrasi eksplisit data storage lama (dipanggil sekali saat start) agar
+  /// identitas perangkat & antrean akun tidak hilang setelah perubahan skema
+  /// scope. Aman dipanggil berulang (idempoten).
+  Future<void> migrateLegacyStorage() async {
+    Map<String, String> all;
+    try {
+      all = await _storage.readAll();
+    } catch (_) {
+      return;
+    }
+    if (all.isEmpty) return;
+
+    // Identitas perangkat: stabil per instalasi -> satukan ke scope 'device'.
+    for (final String base in <String>[_installKey, _seedKey, _deviceIdKey]) {
+      await _migrateToScope(all, base, _deviceScopeKey,
+          prefer: const <String>[_deviceScopeKey]);
+    }
+
+    // Data akun (outbox/nonce): gunakan scope akun yang diketahui.
+    final String accountScope = await _resolveKnownAccountScope(all);
+    for (final String base in <String>['attendance_outbox_v1', _noncePoolKey]) {
+      await _migrateToScope(all, base, accountScope,
+          prefer: <String>[accountScope, 'anon']);
+    }
+
+    // Jika token aktif ada, pastikan last-scope tercatat.
+    final String? sub = _jwtSubject(await readAccessToken());
+    if (sub != null && sub.isNotEmpty) {
+      await _storage.write(key: _lastScopeKey, value: sub);
+    }
+  }
+
+  Future<String> _resolveKnownAccountScope(Map<String, String> all) async {
+    final String? sub = _jwtSubject(await readAccessToken());
+    if (sub != null && sub.isNotEmpty) return sub;
+    final String? last = all[_lastScopeKey];
+    if (last != null && last.isNotEmpty) return last;
+    // Fallback: bila ada tepat satu scope sub lama untuk outbox, pakai itu
+    // agar antrean offline milik akun tersebut tidak terbuang.
+    final Set<String> scopes = <String>{};
+    for (final String key in all.keys) {
+      if (key.startsWith('attendance_outbox_v1_')) {
+        scopes.add(key.substring('attendance_outbox_v1_'.length));
+      }
+    }
+    scopes.remove('anon');
+    if (scopes.length == 1) return scopes.first;
+    return 'anon';
+  }
+
+  Future<void> _migrateToScope(
+    Map<String, String> all,
+    String base,
+    String targetScope, {
+    List<String> prefer = const <String>[],
+  }) async {
+    final String targetKey = '${base}_$targetScope';
+    String? value = all[targetKey];
+
+    // Kumpulkan kandidat legacy (termasuk key tanpa scope & scope lama).
+    final List<String> legacyKeys = <String>[];
+    for (final String key in all.keys) {
+      if (key == targetKey) continue;
+      if (key == base || key.startsWith('${base}_')) {
+        legacyKeys.add(key);
+      }
+    }
+    if (legacyKeys.isEmpty && value != null) return;
+
+    if (value == null) {
+      value = _pickLegacyValue(all, base, legacyKeys, prefer);
+      if (value != null) {
+        await _storage.write(key: targetKey, value: value);
+      }
+    }
+    // Hapus semua varian legacy agar tidak menggantung.
+    for (final String key in legacyKeys) {
+      await _storage.delete(key: key);
+    }
+  }
+
+  String? _pickLegacyValue(
+    Map<String, String> all,
+    String base,
+    List<String> legacyKeys,
+    List<String> prefer,
+  ) {
+    for (final String scope in prefer) {
+      final String key = scope.isEmpty ? base : '${base}_$scope';
+      if (all.containsKey(key) && legacyKeys.contains(key)) {
+        return all[key];
+      }
+    }
+    // Prioritas umum: anon > unscoped > scope lain (mis. sub-JWT lama).
+    final List<String> ordered = <String>[
+      ...legacyKeys.where((k) => k == '${base}_anon'),
+      ...legacyKeys.where((k) => k == base),
+      ...legacyKeys.where((k) => k != '${base}_anon' && k != base),
+    ];
+    for (final String key in ordered) {
+      final String? v = all[key];
+      if (v != null && v.isNotEmpty) return v;
+    }
+    return null;
+  }
 }
