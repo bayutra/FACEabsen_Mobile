@@ -9,6 +9,7 @@ import {
   resolveHospitalScope,
 } from '../auth/tenant-scope.js';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { timeOfDayInTimeZone } from '../common/time.js';
 import {
   classifyDay,
   assertRangeDays,
@@ -56,6 +57,7 @@ export class ReportsService {
   ) {
     const ids = await this.scopeOf(userId, roles);
     const whereId = ids ? { employeeId: { in: ids } } : {};
+    const timeZone = hospitalTimeZone();
     const [schedules, rows, leaves, employees] = await Promise.all([
       this.prisma.employeeSchedule.findMany({
         where: { ...whereId, workDate: new Date(date) },
@@ -108,10 +110,10 @@ export class ReportsService {
         (emp?.department as { name?: string } | null)?.name ?? '-',
         s.shift.name,
         att?.checkInAt
-          ? new Date(att.checkInAt).toISOString().slice(11, 16)
+          ? timeOfDayInTimeZone(att.checkInAt, timeZone)
           : '-',
         att?.checkOutAt
-          ? new Date(att.checkOutAt).toISOString().slice(11, 16)
+          ? timeOfDayInTimeZone(att.checkOutAt, timeZone)
           : '-',
         st,
         att?.riskScore !== null && att?.riskScore !== undefined
@@ -130,8 +132,8 @@ export class ReportsService {
         emp?.name ?? '-',
         (emp?.department as { name?: string } | null)?.name ?? '-',
         a.shift.name,
-        a.checkInAt ? new Date(a.checkInAt).toISOString().slice(11, 16) : '-',
-        a.checkOutAt ? new Date(a.checkOutAt).toISOString().slice(11, 16) : '-',
+        a.checkInAt ? timeOfDayInTimeZone(a.checkInAt, timeZone) : '-',
+        a.checkOutAt ? timeOfDayInTimeZone(a.checkOutAt, timeZone) : '-',
         a.checkInStatus ?? '-',
         a.riskScore !== null && a.riskScore !== undefined
           ? String(a.riskScore)
@@ -291,7 +293,7 @@ export class ReportsService {
       },
     });
 
-    const timeZone = process.env.HOSPITAL_TZ?.trim() || 'Asia/Jakarta';
+    const timeZone = hospitalTimeZone();
     const dayLabels = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'];
     const dayNames = [
       'Senin',
@@ -474,6 +476,7 @@ export class ReportsService {
       throw new NotFoundException('Employee not found');
     }
 
+    const timeZone = hospitalTimeZone();
     const rows = await this.prisma.attendance.findMany({
       where: {
         employeeId: id,
@@ -485,8 +488,8 @@ export class ReportsService {
     const table = rows.map((a) => [
       iso(a.workDate),
       a.shift.name,
-      a.checkInAt ? new Date(a.checkInAt).toISOString().slice(11, 16) : '-',
-      a.checkOutAt ? new Date(a.checkOutAt).toISOString().slice(11, 16) : '-',
+      a.checkInAt ? timeOfDayInTimeZone(a.checkInAt, timeZone) : '-',
+      a.checkOutAt ? timeOfDayInTimeZone(a.checkOutAt, timeZone) : '-',
       a.checkInStatus ?? '-',
       a.riskScore !== null && a.riskScore !== undefined
         ? String(a.riskScore)
@@ -518,6 +521,7 @@ export class ReportsService {
   ) {
     assertRangeDays(from, to);
     const ids = await this.scopeOf(userId, roles);
+    const timeZone = hospitalTimeZone();
     const rows = await this.prisma.attendance.findMany({
       where: {
         ...(ids ? { employeeId: { in: ids } } : {}),
@@ -532,7 +536,7 @@ export class ReportsService {
       (a.employee as { employeeNo: string }).employeeNo,
       (a.employee as { name: string }).name,
       a.shift.name,
-      a.checkInAt ? new Date(a.checkInAt).toISOString().slice(11, 16) : '-',
+      a.checkInAt ? timeOfDayInTimeZone(a.checkInAt, timeZone) : '-',
       a.checkInStatus ?? '-',
     ]);
     const report: TabularReport = {
@@ -661,6 +665,11 @@ export class ReportsService {
 
 function iso(d: Date | string): string {
   return new Date(d).toISOString().slice(0, 10);
+}
+
+/** Hospital time zone for report wall-clock times (defaults to WIB). */
+function hospitalTimeZone(): string {
+  return process.env.HOSPITAL_TZ?.trim() || 'Asia/Jakarta';
 }
 
 function mondayFirstDay(value: Date | string): number {

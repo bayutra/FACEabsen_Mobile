@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   assertTimeZone,
   hospitalWorkDate,
+  timeOfDayInTimeZone,
   utcWorkDate,
   validatePunchTime,
 } from './time.js';
@@ -27,6 +28,27 @@ describe('hospitalWorkDate', () => {
   it('assertTimeZone fails fast on typos', () => {
     expect(() => assertTimeZone('Asia/Jakarta')).not.toThrow();
     expect(() => assertTimeZone('Jakarta')).toThrow('Invalid HOSPITAL_TZ');
+  });
+});
+
+describe('timeOfDayInTimeZone', () => {
+  it('renders hospital-local wall clock instead of UTC', () => {
+    // 01:29Z is 08:29 WIB — the exact value the mobile app shows.
+    const at = new Date('2026-11-10T01:29:28.946Z');
+    expect(timeOfDayInTimeZone(at, 'Asia/Jakarta')).toBe('08:29');
+    expect(timeOfDayInTimeZone(at, 'UTC')).toBe('01:29');
+  });
+
+  it('never renders midnight as 24:00', () => {
+    expect(
+      timeOfDayInTimeZone(new Date('2026-11-09T17:00:00.000Z'), 'Asia/Jakarta'),
+    ).toBe('00:00');
+  });
+
+  it('accepts ISO strings', () => {
+    expect(
+      timeOfDayInTimeZone('2026-11-10T01:29:28.946Z', 'Asia/Jakarta'),
+    ).toBe('08:29');
   });
 });
 

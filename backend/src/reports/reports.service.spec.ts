@@ -107,6 +107,68 @@ function makePrisma() {
 }
 
 describe('ReportsService scope + daily', () => {
+  async function withTz<T>(tz: string, fn: () => Promise<T>): Promise<T> {
+    const previous = process.env.HOSPITAL_TZ;
+    process.env.HOSPITAL_TZ = tz;
+    try {
+      return await fn();
+    } finally {
+      if (previous === undefined) delete process.env.HOSPITAL_TZ;
+      else process.env.HOSPITAL_TZ = previous;
+    }
+  }
+
+  it('formats check-in/out in hospital time, not UTC', async () => {
+    const daily = await withTz('Asia/Jakarta', async () => {
+      const svc = new ReportsService(makePrisma());
+      return (await svc.daily(
+        '2026-10-05',
+        'u-sup',
+        ['SUPERVISOR'],
+        'json',
+      )) as unknown as { report: { rows: string[][] } };
+    });
+    // 07:20Z is 14:20 WIB — the report used to print 07:20.
+    expect(daily.report.rows[0][4]).toBe('14:20');
+    expect(daily.report.rows[0][5]).toBe('-');
+
+    const employee = await withTz('Asia/Jakarta', async () => {
+      const svc = new ReportsService(makePrisma());
+      return (await svc.employee(
+        'e-a',
+        '2026-10-01',
+        '2026-10-31',
+        'u-sup',
+        ['SUPERVISOR'],
+        'json',
+      )) as unknown as { report: { rows: string[][] } };
+    });
+    expect(employee.report.rows[0][2]).toBe('14:20');
+
+    const late = await withTz('Asia/Jakarta', async () => {
+      const svc = new ReportsService(makePrisma());
+      return (await svc.late(
+        '2026-10-01',
+        '2026-10-31',
+        'u-sup',
+        ['SUPERVISOR'],
+        'json',
+      )) as unknown as { report: { rows: string[][] } };
+    });
+    expect(late.report.rows[0][4]).toBe('14:20');
+
+    const utc = await withTz('UTC', async () => {
+      const svc = new ReportsService(makePrisma());
+      return (await svc.daily(
+        '2026-10-05',
+        'u-sup',
+        ['SUPERVISOR'],
+        'json',
+      )) as unknown as { report: { rows: string[][] } };
+    });
+    expect(utc.report.rows[0][4]).toBe('07:20');
+  });
+
   it('supervisor sees team only; admin sees all; daily totals correct', async () => {
     const svc = new ReportsService(makePrisma());
 

@@ -13,6 +13,30 @@ export function assertTimeZone(timeZone: string): void {
   }
 }
 
+/**
+ * Wall-clock `HH:mm` in the hospital time zone.
+ *
+ * Reports used to print `new Date(x).toISOString().slice(11, 16)`, i.e. UTC,
+ * so a 08:29 WIB check-in showed up as 01:29 on the web. Always render
+ * punch times through this helper instead of slicing the ISO string.
+ */
+export function timeOfDayInTimeZone(
+  value: Date | string,
+  timeZone = 'Asia/Jakarta',
+): string {
+  const date = value instanceof Date ? value : new Date(value);
+  const parts = new Intl.DateTimeFormat('en-GB', {
+    timeZone,
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  }).formatToParts(date);
+  const pick = (type: string) =>
+    parts.find((part) => part.type === type)?.value ?? '00';
+  const hour = pick('hour');
+  return `${hour === '24' ? '00' : hour}:${pick('minute')}`;
+}
+
 export function hospitalWorkDate(
   now = new Date(),
   timeZone = 'Asia/Jakarta',
