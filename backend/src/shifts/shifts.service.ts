@@ -293,6 +293,13 @@ export class ShiftsService {
       'Employee not found',
     );
     await this.assertSameFacility(actorId, shift.hospitalId, 'Shift not found');
+    this.assertSameHospital(
+      employee.department?.hospitalId,
+      shift.hospitalId,
+      'Shift and employee must belong to the same hospital',
+    );
+
+    this.assertValidWorkDate(dto.workDate);
 
     const clash = await this.prisma.employeeSchedule.findUnique({
       where: {
@@ -365,13 +372,22 @@ export class ShiftsService {
           .department?.hospitalId,
         'Employee not found',
       );
+      this.assertSameHospital(
+        (employee as { department?: { hospitalId?: string | null } })
+          .department?.hospitalId,
+        shift.hospitalId,
+        'Shift and employee must belong to the same hospital',
+      );
     }
     await this.assertSameFacility(actorId, shift.hospitalId, 'Shift not found');
 
-    const dates = dto.workDates.map((workDate) => ({
-      workDate,
-      date: new Date(workDate),
-    }));
+    const dates = dto.workDates.map((workDate) => {
+      this.assertValidWorkDate(workDate);
+      return {
+        workDate,
+        date: new Date(workDate),
+      };
+    });
     const existing = await this.prisma.employeeSchedule.findMany({
       where: {
         employeeId: { in: dto.employeeIds },
@@ -415,11 +431,13 @@ export class ShiftsService {
     }
 
     const createdCount = await this.prisma.$transaction(async (tx) => {
+      let count = 0;
       if (data.length > 0) {
-        await tx.employeeSchedule.createMany({
+        const result = await tx.employeeSchedule.createMany({
           data,
           skipDuplicates: true,
         });
+        count = result.count;
       }
       await this.audit.log(
         {
@@ -431,13 +449,13 @@ export class ShiftsService {
           metadata: {
             employeeIds: dto.employeeIds,
             workDates: dto.workDates,
-            createdCount: data.length,
+            createdCount: count,
             skippedCount: skipped.length,
           },
         },
         tx,
       );
-      return data.length;
+      return count;
     });
 
     return {
@@ -608,6 +626,30 @@ export class ShiftsService {
       targetHospitalId !== scope.hospitalId
     ) {
       throw new NotFoundException(message);
+    }
+  }
+
+  private assertSameHospital(
+    employeeHospitalId: string | null | undefined,
+    shiftHospitalId: string | null | undefined,
+    message: string,
+  ) {
+    if (
+      !employeeHospitalId ||
+      !shiftHospitalId ||
+      employeeHospitalId !== shiftHospitalId
+    ) {
+      throw new BadRequestException(message);
+    }
+  }
+
+  private assertValidWorkDate(workDate: string): void {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(workDate)) {
+      throw new BadRequestException(`Invalid work date: ${workDate}`);
+    }
+    const date = new Date(`${workDate}T00:00:00.000Z`);
+    if (Number.isNaN(date.getTime()) || date.toISOString().slice(0, 10) !== workDate) {
+      throw new BadRequestException(`Invalid work date: ${workDate}`);
     }
   }
 

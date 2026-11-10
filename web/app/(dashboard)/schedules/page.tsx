@@ -677,8 +677,10 @@ function buildBulkDates(fromDate: string, toDate: string, days: number[]): strin
   const cursor = new Date(start);
   while (cursor <= end) {
     const mondayZero = (cursor.getDay() + 6) % 7;
-    if (days.includes(mondayZero)) result.push(isoDate(cursor));
-    if (result.length > 31) break;
+    if (days.includes(mondayZero)) {
+      result.push(isoDate(cursor));
+      if (result.length >= 31) break;
+    }
     cursor.setDate(cursor.getDate() + 1);
   }
   return result;

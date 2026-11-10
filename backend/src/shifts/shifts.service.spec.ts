@@ -234,7 +234,10 @@ describe('ShiftsService audit atomicity', () => {
 describe('ShiftsService schedules', () => {
   it('assign guards duplicates; unassign protects attendance', async () => {
     const prisma = makePrisma({
-      shift: { findUnique: vi.fn(async () => ({ id: 's1' })) },
+      employee: {
+        findUnique: vi.fn(async () => ({ id: 'e1', department: { hospitalId: 'h1' } })),
+      },
+      shift: { findUnique: vi.fn(async () => ({ id: 's1', hospitalId: 'h1' })) },
       employeeSchedule: {
         findUnique: vi.fn(async () => ({ id: 'sch' })),
         delete: vi.fn(),
@@ -251,6 +254,38 @@ describe('ShiftsService schedules', () => {
     await expect(svc.unassignSchedule('sch', 'a')).rejects.toThrow(
       'cannot be removed',
     );
+  });
+
+  it('assign rejects when shift and employee belong to different hospitals', async () => {
+    const prisma = makePrisma({
+      employee: {
+        findUnique: vi.fn(async () => ({ id: 'e1', department: { hospitalId: 'h1' } })),
+      },
+      shift: { findUnique: vi.fn(async () => ({ id: 's1', hospitalId: 'h2' })) },
+    });
+    const svc = new ShiftsService(prisma, auditStub);
+    await expect(
+      svc.assignSchedule(
+        { employeeId: 'e1', shiftId: 's1', workDate: '2026-09-23' },
+        'a',
+      ),
+    ).rejects.toThrow('same hospital');
+  });
+
+  it('assign rejects invalid calendar dates', async () => {
+    const prisma = makePrisma({
+      employee: {
+        findUnique: vi.fn(async () => ({ id: 'e1', department: { hospitalId: 'h1' } })),
+      },
+      shift: { findUnique: vi.fn(async () => ({ id: 's1', hospitalId: 'h1' })) },
+    });
+    const svc = new ShiftsService(prisma, auditStub);
+    await expect(
+      svc.assignSchedule(
+        { employeeId: 'e1', shiftId: 's1', workDate: '2026-02-31' },
+        'a',
+      ),
+    ).rejects.toThrow('Invalid work date');
   });
 
   it('unassign succeeds when unused and audits', async () => {
@@ -572,5 +607,61 @@ describe('ShiftsService.assignBulk', () => {
         'super-admin-actor',
       ),
     ).rejects.toThrow('Shift not found');
+  });
+
+  it('reports actual inserted count when createMany skips raced duplicates', async () => {
+    const createMany = vi.fn(async () => ({ count: 2 }));
+    const prisma = makePrisma({
+      shift: { findUnique: vi.fn(async () => ({ id: 'sh1', hospitalId: 'h1' })) },
+      employeeSchedule: { findMany: vi.fn(async () => []), createMany },
+    });
+    const svc = new ShiftsService(prisma, auditStub);
+    const out = (await svc.assignBulk(
+      {
+        employeeIds: ['e1', 'e2'],
+        shiftId: 'sh1',
+        workDates: ['2026-11-16', '2026-11-17'],
+      },
+      'super-admin-actor',
+    )) as { createdCount: number; skippedCount: number };
+    expect(out.createdCount).toBe(2);
+    expect(auditStub.log).toHaveBeenCalledWith(
+      expect.objectContaining({
+        metadata: expect.objectContaining({ createdCount: 2, skippedCount: 0 }),
+      }),
+      expect.anything(),
+    );
+  });
+
+  it('rejects when shift and employee belong to different hospitals', async () => {
+    const prisma = makePrisma({
+      shift: { findUnique: vi.fn(async () => ({ id: 'sh1', hospitalId: 'h2' })) },
+      employee: {
+        findMany: vi.fn(async () => [{ id: 'e1', department: { hospitalId: 'h1' } }]),
+      },
+    });
+    const svc = new ShiftsService(prisma, auditStub);
+    await expect(
+      svc.assignBulk(
+        { employeeIds: ['e1'], shiftId: 'sh1', workDates: ['2026-11-16'] },
+        'super-admin-actor',
+      ),
+    ).rejects.toThrow('same hospital');
+  });
+
+  it('rejects invalid calendar dates', async () => {
+    const prisma = makePrisma({
+      shift: { findUnique: vi.fn(async () => ({ id: 'sh1', hospitalId: 'h1' })) },
+      employee: {
+        findMany: vi.fn(async () => [{ id: 'e1', department: { hospitalId: 'h1' } }]),
+      },
+    });
+    const svc = new ShiftsService(prisma, auditStub);
+    await expect(
+      svc.assignBulk(
+        { employeeIds: ['e1'], shiftId: 'sh1', workDates: ['2026-02-31'] },
+        'super-admin-actor',
+      ),
+    ).rejects.toThrow('Invalid work date');
   });
 });
