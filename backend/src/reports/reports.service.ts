@@ -154,7 +154,7 @@ export class ReportsService {
       headers: [
         'NIP',
         'Nama',
-        'Departemen',
+        'Unit',
         'Shift',
         'Masuk',
         'Pulang',
@@ -439,13 +439,13 @@ export class ReportsService {
       String(d.o),
     ]);
     const report: TabularReport = {
-      title: `Laporan Departemen ${from} → ${to}`,
+      title: `Laporan Unit ${from} → ${to}`,
       generatedAt: new Date().toISOString(),
-      summary: [['Departemen', String(byDept.size)]],
-      headers: ['Departemen', 'Hadir', 'Terlambat', 'Tidak hadir', 'Izin/cuti'],
+      summary: [['Unit', String(byDept.size)]],
+      headers: ['Unit', 'Hadir', 'Terlambat', 'Tidak hadir', 'Izin/cuti'],
       rows: table,
     };
-    return this.render(report, format, `laporan-departemen-${from}-${to}`);
+    return this.render(report, format, `laporan-unit-${from}-${to}`);
   }
 
   async employee(
