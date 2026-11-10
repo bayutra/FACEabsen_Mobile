@@ -5,11 +5,39 @@ import { LeavesService } from './leaves.service.js';
 const auditStub = { log: vi.fn(async () => undefined) } as never;
 
 function makePrisma(over: Record<string, Record<string, unknown>> = {}) {
-  const byId: Record<string, { id: string; supervisorId: string | null }> = {
-    'e-emp': { id: 'e-emp', supervisorId: 'e-sup' },
-    'e-sup': { id: 'e-sup', supervisorId: null },
+  const byId: Record<
+    string,
+    {
+      id: string;
+      supervisorId: string | null;
+      departmentId: string | null;
+      department: { hospitalId: string } | null;
+    }
+  > = {
+    'e-emp': {
+      id: 'e-emp',
+      supervisorId: null,
+      departmentId: 'd1',
+      department: { hospitalId: 'h1' },
+    },
+    'e-sup': {
+      id: 'e-sup',
+      supervisorId: null,
+      departmentId: 'd1',
+      department: { hospitalId: 'h1' },
+    },
+    'e-other': {
+      id: 'e-other',
+      supervisorId: null,
+      departmentId: 'd2',
+      department: { hospitalId: 'h1' },
+    },
   };
-  const byUser: Record<string, string> = { 'u-emp': 'e-emp', 'u-sup': 'e-sup' };
+  const byUser: Record<string, string> = {
+    'u-emp': 'e-emp',
+    'u-sup': 'e-sup',
+    'u-other': 'e-other',
+  };
   return {
     employee: {
       findUnique: vi.fn(async (a: { where: Record<string, string> }) =>
@@ -75,7 +103,7 @@ describe('LeavesService.create', () => {
 describe('LeavesService review', () => {
   const pending = { id: 'l1', status: 'PENDING', employeeId: 'e-emp' };
 
-  it('supervisor approves + audits; outsider and employee denied', async () => {
+  it('supervisor approves/rejects within same unit + audits; outsider/employee denied', async () => {
     const prisma = makePrisma({
       leave: { findUnique: vi.fn(async () => pending) },
     });
@@ -90,19 +118,31 @@ describe('LeavesService review', () => {
       expect.objectContaining({ action: 'LEAVE_APPROVED' }),
     );
 
+    const rej = makePrisma({
+      leave: { findUnique: vi.fn(async () => pending) },
+    });
     await expect(
-      svcOf(
-        makePrisma({ leave: { findUnique: vi.fn(async () => pending) } }),
-      ).reject('l1', 'u-emp', ['EMPLOYEE']),
-    ).rejects.toThrow();
+      svcOf(rej).reject('l1', 'u-sup', ['SUPERVISOR'], 'kurang'),
+    ).resolves.toMatchObject({ status: 'REJECTED' });
+
+    const other = makePrisma({
+      leave: { findUnique: vi.fn(async () => pending) },
+    });
+    await expect(
+      svcOf(other).approve('l1', 'u-other', ['SUPERVISOR']),
+    ).rejects.toThrow('Not authorized');
+    await expect(
+      svcOf(other).reject('l1', 'u-emp', ['EMPLOYEE']),
+    ).rejects.toThrow('pengajuan sendiri');
   });
 
-  it('team queue scopes non-admin; double review blocked', async () => {
+  it('team queue scopes non-admin to unit; double review blocked', async () => {
     const findMany = vi.fn(async () => []);
     const prisma = makePrisma({ leave: { findMany } });
     await svcOf(prisma).listQueue('u-sup', ['SUPERVISOR'], {});
-    const where = findMany.mock.calls[0][0].where as { AND: unknown[] };
-    expect(where.AND).toHaveLength(1);
+    const where = findMany.mock.calls[0][0].where;
+    expect(JSON.stringify(where)).toContain('"departmentId":"d1"');
+    expect(JSON.stringify(where)).not.toContain('supervisorId');
 
     const done = makePrisma({
       leave: {
@@ -160,7 +200,9 @@ describe('LeavesService extras (STEP 23 coverage)', () => {
       }),
     );
     await svc.listQueue('u-sup', ['SUPERVISOR'], { status: 'PENDING' });
-    const q = findMany.mock.calls[1][0].where as { AND: unknown[] };
-    expect(q.AND.length).toBeGreaterThanOrEqual(2);
+    const q = findMany.mock.calls[1][0].where;
+    expect(JSON.stringify(q)).toContain('PENDING');
+    expect(JSON.stringify(q)).toContain('"departmentId":"d1"');
+    expect(JSON.stringify(q)).not.toContain('supervisorId');
   });
 });
