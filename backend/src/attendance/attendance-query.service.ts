@@ -177,7 +177,7 @@ export class AttendanceQueryService {
         employee: {
           select: {
             id: true,
-            supervisorId: true,
+            departmentId: true,
             department: { select: { hospitalId: true } },
           },
         },
@@ -199,9 +199,18 @@ export class AttendanceQueryService {
 
     const me = await this.prisma.employee.findUnique({
       where: { userId },
-      select: { id: true },
+      select: { id: true, departmentId: true, department: { select: { hospitalId: true } } },
     });
-    if (me && row.employee.supervisorId === me.id) return row;
+    if (
+      me?.departmentId &&
+      row.employee.departmentId &&
+      me.departmentId === row.employee.departmentId &&
+      (!me.department?.hospitalId ||
+        !row.employee.department?.hospitalId ||
+        me.department.hospitalId === row.employee.department.hospitalId)
+    ) {
+      return row;
+    }
     throw new ForbiddenException('Not authorized');
   }
 
@@ -287,7 +296,7 @@ export class AttendanceQueryService {
           select: {
             id: true,
             userId: true,
-            supervisorId: true,
+            departmentId: true,
             name: true,
             employeeNo: true,
             department: { select: { id: true, name: true, hospitalId: true } },
@@ -314,9 +323,18 @@ export class AttendanceQueryService {
     if (satisfiesRole(roles, 'SUPERVISOR')) {
       const me = await this.prisma.employee.findUnique({
         where: { userId },
-        select: { id: true },
+        select: { id: true, departmentId: true, department: { select: { hospitalId: true } } },
       });
-      if (me && row.employee.supervisorId === me.id) return row;
+      if (
+        me?.departmentId &&
+        row.employee.departmentId &&
+        me.departmentId === row.employee.departmentId &&
+        (!me.department?.hospitalId ||
+          !row.employee.department?.hospitalId ||
+          me.department.hospitalId === row.employee.department.hospitalId)
+      ) {
+        return row;
+      }
     }
     throw new NotFoundException('Attendance not found');
   }
