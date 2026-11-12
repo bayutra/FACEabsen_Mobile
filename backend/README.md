@@ -79,7 +79,7 @@ Variabel wajib ada di `.env.example`; ringkasannya:
 | Integrity | `INTEGRITY_STRICT`, `ANDROID_PACKAGE_NAME`, `IOS_BUNDLE_ID` |
 | Opsional | `REDIS_URL`, `CORS_ORIGIN`, `DOCS_ENABLED` |
 
-## Login surface (Kepala Ruangan)
+## Login surface & scoping Kepala Ruangan
 
 Setiap akun punya `User.loginSurface` (`mobile` | `web` | `both`, default
 `both`), yang di-CRUD superadmin lewat `POST/PATCH /users` (field
@@ -97,10 +97,20 @@ flagnya. Superadmin tidak boleh memilih `mobile` untuk akun
 Admin/Super Admin (ditolak validator di form web; tombolnya tidak
 ditampilkan untuk kombinasi itu).
 
-Scope persetujuan Kepala Ruangan tetap seperti Supervisor:
-hanya pengajuan dari anggota yang `supervisorId`-nya adalah Kepala Ruangan,
-dan self-approval tetap dilarang (`SELF_APPROVAL_FORBIDDEN`). Lihat
-[`docs/superpowers/specs/2026-11-09-kepala-ruangan-dan-perbaikan-ux-design.md`](../docs/superpowers/specs/2026-11-09-kepala-ruangan-dan-perbaikan-ux-design.md).
+**Scoping persetujuan/akses Kepala Ruangan (SUPERVISOR, 1 unit, 1 RS):**
+antrean, review/approve, dan tampilan tim/ringkasan/laporan mencakup
+**seluruh anggota unit (departemen) yang sama** dengan Kepala Ruangan
+(berbasis `reviewer.employee.departmentId`, **bukan** bawahan langsung
+`supervisorId`) — meliputi koreksi presensi, cuti/izin, tinjauan presensi,
+tim/ringkasan, laporan, dan serah-terima (handover). Reviewer tanpa profil
+karyawan/`departmentId` ditolak secara aman (fail-safe, `null`/403 sesuai
+konteks). `ADMIN` (scope RS) dan `SUPER_ADMIN` (global) tidak berubah.
+Self-approval/review tetap dilarang (`SELF_APPROVAL_FORBIDDEN`); keputusan
+push/notifikasi tetap ke karyawan pemohon. Lihat
+[`docs/superpowers/specs/2026-11-09-kepala-ruangan-dan-perbaikan-ux-design.md`](../docs/superpowers/specs/2026-11-09-kepala-ruangan-dan-perbaikan-ux-design.md)
+(login surface) dan
+[`docs/superpowers/specs/2026-11-10-unit-scoping-kepala-ruangan-design.md`](../docs/superpowers/specs/2026-11-10-unit-scoping-kepala-ruangan-design.md)
+(scoping unit).
 
 ## Manajemen server (troubleshooting)
 

@@ -126,8 +126,14 @@ dari*):
 Di aplikasi mobile, Kepala Ruangan tampil sebagai "Kepala Ruangan", dan
 berandanya menampilkan **Permintaan Persetujuan** (koreksi presensi +
 review absensi anggota unitnya) dengan tombol Setujui/Tolak. `ADMIN` /
-`SUPER_ADMIN` tetap dashboard-only. Detail desain:
-[`docs/superpowers/specs/2026-11-09-kepala-ruangan-dan-perbaikan-ux-design.md`](docs/superpowers/specs/2026-11-09-kepala-ruangan-dan-perbaikan-ux-design.md).
+`SUPER_ADMIN` tetap dashboard-only.
+
+**Scoping (1 unit, 1 RS):** Kepala Ruangan meninjau/approve dan melihat
+antrean/tim/ringkasan **seluruh anggota unit (departemen) yang sama**
+(berbasis `departmentId`, bukan bawahan langsung `supervisorId`) untuk
+koreksi presensi, cuti/izin, dan tinjauan presensi; self-approval ditolak.
+Detail: [login surface](docs/superpowers/specs/2026-11-09-kepala-ruangan-dan-perbaikan-ux-design.md),
+[scoping unit](docs/superpowers/specs/2026-11-10-unit-scoping-kepala-ruangan-design.md).
 
 ### 5. Produksi
 

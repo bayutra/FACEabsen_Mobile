@@ -19,6 +19,7 @@ embedding 192-d, bukan foto.
 | Perangkat & penggantian perangkat | `lib/features/device/` |
 | Koreksi presensi | `lib/features/correction/` |
 | Izin & cuti | `lib/features/leave/` |
+| Serah-terima (handover) | `lib/features/handovers/` (data/domain; UI belum ada) |
 | Profil, consent, privasi | `lib/features/profile/`, `lib/features/face/domain/privacy_notice.dart` |
 | Integrity token (stub fase-2) | `lib/features/integrity/` |
 
@@ -99,6 +100,7 @@ lib/
     ├── correction/          # koreksi presensi
     ├── device/              # binding & replacement
     ├── face/                # deteksi, embedding, registrasi
+    ├── handovers/           # serah-terima (data/domain; UI belum ada)
     ├── home/                # beranda
     ├── integrity/           # Play Integrity / App Attest (stub)
     ├── leave/               # izin & cuti
