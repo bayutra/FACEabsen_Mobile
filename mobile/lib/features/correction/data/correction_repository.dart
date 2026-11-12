@@ -40,7 +40,7 @@ class CorrectionRepository {
   }
 
   /// Antrian peninjauan untuk Kepala Ruangan / Supervisor
-  /// (`correction:approve:team`, scope supervisorId di backend).
+  /// (`correction:approve:team`, scope unit/departemen di backend).
   Future<List<CorrectionItem>> listQueue({String status = 'PENDING'}) async {
     final Response res = await _dio.get(
       '/corrections',

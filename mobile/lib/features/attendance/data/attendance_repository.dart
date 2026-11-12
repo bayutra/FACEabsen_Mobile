@@ -425,7 +425,7 @@ class AttendanceRepository {
   }
 
   /// Antrean tinjauan presensi untuk Kepala Ruangan / Supervisor
-  /// (`attendance:approve:team`, scope supervisorId di backend).
+  /// (`attendance:approve:team`, scope unit/departemen di backend).
   /// Backend mengembalikan list atau `{ data: [...] }`.
   Future<List<ReviewItem>> listReviewQueue() async {
     final Response res = await _dio.get(

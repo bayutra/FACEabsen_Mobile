@@ -11,7 +11,6 @@ function makePrisma() {
         userId: 'u-sup',
         employeeNo: 'EMP-SUP',
         name: 'Atasan',
-        supervisorId: null,
         departmentId: 'd1',
         department: { id: 'd1', name: 'IGD', hospitalId: 'h1' },
       },
@@ -23,7 +22,6 @@ function makePrisma() {
         userId: 'u-a',
         employeeNo: 'EMP-001',
         name: 'A',
-        supervisorId: 'e-sup',
         departmentId: 'd1',
         department: { id: 'd1', name: 'IGD', hospitalId: 'h1' },
       },
@@ -35,7 +33,6 @@ function makePrisma() {
         userId: 'u-x',
         employeeNo: 'EMP-009',
         name: 'X',
-        supervisorId: 'e-other',
         departmentId: 'd2',
         department: { id: 'd2', name: 'Lab', hospitalId: 'h2' },
       },
@@ -47,7 +44,6 @@ function makePrisma() {
         userId: 'u-adm',
         employeeNo: 'EMP-003',
         name: 'Admin',
-        supervisorId: null,
         departmentId: 'd1',
         department: { id: 'd1', name: 'IGD', hospitalId: 'h1' },
       },
@@ -85,8 +81,6 @@ function makePrisma() {
       findMany: vi.fn(async (a: { where?: Record<string, unknown> }) => {
         let list = [...employees.values()];
         const w = a.where as Record<string, unknown> | undefined;
-        if (w?.supervisorId)
-          list = list.filter((e) => e.supervisorId === w.supervisorId);
         if (w?.departmentId)
           list = list.filter((e) => e.departmentId === w.departmentId);
         if (

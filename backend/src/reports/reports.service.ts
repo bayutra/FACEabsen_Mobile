@@ -46,6 +46,9 @@ export class ReportsService {
       select: { id: true, departmentId: true },
     });
     if (!me || !me.departmentId) return [];
+    // Laporan unit: cakup semua anggota unit (termasuk Kepala Ruangan sendiri,
+    // semua status) agar agregat/riwayat historis unit lengkap — berbeda dari
+    // roster tim aktif (SupervisorService.teamOf) yang mengecualikan diri sendiri.
     const team = await this.prisma.employee.findMany({
       where: { departmentId: me.departmentId },
       select: { id: true },
