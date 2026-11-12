@@ -14,7 +14,7 @@ import {
   type Column,
 } from '@/components/ui';
 import { api } from '@/lib/api';
-import { formatDateTime, typeLabel } from '@/lib/format';
+import { formatDate, formatDateTime, typeLabel } from '@/lib/format';
 import { useResource } from '@/lib/useResource';
 
 type Correction = {
@@ -76,7 +76,7 @@ export default function CorrectionsPage() {
       header: 'Tanggal presensi',
       render: (row) => (
         <div>
-          {formatDateTime(row.attendance?.workDate)}
+          {formatDate(row.attendance?.workDate)}
           <div className="muted small">
             Masuk {formatDateTime(row.attendance?.checkInAt)} · Pulang{' '}
             {formatDateTime(row.attendance?.checkOutAt)}
@@ -139,7 +139,7 @@ export default function CorrectionsPage() {
       <ErrorBanner message={error} />
 
       {(() => {
-        const all = stats.data ?? rows;
+        const all = stats.data ?? [];
         const pending = all.filter((item) => item.status === 'PENDING').length;
         const approved = all.filter((item) => item.status === 'APPROVED').length;
         const rejected = all.filter((item) => item.status === 'REJECTED').length;
@@ -199,7 +199,7 @@ export default function CorrectionsPage() {
             <div className="card">
               <strong>{selected.employee?.name ?? 'Karyawan'}</strong>
               <div className="muted small">
-                {typeLabel(selected.type)} · {formatDateTime(selected.attendance?.workDate)}
+                {typeLabel(selected.type)} · {formatDate(selected.attendance?.workDate)}
               </div>
               <p style={{ marginBottom: 0 }}>{selected.reason}</p>
               <div className="muted small" style={{ marginTop: 6 }}>

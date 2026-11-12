@@ -259,7 +259,9 @@ export default function TeamPage() {
         ) : detail.data ? (
           <>
             <div className="row">
-              <StatusBadge status={detail.data.member?.position ?? 'ACTIVE'} />
+              {detail.data.member?.position ? (
+                <span className="badge">{detail.data.member.position}</span>
+              ) : null}
               <span className="muted small">
                 {detail.data.member?.employeeNo ?? '—'} ·{' '}
                 {detail.data.member?.department?.name ?? 'Tanpa unit'}

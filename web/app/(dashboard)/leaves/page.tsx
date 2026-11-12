@@ -53,6 +53,7 @@ export default function LeavesPage() {
       body: note ? { reviewNote: note } : {},
     });
     reload();
+    stats.reload();
   };
 
   const columns: Column<Leave>[] = [

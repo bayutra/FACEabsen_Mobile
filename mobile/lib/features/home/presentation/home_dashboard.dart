@@ -70,6 +70,7 @@ class _HomeDashboardState extends State<HomeDashboard> {
   List<ReviewItem> _pendingReviews = const [];
   List<Handover> _activeHandovers = const [];
   bool _isSupervisor = false;
+  bool _approvalActionBusy = false;
 
   @override
   void initState() {
@@ -163,6 +164,8 @@ class _HomeDashboardState extends State<HomeDashboard> {
       _pendingCorrections.length + _pendingReviews.length;
 
   Future<void> _decideCorrection(String id, bool approve) async {
+    if (_approvalActionBusy) return;
+    setState(() => _approvalActionBusy = true);
     try {
       if (approve) {
         await widget.corrections?.approve(id);
@@ -183,10 +186,14 @@ class _HomeDashboardState extends State<HomeDashboard> {
           const SnackBar(content: Text('Gagal memproses koreksi.')),
         );
       }
+    } finally {
+      if (mounted) setState(() => _approvalActionBusy = false);
     }
   }
 
   Future<void> _decideReview(String id, bool approve) async {
+    if (_approvalActionBusy) return;
+    setState(() => _approvalActionBusy = true);
     try {
       await widget.attendance.review(
         id,
@@ -206,6 +213,8 @@ class _HomeDashboardState extends State<HomeDashboard> {
           const SnackBar(content: Text('Gagal memproses tinjauan.')),
         );
       }
+    } finally {
+      if (mounted) setState(() => _approvalActionBusy = false);
     }
   }
 
@@ -614,6 +623,7 @@ class _HomeDashboardState extends State<HomeDashboard> {
                 _ApprovalBar(
                   corrections: _pendingCorrections,
                   reviews: _pendingReviews,
+                  busy: _approvalActionBusy,
                   onCorrection: _decideCorrection,
                   onReview: _decideReview,
                 ),
@@ -663,12 +673,14 @@ class _ApprovalBar extends StatelessWidget {
   const _ApprovalBar({
     required this.corrections,
     required this.reviews,
+    required this.busy,
     required this.onCorrection,
     required this.onReview,
   });
 
   final List<CorrectionItem> corrections;
   final List<ReviewItem> reviews;
+  final bool busy;
   final void Function(String id, bool approve) onCorrection;
   final void Function(String id, bool approve) onReview;
 
@@ -707,6 +719,7 @@ class _ApprovalBar extends StatelessWidget {
             _Row(
               title: c.employeeName ?? 'Karyawan',
               subtitle: '${c.workDate ?? ''} · ${c.type} · ${c.reason}',
+              busy: busy,
               onApprove: () => onCorrection(c.id, true),
               onReject: () => onCorrection(c.id, false),
             ),
@@ -715,6 +728,7 @@ class _ApprovalBar extends StatelessWidget {
               title: r.employeeName ?? 'Karyawan',
               subtitle: 'Review absensi ${r.workDate}'
                   '${r.riskCategory != null ? ' · ${r.riskCategory}' : ''}',
+              busy: busy,
               onApprove: () => onReview(r.id, true),
               onReject: () => onReview(r.id, false),
             ),
@@ -728,12 +742,14 @@ class _Row extends StatelessWidget {
   const _Row({
     required this.title,
     required this.subtitle,
+    required this.busy,
     required this.onApprove,
     required this.onReject,
   });
 
   final String title;
   final String subtitle;
+  final bool busy;
   final VoidCallback onApprove;
   final VoidCallback onReject;
 
@@ -765,8 +781,8 @@ class _Row extends StatelessWidget {
               ],
             ),
           ),
-          TextButton(onPressed: onReject, child: const Text('Tolak')),
-          FilledButton(onPressed: onApprove, child: const Text('Setujui')),
+          TextButton(onPressed: busy ? null : onReject, child: const Text('Tolak')),
+          FilledButton(onPressed: busy ? null : onApprove, child: const Text('Setujui')),
         ],
       ),
     );
