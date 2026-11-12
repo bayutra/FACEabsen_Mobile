@@ -1,6 +1,5 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { AuditService } from '../audit/audit.service.js';
-import { resolveHospitalScope } from '../auth/tenant-scope.js';
 import { satisfiesRole } from '../auth/rbac.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import type { AcknowledgeHandoverDto, CreateHandoverDto, ListHandoversQuery } from './dto.js';
@@ -76,14 +75,11 @@ export class HandoversService {
     }
 
     if (isSupervisor) {
-      const scope = await resolveHospitalScope(this.prisma, userId, roles);
-      if (scope.kind !== 'hospital') return [];
+      const hospitalId = me.department?.hospitalId;
+      if (!me.departmentId || !hospitalId) return [];
       const where: Record<string, unknown> = {
-        hospitalId: scope.hospitalId,
-        OR: [
-          { fromEmployee: { supervisorId: me.id } },
-          { toEmployee: { supervisorId: me.id } },
-        ],
+        hospitalId,
+        departmentId: me.departmentId,
       };
       if (query.status) where.status = query.status;
       if (query.departmentId) where.departmentId = query.departmentId;
@@ -117,8 +113,8 @@ export class HandoversService {
     const handover = await this.prisma.handover.findUnique({
       where: { id },
       include: {
-        fromEmployee: { select: { id: true, name: true, employeeNo: true, supervisorId: true } },
-        toEmployee: { select: { id: true, name: true, employeeNo: true, supervisorId: true } },
+        fromEmployee: { select: { id: true, name: true, employeeNo: true } },
+        toEmployee: { select: { id: true, name: true, employeeNo: true } },
         department: { select: { id: true, name: true, hospitalId: true } },
       },
     });
@@ -132,14 +128,12 @@ export class HandoversService {
     });
     if (!me) throw new NotFoundException('Handover not found');
     if (isSupervisor) {
-      const scope = await resolveHospitalScope(this.prisma, userId, roles);
-      const teamOk =
-        handover.fromEmployee?.supervisorId === me.id ||
-        handover.toEmployee?.supervisorId === me.id;
+      const hospitalId = me.department?.hospitalId;
       if (
-        scope.kind !== 'hospital' ||
-        handover.hospitalId !== scope.hospitalId ||
-        !teamOk
+        !me.departmentId ||
+        !hospitalId ||
+        handover.hospitalId !== hospitalId ||
+        handover.departmentId !== me.departmentId
       ) {
         throw new NotFoundException('Handover not found');
       }
@@ -158,7 +152,7 @@ export class HandoversService {
     if (!satisfiesRole(roles, 'SUPERVISOR')) throw new ForbiddenException('Forbidden');
     const handover = await this.findOne(id, userId, roles);
     if (handover.status === 'ACKNOWLEDGED') return handover;
-    const me = await this.prisma.employee.findUnique({ where: { userId }, select: { id: true } });
+    await this.prisma.employee.findUnique({ where: { userId }, select: { id: true } });
     const updated = await this.prisma.handover.update({
       where: { id },
       data: {
