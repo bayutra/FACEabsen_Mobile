@@ -266,6 +266,7 @@ class _HomeDashboardState extends State<HomeDashboard> {
   void _showNotifications() {
     showModalBottomSheet<void>(
       context: context,
+      isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -289,13 +290,39 @@ class _HomeDashboardState extends State<HomeDashboard> {
           ));
         }
         if (_isSupervisor && _pendingApprovals > 0) {
-          items.add(Notif(
-            icon: Icons.pending_actions,
-            color: AppColors.warningText,
-            title: 'Permintaan persetujuan',
-            body:
-                '$_pendingApprovals pengajuan menunggu ditinjau (koreksi/review absensi anggota unit Anda).',
-          ));
+          for (final CorrectionItem c in _pendingCorrections) {
+            final String who = c.employeeName?.trim().isNotEmpty == true
+                ? c.employeeName!.trim()
+                : 'Karyawan';
+            final String when = (c.workDate ?? '').trim();
+            final String detail = <String>[
+              if (when.isNotEmpty) when,
+              c.type,
+              c.reason,
+            ].where((String s) => s.trim().isNotEmpty).join(' • ');
+            items.add(Notif(
+              icon: Icons.edit_note,
+              color: AppColors.warningText,
+              title: 'Permintaan koreksi presensi',
+              body: detail.isEmpty ? '$who menunggu persetujuan.' : '$who — $detail',
+            ));
+          }
+          for (final ReviewItem r in _pendingReviews) {
+            final String who = r.employeeName?.trim().isNotEmpty == true
+                ? r.employeeName!.trim()
+                : 'Karyawan';
+            final String detail = <String>[
+              'Review absensi ${r.workDate}',
+              if (r.riskCategory != null && r.riskCategory!.trim().isNotEmpty)
+                r.riskCategory!.trim(),
+            ].where((String s) => s.trim().isNotEmpty).join(' • ');
+            items.add(Notif(
+              icon: Icons.pending_actions,
+              color: AppColors.warningText,
+              title: 'Permintaan tinjauan presensi',
+              body: '$who — $detail',
+            ));
+          }
         }
         if (items.isEmpty) {
           items.add(const Notif(
@@ -306,38 +333,69 @@ class _HomeDashboardState extends State<HomeDashboard> {
           ));
         }
         return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const Text('Notifikasi', style: AppText.headlineSm),
-                const SizedBox(height: 12),
-                ...items.map((Notif n) => Padding(
-                      padding: const EdgeInsets.only(bottom: 10),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Icon(n.icon, color: n.color, size: 22),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(n.title,
-                                    style: AppText.bodyMdMedium
-                                        .copyWith(color: AppColors.ink)),
-                                Text(n.body,
-                                    style: AppText.bodyMd.copyWith(
-                                        color: AppColors.inkSecondary)),
-                              ],
-                            ),
-                          ),
-                        ],
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(ctx).size.height * 0.75,
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Row(
+                    children: [
+                      const Expanded(
+                        child: Text('Notifikasi', style: AppText.headlineSm),
                       ),
-                    )),
-              ],
+                      if (_isSupervisor && _pendingApprovals > 0)
+                        Text(
+                          '$_pendingApprovals menunggu',
+                          style: AppText.labelSm.copyWith(
+                            color: AppColors.warningText,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Flexible(
+                    child: ListView(
+                      shrinkWrap: true,
+                      children: items
+                          .map((Notif n) => Padding(
+                                padding: const EdgeInsets.only(bottom: 10),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Icon(n.icon, color: n.color, size: 22),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            n.title,
+                                            style: AppText.bodyMdMedium
+                                                .copyWith(color: AppColors.ink),
+                                          ),
+                                          Text(
+                                            n.body,
+                                            style: AppText.bodyMd.copyWith(
+                                                color: AppColors.inkSecondary),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ))
+                          .toList(),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         );
