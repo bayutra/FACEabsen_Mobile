@@ -100,7 +100,14 @@ export default function LoginPage() {
     setError(null);
   }
 
-  if (loading) return <div className="loading">Memeriksa sesi…</div>;
+  if (loading) {
+    return (
+      <div className="loading" role="status" aria-live="polite">
+        <span className="loading-spinner" aria-hidden />
+        <span>Memeriksa sesi…</span>
+      </div>
+    );
+  }
 
   return (
     <div className="login-page">

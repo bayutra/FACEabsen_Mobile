@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, type ReactNode } from 'react';
 import { DashboardShell } from '@/components/DashboardShell';
 import { Icon } from '@/components/Icon';
+import { Loading } from '@/components/ui';
 import { hasDashboardRole } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 
@@ -16,11 +17,11 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   }, [loading, user, router]);
 
   if (loading) {
-    return <div className="loading">Memeriksa sesi…</div>;
+    return <Loading label="Memeriksa sesi…" />;
   }
 
   if (!user) {
-    return <div className="loading">Mengalihkan ke halaman masuk…</div>;
+    return <Loading label="Mengalihkan ke halaman masuk…" />;
   }
 
   if (!hasDashboardRole(user.roles)) {
