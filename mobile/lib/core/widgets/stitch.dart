@@ -366,10 +366,33 @@ class AppCard extends StatelessWidget {
   }
 }
 
-class LoadingState extends StatelessWidget {
+class LoadingState extends StatefulWidget {
   const LoadingState({super.key, this.label = 'Memuat data'});
 
   final String label;
+
+  @override
+  State<LoadingState> createState() => _LoadingStateState();
+}
+
+class _LoadingStateState extends State<LoadingState>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 900),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) => Center(
@@ -378,15 +401,59 @@ class LoadingState extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
-              const SizedBox(
-                width: 28,
+              SizedBox(
                 height: 28,
-                child: CircularProgressIndicator(strokeWidth: 3),
+                child: AnimatedBuilder(
+                  animation: _controller,
+                  builder: (BuildContext context, Widget? child) => Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: List<Widget>.generate(3, (int i) {
+                      final double t =
+                          (_controller.value - (i * 0.18)) % 1.0;
+                      final double wave =
+                          (1 - (2 * (t - 0.5)).abs()).clamp(0.0, 1.0);
+                      final double scale = 0.7 + (wave * 0.45);
+                      final double dy = -6 * wave;
+                      final double opacity = 0.45 + (wave * 0.55);
+                      final Color color = i == 1
+                          ? AppColors.primaryContainer
+                          : AppColors.primary;
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 4),
+                        child: Transform.translate(
+                          offset: Offset(0, dy),
+                          child: Opacity(
+                            opacity: opacity,
+                            child: Transform.scale(
+                              scale: scale,
+                              child: Container(
+                                width: 10,
+                                height: 10,
+                                decoration: BoxDecoration(
+                                  color: color,
+                                  shape: BoxShape.circle,
+                                  boxShadow: <BoxShadow>[
+                                    BoxShadow(
+                                      color: color.withValues(alpha: 0.25 * wave),
+                                      blurRadius: 8 * wave,
+                                      offset: Offset(0, 3 * wave),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    }),
+                  ),
+                ),
               ),
-              const SizedBox(height: 12),
-              Text(label,
-                  style:
-                      AppText.labelMd.copyWith(color: AppColors.inkSecondary)),
+              const SizedBox(height: 14),
+              Text(
+                widget.label,
+                style: AppText.labelMd.copyWith(color: AppColors.inkSecondary),
+              ),
             ],
           ),
         ),

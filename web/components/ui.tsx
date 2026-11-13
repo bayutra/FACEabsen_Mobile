@@ -318,7 +318,11 @@ export function InfoBanner({ children }: { children: ReactNode }) {
 export function Loading({ label = 'Memuat data…' }: { label?: string }) {
   return (
     <div className="loading" role="status" aria-live="polite">
-      <span className="loading-spinner" aria-hidden />
+      <span className="loading-dots" aria-hidden>
+        <span />
+        <span />
+        <span />
+      </span>
       <span>{label}</span>
     </div>
   );

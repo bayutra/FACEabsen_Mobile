@@ -103,7 +103,11 @@ export default function LoginPage() {
   if (loading) {
     return (
       <div className="loading" role="status" aria-live="polite">
-        <span className="loading-spinner" aria-hidden />
+        <span className="loading-dots" aria-hidden>
+          <span />
+          <span />
+          <span />
+        </span>
         <span>Memeriksa sesi…</span>
       </div>
     );
