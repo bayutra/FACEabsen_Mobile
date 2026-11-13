@@ -38,7 +38,7 @@ function cookieOptions(maxAge: number) {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax' as const,
-    path: '/api',
+    path: '/',
     maxAge,
   };
 }
@@ -55,8 +55,18 @@ export async function setSessionCookies(tokens: TokenPair): Promise<void> {
 
 export async function clearSessionCookies(): Promise<void> {
   const store = await cookies();
-  store.set(ACCESS_COOKIE, '', cookieOptions(0));
-  store.set(REFRESH_COOKIE, '', cookieOptions(0));
+  const clear = (path: string) => ({
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax' as const,
+    path,
+    maxAge: 0,
+  });
+  // Clear current cookies (path=/) and legacy path-scoped cookies (/api).
+  for (const path of ['/', '/api']) {
+    store.set(ACCESS_COOKIE, '', clear(path));
+    store.set(REFRESH_COOKIE, '', clear(path));
+  }
 }
 
 export async function readAccessToken(): Promise<string | null> {
