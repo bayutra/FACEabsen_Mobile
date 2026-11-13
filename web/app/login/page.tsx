@@ -121,7 +121,7 @@ export default function LoginPage() {
         <section className="login-card" aria-labelledby="login-title">
           <div className="login-brand">
             <div className="brand-mark">
-              <Icon name="building" size={22} />
+              <img src="/app_logo.png" alt="Logo Face Absen" />
             </div>
             <div className="login-brand-text">
               <strong id="login-title">Face Absen</strong>

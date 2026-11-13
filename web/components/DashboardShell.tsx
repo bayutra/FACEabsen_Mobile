@@ -120,7 +120,7 @@ export function DashboardShell({
         <div className="sidebar-top">
           <div className="brand">
             <div className="brand-mark">
-              <Icon name="building" size={22} />
+              <img src="/app_logo.png" alt="Logo Face Absen" />
             </div>
             <div>
               <strong>Face Absen</strong>

@@ -29,7 +29,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
         <div className="login-card">
           <div className="login-brand">
             <div className="brand-mark">
-              <Icon name="lock" size={22} />
+              <img src="/app_logo.png" alt="Logo Face Absen" />
             </div>
             <div className="login-brand-text">
               <strong>Akses terbatas</strong>
