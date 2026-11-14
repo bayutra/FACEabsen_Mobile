@@ -434,7 +434,7 @@ class _LoadingStateState extends State<LoadingState>
                                   shape: BoxShape.circle,
                                   boxShadow: <BoxShadow>[
                                     BoxShadow(
-                                      color: color.withValues(alpha: 0.25 * wave),
+                                      color: color.withOpacity((0.25 * wave).clamp(0.0, 1.0)),
                                       blurRadius: 8 * wave,
                                       offset: Offset(0, 3 * wave),
                                     ),
